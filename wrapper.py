@@ -76,11 +76,13 @@ def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
         x = x.T
     if y is not None:
         raise NotImplementedError
-    return torch.corrcoef(x, dtype=dtype)
+    if dtype is not None:
+        x = x.type(dtype)
+    return torch.corrcoef(x)
 
 
 def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
-    if casting is not "same_kind":
+    if casting != "same_kind":
         raise NotImplementedError   # XXX
     if dtype is not None:
         # XXX: map numpy dtypes
@@ -88,7 +90,19 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     return torch.cat(ar_tuple, axis, out=out)
 
 
-# mapping from numpy API objects to wrappers from this module
+def squeeze(a, axis=None):
+    if axis is None:
+        return torch.squeeze(a)
+    else:
+        return torch.squeeze(a, axis)
+
+
+def bincount(x, /, weights=None, minlength=0):
+    return torch.bincount(x, weights, minlength)
+
+
+###### mapping from numpy API objects to wrappers from this module ######
+
 mapping = {
     np.asarray : asarray,
     np.linspace : linspace,
@@ -97,9 +111,12 @@ mapping = {
     np.prod : prod,
     np.corrcoef : corrcoef,    # XXX: numpy two-arg version
     np.concatenate: concatenate,
+    np.squeeze : squeeze,
+    np.bincount : bincount,
 }
 
 
+##################### ndarray class ###########################
 
 class ndarray:
     def __init__(self, *args, **kwds):
@@ -107,7 +124,7 @@ class ndarray:
 
     @property
     def shape(self):
-        return tuple(self._tensor.size)
+        return tuple(self._tensor.shape)
 
     @property
     def size(self):
@@ -115,7 +132,36 @@ class ndarray:
 
     @property
     def ndim(self):
-        return self._tensor.ndim()
+        return self._tensor.ndim
+
+    @property
+    def dtype(self):
+        return self._tensor.dtype
+
+    @property
+    def strides(self):
+        return self._tensor.stride()   # XXX: byte strides
+
+    ### arithmetic ###
+
+    def __add__(self, other):
+        return self._tensor__add__(other)
+
+    def __iadd__(self, other):
+        return self._tensor.__add__(other)
+
+    def __sub__(self, other):
+        return self._tensor.__sub__(other)
+
+    def __mul__(self, other):
+        return self._tensor.__mul__(other)
+
+    ### methods to match namespace functions
+    def squeeze(self, axis=None):
+        return squeeze(self._tensor, axis)
+
+
+
 
 
 # https://github.com/numpy/numpy/blob/v1.23.0/numpy/distutils/misc_util.py#L497-L504
@@ -296,8 +342,6 @@ def base_repr(number, base=2, padding=0):
 def binary_repr(num, width=None):
     raise NotImplementedError
 
-def bincount(x, weights=None, minlength=0):
-    raise NotImplementedError
 
 def blackman(M):
     raise NotImplementedError
@@ -931,9 +975,6 @@ def sort_complex(a):
     raise NotImplementedError
 
 def split(ary, indices_or_sections, axis=0):
-    raise NotImplementedError
-
-def squeeze(a, axis=None):
     raise NotImplementedError
 
 def stack(arrays, axis=0, out=None):
