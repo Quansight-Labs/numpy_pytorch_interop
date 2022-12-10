@@ -28,7 +28,7 @@ NoValue = None
 
 def asarray(a, dtype=None, order=None, *, like=None):
     if like is not None:
-        raise NotImlementedError
+        raise NotImplementedError
     return torch.asarray(a, dtype, order)
 
 
@@ -136,903 +136,903 @@ def is_sequence(seq):
 # Not present: scalars, types, dtypes, `np.r_` etc
 
 def arange(start, stop, step, dtype=None, *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def asanyarray(a, dtype=None, order=None, *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 
 def ascontiguousarray(a, dtype=None, *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def asfortranarray(a, dtype=None, *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def compare_chararrays(a, b, cmp_op, rstrip):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def datetime_data(dtype, /):
-    raise NotImlementedError
+    raise NotImplementedError
 
 
 def _fastCopyAndTranspose(a):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def frombuffer(buffer, dtype=float, count=-1, offset=0, *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def fromfile(file, dtype=float, count=-1, sep='', offset=0, *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def fromiter(iter, dtype, count=-1, *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def frompyfunc(func, nin, nout, *, identity):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def fromstring(string, dtype=float, count=-1, sep='', *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def geterrobj():
-    raise NotImlementedError
+    raise NotImplementedError
 
 def promote_types(type1, type2):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def set_numeric_ops(op1, op2, *args, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def seterrobj(errobj):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def zeros(shape, dtype=float, order='C', *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def __getattr__(attr):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def alen(a):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def all(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def allclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def alltrue(*args, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def amax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def angle(z, deg=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def any(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def append(arr, values, axis=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def apply_along_axis(func1d, axis, arr, *args, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def apply_over_axes(func, a, axes):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def argmax(a, axis=None, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def argmin(a, axis=None, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def argpartition(a, kth, axis=-1, kind='introselect', order=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def argsort(a, axis=-1, kind=None, order=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def argwhere(a):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def around(a, decimals=0, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def array2string(a, max_line_width=None, precision=None, suppress_small=None, separator=' ', prefix='', style=NoValue, formatter=None, threshold=None, edgeitems=None, sign=None, floatmode=None, suffix='', *, legacy=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def array_equal(a1, a2, equal_nan=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def array_equiv(a1, a2):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def array_repr(arr, max_line_width=None, precision=None, suppress_small=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def array_split(ary, indices_or_sections, axis=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def array_str(a, max_line_width=None, precision=None, suppress_small=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def asarray_chkfinite(a, dtype=None, order=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def asfarray(a, dtype='numpy.float64'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def asmatrix(data, dtype=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def asscalar(a):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def atleast_1d(*arys):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def atleast_2d(*arys):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def atleast_3d(*arys):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def average(a, axis=None, weights=None, returned=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def bartlett(M):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def base_repr(number, base=2, padding=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def binary_repr(num, width=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def bincount(x, weights=None, minlength=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def blackman(M):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def block(arrays):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def bmat(obj, ldict=None, gdict=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def broadcast_arrays(*args, subok=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def broadcast_shapes(*args):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def broadcast_to(array, shape, subok=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def busday_count(begindates, enddates, weekmask='1111100', holidays=[], busdaycal=None, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def busday_offset(dates, offsets, roll='raise', weekmask='1111100', holidays=None, busdaycal=None, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def byte_bounds(a):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def can_cast(from_, to, casting='safe'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def choose(a, choices, out=None, mode='raise'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def clip(a, a_min, a_max, out=None, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def column_stack(tup):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def common_type(*arrays):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def compress(condition, a, axis=None, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 
 def convolve(a, v, mode='full'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def copy(a, order='K', subok=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def copyto(dst, src, casting='same_kind', where=True):
-    raise NotImlementedError
+    raise NotImplementedError
 
 
 def correlate(a, v, mode='valid'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def count_nonzero(a, axis=None, *, keepdims=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def cov(m, y=None, rowvar=True, bias=False, ddof=None, fweights=None, aweights=None, *, dtype=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def cross(a, b, axisa=-1, axisb=-1, axisc=-1, axis=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def cumprod(a, axis=None, dtype=None, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def cumproduct(*args, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def cumsum(a, axis=None, dtype=None, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def datetime_as_string(arr, unit=None, timezone='naive', casting='same_kind'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def delete(arr, obj, axis=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def deprecate(*args, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def deprecate_with_doc(msg):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def diag(v, k=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def diag_indices(n, ndim=2):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def diag_indices_from(arr):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def diagflat(v, k=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def diagonal(a, offset=0, axis1=0, axis2=1):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def diff(a, n=1, axis=-1, prepend=NoValue, append=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def digitize(x, bins, right=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def disp(mesg, device=None, linefeed=True):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def dot(a, b, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def dsplit(ary, indices_or_sections):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def dstack(tup):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def ediff1d(ary, to_end=None, to_begin=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def einsum(*operands, out=None, optimize=False, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def einsum_path(*operands, optimize='greedy', einsum_call=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 
 def expand_dims(a, axis):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def extract(condition, arr):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def eye(N, M=None, k=0, dtype=float, order='C', *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def fill_diagonal(a, val, wrap=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def find_common_type(array_types, scalar_types):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def fix(x, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def flatnonzero(a):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def flip(m, axis=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def fliplr(m):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def flipud(m):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def format_float_positional(x, precision=None, unique=True, fractional=True, trim='k', sign=False, pad_left=None, pad_right=None, min_digits=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def format_float_scientific(x, precision=None, unique=True, trim='k', sign=False, pad_left=None, exp_digits=None, min_digits=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def fromfunction(function, shape, *, dtype=float, like=None, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def fromregex(file, regexp, dtype, encoding=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def full(shape, fill_value, dtype=None, order='C', *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def full_like(a, fill_value, dtype=None, order='K', subok=True, shape=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def genfromtxt(fname, dtype=float, comments='#', delimiter=None, skip_header=0, skip_footer=0, converters=None, missing_values=None, filling_values=None, usecols=None, names=None, excludelist=None, deletechars=" !#$%&'()*+,-./:;<=>?@[\\]^{|}~", replace_space='_', autostrip=False, case_sensitive=True, defaultfmt='f%i', unpack=None, usemask=False, loose=True, invalid_raise=True, max_rows=None, encoding='bytes', *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def geomspace(start, stop, num=50, endpoint=True, dtype=None, axis=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def get_array_wrap(*args):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def get_include():
-    raise NotImlementedError
+    raise NotImplementedError
 
 def get_printoptions():
-    raise NotImlementedError
+    raise NotImplementedError
 
 def getbufsize():
-    raise NotImlementedError
+    raise NotImplementedError
 
 def geterr():
-    raise NotImlementedError
+    raise NotImplementedError
 
 def geterrcall():
-    raise NotImlementedError
+    raise NotImplementedError
 
 def gradient(f, *varargs, axis=None, edge_order=1):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def hamming(M):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def hanning(M):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def histogram(a, bins=10, range=None, normed=None, weights=None, density=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def histogram2d(x, y, bins=10, range=None, normed=None, weights=None, density=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def histogram_bin_edges(a, bins=10, range=None, weights=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def histogramdd(sample, bins=10, range=None, normed=None, weights=None, density=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def hsplit(ary, indices_or_sections):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def hstack(tup):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def i0(x):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def identity(n, dtype=None, *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def imag(val):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def in1d(ar1, ar2, assume_unique=False, invert=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def indices(dimensions, dtype=int, sparse=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def inner(a, b):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def insert(arr, obj, values, axis=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def interp(x, xp, fp, left=None, right=None, period=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def intersect1d(ar1, ar2, assume_unique=False, return_indices=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def is_busday(dates, weekmask='1111100', holidays=None, busdaycal=None, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def isclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def iscomplex(x):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def iscomplexobj(x):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def isfortran(a):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def isin(element, test_elements, assume_unique=False, invert=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def isneginf(x, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def isposinf(x, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def isreal(x):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def isrealobj(x):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def isscalar(element):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def issctype(rep):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def issubclass_(arg1, arg2):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def issubdtype(arg1, arg2):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def issubsctype(arg1, arg2):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def iterable(y):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def ix_(*args):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def kaiser(M, beta):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def kron(a, b):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def lexsort(keys, axis=-1):
-    raise NotImlementedError
+    raise NotImplementedError
 
 
 def load(file, mmap_mode=None, allow_pickle=False, fix_imports=True, encoding='ASCII'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def loads(*args, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def loadtxt(fname, dtype=float, comments='#', delimiter=None, converters=None, skiprows=0, usecols=None, unpack=False, ndmin=0, encoding='bytes', max_rows=None, *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def lookfor(what, module=None, import_modules=True, regenerate=False, output=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def mafromtxt(fname, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def mask_indices(n, mask_func, k=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def asmatrix(data, dtype=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def amax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def maximum_sctype(t):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def may_share_memory(a, b, max_work=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def mean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def meshgrid(*xi, copy=True, sparse=False, indexing='xy'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def min_scalar_type(a):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def mintypecode(typechars, typeset='GDFgdf', default='d'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def moveaxis(a, source, destination):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def msort(a):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nan_to_num(x, copy=True, nan=0.0, posinf=None, neginf=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nanargmax(a, axis=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nanargmin(a, axis=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nancumprod(a, axis=None, dtype=None, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nancumsum(a, axis=None, dtype=None, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nanmax(a, axis=None, out=None, keepdims=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nanmedian(a, axis=None, out=None, overwrite_input=False, keepdims=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nanmin(a, axis=None, out=None, keepdims=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nanpercentile(a, q, axis=None, out=None, overwrite_input=False, interpolation='linear', keepdims=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nanprod(a, axis=None, dtype=None, out=None, keepdims=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nanquantile(a, q, axis=None, out=None, overwrite_input=False, interpolation='linear', keepdims=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nanstd(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nansum(a, axis=None, dtype=None, out=None, keepdims=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nanvar(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def ndfromtxt(fname, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def ndim(a):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def nonzero(a):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def obj2sctype(rep, default=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def ones(shape, dtype=None, order='C', *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def ones_like(a, dtype=None, order='K', subok=True, shape=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def outer(a, b, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def packbits(a, axis=None, bitorder='big'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def pad(array, pad_width, mode='constant', **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def partition(a, kth, axis=-1, kind='introselect', order=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def percentile(a, q, axis=None, out=None, overwrite_input=False, interpolation='linear', keepdims=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def piecewise(x, condlist, funclist, *args, **kw):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def place(arr, mask, vals):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def poly(seq_of_zeros):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def polyadd(a1, a2):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def polyder(p, m=1):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def polydiv(u, v):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def polyfit(x, y, deg, rcond=None, full=False, w=None, cov=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def polyint(p, m=1, k=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def polymul(a1, a2):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def polysub(a1, a2):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def polyval(p, x):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def printoptions(*args, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def product(*args, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def ptp(a, axis=None, out=None, keepdims=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def put(a, ind, v, mode='raise'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def put_along_axis(arr, indices, values, axis):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def putmask(a, mask, values):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def quantile(a, q, axis=None, out=None, overwrite_input=False, interpolation='linear', keepdims=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def ravel(a, order='C'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def ravel_multi_index(multi_index, dims, mode='raise', order='C'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def real(val):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def real_if_close(a, tol=100):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def recfromcsv(fname, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def recfromtxt(fname, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def repeat(a, repeats, axis=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def require(a, dtype=None, requirements=None, *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def reshape(a, newshape, order='C'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def resize(a, new_shape):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def result_type(*arrays_and_dtypes):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def roll(a, shift, axis=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def rollaxis(a, axis, start=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def roots(p):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def rot90(m, k=1, axes=(0, 1)):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def round_(a, decimals=0, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def round_(a, decimals=0, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def vstack(tup):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def safe_eval(source):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def save(file, arr, allow_pickle=True, fix_imports=True):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def savetxt(fname, X, fmt='%.18e', delimiter=' ', newline='\n', header='', footer='', comments='# ', encoding=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def savez(file, *args, **kwds):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def savez_compressed(file, *args, **kwds):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def sctype2char(sctype):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def searchsorted(a, v, side='left', sorter=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def select(condlist, choicelist, default=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def set_printoptions(precision=None, threshold=None, edgeitems=None, linewidth=None, suppress=None, nanstr=None, infstr=None, formatter=None, sign=None, floatmode=None, *, legacy=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def set_string_function(f, repr=True):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def setbufsize(size):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def setdiff1d(ar1, ar2, assume_unique=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def seterr(all=None, divide=None, over=None, under=None, invalid=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def seterrcall(func):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def setxor1d(ar1, ar2, assume_unique=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def shape(a):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def shares_memory(a, b, max_work=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def show():
-    raise NotImlementedError
+    raise NotImplementedError
 
 def sinc(x):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def size(a, axis=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def sometrue(*args, **kwargs):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def sort(a, axis=-1, kind=None, order=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def sort_complex(a):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def split(ary, indices_or_sections, axis=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def squeeze(a, axis=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def stack(arrays, axis=0, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def std(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def sum(a, axis=None, dtype=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def swapaxes(a, axis1, axis2):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def take(a, indices, axis=None, out=None, mode='raise'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def take_along_axis(arr, indices, axis):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def tensordot(a, b, axes=2):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def tile(A, reps):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def transpose(a, axes=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def trapz(y, x=None, dx=1.0, axis=-1):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def tri(N, M=None, k=0, dtype=float, *, like=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def tril(m, k=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def tril_indices(n, k=0, m=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def tril_indices_from(arr, k=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def trim_zeros(filt, trim='fb'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def triu(m, k=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def triu_indices(n, k=0, m=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def triu_indices_from(arr, k=0):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def typename(char):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def union1d(ar1, ar2):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def unique(ar, return_index=False, return_inverse=False, return_counts=False, axis=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def unpackbits(a, axis=None, count=None, bitorder='big'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def unravel_index(indices, shape, order='C'):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def unwrap(p, discont=None, axis=-1, *, period=6.283185307179586):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def vander(x, N=None, increasing=False):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def vdot(a, b):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def vsplit(ary, indices_or_sections):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def vstack(tup):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def where(condition, x, y):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def who(vardict=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 def zeros_like(a, dtype=None, order='K', subok=True, shape=None):
-    raise NotImlementedError
+    raise NotImplementedError
 
 
