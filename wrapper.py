@@ -95,10 +95,27 @@ mapping = {
     np.empty : empty,
     np.empty_like : empty_like,
     np.prod : prod,
-    np.corrcoef : corrcoef    # XXX: numpy two-arg version
+    np.corrcoef : corrcoef,    # XXX: numpy two-arg version
     np.concatenate: concatenate,
 }
 
+
+
+class ndarray:
+    def __init__(self, *args, **kwds):
+        self._tensor = torch.Tensor(*args, **kwds)
+
+    @property
+    def shape(self):
+        return tuple(self._tensor.size)
+
+    @property
+    def size(self):
+        return self._tensor.numel()
+
+    @property
+    def ndim(self):
+        return self._tensor.ndim()
 
 
 # https://github.com/numpy/numpy/blob/v1.23.0/numpy/distutils/misc_util.py#L497-L504
