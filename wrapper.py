@@ -1,9 +1,11 @@
 
+NoValue = None
 
-def arange([start,] stop[, step,], dtype=None, *, like=None):
+
+def arange(start, stop, step, dtype=None, *, like=None):
     raise NotImlementedError
 
-def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,:
+def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0, like=None):
     raise NotImlementedError
 
 def asanyarray(a, dtype=None, order=None, *, like=None):
@@ -39,7 +41,7 @@ def fromfile(file, dtype=float, count=-1, sep='', offset=0, *, like=None):
 def fromiter(iter, dtype, count=-1, *, like=None):
     raise NotImlementedError
 
-def frompyfunc(func, nin, nout, *[, identity]):
+def frompyfunc(func, nin, nout, *, identity):
     raise NotImlementedError
 
 def fromstring(string, dtype=float, count=-1, sep='', *, like=None):
@@ -50,7 +52,6 @@ def geterrobj():
 
 def promote_types(type1, type2):
     raise NotImlementedError
-
 
 def set_numeric_ops(op1, op2, *args, **kwargs):
     raise NotImlementedError
@@ -136,7 +137,7 @@ def array_str(a, max_line_width=None, precision=None, suppress_small=None):
 def asarray_chkfinite(a, dtype=None, order=None):
     raise NotImlementedError
 
-def asfarray(a, dtype=<class 'numpy.float64'>):
+def asfarray(a, dtype='numpy.float64'):
     raise NotImlementedError
 
 def asmatrix(data, dtype=None):
@@ -214,7 +215,7 @@ def common_type(*arrays):
 def compress(condition, a, axis=None, out=None):
     raise NotImlementedError
 
-def concatenate((a1, a2, ...), axis=0, out=None, dtype=None, casting="same_kind"):
+def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     raise NotImlementedError
 
 def convolve(a, v, mode='full'):
@@ -313,7 +314,7 @@ def expand_dims(a, axis):
 def extract(condition, arr):
     raise NotImlementedError
 
-def eye(N, M=None, k=0, dtype=<class 'float'>, order='C', *, like=None):
+def eye(N, M=None, k=0, dtype=float, order='C', *, like=None):
     raise NotImlementedError
 
 def fill_diagonal(a, val, wrap=False):
@@ -343,7 +344,7 @@ def format_float_positional(x, precision=None, unique=True, fractional=True, tri
 def format_float_scientific(x, precision=None, unique=True, trim='k', sign=False, pad_left=None, exp_digits=None, min_digits=None):
     raise NotImlementedError
 
-def fromfunction(function, shape, *, dtype=<class 'float'>, like=None, **kwargs):
+def fromfunction(function, shape, *, dtype=float, like=None, **kwargs):
     raise NotImlementedError
 
 def fromregex(file, regexp, dtype, encoding=None):
@@ -355,7 +356,7 @@ def full(shape, fill_value, dtype=None, order='C', *, like=None):
 def full_like(a, fill_value, dtype=None, order='K', subok=True, shape=None):
     raise NotImlementedError
 
-def genfromtxt(fname, dtype=<class 'float'>, comments='#', delimiter=None, skip_header=0, skip_footer=0, converters=None, missing_values=None, filling_values=None, usecols=None, names=None, excludelist=None, deletechars=" !#$%&'()*+,-./:;<=>?@[\\]^{|}~", replace_space='_', autostrip=False, case_sensitive=True, defaultfmt='f%i', unpack=None, usemask=False, loose=True, invalid_raise=True, max_rows=None, encoding='bytes', *, like=None):
+def genfromtxt(fname, dtype=float, comments='#', delimiter=None, skip_header=0, skip_footer=0, converters=None, missing_values=None, filling_values=None, usecols=None, names=None, excludelist=None, deletechars=" !#$%&'()*+,-./:;<=>?@[\\]^{|}~", replace_space='_', autostrip=False, case_sensitive=True, defaultfmt='f%i', unpack=None, usemask=False, loose=True, invalid_raise=True, max_rows=None, encoding='bytes', *, like=None):
     raise NotImlementedError
 
 def geomspace(start, stop, num=50, endpoint=True, dtype=None, axis=0):
@@ -418,7 +419,7 @@ def imag(val):
 def in1d(ar1, ar2, assume_unique=False, invert=False):
     raise NotImlementedError
 
-def indices(dimensions, dtype=<class 'int'>, sparse=False):
+def indices(dimensions, dtype=int, sparse=False):
     raise NotImlementedError
 
 def inner(a, b):
@@ -502,7 +503,7 @@ def load(file, mmap_mode=None, allow_pickle=False, fix_imports=True, encoding='A
 def loads(*args, **kwargs):
     raise NotImlementedError
 
-def loadtxt(fname, dtype=<class 'float'>, comments='#', delimiter=None, converters=None, skiprows=0, usecols=None, unpack=False, ndmin=0, encoding='bytes', max_rows=None, *, like=None):
+def loadtxt(fname, dtype=float, comments='#', delimiter=None, converters=None, skiprows=0, usecols=None, unpack=False, ndmin=0, encoding='bytes', max_rows=None, *, like=None):
     raise NotImlementedError
 
 def logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0):
@@ -850,7 +851,7 @@ def transpose(a, axes=None):
 def trapz(y, x=None, dx=1.0, axis=-1):
     raise NotImlementedError
 
-def tri(N, M=None, k=0, dtype=<class 'float'>, *, like=None):
+def tri(N, M=None, k=0, dtype=float, *, like=None):
     raise NotImlementedError
 
 def tril(m, k=0):
@@ -907,7 +908,7 @@ def vsplit(ary, indices_or_sections):
 def vstack(tup):
     raise NotImlementedError
 
-def where(condition, [x, y]):
+def where(condition, x, y):
     raise NotImlementedError
 
 def who(vardict=None):
