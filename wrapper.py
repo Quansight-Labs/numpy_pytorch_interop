@@ -1,12 +1,4 @@
 
-def add_ufunc_docstring(ufunc, new_docstring):
-    raise NotImlementedError
-
-def add_docstring(obj, docstring):
-    raise NotImlementedError
-
-def add_ufunc_docstring(ufunc, new_docstring):
-    raise NotImlementedError
 
 def arange([start,] stop[, step,], dtype=None, *, like=None):
     raise NotImlementedError
@@ -56,13 +48,11 @@ def fromstring(string, dtype=float, count=-1, sep='', *, like=None):
 def geterrobj():
     raise NotImlementedError
 
-def Create nditers for use in nested loops:
-    raise NotImlementedError
-
 def promote_types(type1, type2):
     raise NotImlementedError
 
-def set_numeric_ops(op1=func1, op2=func2, ...):
+
+def set_numeric_ops(op1, op2, *args, **kwargs):
     raise NotImlementedError
 
 def seterrobj(errobj):
@@ -71,13 +61,7 @@ def seterrobj(errobj):
 def zeros(shape, dtype=float, order='C', *, like=None):
     raise NotImlementedError
 
-def __dir__():
-    raise NotImlementedError
-
 def __getattr__(attr):
-    raise NotImlementedError
-
-def add_newdoc(place, obj, doc, warn_on_python=True):
     raise NotImlementedError
 
 def alen(a):
@@ -435,9 +419,6 @@ def in1d(ar1, ar2, assume_unique=False, invert=False):
     raise NotImlementedError
 
 def indices(dimensions, dtype=<class 'int'>, sparse=False):
-    raise NotImlementedError
-
-def info(object=None, maxwidth=76, output=<_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>, toplevel='numpy'):
     raise NotImlementedError
 
 def inner(a, b):
@@ -828,9 +809,6 @@ def sort(a, axis=-1, kind=None, order=None):
     raise NotImlementedError
 
 def sort_complex(a):
-    raise NotImlementedError
-
-def source(object, output=<_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>):
     raise NotImlementedError
 
 def split(ary, indices_or_sections, axis=0):
