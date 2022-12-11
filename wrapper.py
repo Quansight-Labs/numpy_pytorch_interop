@@ -8,14 +8,25 @@ import torch
 
 # Things to decide on (punt for now)
 #
-# 1. What are the defaults for pytorch-specific args not present in numpy signatures?
-#    device=..., requires_grad=... etc
-# 2. What is the useful action for numpy-specific arguments? e.g. like=... 
-# 3. What are the return types of wrapper functions: plain torch.Tensors or
-#    wrapper ndarrays.
-# 4. Default dtypes: numpy defaults to float64, pytorch defaults to float32
-#    Stick to pytorch defaults?
-# 5. Masked arrays: ignore for now?
+# 1. Q: What are the return types of wrapper functions: plain torch.Tensors or
+#       wrapper ndarrays.
+#    A: Tensors, apparently
+#
+# 2. Q: Default dtypes: numpy defaults to float64, pytorch defaults to float32
+#    A: Stick to pytorch defaults?
+#
+# 3. Q: Masked arrays
+#    A: Ignore for now
+#
+# 4. Q: What are the defaults for pytorch-specific args not present in numpy signatures?
+#       device=..., requires_grad=... etc 
+#    A: ignore, keep whatever they are from inputs; test w/various combinations 
+#
+# 5. Q: What is the useful action for numpy-specific arguments? e.g. like=... 
+#    A: raise ValueErrors?
+#       initial=... can be useful though, punt on
+#       where=...   punt on for now
+
 
 # TODO
 # 1. Mapping of the numpy layout ('C', 'K' etc) to torch layout / memory_format.
@@ -30,6 +41,9 @@ def asarray(a, dtype=None, order=None, *, like=None):
     if like is not None:
         raise NotImplementedError
     return torch.asarray(a, dtype, order)
+
+
+from torch import atleast_1d, atleast_2d, atleast_3d
 
 
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
@@ -101,10 +115,141 @@ def bincount(x, /, weights=None, minlength=0):
     return torch.bincount(x, weights, minlength)
 
 
+###### module-level queries of object properties
+
+def ndim(a):
+    return torch.as_tensor(a).ndim
+
+
+def shape(a):
+    return tuple(torch.as_tensor(a).shape)
+
+
+def size(a, axis=None):
+    if axis is None:
+        return torch.as_tensor(a).numel()
+    else:
+        return torch.as_tensor(a).shape[axis]
+
+
+###### shape manipulations and indexing
+
+def reshape(a, newshape, order='C'):
+    if order != 'C':
+        raise NotImplementedError
+    return torch.reshape(a, newshape)
+
+
+def broadcast_to(array, shape, subok=False):
+    if subok:
+        raise NotImplementedError
+    return torch.broadcast_to(array, shape)
+
+
+from torch import broadcast_shapes
+
+
+def broadcast_arrays(*args, subok=False):
+    if subok:
+        raise NotImplementedError
+    return torch.broadcast_tensors(*args)
+
+
+def unravel_index(indices, shape, order='C'):
+# cf https://github.com/pytorch/pytorch/pull/66687
+# this version is from 
+# https://discuss.pytorch.org/t/how-to-do-a-unravel-index-in-pytorch-just-like-in-numpy/12987/3
+    if shape != 'C':
+        raise NotImplementedError
+    result = []
+    for index in indices:
+        out = []
+        for dim in reversed(shape):
+            out.append(index % dim)
+            index = index // dim
+        result.append(tuple(reversed(out)))
+    return result
+
+
+def ravel_multi_index(multi_index, dims, mode='raise', order='C'):
+    # XXX: not available in pytorch, implement
+    return sum(idx*dim for idx, dim in zip(multi_index, dims))
+
+
+
+###### reductions
+
+def argmax(a, axis=None, out=None, *, keepdims=NoValue):
+    if axis is None:
+        result = torch.argmax(a, keepdims=bool(keepdims))
+    else:
+        result = torch.argmax(a, axis, keepdims=bool(keepdims))
+    if out is not None:
+        out[...] = result
+    return result
+
+
+##### math functions
+
+def angle(z, deg=False):
+    result = torch.angle(z)
+    if deg:
+        result *= 180 / torch.pi
+    return result
+
+from pytorch import imag, real
+
+
+def real_if_close(a, tol=100):
+    if not torch.is_complex(a):
+        return a
+    if torch.abs(torch.imag) < tol * torch.finfo(a.dtype).eps:
+        return torch.real(a)
+    else:
+        return a
+
+
+def iscomplex(x):
+    if torch.is_complex(x):
+        return torch.as_tensor(x).imag == 0
+    result = torch.zeros_like(x, dtype=torch.bool)
+    return result[()]
+
+
+def isreal(x):
+    if torch.is_complex(x):
+        return torch.as_tensor(x).imag == 0
+    result = torch.zeros_like(x, dtype=torch.bool)
+    return result[()]
+
+
+def iscomplexobj(x):
+    return torch.is_complex(x)
+
+
+def isrealobj(x):
+    return not torch.is_complex(x)
+
+
+def isneginf(x, out=None):
+    return torch.isneginf(x, out=out)
+
+
+def isposinf(x, out=None):
+    return torch.isposinf(x, out=out)
+
+
+def i0(x):
+    return torch.special.i0(x)
+
+
 ###### mapping from numpy API objects to wrappers from this module ######
 
 mapping = {
     np.asarray : asarray,
+    np.atleast_1d : atleast_1d,
+    np.atleast_2d : atleast_2d,
+    np.atleast_3d : atleast_3d,
     np.linspace : linspace,
     np.empty : empty,
     np.empty_like : empty_like,
@@ -113,8 +258,30 @@ mapping = {
     np.concatenate: concatenate,
     np.squeeze : squeeze,
     np.bincount : bincount,
+    np.argmax : argmax,
+    np.ndim : ndim,
+    np.shape : shape,
+    np.size : size,
+    np.reshape : reshape,
+    np.broadcast_to : broadcast_to,
+    np.broadcast_shapes : broadcast_shapes,
+    np.broadcast_arrays: broadcast_arrays,
+    np.unravel_index : unravel_index,
+    np.ravel_multi_index : ravel_multi_index,
+    # math functions
+    np.angle : angle,
+    np.real : real,
+    np.imag : imag,
+    np.real_if_close : real_if_close,
+    np.iscomplex: iscomplex,
+    np.iscomplexobj: iscomplexobj,
+    np.isreal: isreal,
+    np.isrealobj: isrealobj,
+    np.isposinf : isposinf,
+    np.isneginf : isneginf,
+    np.i0 : i0,
 }
-
+# XXX: automate populating this dict?
 
 ##################### ndarray class ###########################
 
@@ -160,7 +327,11 @@ class ndarray:
     def squeeze(self, axis=None):
         return squeeze(self._tensor, axis)
 
+    def argmax(self, axis=None, out=None, *, keepdims=NoValue):
+        return argmax(self._tensor, axis, out=out, keepdims=keepdims)
 
+    def reshape(self, shape, order='C'):
+        return reshape(self._tensor, shape, order)
 
 
 
@@ -258,8 +429,6 @@ def amax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValu
 def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
     raise NotImplementedError
 
-def angle(z, deg=False):
-    raise NotImplementedError
 
 def any(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
     raise NotImplementedError
@@ -273,8 +442,6 @@ def apply_along_axis(func1d, axis, arr, *args, **kwargs):
 def apply_over_axes(func, a, axes):
     raise NotImplementedError
 
-def argmax(a, axis=None, out=None, *, keepdims=NoValue):
-    raise NotImplementedError
 
 def argmin(a, axis=None, out=None, *, keepdims=NoValue):
     raise NotImplementedError
@@ -321,14 +488,6 @@ def asmatrix(data, dtype=None):
 def asscalar(a):
     raise NotImplementedError
 
-def atleast_1d(*arys):
-    raise NotImplementedError
-
-def atleast_2d(*arys):
-    raise NotImplementedError
-
-def atleast_3d(*arys):
-    raise NotImplementedError
 
 def average(a, axis=None, weights=None, returned=False, *, keepdims=NoValue):
     raise NotImplementedError
@@ -350,15 +509,6 @@ def block(arrays):
     raise NotImplementedError
 
 def bmat(obj, ldict=None, gdict=None):
-    raise NotImplementedError
-
-def broadcast_arrays(*args, subok=False):
-    raise NotImplementedError
-
-def broadcast_shapes(*args):
-    raise NotImplementedError
-
-def broadcast_to(array, shape, subok=False):
     raise NotImplementedError
 
 def busday_count(begindates, enddates, weekmask='1111100', holidays=[], busdaycal=None, out=None):
@@ -574,14 +724,12 @@ def hsplit(ary, indices_or_sections):
 def hstack(tup):
     raise NotImplementedError
 
-def i0(x):
-    raise NotImplementedError
+
 
 def identity(n, dtype=None, *, like=None):
     raise NotImplementedError
 
-def imag(val):
-    raise NotImplementedError
+
 
 def in1d(ar1, ar2, assume_unique=False, invert=False):
     raise NotImplementedError
@@ -607,11 +755,6 @@ def is_busday(dates, weekmask='1111100', holidays=None, busdaycal=None, out=None
 def isclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
     raise NotImplementedError
 
-def iscomplex(x):
-    raise NotImplementedError
-
-def iscomplexobj(x):
-    raise NotImplementedError
 
 def isfortran(a):
     raise NotImplementedError
@@ -619,17 +762,6 @@ def isfortran(a):
 def isin(element, test_elements, assume_unique=False, invert=False):
     raise NotImplementedError
 
-def isneginf(x, out=None):
-    raise NotImplementedError
-
-def isposinf(x, out=None):
-    raise NotImplementedError
-
-def isreal(x):
-    raise NotImplementedError
-
-def isrealobj(x):
-    raise NotImplementedError
 
 def isscalar(element):
     raise NotImplementedError
@@ -668,7 +800,7 @@ def load(file, mmap_mode=None, allow_pickle=False, fix_imports=True, encoding='A
 def load(file, mmap_mode=None, allow_pickle=False, fix_imports=True, encoding='ASCII', *, max_header_size=10000):
     raise NotImplementedError
 
-def loadtxt(fname, dtype=<class 'float'>, comments='#', delimiter=None, converters=None, skiprows=0, usecols=None, unpack=False, ndmin=0, encoding='bytes', max_rows=None, *, quotechar=None, like=None):
+def loadtxt(fname, dtype=float, comments='#', delimiter=None, converters=None, skiprows=0, usecols=None, unpack=False, ndmin=0, encoding='bytes', max_rows=None, *, quotechar=None, like=None):
     raise NotImplementedError
 
 def logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0):
@@ -764,8 +896,6 @@ def nansum(a, axis=None, dtype=None, out=None, keepdims=NoValue, initial=NoValue
 def nanvar(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
     raise NotImplementedError
 
-def ndim(a):
-    raise NotImplementedError
 
 def nonzero(a):
     raise NotImplementedError
@@ -851,14 +981,8 @@ def quantile(a, q, axis=None, out=None, overwrite_input=False, method='linear', 
 def ravel(a, order='C'):
     raise NotImplementedError
 
-def ravel_multi_index(multi_index, dims, mode='raise', order='C'):
-    raise NotImplementedError
 
-def real(val):
-    raise NotImplementedError
 
-def real_if_close(a, tol=100):
-    raise NotImplementedError
 
 def recfromcsv(fname, **kwargs):
     raise NotImplementedError
@@ -870,9 +994,6 @@ def repeat(a, repeats, axis=None):
     raise NotImplementedError
 
 def require(a, dtype=None, requirements=None, *, like=None):
-    raise NotImplementedError
-
-def reshape(a, newshape, order='C'):
     raise NotImplementedError
 
 def resize(a, new_shape):
@@ -947,9 +1068,6 @@ def seterrcall(func):
 def setxor1d(ar1, ar2, assume_unique=False):
     raise NotImplementedError
 
-def shape(a):
-    raise NotImplementedError
-
 def shares_memory(a, b, max_work=None):
     raise NotImplementedError
 
@@ -957,9 +1075,6 @@ def show():
     raise NotImplementedError
 
 def sinc(x):
-    raise NotImplementedError
-
-def size(a, axis=None):
     raise NotImplementedError
 
 def sometrue(*args, **kwargs):
@@ -1043,9 +1158,6 @@ def unique(ar, return_index=False, return_inverse=False, return_counts=False, ax
 def unpackbits(a, /, axis=None, count=None, bitorder='big'):
     raise NotImplementedError
 
-def unravel_index(indices, shape, order='C'):
-    raise NotImplementedError
-
 def unwrap(p, discont=None, axis=-1, *, period=6.283185307179586):
     raise NotImplementedError
 
@@ -1072,5 +1184,3 @@ def who(vardict=None):
 
 def zeros_like(a, dtype=None, order='K', subok=True, shape=None):
     raise NotImplementedError
-
-
