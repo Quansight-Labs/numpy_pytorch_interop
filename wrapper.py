@@ -216,10 +216,10 @@ def fromfile(file, dtype=float, count=-1, sep='', offset=0, *, like=None):
 def fromiter(iter, dtype, count=-1, *, like=None):
     raise NotImplementedError
 
-def frompyfunc(func, nin, nout, *, identity):
+def frompyfunc(func, /, nin, nout, *, identity):
     raise NotImplementedError
 
-def fromstring(string, dtype=float, count=-1, sep='', *, like=None):
+def fromstring(string, dtype=float, count=-1, *, sep, like=None):
     raise NotImplementedError
 
 def geterrobj():
@@ -273,10 +273,10 @@ def apply_along_axis(func1d, axis, arr, *args, **kwargs):
 def apply_over_axes(func, a, axes):
     raise NotImplementedError
 
-def argmax(a, axis=None, out=None):
+def argmax(a, axis=None, out=None, *, keepdims=NoValue):
     raise NotImplementedError
 
-def argmin(a, axis=None, out=None):
+def argmin(a, axis=None, out=None, *, keepdims=NoValue):
     raise NotImplementedError
 
 def argpartition(a, kth, axis=-1, kind='introselect', order=None):
@@ -330,7 +330,7 @@ def atleast_2d(*arys):
 def atleast_3d(*arys):
     raise NotImplementedError
 
-def average(a, axis=None, weights=None, returned=False):
+def average(a, axis=None, weights=None, returned=False, *, keepdims=NoValue):
     raise NotImplementedError
 
 def bartlett(M):
@@ -589,7 +589,7 @@ def in1d(ar1, ar2, assume_unique=False, invert=False):
 def indices(dimensions, dtype=int, sparse=False):
     raise NotImplementedError
 
-def inner(a, b):
+def inner(a, b, /):
     raise NotImplementedError
 
 def insert(arr, obj, values, axis=None):
@@ -665,10 +665,10 @@ def lexsort(keys, axis=-1):
 def load(file, mmap_mode=None, allow_pickle=False, fix_imports=True, encoding='ASCII'):
     raise NotImplementedError
 
-def loads(*args, **kwargs):
+def load(file, mmap_mode=None, allow_pickle=False, fix_imports=True, encoding='ASCII', *, max_header_size=10000):
     raise NotImplementedError
 
-def loadtxt(fname, dtype=float, comments='#', delimiter=None, converters=None, skiprows=0, usecols=None, unpack=False, ndmin=0, encoding='bytes', max_rows=None, *, like=None):
+def loadtxt(fname, dtype=<class 'float'>, comments='#', delimiter=None, converters=None, skiprows=0, usecols=None, unpack=False, ndmin=0, encoding='bytes', max_rows=None, *, quotechar=None, like=None):
     raise NotImplementedError
 
 def logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0):
@@ -692,7 +692,7 @@ def amax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValu
 def maximum_sctype(t):
     raise NotImplementedError
 
-def may_share_memory(a, b, max_work=None):
+def may_share_memory(a, b, /, max_work=None):
     raise NotImplementedError
 
 def mean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
@@ -707,7 +707,7 @@ def meshgrid(*xi, copy=True, sparse=False, indexing='xy'):
 def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
     raise NotImplementedError
 
-def min_scalar_type(a):
+def min_scalar_type(a, /):
     raise NotImplementedError
 
 def mintypecode(typechars, typeset='GDFgdf', default='d'):
@@ -722,10 +722,10 @@ def msort(a):
 def nan_to_num(x, copy=True, nan=0.0, posinf=None, neginf=None):
     raise NotImplementedError
 
-def nanargmax(a, axis=None):
+def nanargmax(a, axis=None, out=None, *, keepdims=NoValue):
     raise NotImplementedError
 
-def nanargmin(a, axis=None):
+def nanargmin(a, axis=None, out=None, *, keepdims=NoValue):
     raise NotImplementedError
 
 def nancumprod(a, axis=None, dtype=None, out=None):
@@ -734,37 +734,34 @@ def nancumprod(a, axis=None, dtype=None, out=None):
 def nancumsum(a, axis=None, dtype=None, out=None):
     raise NotImplementedError
 
-def nanmax(a, axis=None, out=None, keepdims=NoValue):
+def nanmax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
     raise NotImplementedError
 
-def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue):
+def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
     raise NotImplementedError
 
 def nanmedian(a, axis=None, out=None, overwrite_input=False, keepdims=NoValue):
     raise NotImplementedError
 
-def nanmin(a, axis=None, out=None, keepdims=NoValue):
+def nanmin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
     raise NotImplementedError
 
-def nanpercentile(a, q, axis=None, out=None, overwrite_input=False, interpolation='linear', keepdims=NoValue):
+def nanpercentile(a, q, axis=None, out=None, overwrite_input=False, method='linear', keepdims=NoValue, *, interpolation=None):
     raise NotImplementedError
 
-def nanprod(a, axis=None, dtype=None, out=None, keepdims=NoValue):
+def nanprod(a, axis=None, dtype=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
     raise NotImplementedError
 
-def nanquantile(a, q, axis=None, out=None, overwrite_input=False, interpolation='linear', keepdims=NoValue):
+def nanquantile(a, q, axis=None, out=None, overwrite_input=False, method='linear', keepdims=NoValue, *, interpolation=None):
     raise NotImplementedError
 
-def nanstd(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue):
+def nanstd(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
     raise NotImplementedError
 
-def nansum(a, axis=None, dtype=None, out=None, keepdims=NoValue):
+def nansum(a, axis=None, dtype=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
     raise NotImplementedError
 
-def nanvar(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue):
-    raise NotImplementedError
-
-def ndfromtxt(fname, **kwargs):
+def nanvar(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
     raise NotImplementedError
 
 def ndim(a):
@@ -785,7 +782,7 @@ def ones_like(a, dtype=None, order='K', subok=True, shape=None):
 def outer(a, b, out=None):
     raise NotImplementedError
 
-def packbits(a, axis=None, bitorder='big'):
+def packbits(a, /, axis=None, bitorder='big'):
     raise NotImplementedError
 
 def pad(array, pad_width, mode='constant', **kwargs):
@@ -794,7 +791,7 @@ def pad(array, pad_width, mode='constant', **kwargs):
 def partition(a, kth, axis=-1, kind='introselect', order=None):
     raise NotImplementedError
 
-def percentile(a, q, axis=None, out=None, overwrite_input=False, interpolation='linear', keepdims=False):
+def percentile(a, q, axis=None, out=None, overwrite_input=False, method='linear', keepdims=False, *, interpolation=None):
     raise NotImplementedError
 
 def piecewise(x, condlist, funclist, *args, **kw):
@@ -848,7 +845,7 @@ def put_along_axis(arr, indices, values, axis):
 def putmask(a, mask, values):
     raise NotImplementedError
 
-def quantile(a, q, axis=None, out=None, overwrite_input=False, interpolation='linear', keepdims=False):
+def quantile(a, q, axis=None, out=None, overwrite_input=False, method='linear', keepdims=False, *, interpolation=None):
     raise NotImplementedError
 
 def ravel(a, order='C'):
@@ -1040,10 +1037,10 @@ def typename(char):
 def union1d(ar1, ar2):
     raise NotImplementedError
 
-def unique(ar, return_index=False, return_inverse=False, return_counts=False, axis=None):
+def unique(ar, return_index=False, return_inverse=False, return_counts=False, axis=None, *, equal_nan=True):
     raise NotImplementedError
 
-def unpackbits(a, axis=None, count=None, bitorder='big'):
+def unpackbits(a, /, axis=None, count=None, bitorder='big'):
     raise NotImplementedError
 
 def unravel_index(indices, shape, order='C'):
@@ -1058,7 +1055,7 @@ def vander(x, N=None, increasing=False):
 def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
     raise NotImplementedError
 
-def vdot(a, b):
+def vdot(a, b, /):
     raise NotImplementedError
 
 def vsplit(ary, indices_or_sections):
@@ -1067,7 +1064,7 @@ def vsplit(ary, indices_or_sections):
 def vstack(tup):
     raise NotImplementedError
 
-def where(condition, x, y):
+def where(condition, x, y, /):
     raise NotImplementedError
 
 def who(vardict=None):

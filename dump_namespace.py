@@ -41,7 +41,7 @@ def dump_signatures(keys, replace=None):
                 for old in replace:
                     sig = sig.replace(old, replace[old])
 
-            out += f"def {sig}:\n    raise NotImlementedError\n\n"
+            out += f"def {sig}:\n    raise NotImplementedError\n\n"
     return out
 
 if __name__ == "__main__":
