@@ -14,8 +14,9 @@ import torch
 #
 # 2. Q: Default dtypes: numpy defaults to float64, pytorch defaults to float32
 #    A: Stick to pytorch defaults?
+#    NB: numpy recommends `dtype=float`?
 #
-# 3. Q: Masked arrays
+# 3. Q: Masked arrays. Record, structured arrays.
 #    A: Ignore for now
 #
 # 4. Q: What are the defaults for pytorch-specific args not present in numpy signatures?
@@ -36,11 +37,29 @@ import torch
 
 NoValue = None
 
+###### array creation routines
 
 def asarray(a, dtype=None, order=None, *, like=None):
-    if like is not None:
+    if order is not None or like is not None:
         raise NotImplementedError
-    return torch.asarray(a, dtype, order)
+    return torch.asarray(a, dtype=dtype)
+
+
+def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
+          like=None):
+    if order != 'K' or subok or like is not None:
+        raise NotImplementedError
+    result = torch.asarray(object, dtype=dtype, copy=copy)
+    ndim_extra = ndmin - result.ndim
+    if ndim_extra > 0:
+        result = result.reshape((1,)*ndim_extra + result.shape)
+    return result
+
+
+def copy(a, order='K', subok=False):
+    if order != 'K' or subik:
+        raise NotImplementedError
+    return torch.clone(a)
 
 
 from torch import atleast_1d, atleast_2d, atleast_3d
@@ -68,6 +87,75 @@ def empty_like(prototype, dtype=None, order='K', subok=True, shape=None):
         result = result.reshape(shape)
     return result
 
+
+def full(shape, fill_value, dtype=None, order='C', *, like=None):
+    if order != 'C' or like is not None:
+        raise NotImplementedError
+    return torch.full(shape, fill_value, dtype=dtype)
+
+
+def full_like(a, fill_value, dtype=None, order='K', subok=True, shape=None):
+    if order != 'K' or not subok:
+        raise NotImplementedError
+    result = torch.full_like(a, fill_value, dtype=dtype)
+    if shape is not None:
+        result = result.reshape(shape)
+    return result
+
+
+def ones(shape, dtype=None, order='C', *, like=None):
+    if order != 'C' or like is not None:
+        raise NotImplementedError
+    return torch.ones(shape, dtype=dtype)
+
+
+def ones_like(a, dtype=None, order='K', subok=True, shape=None):
+    if order != 'K' or not subok:
+        raise NotImplementedError
+    result = torch.ones_like(a, dtype=dtype)
+    if shape is not None:
+        result = result.reshape(shape)
+    return result
+
+
+# XXX: dtype=float
+def zeros(shape, dtype=float, order='C', *, like=None):
+    if order != 'C' or like is not None:
+        raise NotImplementedError
+    return torch.zeros(shape, dtype=dtype)
+
+
+def zeros_like(a, dtype=None, order='K', subok=True, shape=None):
+    if order != 'K' or not subok:
+        raise NotImplementedError
+    result = torch.zeros_like(a, dtype=dtype)
+    if shape is not None:
+        result = result.reshape(shape)
+    return result
+
+
+# XXX: dtype=float
+def eye(N, M=None, k=0, dtype=float, order='C', *, like=None):
+    if order != 'C' or like is not None:
+        raise NotImplementedError
+    if M is None:
+        M = N
+    s = M - k if k >= 0 else N + k
+    z = torch.zeros(N, M, dtype=dtype)   
+    if s < 0:
+        return z
+    else:
+        ones = torch.ones(s, dtype=dtype)
+        return torch.diagonal_scatter(z, ones, offset=k)
+
+
+def identity(n, dtype=None, *, like=None):
+    if like is not None:
+        raise NotImplementedError
+    return torch.eye(n, dtype=dtype)
+
+
+###### misc/unordered
 
 def prod(a, axis=None, dtype=None, out=None, keepdims=NoValue,
          initial=NoValue, where=NoValue):
@@ -159,7 +247,7 @@ def unravel_index(indices, shape, order='C'):
 # cf https://github.com/pytorch/pytorch/pull/66687
 # this version is from 
 # https://discuss.pytorch.org/t/how-to-do-a-unravel-index-in-pytorch-just-like-in-numpy/12987/3
-    if shape != 'C':
+    if order != 'C':
         raise NotImplementedError
     result = []
     for index in indices:
@@ -197,7 +285,7 @@ def angle(z, deg=False):
         result *= 180 / torch.pi
     return result
 
-from pytorch import imag, real
+from torch import imag, real
 
 
 def real_if_close(a, tol=100):
@@ -246,13 +334,27 @@ def i0(x):
 ###### mapping from numpy API objects to wrappers from this module ######
 
 mapping = {
+    # array creation routines
     np.asarray : asarray,
+    np.array : array,
+    np.copy : copy,
     np.atleast_1d : atleast_1d,
     np.atleast_2d : atleast_2d,
     np.atleast_3d : atleast_3d,
-    np.linspace : linspace,
+
     np.empty : empty,
     np.empty_like : empty_like,
+    np.full : full,
+    np.full_like : full_like,
+    np.ones : ones,
+    np.ones_like : ones_like,
+    np.zeros : zeros,
+    np.zeros_like : zeros_like,
+    np.identity : identity,
+    np.eye : eye,
+
+    # utilities
+    np.linspace : linspace,
     np.prod : prod,
     np.corrcoef : corrcoef,    # XXX: numpy two-arg version
     np.concatenate: concatenate,
@@ -263,6 +365,8 @@ mapping = {
     np.shape : shape,
     np.size : size,
     np.reshape : reshape,
+
+    # broadcasting and indexing
     np.broadcast_to : broadcast_to,
     np.broadcast_shapes : broadcast_shapes,
     np.broadcast_arrays: broadcast_arrays,
@@ -355,8 +459,7 @@ def is_sequence(seq):
 def arange(start, stop, step, dtype=None, *, like=None):
     raise NotImplementedError
 
-def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0, like=None):
-    raise NotImplementedError
+
 
 def asanyarray(a, dtype=None, order=None, *, like=None):
     raise NotImplementedError
@@ -405,8 +508,7 @@ def set_numeric_ops(op1, op2, *args, **kwargs):
 def seterrobj(errobj):
     raise NotImplementedError
 
-def zeros(shape, dtype=float, order='C', *, like=None):
-    raise NotImplementedError
+
 
 def __getattr__(attr):
     raise NotImplementedError
@@ -542,8 +644,7 @@ def compress(condition, a, axis=None, out=None):
 def convolve(a, v, mode='full'):
     raise NotImplementedError
 
-def copy(a, order='K', subok=False):
-    raise NotImplementedError
+
 
 def copyto(dst, src, casting='same_kind', where=True):
     raise NotImplementedError
@@ -631,8 +732,7 @@ def expand_dims(a, axis):
 def extract(condition, arr):
     raise NotImplementedError
 
-def eye(N, M=None, k=0, dtype=float, order='C', *, like=None):
-    raise NotImplementedError
+
 
 def fill_diagonal(a, val, wrap=False):
     raise NotImplementedError
@@ -667,11 +767,7 @@ def fromfunction(function, shape, *, dtype=float, like=None, **kwargs):
 def fromregex(file, regexp, dtype, encoding=None):
     raise NotImplementedError
 
-def full(shape, fill_value, dtype=None, order='C', *, like=None):
-    raise NotImplementedError
 
-def full_like(a, fill_value, dtype=None, order='K', subok=True, shape=None):
-    raise NotImplementedError
 
 def genfromtxt(fname, dtype=float, comments='#', delimiter=None, skip_header=0, skip_footer=0, converters=None, missing_values=None, filling_values=None, usecols=None, names=None, excludelist=None, deletechars=" !#$%&'()*+,-./:;<=>?@[\\]^{|}~", replace_space='_', autostrip=False, case_sensitive=True, defaultfmt='f%i', unpack=None, usemask=False, loose=True, invalid_raise=True, max_rows=None, encoding='bytes', *, like=None):
     raise NotImplementedError
@@ -726,8 +822,7 @@ def hstack(tup):
 
 
 
-def identity(n, dtype=None, *, like=None):
-    raise NotImplementedError
+
 
 
 
@@ -903,11 +998,6 @@ def nonzero(a):
 def obj2sctype(rep, default=None):
     raise NotImplementedError
 
-def ones(shape, dtype=None, order='C', *, like=None):
-    raise NotImplementedError
-
-def ones_like(a, dtype=None, order='K', subok=True, shape=None):
-    raise NotImplementedError
 
 def outer(a, b, out=None):
     raise NotImplementedError
@@ -1182,5 +1272,3 @@ def where(condition, x, y, /):
 def who(vardict=None):
     raise NotImplementedError
 
-def zeros_like(a, dtype=None, order='K', subok=True, shape=None):
-    raise NotImplementedError
