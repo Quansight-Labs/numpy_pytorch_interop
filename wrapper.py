@@ -303,7 +303,7 @@ def real_if_close(a, tol=100):
 
 def iscomplex(x):
     if torch.is_complex(x):
-        return torch.as_tensor(x).imag == 0
+        return torch.as_tensor(x).imag != 0
     result = torch.zeros_like(x, dtype=torch.bool)
     return result[()]
 
