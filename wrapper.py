@@ -273,7 +273,7 @@ def argmax(a, axis=None, out=None, *, keepdims=NoValue):
     else:
         result = torch.argmax(a, axis, keepdims=bool(keepdims))
     if out is not None:
-        out[...] = result
+        out.copy_(result)
     return result
 
 
