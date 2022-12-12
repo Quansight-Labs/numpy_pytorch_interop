@@ -17,7 +17,7 @@ skip = {np.frexp, np.modf,    # non-standard unary ufunc signatures
 # np functions where torch names differ
 torch_names = {np.radians : "deg2rad",
                np.degrees : "rad2deg",
-               np.conjugate : "conj_physical",   # XXX: check
+               np.conjugate : "conj_physical",
                np.fabs : "absolute",       # FIXME: np.fabs raises form complex
                np.rint : "round"
 }
