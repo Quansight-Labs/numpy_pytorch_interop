@@ -27,9 +27,11 @@ def get_signature(obj):
             return '\n'.join((d[1], d[2])).strip()
 
 
-def dump_signatures(keys, replace=None):
+def dump_signatures(keys, namespace=None, replace=None):
     """Dump a pseudo-python source for a subset of signatures."""
-    dct = grab_namespace(np)
+    if namespace is None:
+        namespace = np
+    dct = grab_namespace(namespace)
 
     out = "\n"
     for key in keys:
@@ -52,7 +54,9 @@ if __name__ == "__main__":
 #    for obj in dct['function']:
 #        print( get_signature(obj) )
 
+    from numpy import array_api
+
     keys = ["builtin_function_or_method", "function"]
     replace = {"<no value>": "NoValue"}
 
-    print(dump_signatures(keys, replace))
+    print(dump_signatures(keys, namespace=array_api, replace=replace))
