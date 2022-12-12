@@ -279,6 +279,36 @@ def argmax(a, axis=None, out=None, *, keepdims=NoValue):
 
 ##### math functions
 
+# XXX: this is a blueprint for unary ufuncs
+def absolute(x, /, out=None, *, where=True, casting='same_kind', order='K',
+             dtype=None, subok=True, **kwds):
+    if order != 'K' or casting != 'same_kind' or not where or not subok:
+        raise NotImplementedError
+    if out is not None:
+      # XXX dtypes, casting
+        out = out.to(dtype)
+    result = torch.absolute(x, out=out)
+    if dtype is not None:
+        result = result.to(dtype)
+    return result
+
+
+abs = absolute
+
+# XXX: this is a blueprint for binary ufuncs
+def maximum(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
+            dtype=None, subok=True, **kwds):
+    if order != 'K' or casting != 'same_kind' or not where or not subok:
+        raise NotImplementedError
+    if out is not None:
+        # XXX: dtypes, casting
+        out = out.to(dtype)
+    result = torch.maximum(x1, x2, out=out)
+    if dtype is not None:
+        result = result.to(dtype)
+    return result
+
+
 def angle(z, deg=False):
     result = torch.angle(z)
     if deg:
