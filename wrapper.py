@@ -42,14 +42,16 @@ NoValue = None
 ###### array creation routines
 
 def asarray(a, dtype=None, order=None, *, like=None):
-    if order is not None or like is not None:
+    _util.subok_no_ok(like)
+    if order is not None:
         raise NotImplementedError
     return torch.asarray(a, dtype=dtype)
 
 
 def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
           like=None):
-    if order != 'K' or subok or like is not None:
+    _util.subok_not_ok(like, subok)
+    if order != 'K':
         raise NotImplementedError
     result = torch.asarray(object, dtype=dtype, copy=copy)
     ndim_extra = ndmin - result.ndim
@@ -59,7 +61,8 @@ def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
 
 
 def copy(a, order='K', subok=False):
-    if order != 'K' or subok:
+    _util.subok_not_ok(subok=subok)
+    if order != 'K':
         raise NotImplementedError
     return torch.clone(a)
 
@@ -76,13 +79,17 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
 
 
 def empty(shape, dtype=float, order='C', *, like=None):
-    if order != 'C' or like is not None:
+    _util.subok_not_ok(like)
+    if order != 'C':
         raise NotImplementedError
     return torch.empty(shape, dtype=dtype)
 
 
-def empty_like(prototype, dtype=None, order='K', subok=True, shape=None):
-    if order != 'K' or not subok:
+# NB: *_like function deliberately deviate from numpy: it has subok=True
+# as the default; we set subok=False and raise on anything else.
+def empty_like(prototype, dtype=None, order='K', subok=False, shape=None):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K':
         raise NotImplementedError
     result = torch.empty(prototype, dtype=dtype)
     if shape is not None:
@@ -91,13 +98,15 @@ def empty_like(prototype, dtype=None, order='K', subok=True, shape=None):
 
 
 def full(shape, fill_value, dtype=None, order='C', *, like=None):
-    if order != 'C' or like is not None:
+    _util.subok_not_ok(like)
+    if order != 'C':
         raise NotImplementedError
     return torch.full(shape, fill_value, dtype=dtype)
 
 
-def full_like(a, fill_value, dtype=None, order='K', subok=True, shape=None):
-    if order != 'K' or not subok:
+def full_like(a, fill_value, dtype=None, order='K', subok=False, shape=None):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K':
         raise NotImplementedError
     result = torch.full_like(a, fill_value, dtype=dtype)
     if shape is not None:
@@ -106,13 +115,15 @@ def full_like(a, fill_value, dtype=None, order='K', subok=True, shape=None):
 
 
 def ones(shape, dtype=None, order='C', *, like=None):
-    if order != 'C' or like is not None:
+    _util.subok_not_ok(like)
+    if order != 'C':
         raise NotImplementedError
     return torch.ones(shape, dtype=dtype)
 
 
-def ones_like(a, dtype=None, order='K', subok=True, shape=None):
-    if order != 'K' or not subok:
+def ones_like(a, dtype=None, order='K', subok=False, shape=None):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K':
         raise NotImplementedError
     result = torch.ones_like(a, dtype=dtype)
     if shape is not None:
@@ -122,13 +133,15 @@ def ones_like(a, dtype=None, order='K', subok=True, shape=None):
 
 # XXX: dtype=float
 def zeros(shape, dtype=float, order='C', *, like=None):
-    if order != 'C' or like is not None:
+    _util.subok_not_ok(like)
+    if order != 'C':
         raise NotImplementedError
     return torch.zeros(shape, dtype=dtype)
 
 
-def zeros_like(a, dtype=None, order='K', subok=True, shape=None):
-    if order != 'K' or not subok:
+def zeros_like(a, dtype=None, order='K', subok=False, shape=None):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K':
         raise NotImplementedError
     result = torch.zeros_like(a, dtype=dtype)
     if shape is not None:
@@ -138,7 +151,8 @@ def zeros_like(a, dtype=None, order='K', subok=True, shape=None):
 
 # XXX: dtype=float
 def eye(N, M=None, k=0, dtype=float, order='C', *, like=None):
-    if order != 'C' or like is not None:
+    _util.subok_not_ok(like)
+    if order != 'C':
         raise NotImplementedError
     if M is None:
         M = N
@@ -149,8 +163,7 @@ def eye(N, M=None, k=0, dtype=float, order='C', *, like=None):
 
 
 def identity(n, dtype=None, *, like=None):
-    if like is not None:
-        raise NotImplementedError
+    _util.subok_not_ok(like)
     return torch.eye(n, dtype=dtype)
 
 
@@ -228,8 +241,7 @@ def reshape(a, newshape, order='C'):
 
 
 def broadcast_to(array, shape, subok=False):
-    if subok:
-        raise NotImplementedError
+    _util.subok_not_ok(subok=subok)
     return torch.broadcast_to(array, shape)
 
 
@@ -237,8 +249,7 @@ from torch import broadcast_shapes
 
 
 def broadcast_arrays(*args, subok=False):
-    if subok:
-        raise NotImplementedError
+    _util.subok_not_ok(subok=subok)
     return torch.broadcast_tensors(*args)
 
 
