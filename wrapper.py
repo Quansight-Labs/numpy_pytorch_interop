@@ -42,7 +42,7 @@ NoValue = None
 ###### array creation routines
 
 def asarray(a, dtype=None, order=None, *, like=None):
-    _util.subok_no_ok(like)
+    _util.subok_not_ok(like)
     if order is not None:
         raise NotImplementedError
     return torch.asarray(a, dtype=dtype)
