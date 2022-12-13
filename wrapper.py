@@ -349,59 +349,7 @@ def i0(x):
 
 ###### mapping from numpy API objects to wrappers from this module ######
 
-mapping = {
-    # array creation routines
-    np.asarray : asarray,
-    np.array : array,
-    np.copy : copy,
-    np.atleast_1d : atleast_1d,
-    np.atleast_2d : atleast_2d,
-    np.atleast_3d : atleast_3d,
-
-    np.empty : empty,
-    np.empty_like : empty_like,
-    np.full : full,
-    np.full_like : full_like,
-    np.ones : ones,
-    np.ones_like : ones_like,
-    np.zeros : zeros,
-    np.zeros_like : zeros_like,
-    np.identity : identity,
-    np.eye : eye,
-
-    # utilities
-    np.linspace : linspace,
-    np.prod : prod,
-    np.corrcoef : corrcoef,    # XXX: numpy two-arg version
-    np.concatenate: concatenate,
-    np.squeeze : squeeze,
-    np.bincount : bincount,
-    np.argmax : argmax,
-    np.ndim : ndim,
-    np.shape : shape,
-    np.size : size,
-    np.reshape : reshape,
-
-    # broadcasting and indexing
-    np.broadcast_to : broadcast_to,
-    np.broadcast_shapes : broadcast_shapes,
-    np.broadcast_arrays: broadcast_arrays,
-    np.unravel_index : unravel_index,
-    np.ravel_multi_index : ravel_multi_index,
-    # math functions
-    np.angle : angle,
-    np.real : real,
-    np.imag : imag,
-    np.real_if_close : real_if_close,
-    np.iscomplex: iscomplex,
-    np.iscomplexobj: iscomplexobj,
-    np.isreal: isreal,
-    np.isrealobj: isrealobj,
-    np.isposinf : isposinf,
-    np.isneginf : isneginf,
-    np.i0 : i0,
-}
-# XXX: automate populating this dict?
+# All is in the mapping dict in _mapping.py
 
 ##################### ndarray class ###########################
 
