@@ -45,7 +45,12 @@ def asarray(a, dtype=None, order=None, *, like=None):
     _util.subok_not_ok(like)
     if order is not None:
         raise NotImplementedError
-    return torch.asarray(a, dtype=dtype)
+
+    # This and array(...) are the only places which talk to ndarray directly.
+    # The rest goes through asarray (preferred) or array.
+    out = ndarray()
+    out._tensor = torch.asarray(a, dtype=dtype)
+    return out
 
 
 def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
@@ -57,17 +62,41 @@ def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
     ndim_extra = ndmin - result.ndim
     if ndim_extra > 0:
         result = result.reshape((1,)*ndim_extra + result.shape)
-    return result
+    out = ndarray()
+    out._tensor = result
+    return out
 
 
 def copy(a, order='K', subok=False):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    return torch.clone(a)
+    return asarray(torch.clone(a.get()))
 
 
-from torch import atleast_1d, atleast_2d, atleast_3d
+def atleast_1d(*arys):
+    res = [asarray(torch.atleast_1d(torch.as_tensor(a))) for a in arys]
+    if len(res) == 1:
+        return res[0]
+    else:
+        return res
+
+
+def atleast_2d(*arys):
+    res = [asarray(torch.atleast_2d(torch.as_tensor(a))) for a in arys]
+    if len(res) == 1:
+        return res[0]
+    else:
+        return res
+
+
+def atleast_3d(*arys):
+    res = [asarray(torch.atleast_3d(torch.as_tensor(a))) for a in arys]
+    if len(res) == 1:
+        return res[0]
+    else:
+        return res
+
 
 
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
@@ -75,14 +104,14 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
     if axis !=0 or retstep or not endpoint:
         raise NotImplementedError
     # XXX: raises TypeError if start or stop are not scalars
-    return torch.linspace(start, stop, num, dtype=dtype)
+    return asarray(torch.linspace(start, stop, num, dtype=dtype))
 
 
 def empty(shape, dtype=float, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
-    return torch.empty(shape, dtype=dtype)
+    return asarray(torch.empty(shape, dtype=dtype))
 
 
 # NB: *_like function deliberately deviate from numpy: it has subok=True
@@ -91,44 +120,47 @@ def empty_like(prototype, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    result = torch.empty(prototype, dtype=dtype)
+    prototype = asarray(prototype)
+    result = torch.empty_like(prototype.get(), dtype=dtype)
     if shape is not None:
         result = result.reshape(shape)
-    return result
+    return asarray(result)
 
 
 def full(shape, fill_value, dtype=None, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
-    return torch.full(shape, fill_value, dtype=dtype)
+    return asarray(torch.full(shape, fill_value, dtype=dtype))
 
 
 def full_like(a, fill_value, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    result = torch.full_like(a, fill_value, dtype=dtype)
+    a = asarray(a)
+    result = torch.full_like(a.get(), fill_value, dtype=dtype)
     if shape is not None:
         result = result.reshape(shape)
-    return result
+    return asarray(result)
 
 
 def ones(shape, dtype=None, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
-    return torch.ones(shape, dtype=dtype)
+    return asarray(torch.ones(shape, dtype=dtype))
 
 
 def ones_like(a, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    result = torch.ones_like(a, dtype=dtype)
+    a = asarray(a)
+    result = torch.ones_like(a.get(), dtype=dtype)
     if shape is not None:
         result = result.reshape(shape)
-    return result
+    return asarray(result)
 
 
 # XXX: dtype=float
@@ -136,17 +168,18 @@ def zeros(shape, dtype=float, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
-    return torch.zeros(shape, dtype=dtype)
+    return asarray(torch.zeros(shape, dtype=dtype))
 
 
 def zeros_like(a, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    result = torch.zeros_like(a, dtype=dtype)
+    a = asarray(a)
+    result = torch.zeros_like(a.get(), dtype=dtype)
     if shape is not None:
         result = result.reshape(shape)
-    return result
+    return asarray(result)
 
 
 # XXX: dtype=float
@@ -156,15 +189,14 @@ def eye(N, M=None, k=0, dtype=float, order='C', *, like=None):
         raise NotImplementedError
     if M is None:
         M = N
-    s = M - k if k >= 0 else N + k
     z = torch.zeros(N, M, dtype=dtype)
     z.diagonal(k).fill_(1)
-    return z
+    return asarray(z)
 
 
 def identity(n, dtype=None, *, like=None):
     _util.subok_not_ok(like)
-    return torch.eye(n, dtype=dtype)
+    return asarray(torch.eye(n, dtype=dtype))
 
 
 ###### misc/unordered
@@ -354,8 +386,11 @@ def i0(x):
 ##################### ndarray class ###########################
 
 class ndarray:
-    def __init__(self, *args, **kwds):
-        self._tensor = torch.Tensor(*args, **kwds)
+    def __init__(self):
+        self._tensor = torch.Tensor()
+
+    def get(self):
+        return self._tensor
 
     @property
     def shape(self):
@@ -376,6 +411,14 @@ class ndarray:
     @property
     def strides(self):
         return self._tensor.stride()   # XXX: byte strides
+
+
+    # niceties
+    def __str__(self):
+        return str(self._tensor).replace("tensor", "array_w")
+
+    __repr__ = __str__
+
 
     ### arithmetic ###
 
