@@ -57,7 +57,7 @@ def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
 
 
 def copy(a, order='K', subok=False):
-    if order != 'K' or subik:
+    if order != 'K' or subok:
         raise NotImplementedError
     return torch.clone(a)
 
@@ -141,12 +141,9 @@ def eye(N, M=None, k=0, dtype=float, order='C', *, like=None):
     if M is None:
         M = N
     s = M - k if k >= 0 else N + k
-    z = torch.zeros(N, M, dtype=dtype)   
-    if s < 0:
-        return z
-    else:
-        ones = torch.ones(s, dtype=dtype)
-        return torch.diagonal_scatter(z, ones, offset=k)
+    z = torch.zeros(N, M, dtype=dtype)
+    z.diagonal(k).fill_(1)
+    return z
 
 
 def identity(n, dtype=None, *, like=None):
