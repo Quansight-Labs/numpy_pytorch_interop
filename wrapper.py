@@ -37,6 +37,19 @@ import _util
 # 3. numpy type casting rules (to be cleaned up in numpy: follow old or new)
 
 
+
+def asarray_replacer_1(func):
+    """Asarray the *first* arg, so that the wrapped `func` operates on a
+       torch.Tensor. Then asarray the result.
+    """
+    def wrapped(x, *args, **kwds):
+        x_tensor = asarray(x).get()
+        return asarray(func(x_tensor, *args, **kwds))
+    return wrapped
+
+
+
+
 NoValue = None
 
 ###### array creation routines
@@ -116,15 +129,15 @@ def empty(shape, dtype=float, order='C', *, like=None):
 
 # NB: *_like function deliberately deviate from numpy: it has subok=True
 # as the default; we set subok=False and raise on anything else.
+@asarray_replacer_1
 def empty_like(prototype, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    prototype = asarray(prototype)
-    result = torch.empty_like(prototype.get(), dtype=dtype)
+    result = torch.empty_like(prototype, dtype=dtype)
     if shape is not None:
         result = result.reshape(shape)
-    return asarray(result)
+    return result
 
 
 def full(shape, fill_value, dtype=None, order='C', *, like=None):
@@ -133,16 +146,15 @@ def full(shape, fill_value, dtype=None, order='C', *, like=None):
         raise NotImplementedError
     return asarray(torch.full(shape, fill_value, dtype=dtype))
 
-
+@asarray_replacer_1
 def full_like(a, fill_value, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    a = asarray(a)
-    result = torch.full_like(a.get(), fill_value, dtype=dtype)
+    result = torch.full_like(a, fill_value, dtype=dtype)
     if shape is not None:
         result = result.reshape(shape)
-    return asarray(result)
+    return result
 
 
 def ones(shape, dtype=None, order='C', *, like=None):
@@ -152,15 +164,15 @@ def ones(shape, dtype=None, order='C', *, like=None):
     return asarray(torch.ones(shape, dtype=dtype))
 
 
+@asarray_replacer_1
 def ones_like(a, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    a = asarray(a)
-    result = torch.ones_like(a.get(), dtype=dtype)
+    result = torch.ones_like(a, dtype=dtype)
     if shape is not None:
         result = result.reshape(shape)
-    return asarray(result)
+    return result
 
 
 # XXX: dtype=float
@@ -171,15 +183,15 @@ def zeros(shape, dtype=float, order='C', *, like=None):
     return asarray(torch.zeros(shape, dtype=dtype))
 
 
+@asarray_replacer_1
 def zeros_like(a, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    a = asarray(a)
-    result = torch.zeros_like(a.get(), dtype=dtype)
+    result = torch.zeros_like(a, dtype=dtype)
     if shape is not None:
         result = result.reshape(shape)
-    return asarray(result)
+    return result
 
 
 # XXX: dtype=float
@@ -201,21 +213,18 @@ def identity(n, dtype=None, *, like=None):
 
 ###### misc/unordered
 
+@asarray_replacer_1
 def prod(a, axis=None, dtype=None, out=None, keepdims=NoValue,
          initial=NoValue, where=NoValue):
     if initial is not None or where is not None:
         raise NotImplementedError
-
-    a = asarray(a)
-
     if axis is None:
         if keepdims is not None:
             raise NotImplementedError
-        return asarray(torch.prod(a.get(), dtype=dtype))
+        return torch.prod(a, dtype=dtype)
     elif _util.is_sequence(axis):
         raise NotImplementedError
-    return asarray(torch.prod(a.get(), dim=axis, dtype=dtype,
-                              keepdim=bool(keepdims), out=out))
+    return torch.prod(a, dim=axis, dtype=dtype, keepdim=bool(keepdims), out=out)
 
 
 def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
@@ -244,17 +253,17 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     return asarray(torch.cat(ar_tuple, axis, out=out))
 
 
+@asarray_replacer_1
 def squeeze(a, axis=None):
-    a = asarray(a)
     if axis is None:
-        return asarray(torch.squeeze(a.get()))
+        return torch.squeeze(a)
     else:
-        return asarray(torch.squeeze(a.get(), axis))
+        return torch.squeeze(a, axis)
 
 
+@asarray_replacer_1
 def bincount(x, /, weights=None, minlength=0):
-    x = asarray(x)
-    return asarray(torch.bincount(x.get(), weights, minlength))
+    return torch.bincount(x, weights, minlength)
 
 
 ###### module-level queries of object properties
@@ -276,11 +285,11 @@ def size(a, axis=None):
 
 ###### shape manipulations and indexing
 
+@asarray_replacer_1
 def reshape(a, newshape, order='C'):
-    a = asarray(a)
     if order != 'C':
         raise NotImplementedError
-    return asarray(torch.reshape(a.get(), newshape))
+    return torch.reshape(a, newshape)
 
 
 def broadcast_to(array, shape, subok=False):
