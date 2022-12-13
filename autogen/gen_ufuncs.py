@@ -60,7 +60,7 @@ test_header = header + """\
 import numpy as np
 import torch
 
-from _unary import *
+from _unary_ufuncs import *
 """
 
 
@@ -124,24 +124,88 @@ for ufunc in dct['ufunc']:
 main_text += "\n\n__all__ = %s" % _all_list
 
 
-with open("_unary.py", "w") as f:
+with open("_unary_ufuncs.py", "w") as f:
     f.write(main_text)
 
-with open("test_unary.py", "w") as f:
+with open("test_unary_ufuncs.py", "w") as f:
     f.write(test_text)
 
 
 ###### BINARY UFUNCS ###################################
+
+
+
+test_header = header + """\
+import numpy as np
+import torch
+
+from _binary_ufuncs import *
+"""
+
+
+template = """
+
+def {np_name}(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
+            dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
+        raise NotImplementedError
+    if out is not None:
+        # XXX: dtypes, casting
+        out = out.to(dtype)
+    result = torch.{torch_name}(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    if dtype is not None:
+        result = result.to(dtype)
+    return result
+
+"""
+
+test_template = """
+
+def test_{np_name}():
+    np.testing.assert_allclose(np.{np_name}(0.5, 0.6),
+                               {np_name}(0.5, 0.6), atol=1e-7)
+
+"""
+
+
+
+skip = {np.divmod,    # two outputs
+}
+
+
+torch_names = {np.power: "pow",
+               np.equal: "eq",
+}
+
 
 _all_list = []
 main_text = header
 test_text = test_header
 
 for ufunc in dct['ufunc']:
+
     if ufunc in skip:
         continue
 
     if ufunc.nin == 2:
-        print(get_signature(ufunc))
+   #     print(get_signature(ufunc))
 
+        torch_name = torch_names.get(ufunc)
+        if torch_name is None:
+            torch_name = ufunc.__name__
+
+
+        main_text += template.format(np_name=ufunc.__name__,
+                                     torch_name=torch_name,)
+#                                     out_stanza=out_stanza)
+        test_text += test_template.format(np_name=ufunc.__name__)
+
+
+
+with open("_binary_ufuncs.py", "w") as f:
+    f.write(main_text)
+
+with open("test_binary_ufuncs.py", "w") as f:
+    f.write(test_text)
 

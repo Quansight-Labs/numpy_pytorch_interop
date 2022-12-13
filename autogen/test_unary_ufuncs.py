@@ -8,7 +8,7 @@ import _util
 import numpy as np
 import torch
 
-from _unary import *
+from _unary_ufuncs import *
 
 
 def test_absolute():

@@ -289,8 +289,10 @@ def argmax(a, axis=None, out=None, *, keepdims=NoValue):
 
 ##### math functions
 
-from _unary import *
+from _unary_ufuncs import *
 abs = absolute
+
+from _binary_ufuncs import *
 
 
 def angle(z, deg=False):
