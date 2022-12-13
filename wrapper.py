@@ -205,46 +205,56 @@ def prod(a, axis=None, dtype=None, out=None, keepdims=NoValue,
          initial=NoValue, where=NoValue):
     if initial is not None or where is not None:
         raise NotImplementedError
+
+    a = asarray(a)
+
     if axis is None:
         if keepdims is not None:
             raise NotImplementedError
-        return torch.prod(torch.as_tensor(a), dtype=dtype)
+        return asarray(torch.prod(a.get(), dtype=dtype))
     elif _util.is_sequence(axis):
         raise NotImplementedError
-    return torch.prod(torch.as_tensor(a), dim=axis, dtype=dtype, keepdim=bool(keepdims), out=out)
+    return asarray(torch.prod(a.get(), dim=axis, dtype=dtype,
+                              keepdim=bool(keepdims), out=out))
 
 
 def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
     if bias is not None or ddof is not None:
         # deprecated in NumPy
         raise NotImplementedError
+    if y is not None:
+        # go figure what it means
+        raise NotImplementedError
+
+    x = asarray(x)
     if rowvar is False:
         x = x.T
-    if y is not None:
-        raise NotImplementedError
     if dtype is not None:
-        x = x.type(dtype)
-    return torch.corrcoef(x)
+        x = x.astype(dtype)
+    return asarray(torch.corrcoef(x.get()))
 
 
 def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     if casting != "same_kind":
         raise NotImplementedError   # XXX
+    ar_tuple = tuple(asarray(ar).get() for ar in ar_tuple)
     if dtype is not None:
         # XXX: map numpy dtypes
         ar_tuple = tuple(ar.type(dtype) for ar in ar_typle)
-    return torch.cat(ar_tuple, axis, out=out)
+    return asarray(torch.cat(ar_tuple, axis, out=out))
 
 
 def squeeze(a, axis=None):
+    a = asarray(a)
     if axis is None:
-        return torch.squeeze(a)
+        return asarray(torch.squeeze(a.get()))
     else:
-        return torch.squeeze(a, axis)
+        return asarray(torch.squeeze(a.get(), axis))
 
 
 def bincount(x, /, weights=None, minlength=0):
-    return torch.bincount(x, weights, minlength)
+    x = asarray(x)
+    return asarray(torch.bincount(x.get(), weights, minlength))
 
 
 ###### module-level queries of object properties
@@ -267,9 +277,10 @@ def size(a, axis=None):
 ###### shape manipulations and indexing
 
 def reshape(a, newshape, order='C'):
+    a = asarray(a)
     if order != 'C':
         raise NotImplementedError
-    return torch.reshape(a, newshape)
+    return asarray(torch.reshape(a.get(), newshape))
 
 
 def broadcast_to(array, shape, subok=False):
@@ -412,6 +423,11 @@ class ndarray:
     def strides(self):
         return self._tensor.stride()   # XXX: byte strides
 
+    # ctors
+    def astype(self, dtype):
+        newt = ndarray()
+        newt._tensor = self._tensor.to(dtype)
+        return newt
 
     # niceties
     def __str__(self):
