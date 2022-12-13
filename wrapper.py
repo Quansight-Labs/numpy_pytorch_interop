@@ -511,9 +511,6 @@ def seterrobj(errobj):
 
 
 
-def __getattr__(attr):
-    raise NotImplementedError
-
 def alen(a):
     raise NotImplementedError
 
