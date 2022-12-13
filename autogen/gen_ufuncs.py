@@ -52,6 +52,8 @@ header = """\
 
 import torch
 
+import _util
+
 """
 
 test_header = header + """\
@@ -65,8 +67,9 @@ from _unary import *
 template = """
 
 def {np_name}(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -87,6 +90,8 @@ def test_{np_name}():
 
 """
 
+
+###### UNARY UFUNCS ###################################
 
 _all_list = []
 main_text = header
@@ -124,4 +129,19 @@ with open("_unary.py", "w") as f:
 
 with open("test_unary.py", "w") as f:
     f.write(test_text)
+
+
+###### BINARY UFUNCS ###################################
+
+_all_list = []
+main_text = header
+test_text = test_header
+
+for ufunc in dct['ufunc']:
+    if ufunc in skip:
+        continue
+
+    if ufunc.nin == 2:
+        print(get_signature(ufunc))
+
 

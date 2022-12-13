@@ -3,11 +3,14 @@
 
 import torch
 
+import _util
+
 
 
 def absolute(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -21,8 +24,9 @@ def absolute(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def absolute(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -36,8 +40,9 @@ def absolute(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def arccos(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -51,8 +56,9 @@ def arccos(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def arccosh(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -66,8 +72,9 @@ def arccosh(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def arcsin(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -81,8 +88,9 @@ def arcsin(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def arcsinh(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -96,8 +104,9 @@ def arcsinh(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def arctan(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -111,8 +120,9 @@ def arctan(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def arctanh(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -126,8 +136,9 @@ def arctanh(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def cbrt(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -141,8 +152,9 @@ def cbrt(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def ceil(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -156,8 +168,9 @@ def ceil(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def conjugate(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -171,8 +184,9 @@ def conjugate(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def conjugate(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -186,8 +200,9 @@ def conjugate(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def cos(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -201,8 +216,9 @@ def cos(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def cosh(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -216,8 +232,9 @@ def cosh(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def deg2rad(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -231,8 +248,9 @@ def deg2rad(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def degrees(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -246,8 +264,9 @@ def degrees(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def exp(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -261,8 +280,9 @@ def exp(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def exp2(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -276,8 +296,9 @@ def exp2(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def expm1(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -291,8 +312,9 @@ def expm1(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def fabs(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -306,8 +328,9 @@ def fabs(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def floor(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -321,8 +344,9 @@ def floor(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def isfinite(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -339,8 +363,9 @@ def isfinite(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def isinf(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -357,8 +382,9 @@ def isinf(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def isnan(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -375,8 +401,9 @@ def isnan(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def log(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -390,8 +417,9 @@ def log(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def log10(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -405,8 +433,9 @@ def log10(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def log1p(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -420,8 +449,9 @@ def log1p(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def log2(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -435,8 +465,9 @@ def log2(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def logical_not(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -450,8 +481,9 @@ def logical_not(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def negative(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -465,8 +497,9 @@ def negative(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def positive(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -483,8 +516,9 @@ def positive(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def rad2deg(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -498,8 +532,9 @@ def rad2deg(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def radians(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -513,8 +548,9 @@ def radians(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def reciprocal(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -528,8 +564,9 @@ def reciprocal(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def rint(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -543,8 +580,9 @@ def rint(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def sign(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -558,8 +596,9 @@ def sign(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def signbit(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -573,8 +612,9 @@ def signbit(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -588,8 +628,9 @@ def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def sinh(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -603,8 +644,9 @@ def sinh(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def sqrt(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -618,8 +660,9 @@ def sqrt(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def square(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -633,8 +676,9 @@ def square(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def tan(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -648,8 +692,9 @@ def tan(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def tanh(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
@@ -663,8 +708,9 @@ def tanh(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 def trunc(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=True, **kwds):
-    if order != 'K' or casting != 'same_kind' or not where or not subok:
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or casting != 'same_kind' or not where:
         raise NotImplementedError
     if out is not None:
       # XXX dtypes, casting
