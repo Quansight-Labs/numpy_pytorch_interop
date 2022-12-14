@@ -66,6 +66,7 @@ from _unary_ufuncs import *
 
 template = """
 
+@asarray_replacer_1
 def {np_name}(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)

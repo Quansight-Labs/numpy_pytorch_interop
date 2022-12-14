@@ -7,6 +7,7 @@ import _util
 
 
 
+@asarray_replacer_1
 def absolute(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -23,6 +24,7 @@ def absolute(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def absolute(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -39,6 +41,7 @@ def absolute(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def arccos(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -55,6 +58,7 @@ def arccos(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def arccosh(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -71,6 +75,7 @@ def arccosh(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def arcsin(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -87,6 +92,7 @@ def arcsin(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def arcsinh(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -103,6 +109,7 @@ def arcsinh(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def arctan(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -119,6 +126,7 @@ def arctan(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def arctanh(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -135,6 +143,7 @@ def arctanh(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def cbrt(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -151,6 +160,7 @@ def cbrt(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def ceil(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -167,6 +177,7 @@ def ceil(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def conjugate(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -183,6 +194,7 @@ def conjugate(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def conjugate(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -199,6 +211,7 @@ def conjugate(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def cos(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -215,6 +228,7 @@ def cos(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def cosh(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -231,6 +245,7 @@ def cosh(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def deg2rad(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -247,6 +262,7 @@ def deg2rad(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def degrees(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -263,6 +279,7 @@ def degrees(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def exp(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -279,6 +296,7 @@ def exp(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def exp2(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -295,6 +313,7 @@ def exp2(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def expm1(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -311,6 +330,7 @@ def expm1(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def fabs(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -327,6 +347,7 @@ def fabs(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def floor(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -343,6 +364,7 @@ def floor(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def isfinite(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -362,6 +384,7 @@ def isfinite(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def isinf(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -381,6 +404,7 @@ def isinf(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def isnan(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -400,6 +424,7 @@ def isnan(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def log(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -416,6 +441,7 @@ def log(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def log10(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -432,6 +458,7 @@ def log10(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def log1p(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -448,6 +475,7 @@ def log1p(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def log2(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -464,6 +492,7 @@ def log2(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def logical_not(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -480,6 +509,7 @@ def logical_not(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def negative(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -496,6 +526,7 @@ def negative(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def positive(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -515,6 +546,7 @@ def positive(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def rad2deg(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -531,6 +563,7 @@ def rad2deg(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def radians(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -547,6 +580,7 @@ def radians(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def reciprocal(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -563,6 +597,7 @@ def reciprocal(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def rint(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -579,6 +614,7 @@ def rint(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def sign(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -595,6 +631,7 @@ def sign(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def signbit(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -611,6 +648,7 @@ def signbit(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -627,6 +665,7 @@ def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def sinh(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -643,6 +682,7 @@ def sinh(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def sqrt(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -659,6 +699,7 @@ def sqrt(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def square(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -675,6 +716,7 @@ def square(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def tan(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -691,6 +733,7 @@ def tan(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def tanh(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -707,6 +750,7 @@ def tanh(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
+@asarray_replacer_1
 def trunc(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)

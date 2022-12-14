@@ -6,13 +6,15 @@ pytorch tensors.
 import numpy as np
 import torch
 
+import functools
+
 import _util
 
 # Things to decide on (punt for now)
 #
 # 1. Q: What are the return types of wrapper functions: plain torch.Tensors or
 #       wrapper ndarrays.
-#    A: Tensors, apparently
+#    A: Wrapper ndarrays.
 #
 # 2. Q: Default dtypes: numpy defaults to float64, pytorch defaults to float32
 #    A: Stick to pytorch defaults?
@@ -26,7 +28,7 @@ import _util
 #    A: ignore, keep whatever they are from inputs; test w/various combinations 
 #
 # 5. Q: What is the useful action for numpy-specific arguments? e.g. like=... 
-#    A: raise ValueErrors?
+#    A: like=... and subok=True both raise ValueErrors.
 #       initial=... can be useful though, punt on
 #       where=...   punt on for now
 
@@ -35,13 +37,20 @@ import _util
 # 1. Mapping of the numpy layout ('C', 'K' etc) to torch layout / memory_format.
 # 2. np.dtype <-> torch.dtype
 # 3. numpy type casting rules (to be cleaned up in numpy: follow old or new)
-
-
+#
+# 4. wrap/unwrap/wrap patterns:
+#   - inputs are scalars, output is an array
+#   - two-arg functions (second may be None)
+#   - first arg is a sequence/tuple (_stack familty, concatenate, atleast_Nd etc)
+#   - optional out arg
+#
+#  5. handle the out= arg: verify dimensions, handle dtype (blocked on dtype decision)
 
 def asarray_replacer_1(func):
     """Asarray the *first* arg, so that the wrapped `func` operates on a
        torch.Tensor. Then asarray the result.
     """
+    @functools.wraps(func)
     def wrapped(x, *args, **kwds):
         x_tensor = asarray(x).get()
         return asarray(func(x_tensor, *args, **kwds))
@@ -58,6 +67,9 @@ def asarray(a, dtype=None, order=None, *, like=None):
     _util.subok_not_ok(like)
     if order is not None:
         raise NotImplementedError
+
+    if isinstance(a, ndarray):
+        return a
 
     # This and array(...) are the only places which talk to ndarray directly.
     # The rest goes through asarray (preferred) or array.
@@ -109,7 +121,6 @@ def atleast_3d(*arys):
         return res[0]
     else:
         return res
-
 
 
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
@@ -227,25 +238,25 @@ def prod(a, axis=None, dtype=None, out=None, keepdims=NoValue,
     return torch.prod(a, dim=axis, dtype=dtype, keepdim=bool(keepdims), out=out)
 
 
+@asarray_replacer_1
 def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
     if bias is not None or ddof is not None:
         # deprecated in NumPy
         raise NotImplementedError
     if y is not None:
-        # go figure what it means
+        # go figure what it means, XXX
         raise NotImplementedError
 
-    x = asarray(x)
     if rowvar is False:
         x = x.T
     if dtype is not None:
-        x = x.astype(dtype)
-    return asarray(torch.corrcoef(x.get()))
+        x = x.to(dtype)
+    return torch.corrcoef(x)
 
 
 def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     if casting != "same_kind":
-        raise NotImplementedError   # XXX
+        raise NotImplementedError
     ar_tuple = tuple(asarray(ar).get() for ar in ar_tuple)
     if dtype is not None:
         # XXX: map numpy dtypes
@@ -329,6 +340,7 @@ def ravel_multi_index(multi_index, dims, mode='raise', order='C'):
 
 ###### reductions
 
+@asarray_replacer_1
 def argmax(a, axis=None, out=None, *, keepdims=NoValue):
     if axis is None:
         result = torch.argmax(a, keepdims=bool(keepdims))
@@ -346,16 +358,29 @@ abs = absolute
 
 from _binary_ufuncs import *
 
-
+@asarray_replacer_1
 def angle(z, deg=False):
     result = torch.angle(z)
     if deg:
         result *= 180 / torch.pi
     return result
 
-from torch import imag, real
+
+@asarray_replacer_1
+def real(a):
+    return torch.real(a) 
 
 
+@asarray_replacer_1
+def imag(a):
+    # torch.imag raises on real-valued inputs
+    if torch.is_complex(a):
+        return torch.imag(a) 
+    else:
+        return torch.zeros_like(a)
+
+
+@asarray_replacer_1
 def real_if_close(a, tol=100):
     if not torch.is_complex(a):
         return a
@@ -365,6 +390,7 @@ def real_if_close(a, tol=100):
         return a
 
 
+@asarray_replacer_1
 def iscomplex(x):
     if torch.is_complex(x):
         return torch.as_tensor(x).imag != 0
@@ -372,6 +398,7 @@ def iscomplex(x):
     return result[()]
 
 
+@asarray_replacer_1
 def isreal(x):
     if torch.is_complex(x):
         return torch.as_tensor(x).imag == 0
@@ -379,22 +406,25 @@ def isreal(x):
     return result[()]
 
 
+@asarray_replacer_1
 def iscomplexobj(x):
     return torch.is_complex(x)
 
-
+@asarray_replacer_1
 def isrealobj(x):
     return not torch.is_complex(x)
 
 
+@asarray_replacer_1
 def isneginf(x, out=None):
     return torch.isneginf(x, out=out)
 
 
+@asarray_replacer_1
 def isposinf(x, out=None):
     return torch.isposinf(x, out=out)
 
-
+@asarray_replacer_1
 def i0(x):
     return torch.special.i0(x)
 
