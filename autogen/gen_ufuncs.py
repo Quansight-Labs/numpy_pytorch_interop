@@ -53,6 +53,7 @@ header = """\
 import torch
 
 import _util
+from _ndarray import asarray_replacer_1
 
 """
 
@@ -61,6 +62,7 @@ import numpy as np
 import torch
 
 from _unary_ufuncs import *
+from testing import assert_allclose
 """
 
 
@@ -86,8 +88,8 @@ def {np_name}(x, /, out=None, *, where=True, casting='same_kind', order='K',
 test_template = """
 
 def test_{np_name}():
-    np.testing.assert_allclose(np.{np_name}(0.5),
-                               {np_name}(0.5), atol=1e-14)
+    assert_allclose(np.{np_name}(0.5),
+                    {np_name}(0.5), atol=1e-14, check_dtype=False)
 
 """
 

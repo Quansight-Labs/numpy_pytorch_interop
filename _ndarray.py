@@ -86,7 +86,8 @@ def asarray(a, dtype=None, order=None, *, like=None):
     # This and array(...) are the only places which talk to ndarray directly.
     # The rest goes through asarray (preferred) or array.
     out = ndarray()
-    out._tensor = torch.asarray(a, dtype=dtype)
+    tt = torch.as_tensor(a, dtype=dtype)
+    out._tensor = tt
     return out
 
 
@@ -100,4 +101,44 @@ def asarray_replacer_1(func):
         x_tensor = asarray(x).get()
         return asarray(func(x_tensor, *args, **kwds))
     return wrapped
+
+
+def asarray_replacer_2(func):
+    """Asarray the *first and second* args, so that the wrapped `func` operates
+       on torch.Tensors. Then asarray the result.
+    """
+    @functools.wraps(func)
+    def wrapped(x, y, *args, **kwds):
+        x_tensor = asarray(x).get()
+        y_tensor = asarray(y).get()
+        return asarray(func(x_tensor, y_tensor, *args, **kwds))
+    return wrapped
+
+
+class asarray_replacer:
+    def __init__(self, dispatch='one'):
+        if dispatch not in ['one', 'two']:
+            raise ValueError("ararray_replacer: unknown dispatch %s" % dispatch)
+        self._dispatch = dispatch
+
+    def __call__(self, func):
+
+        if self._dispatch == 'one':
+            @functools.wraps(func)
+            def wrapped(x, *args, **kwds):
+                x_tensor = asarray(x).get()
+                return asarray(func(x_tensor, *args, **kwds))
+            return wrapped
+
+        elif self._dispatch == 'two':
+            @functools.wraps(func)
+            def wrapped(x, y, *args, **kwds):
+                x_tensor = asarray(x).get()
+                y_tensor = asarray(y).get()
+                return asarray(func(x_tensor, y_tensor, *args, **kwds))
+            return wrapped
+
+        else:
+            raise ValueError
+
 

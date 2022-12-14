@@ -4,272 +4,274 @@
 import torch
 
 import _util
+from _ndarray import asarray_replacer_1
 
 import numpy as np
 import torch
 
 from _unary_ufuncs import *
+from testing import assert_allclose
 
 
 def test_absolute():
-    np.testing.assert_allclose(np.absolute(0.5),
-                               absolute(0.5), atol=1e-14)
+    assert_allclose(np.absolute(0.5),
+                    absolute(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_absolute():
-    np.testing.assert_allclose(np.absolute(0.5),
-                               absolute(0.5), atol=1e-14)
+    assert_allclose(np.absolute(0.5),
+                    absolute(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_arccos():
-    np.testing.assert_allclose(np.arccos(0.5),
-                               arccos(0.5), atol=1e-14)
+    assert_allclose(np.arccos(0.5),
+                    arccos(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_arccosh():
-    np.testing.assert_allclose(np.arccosh(0.5),
-                               arccosh(0.5), atol=1e-14)
+    assert_allclose(np.arccosh(0.5),
+                    arccosh(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_arcsin():
-    np.testing.assert_allclose(np.arcsin(0.5),
-                               arcsin(0.5), atol=1e-14)
+    assert_allclose(np.arcsin(0.5),
+                    arcsin(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_arcsinh():
-    np.testing.assert_allclose(np.arcsinh(0.5),
-                               arcsinh(0.5), atol=1e-14)
+    assert_allclose(np.arcsinh(0.5),
+                    arcsinh(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_arctan():
-    np.testing.assert_allclose(np.arctan(0.5),
-                               arctan(0.5), atol=1e-14)
+    assert_allclose(np.arctan(0.5),
+                    arctan(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_arctanh():
-    np.testing.assert_allclose(np.arctanh(0.5),
-                               arctanh(0.5), atol=1e-14)
+    assert_allclose(np.arctanh(0.5),
+                    arctanh(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_cbrt():
-    np.testing.assert_allclose(np.cbrt(0.5),
-                               cbrt(0.5), atol=1e-14)
+    assert_allclose(np.cbrt(0.5),
+                    cbrt(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_ceil():
-    np.testing.assert_allclose(np.ceil(0.5),
-                               ceil(0.5), atol=1e-14)
+    assert_allclose(np.ceil(0.5),
+                    ceil(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_conjugate():
-    np.testing.assert_allclose(np.conjugate(0.5),
-                               conjugate(0.5), atol=1e-14)
+    assert_allclose(np.conjugate(0.5),
+                    conjugate(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_conjugate():
-    np.testing.assert_allclose(np.conjugate(0.5),
-                               conjugate(0.5), atol=1e-14)
+    assert_allclose(np.conjugate(0.5),
+                    conjugate(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_cos():
-    np.testing.assert_allclose(np.cos(0.5),
-                               cos(0.5), atol=1e-14)
+    assert_allclose(np.cos(0.5),
+                    cos(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_cosh():
-    np.testing.assert_allclose(np.cosh(0.5),
-                               cosh(0.5), atol=1e-14)
+    assert_allclose(np.cosh(0.5),
+                    cosh(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_deg2rad():
-    np.testing.assert_allclose(np.deg2rad(0.5),
-                               deg2rad(0.5), atol=1e-14)
+    assert_allclose(np.deg2rad(0.5),
+                    deg2rad(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_degrees():
-    np.testing.assert_allclose(np.degrees(0.5),
-                               degrees(0.5), atol=1e-14)
+    assert_allclose(np.degrees(0.5),
+                    degrees(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_exp():
-    np.testing.assert_allclose(np.exp(0.5),
-                               exp(0.5), atol=1e-14)
+    assert_allclose(np.exp(0.5),
+                    exp(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_exp2():
-    np.testing.assert_allclose(np.exp2(0.5),
-                               exp2(0.5), atol=1e-14)
+    assert_allclose(np.exp2(0.5),
+                    exp2(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_expm1():
-    np.testing.assert_allclose(np.expm1(0.5),
-                               expm1(0.5), atol=1e-14)
+    assert_allclose(np.expm1(0.5),
+                    expm1(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_fabs():
-    np.testing.assert_allclose(np.fabs(0.5),
-                               fabs(0.5), atol=1e-14)
+    assert_allclose(np.fabs(0.5),
+                    fabs(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_floor():
-    np.testing.assert_allclose(np.floor(0.5),
-                               floor(0.5), atol=1e-14)
+    assert_allclose(np.floor(0.5),
+                    floor(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_isfinite():
-    np.testing.assert_allclose(np.isfinite(0.5),
-                               isfinite(0.5), atol=1e-14)
+    assert_allclose(np.isfinite(0.5),
+                    isfinite(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_isinf():
-    np.testing.assert_allclose(np.isinf(0.5),
-                               isinf(0.5), atol=1e-14)
+    assert_allclose(np.isinf(0.5),
+                    isinf(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_isnan():
-    np.testing.assert_allclose(np.isnan(0.5),
-                               isnan(0.5), atol=1e-14)
+    assert_allclose(np.isnan(0.5),
+                    isnan(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_log():
-    np.testing.assert_allclose(np.log(0.5),
-                               log(0.5), atol=1e-14)
+    assert_allclose(np.log(0.5),
+                    log(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_log10():
-    np.testing.assert_allclose(np.log10(0.5),
-                               log10(0.5), atol=1e-14)
+    assert_allclose(np.log10(0.5),
+                    log10(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_log1p():
-    np.testing.assert_allclose(np.log1p(0.5),
-                               log1p(0.5), atol=1e-14)
+    assert_allclose(np.log1p(0.5),
+                    log1p(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_log2():
-    np.testing.assert_allclose(np.log2(0.5),
-                               log2(0.5), atol=1e-14)
+    assert_allclose(np.log2(0.5),
+                    log2(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_logical_not():
-    np.testing.assert_allclose(np.logical_not(0.5),
-                               logical_not(0.5), atol=1e-14)
+    assert_allclose(np.logical_not(0.5),
+                    logical_not(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_negative():
-    np.testing.assert_allclose(np.negative(0.5),
-                               negative(0.5), atol=1e-14)
+    assert_allclose(np.negative(0.5),
+                    negative(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_positive():
-    np.testing.assert_allclose(np.positive(0.5),
-                               positive(0.5), atol=1e-14)
+    assert_allclose(np.positive(0.5),
+                    positive(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_rad2deg():
-    np.testing.assert_allclose(np.rad2deg(0.5),
-                               rad2deg(0.5), atol=1e-14)
+    assert_allclose(np.rad2deg(0.5),
+                    rad2deg(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_radians():
-    np.testing.assert_allclose(np.radians(0.5),
-                               radians(0.5), atol=1e-14)
+    assert_allclose(np.radians(0.5),
+                    radians(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_reciprocal():
-    np.testing.assert_allclose(np.reciprocal(0.5),
-                               reciprocal(0.5), atol=1e-14)
+    assert_allclose(np.reciprocal(0.5),
+                    reciprocal(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_rint():
-    np.testing.assert_allclose(np.rint(0.5),
-                               rint(0.5), atol=1e-14)
+    assert_allclose(np.rint(0.5),
+                    rint(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_sign():
-    np.testing.assert_allclose(np.sign(0.5),
-                               sign(0.5), atol=1e-14)
+    assert_allclose(np.sign(0.5),
+                    sign(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_signbit():
-    np.testing.assert_allclose(np.signbit(0.5),
-                               signbit(0.5), atol=1e-14)
+    assert_allclose(np.signbit(0.5),
+                    signbit(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_sin():
-    np.testing.assert_allclose(np.sin(0.5),
-                               sin(0.5), atol=1e-14)
+    assert_allclose(np.sin(0.5),
+                    sin(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_sinh():
-    np.testing.assert_allclose(np.sinh(0.5),
-                               sinh(0.5), atol=1e-14)
+    assert_allclose(np.sinh(0.5),
+                    sinh(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_sqrt():
-    np.testing.assert_allclose(np.sqrt(0.5),
-                               sqrt(0.5), atol=1e-14)
+    assert_allclose(np.sqrt(0.5),
+                    sqrt(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_square():
-    np.testing.assert_allclose(np.square(0.5),
-                               square(0.5), atol=1e-14)
+    assert_allclose(np.square(0.5),
+                    square(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_tan():
-    np.testing.assert_allclose(np.tan(0.5),
-                               tan(0.5), atol=1e-14)
+    assert_allclose(np.tan(0.5),
+                    tan(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_tanh():
-    np.testing.assert_allclose(np.tanh(0.5),
-                               tanh(0.5), atol=1e-14)
+    assert_allclose(np.tanh(0.5),
+                    tanh(0.5), atol=1e-14, check_dtype=False)
 
 
 
 def test_trunc():
-    np.testing.assert_allclose(np.trunc(0.5),
-                               trunc(0.5), atol=1e-14)
+    assert_allclose(np.trunc(0.5),
+                    trunc(0.5), atol=1e-14, check_dtype=False)
 

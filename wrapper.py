@@ -7,7 +7,8 @@ import numpy as np
 
 
 import _util
-from _ndarray import ndarray, asarray, asarray_replacer_1
+from _ndarray import ndarray, asarray, asarray_replacer
+
 
 # Things to decide on (punt for now)
 #
@@ -58,7 +59,7 @@ def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
     _util.subok_not_ok(like, subok)
     if order != 'K':
         raise NotImplementedError
-    result = torch.asarray(object, dtype=dtype, copy=copy)
+    result = torch.as_tensor(object, dtype=dtype, copy=copy)
     ndim_extra = ndmin - result.ndim
     if ndim_extra > 0:
         result = result.reshape((1,)*ndim_extra + result.shape)
@@ -115,7 +116,7 @@ def empty(shape, dtype=float, order='C', *, like=None):
 
 # NB: *_like function deliberately deviate from numpy: it has subok=True
 # as the default; we set subok=False and raise on anything else.
-@asarray_replacer_1
+@asarray_replacer()
 def empty_like(prototype, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
@@ -132,7 +133,7 @@ def full(shape, fill_value, dtype=None, order='C', *, like=None):
         raise NotImplementedError
     return asarray(torch.full(shape, fill_value, dtype=dtype))
 
-@asarray_replacer_1
+@asarray_replacer()
 def full_like(a, fill_value, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
@@ -150,7 +151,7 @@ def ones(shape, dtype=None, order='C', *, like=None):
     return asarray(torch.ones(shape, dtype=dtype))
 
 
-@asarray_replacer_1
+@asarray_replacer()
 def ones_like(a, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
@@ -169,7 +170,7 @@ def zeros(shape, dtype=float, order='C', *, like=None):
     return asarray(torch.zeros(shape, dtype=dtype))
 
 
-@asarray_replacer_1
+@asarray_replacer()
 def zeros_like(a, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
@@ -199,7 +200,7 @@ def identity(n, dtype=None, *, like=None):
 
 ###### misc/unordered
 
-@asarray_replacer_1
+@asarray_replacer()
 def prod(a, axis=None, dtype=None, out=None, keepdims=NoValue,
          initial=NoValue, where=NoValue):
     if initial is not None or where is not None:
@@ -213,7 +214,7 @@ def prod(a, axis=None, dtype=None, out=None, keepdims=NoValue,
     return torch.prod(a, dim=axis, dtype=dtype, keepdim=bool(keepdims), out=out)
 
 
-@asarray_replacer_1
+@asarray_replacer()
 def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
     if bias is not None or ddof is not None:
         # deprecated in NumPy
@@ -239,7 +240,7 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     return asarray(torch.cat(ar_tuple, axis, out=out))
 
 
-@asarray_replacer_1
+@asarray_replacer()
 def squeeze(a, axis=None):
     if axis is None:
         return torch.squeeze(a)
@@ -247,7 +248,7 @@ def squeeze(a, axis=None):
         return torch.squeeze(a, axis)
 
 
-@asarray_replacer_1
+@asarray_replacer()
 def bincount(x, /, weights=None, minlength=0):
     return torch.bincount(x, weights, minlength)
 
@@ -271,7 +272,7 @@ def size(a, axis=None):
 
 ###### shape manipulations and indexing
 
-@asarray_replacer_1
+@asarray_replacer()
 def reshape(a, newshape, order='C'):
     if order != 'C':
         raise NotImplementedError
@@ -315,7 +316,7 @@ def ravel_multi_index(multi_index, dims, mode='raise', order='C'):
 
 ###### reductions
 
-@asarray_replacer_1
+@asarray_replacer()
 def argmax(a, axis=None, out=None, *, keepdims=NoValue):
     if axis is None:
         result = torch.argmax(a, keepdims=bool(keepdims))
@@ -333,7 +334,7 @@ abs = absolute
 
 from _binary_ufuncs import *
 
-@asarray_replacer_1
+@asarray_replacer()
 def angle(z, deg=False):
     result = torch.angle(z)
     if deg:
@@ -341,12 +342,12 @@ def angle(z, deg=False):
     return result
 
 
-@asarray_replacer_1
+@asarray_replacer()
 def real(a):
     return torch.real(a) 
 
 
-@asarray_replacer_1
+@asarray_replacer()
 def imag(a):
     # torch.imag raises on real-valued inputs
     if torch.is_complex(a):
@@ -355,7 +356,7 @@ def imag(a):
         return torch.zeros_like(a)
 
 
-@asarray_replacer_1
+@asarray_replacer()
 def real_if_close(a, tol=100):
     if not torch.is_complex(a):
         return a
@@ -365,7 +366,7 @@ def real_if_close(a, tol=100):
         return a
 
 
-@asarray_replacer_1
+@asarray_replacer()
 def iscomplex(x):
     if torch.is_complex(x):
         return torch.as_tensor(x).imag != 0
@@ -373,7 +374,7 @@ def iscomplex(x):
     return result[()]
 
 
-@asarray_replacer_1
+@asarray_replacer()
 def isreal(x):
     if torch.is_complex(x):
         return torch.as_tensor(x).imag == 0
@@ -381,25 +382,25 @@ def isreal(x):
     return result[()]
 
 
-@asarray_replacer_1
+@asarray_replacer()
 def iscomplexobj(x):
     return torch.is_complex(x)
 
-@asarray_replacer_1
+@asarray_replacer()
 def isrealobj(x):
     return not torch.is_complex(x)
 
 
-@asarray_replacer_1
+@asarray_replacer()
 def isneginf(x, out=None):
     return torch.isneginf(x, out=out)
 
 
-@asarray_replacer_1
+@asarray_replacer()
 def isposinf(x, out=None):
     return torch.isposinf(x, out=out)
 
-@asarray_replacer_1
+@asarray_replacer()
 def i0(x):
     return torch.special.i0(x)
 
