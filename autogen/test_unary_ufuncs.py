@@ -4,7 +4,7 @@
 import torch
 
 import _util
-from _ndarray import asarray_replacer_1, asarray_replacer_2
+from _ndarray import asarray_replacer
 
 import numpy as np
 import torch

@@ -53,7 +53,7 @@ header = """\
 import torch
 
 import _util
-from _ndarray import asarray_replacer_1, asarray_replacer_2
+from _ndarray import asarray_replacer
 
 """
 
@@ -68,7 +68,7 @@ from testing import assert_allclose
 
 template = """
 
-@asarray_replacer_1
+@asarray_replacer()
 def {np_name}(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -149,7 +149,7 @@ from testing import assert_allclose
 
 template = """
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def {np_name}(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)

@@ -4,11 +4,11 @@
 import torch
 
 import _util
-from _ndarray import asarray_replacer_1, asarray_replacer_2
+from _ndarray import asarray_replacer
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def add(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -24,7 +24,7 @@ def add(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def arctan2(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -40,7 +40,7 @@ def arctan2(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def bitwise_and(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -56,7 +56,7 @@ def bitwise_and(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def bitwise_or(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -72,7 +72,7 @@ def bitwise_or(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def bitwise_xor(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -88,7 +88,7 @@ def bitwise_xor(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def copysign(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -104,7 +104,7 @@ def copysign(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -120,7 +120,7 @@ def divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -136,7 +136,7 @@ def equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def float_power(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -152,7 +152,7 @@ def float_power(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def floor_divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -168,7 +168,7 @@ def floor_divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order=
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def fmax(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -184,7 +184,7 @@ def fmax(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def fmin(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -200,7 +200,7 @@ def fmin(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def fmod(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -216,7 +216,7 @@ def fmod(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def gcd(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -232,7 +232,7 @@ def gcd(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def greater(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -248,7 +248,7 @@ def greater(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def greater_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -264,7 +264,7 @@ def greater_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def heaviside(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -280,7 +280,7 @@ def heaviside(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def hypot(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -296,7 +296,7 @@ def hypot(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def lcm(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -312,7 +312,7 @@ def lcm(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def ldexp(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -328,7 +328,7 @@ def ldexp(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def left_shift(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -344,7 +344,7 @@ def left_shift(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def less(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -360,7 +360,7 @@ def less(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def less_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -376,7 +376,7 @@ def less_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def logaddexp(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -392,7 +392,7 @@ def logaddexp(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def logaddexp2(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -408,7 +408,7 @@ def logaddexp2(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def logical_and(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -424,7 +424,7 @@ def logical_and(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def logical_or(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -440,7 +440,7 @@ def logical_or(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def logical_xor(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -456,7 +456,7 @@ def logical_xor(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def matmul(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -472,7 +472,7 @@ def matmul(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def maximum(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -488,7 +488,7 @@ def maximum(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def minimum(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -504,7 +504,7 @@ def minimum(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def remainder(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -520,7 +520,7 @@ def remainder(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def multiply(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -536,7 +536,7 @@ def multiply(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def nextafter(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -552,7 +552,7 @@ def nextafter(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def not_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -568,7 +568,7 @@ def not_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def power(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -584,7 +584,7 @@ def power(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def remainder(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -600,7 +600,7 @@ def remainder(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def right_shift(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -616,7 +616,7 @@ def right_shift(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def subtract(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -632,7 +632,7 @@ def subtract(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer_2
+@asarray_replacer("two")
 def divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)

@@ -51,7 +51,7 @@ class ndarray:
     ### arithmetic ###
 
     def __add__(self, other):
-        return self._tensor__add__(other)
+        return self._tensor.__add__(other)
 
     def __iadd__(self, other):
         return self._tensor.__add__(other)
@@ -91,28 +91,6 @@ def asarray(a, dtype=None, order=None, *, like=None):
     return out
 
 
-
-def asarray_replacer_1(func):
-    """Asarray the *first* arg, so that the wrapped `func` operates on a
-       torch.Tensor. Then asarray the result.
-    """
-    @functools.wraps(func)
-    def wrapped(x, *args, **kwds):
-        x_tensor = asarray(x).get()
-        return asarray(func(x_tensor, *args, **kwds))
-    return wrapped
-
-
-def asarray_replacer_2(func):
-    """Asarray the *first and second* args, so that the wrapped `func` operates
-       on torch.Tensors. Then asarray the result.
-    """
-    @functools.wraps(func)
-    def wrapped(x, y, *args, **kwds):
-        x_tensor = asarray(x).get()
-        y_tensor = asarray(y).get()
-        return asarray(func(x_tensor, y_tensor, *args, **kwds))
-    return wrapped
 
 
 class asarray_replacer:
