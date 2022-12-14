@@ -91,6 +91,27 @@ def asarray(a, dtype=None, order=None, *, like=None):
     return out
 
 
+def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
+          like=None):
+    _util.subok_not_ok(like, subok)
+    if order != 'K':
+        raise NotImplementedError
+
+    if isinstance(object, ndarray):
+        result = object._tensor
+    else:
+        result = torch.as_tensor(object, dtype=dtype)
+
+    if copy:
+        result = result.clone()    
+
+    ndim_extra = ndmin - result.ndim
+    if ndim_extra > 0:
+        result = result.reshape((1,)*ndim_extra + result.shape)
+    out = ndarray()
+    out._tensor = result
+    return out
+
 
 
 class asarray_replacer:

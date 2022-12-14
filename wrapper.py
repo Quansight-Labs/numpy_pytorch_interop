@@ -7,7 +7,7 @@ import numpy as np
 
 
 import _util
-from _ndarray import ndarray, asarray, asarray_replacer
+from _ndarray import ndarray, asarray, array, asarray_replacer
 
 
 # Things to decide on (punt for now)
@@ -24,10 +24,10 @@ from _ndarray import ndarray, asarray, asarray_replacer
 #    A: Ignore for now
 #
 # 4. Q: What are the defaults for pytorch-specific args not present in numpy signatures?
-#       device=..., requires_grad=... etc 
-#    A: ignore, keep whatever they are from inputs; test w/various combinations 
+#       device=..., requires_grad=... etc
+#    A: ignore, keep whatever they are from inputs; test w/various combinations
 #
-# 5. Q: What is the useful action for numpy-specific arguments? e.g. like=... 
+# 5. Q: What is the useful action for numpy-specific arguments? e.g. like=...
 #    A: like=... and subok=True both raise ValueErrors.
 #       initial=... can be useful though, punt on
 #       where=...   punt on for now
@@ -47,61 +47,46 @@ from _ndarray import ndarray, asarray, asarray_replacer
 #  5. handle the out= arg: verify dimensions, handle dtype (blocked on dtype decision)
 
 
-
 NoValue = None
 
 ###### array creation routines
 
 
-
-def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
-          like=None):
-    _util.subok_not_ok(like, subok)
-    if order != 'K':
-        raise NotImplementedError
-    result = torch.as_tensor(object, dtype=dtype, copy=copy)
-    ndim_extra = ndmin - result.ndim
-    if ndim_extra > 0:
-        result = result.reshape((1,)*ndim_extra + result.shape)
-    out = ndarray()
-    out._tensor = result
-    return out
-
-
+@asarray_replacer()
 def copy(a, order='K', subok=False):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    return asarray(torch.clone(a.get()))
+    return torch.clone(a)
 
 
 def atleast_1d(*arys):
-    res = [asarray(torch.atleast_1d(torch.as_tensor(a))) for a in arys]
+    res = torch.atleast_1d([asarray(a).get() for a in arys])
     if len(res) == 1:
-        return res[0]
+        return asarray(res[0])
     else:
-        return res
+        return tuple(asarray(_) for _ in res)
 
 
 def atleast_2d(*arys):
-    res = [asarray(torch.atleast_2d(torch.as_tensor(a))) for a in arys]
+    res = torch.atleast_2d([asarray(a).get() for a in arys])
     if len(res) == 1:
-        return res[0]
+        return asarray(res[0])
     else:
-        return res
+        return tuple(asarray(_) for _ in res)
 
 
 def atleast_3d(*arys):
-    res = [asarray(torch.atleast_3d(torch.as_tensor(a))) for a in arys]
+    res = torch.atleast_3d([asarray(a).get() for a in arys])
     if len(res) == 1:
-        return res[0]
+        return asarray(res[0])
     else:
-        return res
+        return tuple(asarray(_) for _ in res)
 
 
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0):
-    if axis !=0 or retstep or not endpoint:
+    if axis != 0 or retstep or not endpoint:
         raise NotImplementedError
     # XXX: raises TypeError if start or stop are not scalars
     return asarray(torch.linspace(start, stop, num, dtype=dtype))
@@ -132,6 +117,7 @@ def full(shape, fill_value, dtype=None, order='C', *, like=None):
     if order != 'C':
         raise NotImplementedError
     return asarray(torch.full(shape, fill_value, dtype=dtype))
+
 
 @asarray_replacer()
 def full_like(a, fill_value, dtype=None, order='K', subok=False, shape=None):
@@ -233,11 +219,11 @@ def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
 def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     if casting != "same_kind":
         raise NotImplementedError
-    ar_tuple = tuple(asarray(ar).get() for ar in ar_tuple)
+    tensors = tuple(asarray(ar).get() for ar in ar_tuple)
     if dtype is not None:
         # XXX: map numpy dtypes
-        ar_tuple = tuple(ar.type(dtype) for ar in ar_typle)
-    return asarray(torch.cat(ar_tuple, axis, out=out))
+        tensors = tuple(ar.type(dtype) for ar in ar_typle)
+    return asarray(torch.cat(tensors, axis, out=out))
 
 
 @asarray_replacer()
@@ -256,18 +242,21 @@ def bincount(x, /, weights=None, minlength=0):
 ###### module-level queries of object properties
 
 def ndim(a):
-    return torch.as_tensor(a).ndim
+    a = asarray(a).get()
+    return a.ndim
 
 
 def shape(a):
-    return tuple(torch.as_tensor(a).shape)
+    a = asarray(a).get()
+    return tuple(a.shape)
 
 
 def size(a, axis=None):
+    a = asarray(a).get()
     if axis is None:
-        return torch.as_tensor(a).numel()
+        return a.numel()
     else:
-        return torch.as_tensor(a).shape[axis]
+        return a.shape[axis]
 
 
 ###### shape manipulations and indexing
@@ -279,9 +268,10 @@ def reshape(a, newshape, order='C'):
     return torch.reshape(a, newshape)
 
 
+@asarray_replacer()
 def broadcast_to(array, shape, subok=False):
     _util.subok_not_ok(subok=subok)
-    return torch.broadcast_to(array, shape)
+    return torch.broadcast_to(array, size=shape)
 
 
 from torch import broadcast_shapes
@@ -289,12 +279,13 @@ from torch import broadcast_shapes
 
 def broadcast_arrays(*args, subok=False):
     _util.subok_not_ok(subok=subok)
-    return torch.broadcast_tensors(*args)
+    res = torch.broadcast_tensors(*[asarray(a).get() for a in args])
+    return tuple(asarray(_) for _ in res)
 
 
 def unravel_index(indices, shape, order='C'):
 # cf https://github.com/pytorch/pytorch/pull/66687
-# this version is from 
+# this version is from
 # https://discuss.pytorch.org/t/how-to-do-a-unravel-index-in-pytorch-just-like-in-numpy/12987/3
     if order != 'C':
         raise NotImplementedError
@@ -334,6 +325,7 @@ abs = absolute
 
 from _binary_ufuncs import *
 
+
 @asarray_replacer()
 def angle(z, deg=False):
     result = torch.angle(z)
@@ -344,7 +336,7 @@ def angle(z, deg=False):
 
 @asarray_replacer()
 def real(a):
-    return torch.real(a) 
+    return torch.real(a)
 
 
 @asarray_replacer()
