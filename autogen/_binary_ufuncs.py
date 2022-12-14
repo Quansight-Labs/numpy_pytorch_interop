@@ -4,10 +4,11 @@
 import torch
 
 import _util
-from _ndarray import asarray_replacer_1
+from _ndarray import asarray_replacer_1, asarray_replacer_2
 
 
 
+@asarray_replacer_2
 def add(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -16,13 +17,14 @@ def add(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.add(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.add(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def arctan2(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -31,13 +33,14 @@ def arctan2(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.arctan2(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.arctan2(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def bitwise_and(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -46,13 +49,14 @@ def bitwise_and(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.bitwise_and(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.bitwise_and(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def bitwise_or(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -61,13 +65,14 @@ def bitwise_or(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.bitwise_or(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.bitwise_or(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def bitwise_xor(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -76,13 +81,14 @@ def bitwise_xor(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.bitwise_xor(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.bitwise_xor(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def copysign(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -91,13 +97,14 @@ def copysign(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.copysign(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.copysign(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -106,13 +113,14 @@ def divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.divide(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.divide(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -121,13 +129,14 @@ def equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.eq(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.eq(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def float_power(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -136,13 +145,14 @@ def float_power(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.float_power(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.float_power(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def floor_divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -151,13 +161,14 @@ def floor_divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order=
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.floor_divide(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.floor_divide(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def fmax(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -166,13 +177,14 @@ def fmax(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.fmax(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.fmax(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def fmin(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -181,13 +193,14 @@ def fmin(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.fmin(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.fmin(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def fmod(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -196,13 +209,14 @@ def fmod(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.fmod(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.fmod(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def gcd(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -211,13 +225,14 @@ def gcd(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.gcd(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.gcd(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def greater(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -226,13 +241,14 @@ def greater(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.greater(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.greater(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def greater_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -241,13 +257,14 @@ def greater_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.greater_equal(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.greater_equal(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def heaviside(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -256,13 +273,14 @@ def heaviside(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.heaviside(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.heaviside(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def hypot(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -271,13 +289,14 @@ def hypot(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.hypot(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.hypot(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def lcm(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -286,13 +305,14 @@ def lcm(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.lcm(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.lcm(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def ldexp(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -301,13 +321,14 @@ def ldexp(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.ldexp(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.ldexp(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def left_shift(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -316,13 +337,14 @@ def left_shift(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.left_shift(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.left_shift(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def less(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -331,13 +353,14 @@ def less(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.less(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.less(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def less_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -346,13 +369,14 @@ def less_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.less_equal(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.less_equal(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def logaddexp(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -361,13 +385,14 @@ def logaddexp(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.logaddexp(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.logaddexp(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def logaddexp2(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -376,13 +401,14 @@ def logaddexp2(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.logaddexp2(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.logaddexp2(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def logical_and(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -391,13 +417,14 @@ def logical_and(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.logical_and(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.logical_and(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def logical_or(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -406,13 +433,14 @@ def logical_or(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.logical_or(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.logical_or(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def logical_xor(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -421,13 +449,14 @@ def logical_xor(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.logical_xor(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.logical_xor(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def matmul(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -436,13 +465,14 @@ def matmul(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.matmul(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.matmul(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def maximum(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -451,13 +481,14 @@ def maximum(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.maximum(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.maximum(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def minimum(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -466,13 +497,14 @@ def minimum(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.minimum(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.minimum(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def remainder(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -481,13 +513,14 @@ def remainder(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.remainder(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.remainder(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def multiply(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -496,13 +529,14 @@ def multiply(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.multiply(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.multiply(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def nextafter(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -511,13 +545,14 @@ def nextafter(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.nextafter(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.nextafter(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def not_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -526,13 +561,14 @@ def not_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.not_equal(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.not_equal(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def power(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -541,13 +577,14 @@ def power(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.pow(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.pow(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def remainder(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -556,13 +593,14 @@ def remainder(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.remainder(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.remainder(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def right_shift(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -571,13 +609,14 @@ def right_shift(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.right_shift(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.right_shift(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def subtract(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -586,13 +625,14 @@ def subtract(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.subtract(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.subtract(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
 
 
 
+@asarray_replacer_2
 def divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -601,7 +641,7 @@ def divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.divide(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.divide(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
