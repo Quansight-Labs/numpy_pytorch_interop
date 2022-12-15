@@ -1,6 +1,6 @@
 import torch
 
-from _ndarray import asarray, asarray_replacer
+from ._ndarray import asarray, asarray_replacer
 
 @asarray_replacer("two")
 def assert_allclose(actual, desired, rtol=1e-07, atol=0, equal_nan=True,

@@ -2,7 +2,7 @@ import functools
 
 import torch
 
-import _util
+from . import _util
 
 NoValue = None
 

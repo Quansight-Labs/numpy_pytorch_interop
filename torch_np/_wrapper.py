@@ -6,8 +6,8 @@ pytorch tensors.
 import numpy as np
 
 
-import _util
-from _ndarray import ndarray, asarray, array, asarray_replacer
+from . import _util
+from ._ndarray import ndarray, asarray, array, asarray_replacer
 
 
 # Things to decide on (punt for now)
@@ -320,10 +320,10 @@ def argmax(a, axis=None, out=None, *, keepdims=NoValue):
 
 ##### math functions
 
-from _unary_ufuncs import *
+from ._unary_ufuncs import *
 abs = absolute
 
-from _binary_ufuncs import *
+from ._binary_ufuncs import *
 
 
 @asarray_replacer()

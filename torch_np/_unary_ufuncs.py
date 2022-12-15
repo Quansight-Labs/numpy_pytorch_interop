@@ -3,8 +3,8 @@
 
 import torch
 
-import _util
-from _ndarray import asarray_replacer
+from . import _util
+from ._ndarray import asarray_replacer
 
 
 

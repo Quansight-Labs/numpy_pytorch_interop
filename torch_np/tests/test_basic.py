@@ -4,8 +4,8 @@ import pytest
 import numpy as np
 import torch
 
-import wrapper as w
-import _unary_ufuncs
+import torch_np as w
+import torch_np._unary_ufuncs as _unary_ufuncs
 
 # These function receive one array_like arg and return one array_like result
 one_arg_funcs = [w.asarray, w.empty_like, w.ones_like, w.zeros_like,
