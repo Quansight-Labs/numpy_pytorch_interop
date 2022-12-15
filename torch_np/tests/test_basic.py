@@ -49,7 +49,9 @@ class TestOneArr:
         assert isinstance(la, w.ndarray)
 
 
-one_arg_axis_funcs = [w.argmax, w.prod]
+one_arg_axis_funcs = [w.argmax, w.argmin, w.prod, w.all, w.any,
+                      w.mean, w.nanmean,
+                      w.argsort,]
 
 
 @pytest.mark.parametrize('func', one_arg_axis_funcs)
@@ -58,17 +60,17 @@ class TestOneArrAndAxis:
     """Smoke test of functions (array_like, axis) -> array_like
     """
     def test_tensor(self, func, axis):
-        t = torch.Tensor([[1, 2, 3], [4, 5, 6]])
+        t = torch.Tensor([[1., 2, 3], [4, 5, 6]])
         ta = func(t, axis=axis)
         assert isinstance(ta, w.ndarray)
 
     def test_list(self, func, axis):
-        t = [[1, 2, 3], [4, 5, 6]]
+        t = [[1., 2, 3], [4, 5, 6]]
         ta = func(t, axis=axis)
         assert isinstance(ta, w.ndarray)
 
     def test_array(self, func, axis):
-        t = w.asarray([[1, 2, 3], [4, 5, 6]])
+        t = w.asarray([[1., 2, 3], [4, 5, 6]])
         ta = func(t, axis=axis)
         assert isinstance(ta, w.ndarray)
 
@@ -226,8 +228,14 @@ class TestSequenceOfArraysToSingle:
 
 funcs_and_args = [
     (w.linspace, (0, 10, 11)),
+    (w.logspace, (1, 2, 5)),
+    (w.logspace, (1, 2, 5, 11)),
+    (w.geomspace, (1, 1000, 5, 11)),
     (w.eye, (5, 6)),
-    (w.identity, (3,))
+    (w.identity, (3,)),
+    (w.arange, (5,)),
+    (w.arange, (5, 8)),
+    (w.arange, (5, 8, 0.5)),
 ]
 
 

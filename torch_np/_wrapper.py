@@ -92,6 +92,31 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
     return asarray(torch.linspace(start, stop, num, dtype=dtype))
 
 
+def geomspace(start, stop, num=50, endpoint=True, dtype=None, axis=0):
+    if axis != 0 or not endpoint:
+        raise NotImplementedError
+    tstart, tstop = torch.as_tensor([start, stop])
+    base = torch.pow(tstop / tstart, 1./(num-1))
+    result = torch.logspace(torch.log(tstart)/torch.log(base),
+                            torch.log(tstop)/torch.log(base), num, base=base)
+    return asarray(result)
+
+
+def logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0):
+    if axis != 0 or not endpoint:
+        raise NotImplementedError
+    return asarray(torch.logspace(start, stop, num, base=base, dtype=dtype))
+
+
+def arange(start, stop=None, step=1, dtype=None, *, like=None):
+    _util.subok_not_ok(like)
+    if stop is None:
+        # arange(stop)
+        stop = start
+        start = 0
+    return asarray(torch.arange(start, stop, step, dtype=dtype))
+
+
 def empty(shape, dtype=float, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
@@ -307,15 +332,106 @@ def ravel_multi_index(multi_index, dims, mode='raise', order='C'):
 
 ###### reductions
 
+# YYY: pattern : argmax, argmin
+
 @asarray_replacer()
 def argmax(a, axis=None, out=None, *, keepdims=NoValue):
     if axis is None:
-        result = torch.argmax(a, keepdims=bool(keepdims))
+        result = torch.argmax(a, keepdim=bool(keepdims))
     else:
-        result = torch.argmax(a, axis, keepdims=bool(keepdims))
+        result = torch.argmax(a, axis, keepdim=bool(keepdims))
     if out is not None:
         out.copy_(result)
     return result
+
+
+@asarray_replacer()
+def argmin(a, axis=None, out=None, *, keepdims=NoValue):
+    if axis is None:
+        result = torch.argmin(a, keepdim=bool(keepdims))
+    else:
+        result = torch.argmin(a, axis, keepdim=bool(keepdims))
+    if out is not None:
+        out.copy_(result)
+    return result
+
+
+# YYY: pattern all, any
+
+@asarray_replacer()
+def all(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
+    if where is not None:
+        raise NotImplementedError
+    if axis is None:
+        result = torch.all(a)
+        # pytorch does not support keepdims=True and no axis
+        if keepdims:
+            result = torch.full(a.shape, result, dtype=result.dtype)
+    else:
+        result = torch.all(a, axis, keepdim=bool(keepdims))
+    if out is not None:
+        out.copy_(result)
+    return result
+
+
+@asarray_replacer()
+def any(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
+    if where is not None:
+        raise NotImplementedError
+    if axis is None:
+        result = a.any()
+        if keepdims:
+            result = torch.full(a.shape, result, dtype=result.dtype)
+    else:
+        result = a.any(axis, keepdim=bool(keepdims))
+    if out is not None:
+        out.copy_(result)
+    return result
+
+
+# YYY: pattern: dtype kwarg, None not accepted
+@asarray_replacer()
+def mean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
+    if where is not None:
+        raise NotImplementedError
+    if dtype is None:
+        dtype = a.dtype
+    if axis is None:
+        result = a.mean(dtype=dtype)
+        if keepdims:
+            result = torch.full(a.shape, result, dtype=result.dtype)
+    else:
+        result = a.mean(dtype=dtype, dim=axis, keepdim=bool(keepdims))
+    if out is not None:
+        out.copy_(result)
+    return result
+
+
+@asarray_replacer()
+def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
+    if where is not None:
+        raise NotImplementedError
+    if dtype is None:
+        dtype = a.dtype
+    if axis is None:
+        result = a.nanmean(dtype=dtype)
+        if keepdims:
+            result = torch.full(a.shape, result, dtype=result.dtype)
+    else:
+        result = a.nanmean(dtype=dtype, dim=axis, keepdim=bool(keepdims))
+    if out is not None:
+        out.copy_(result)
+    return result
+
+
+@asarray_replacer()
+def argsort(a, axis=-1, kind=None, order=None):
+    if order is not None:
+        raise NotImplementedError
+    stable = True if kind == 'stable' else False
+    if axis is None:
+        axis = -1
+    return torch.argsort(a, stable=stable, dim=axis, descending=False)
 
 
 ##### math functions

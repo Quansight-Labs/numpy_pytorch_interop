@@ -5,8 +5,7 @@
 # to wrapper.py and areremoved from the list below.
 # Not present: scalars, types, dtypes, `np.r_` etc
 
-def arange(start, stop, step, dtype=None, *, like=None):
-    raise NotImplementedError
+
 
 
 
@@ -62,8 +61,6 @@ def seterrobj(errobj):
 def alen(a):
     raise NotImplementedError
 
-def all(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-    raise NotImplementedError
 
 def allclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
     raise NotImplementedError
@@ -78,8 +75,7 @@ def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValu
     raise NotImplementedError
 
 
-def any(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-    raise NotImplementedError
+
 
 def append(arr, values, axis=None):
     raise NotImplementedError
@@ -91,8 +87,7 @@ def apply_over_axes(func, a, axes):
     raise NotImplementedError
 
 
-def argmin(a, axis=None, out=None, *, keepdims=NoValue):
-    raise NotImplementedError
+
 
 def argpartition(a, kth, axis=-1, kind='introselect', order=None):
     raise NotImplementedError
@@ -318,8 +313,7 @@ def fromregex(file, regexp, dtype, encoding=None):
 def genfromtxt(fname, dtype=float, comments='#', delimiter=None, skip_header=0, skip_footer=0, converters=None, missing_values=None, filling_values=None, usecols=None, names=None, excludelist=None, deletechars=" !#$%&'()*+,-./:;<=>?@[\\]^{|}~", replace_space='_', autostrip=False, case_sensitive=True, defaultfmt='f%i', unpack=None, usemask=False, loose=True, invalid_raise=True, max_rows=None, encoding='bytes', *, like=None):
     raise NotImplementedError
 
-def geomspace(start, stop, num=50, endpoint=True, dtype=None, axis=0):
-    raise NotImplementedError
+
 
 def get_array_wrap(*args):
     raise NotImplementedError
@@ -444,8 +438,7 @@ def load(file, mmap_mode=None, allow_pickle=False, fix_imports=True, encoding='A
 def loadtxt(fname, dtype=float, comments='#', delimiter=None, converters=None, skiprows=0, usecols=None, unpack=False, ndmin=0, encoding='bytes', max_rows=None, *, quotechar=None, like=None):
     raise NotImplementedError
 
-def logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0):
-    raise NotImplementedError
+
 
 def lookfor(what, module=None, import_modules=True, regenerate=False, output=None):
     raise NotImplementedError
@@ -468,8 +461,7 @@ def maximum_sctype(t):
 def may_share_memory(a, b, /, max_work=None):
     raise NotImplementedError
 
-def mean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
-    raise NotImplementedError
+
 
 def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
     raise NotImplementedError
@@ -510,8 +502,6 @@ def nancumsum(a, axis=None, dtype=None, out=None):
 def nanmax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
     raise NotImplementedError
 
-def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
-    raise NotImplementedError
 
 def nanmedian(a, axis=None, out=None, overwrite_input=False, keepdims=NoValue):
     raise NotImplementedError
