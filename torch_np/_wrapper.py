@@ -211,6 +211,8 @@ def identity(n, dtype=None, *, like=None):
 
 ###### misc/unordered
 
+
+#YYY: pattern: initial=...
 @asarray_replacer()
 def prod(a, axis=None, dtype=None, out=None, keepdims=NoValue,
          initial=NoValue, where=NoValue):
@@ -223,6 +225,20 @@ def prod(a, axis=None, dtype=None, out=None, keepdims=NoValue,
     elif _util.is_sequence(axis):
         raise NotImplementedError
     return torch.prod(a, dim=axis, dtype=dtype, keepdim=bool(keepdims), out=out)
+
+
+@asarray_replacer()
+def sum(a, axis=None, dtype=None, out=None, keepdims=NoValue,
+        initial=NoValue, where=NoValue):
+    if initial is not None or where is not None:
+        raise NotImplementedError
+    if axis is None:
+        if keepdims is not None:
+            raise NotImplementedError
+        return torch.sum(a, dtype=dtype)
+    elif _util.is_sequence(axis):
+        raise NotImplementedError
+    return torch.sum(a, dim=axis, dtype=dtype, keepdim=bool(keepdims), out=out)
 
 
 @asarray_replacer()
@@ -251,6 +267,12 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     return asarray(torch.cat(tensors, axis, out=out))
 
 
+
+def stack(arrays, axis=0, out=None):
+    tensors = tuple(asarray(ar).get() for ar in arrays)
+    return asarray(torch.stack(tensors, axis, out=out))
+
+
 @asarray_replacer()
 def squeeze(a, axis=None):
     if axis is None:
@@ -262,6 +284,18 @@ def squeeze(a, axis=None):
 @asarray_replacer()
 def bincount(x, /, weights=None, minlength=0):
     return torch.bincount(x, weights, minlength)
+
+# YYY: pattern: sequence of arrays
+def where(condition, x=None, y=None, /):
+    selector = (x is None) == (y is None)
+    if not selector:
+        raise ValueError("either both or neither of x and y should be given")
+    condition = asarray(condition).get()
+    if x is None and y is None:
+        return tuple(asarray(_) for _ in torch.where(condition))
+    x = asarray(condition).get()
+    y = asarray(condition).get()
+    return asarray(torch.where(condition, x, y))
 
 
 ###### module-level queries of object properties
@@ -294,6 +328,18 @@ def reshape(a, newshape, order='C'):
 
 
 @asarray_replacer()
+def expand_dims(a, axis):
+    # taken from numpy 1.23.x
+    if type(axis) not in (list, tuple):
+        axis = (axis,)
+    out_ndim = len(axis) + a.ndim
+    axis = _util.normalize_axis_tuple(axis, out_ndim)
+    shape_it = iter(a.shape)
+    shape = [1 if ax in axis else next(shape_it) for ax in range(out_ndim)]
+    return a.reshape(shape)
+
+
+@asarray_replacer()
 def broadcast_to(array, shape, subok=False):
     _util.subok_not_ok(subok=subok)
     return torch.broadcast_to(array, size=shape)
@@ -302,6 +348,7 @@ def broadcast_to(array, shape, subok=False):
 from torch import broadcast_shapes
 
 
+# YYY: pattern: tuple of arrays as input, tuple of arrays as output; cf nonzero
 def broadcast_arrays(*args, subok=False):
     _util.subok_not_ok(subok=subok)
     res = torch.broadcast_tensors(*[asarray(a).get() for a in args])
@@ -329,6 +376,81 @@ def ravel_multi_index(multi_index, dims, mode='raise', order='C'):
     return sum(idx*dim for idx, dim in zip(multi_index, dims))
 
 
+# YYY : pattern: array_like input, tuple of arrays as output; cf broadcast_arrays
+def nonzero(a):
+    a = asarray(a).get()
+    return tuple(asarray(_) for _ in a.nonzero(as_tuple=True))
+
+
+@asarray_replacer()
+def transpose(a, axes=None):
+    if axes is None:
+        axes = tuple(range(a.ndim))[::-1]
+    return a.permute(axes)
+
+
+@asarray_replacer()
+def roll(a, shift, axis=None):
+    return a.roll(shift, axis)
+
+
+@asarray_replacer()
+def round_(a, decimals=0, out=None):
+    if torch.is_floating_point(a):
+        return torch.round(a, decimals=decimals, out=out)
+    else:
+        return a
+
+around = round_
+
+
+###### tri{l, u} and related
+@asarray_replacer()
+def tril(m, k=0):
+    return m.tril(k)
+
+
+@asarray_replacer()
+def triu(m, k=0):
+    return m.triu(k)
+
+
+# YYY: pattern: return sequence
+def tril_indices(n, k=0, m=None):
+    if m is None:
+        m = n
+    tensor_2 = torch.tril_indices(n, m, offset=k)
+    return tuple(asarray(_) for _ in tensor_2)
+
+
+def triu_indices(n, k=0, m=None):
+    if m is None:
+        m = n
+    tensor_2 = torch.tril_indices(n, m, offset=k)
+    return tuple(asarray(_) for _ in tensor_2)
+
+
+# YYY: pattern: array in, sequence of arrays out
+def tril_indices_from(arr, k=0):
+    arr = asarray(arr).get()
+    if arr.ndim != 2:
+        raise ValueError("input array must be 2-d")
+    tensor_2 = torch.tril_indices(arr.shape[0], arr.shape[1], offset=k)
+    return tuple(asarray(_) for _ in tensor_2)
+
+
+def triu_indices_from(arr, k=0):
+    arr = asarray(arr).get()
+    if arr.ndim != 2:
+        raise ValueError("input array must be 2-d")
+    tensor_2 = torch.tril_indices(arr.shape[0], arr.shape[1], offset=k)
+    return tuple(asarray(_) for _ in tensor_2)
+
+
+def tri(N, M=None, k=0, dtype=float, *, like=None):
+    _util.subok_not_ok(like)
+    tensor = torch.tril(torch.ones((N, M), dtype=dtype), diagonal=k)
+    return asarray(tensor)
 
 ###### reductions
 
@@ -422,6 +544,42 @@ def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoVal
     if out is not None:
         out.copy_(result)
     return result
+
+
+# YYY: pattern : std, var
+@asarray_replacer()
+def std(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
+    if where is not None:
+        raise NotImplementedError
+    if dtype is not None:
+        raise NotImplementedError 
+    if ddof == 0:
+        unbiased = False
+    elif ddof == 1:
+        unbiased = True
+    else:
+        raise ValueError(f"std: ddof = {ddof}")
+    if not torch.is_floating_point:
+        a = a * 1.0
+    return torch.std(a, axis, keepdim=bool(keepdims), out=out)
+
+
+@asarray_replacer()
+def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
+    if where is not None:
+        raise NotImplementedError
+    if dtype is not None:
+        raise NotImplementedError 
+    if ddof == 0:
+        unbiased = False
+    elif ddof == 1:
+        unbiased = True
+    else:
+        raise ValueError(f"std: ddof = {ddof}")
+    if not torch.is_floating_point:
+        a = a * 1.0
+    return torch.var(a, axis, keepdim=bool(keepdims), out=out)
+
 
 
 @asarray_replacer()

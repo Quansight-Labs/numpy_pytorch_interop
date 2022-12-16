@@ -13,12 +13,13 @@ one_arg_funcs = [w.asarray, w.empty_like, w.ones_like, w.zeros_like,
                  w.corrcoef, w.squeeze,
                  w.argmax,
                  # w.bincount,     # XXX: input dtypes
-                 w.prod,
+                 w.prod, w.sum,
                  w.real, w.imag,
                  w.angle, w.real_if_close,
                  w.isreal, w.isrealobj, w.iscomplex, w.iscomplexobj,
                  w.isneginf, w.isposinf, w.i0,
-                 w.copy, w.array,]
+                 w.copy, w.array,
+                 w.round_, w.around,]
 
 
 one_arg_funcs += [getattr(w, name) for name in _unary_ufuncs.__all__]
@@ -49,14 +50,8 @@ class TestOneArr:
         assert isinstance(la, w.ndarray)
 
 
-one_arg_axis_funcs = [w.argmax, w.argmin, w.prod, w.all, w.any,
-                      w.mean, w.nanmean,
-                      w.argsort,]
 
-
-@pytest.mark.parametrize('func', one_arg_axis_funcs)
-@pytest.mark.parametrize('axis', [0, 1, -1, None])
-class TestOneArrAndAxis:
+class _TestOneArrAndAxis:
     """Smoke test of functions (array_like, axis) -> array_like
     """
     def test_tensor(self, func, axis):
@@ -73,6 +68,59 @@ class TestOneArrAndAxis:
         t = w.asarray([[1., 2, 3], [4, 5, 6]])
         ta = func(t, axis=axis)
         assert isinstance(ta, w.ndarray)
+
+
+one_arg_axis_funcs = [w.argmax, w.argmin, w.prod, w.sum, w.all, w.any,
+                      w.mean, w.nanmean,
+                      w.argsort, w.std, w.var,
+                      ]
+
+@pytest.mark.parametrize('func', one_arg_axis_funcs)
+@pytest.mark.parametrize('axis', [0, 1, -1, None])
+class TestOneArrAndAxis(_TestOneArrAndAxis):
+    pass
+
+
+one_arg_axis_funcs_not_none = one_arg_axis_funcs[:]
+one_arg_axis_funcs_not_none += [w.expand_dims,]
+
+@pytest.mark.parametrize('func', one_arg_axis_funcs_not_none)
+@pytest.mark.parametrize('axis', [0, 1, -1,])
+class TestOneArrAndAxisNotNone(_TestOneArrAndAxis):
+    pass
+
+
+
+@pytest.mark.parametrize('func', [w.transpose])
+@pytest.mark.parametrize('axes', [(0, 2, 1), (1, 2, 0), None])
+class TestOneArrAndAxesTuple:
+    def test_tensor(self, func, axes):
+        t = torch.ones((1, 2, 3))
+        ta = func(t, axes=axes)
+        assert isinstance(ta, w.ndarray)
+
+        # a np.transpose -specific test
+        if axes is None:
+            newshape = (3, 2, 1)
+        else:
+            newshape = tuple(t.shape[axes[i]] for i in range(w.ndim(t)))
+        assert ta.shape == newshape
+
+    def test_list(self, func, axes):
+        t = [[[1., 1., 1.], [1., 1., 1.]]]   # shape = (1, 2, 3)
+        ta = func(t, axes=axes)
+        assert isinstance(ta, w.ndarray)
+
+    def test_array(self, func, axes):
+        t = w.asarray([[[1., 1., 1.], [1., 1., 1.]]])
+        ta = func(t, axes=axes)
+        assert isinstance(ta, w.ndarray)
+
+        if axes is None:
+            newshape = (3, 2, 1)
+        else:
+            newshape = tuple(t.shape[axes[i]] for i in range(t.ndim))
+        assert ta.shape == newshape
 
 
 arr_shape_funcs = [w.reshape, w.ones_like, w.empty_like, w.ones_like,
@@ -210,7 +258,7 @@ class TestSequenceOfArrays:
         assert all(isinstance(_, w.ndarray) for _ in result)
 
 
-seq_to_single_funcs = [w.concatenate]
+seq_to_single_funcs = [w.concatenate, w.stack]
 
 
 @pytest.mark.parametrize('func', seq_to_single_funcs)
@@ -226,6 +274,34 @@ class TestSequenceOfArraysToSingle:
         assert isinstance(result, w.ndarray)
 
 
+single_to_seq_funcs = [w.nonzero, w.tril_indices_from, w.triu_indices_from, w.where]
+
+@pytest.mark.parametrize('func', single_to_seq_funcs)
+class TestArrayToSequence:
+    """Smoke test array -> (tuple of arrays).
+    """
+    def test_asarray_tensor(self, func):
+        t = torch.Tensor([[1, 2, 3], [4, 5, 6]])
+        ta = func(t)
+
+        assert isinstance(ta, tuple)
+        assert all(isinstance(x, w.ndarray) for x in ta)
+
+    def test_asarray_list(self, func):
+        lst = [[1, 2, 3], [4, 5, 6]]
+        la = func(lst)
+
+        assert isinstance(la, tuple)
+        assert all(isinstance(x, w.ndarray) for x in la)
+
+    def test_asarray_array(self, func):
+        a = w.asarray([[1, 2, 3], [4, 5, 6]])
+        la = func(a)
+
+        assert isinstance(la, tuple)
+        assert all(isinstance(x, w.ndarray) for x in la)
+
+
 funcs_and_args = [
     (w.linspace, (0, 10, 11)),
     (w.logspace, (1, 2, 5)),
@@ -236,6 +312,7 @@ funcs_and_args = [
     (w.arange, (5,)),
     (w.arange, (5, 8)),
     (w.arange, (5, 8, 0.5)),
+    (w.tri, (3, 3, -1)),
 ]
 
 
@@ -246,3 +323,5 @@ class TestPythonArgsToArray:
     def test_simple(self, func, args):
         a = func(*args)
         assert isinstance(a, w.ndarray)
+
+

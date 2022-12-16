@@ -98,8 +98,6 @@ def argsort(a, axis=-1, kind=None, order=None):
 def argwhere(a):
     raise NotImplementedError
 
-def around(a, decimals=0, out=None):
-    raise NotImplementedError
 
 def array2string(a, max_line_width=None, precision=None, suppress_small=None, separator=' ', prefix='', style=NoValue, formatter=None, threshold=None, edgeitems=None, sign=None, floatmode=None, suffix='', *, legacy=None):
     raise NotImplementedError
@@ -267,8 +265,7 @@ def einsum_path(*operands, optimize='greedy', einsum_call=False):
     raise NotImplementedError
 
 
-def expand_dims(a, axis):
-    raise NotImplementedError
+
 
 def extract(condition, arr):
     raise NotImplementedError
@@ -528,8 +525,6 @@ def nanvar(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, wher
     raise NotImplementedError
 
 
-def nonzero(a):
-    raise NotImplementedError
 
 def obj2sctype(rep, default=None):
     raise NotImplementedError
@@ -628,8 +623,6 @@ def resize(a, new_shape):
 def result_type(*arrays_and_dtypes):
     raise NotImplementedError
 
-def roll(a, shift, axis=None):
-    raise NotImplementedError
 
 def rollaxis(a, axis, start=0):
     raise NotImplementedError
@@ -640,11 +633,7 @@ def roots(p):
 def rot90(m, k=1, axes=(0, 1)):
     raise NotImplementedError
 
-def round_(a, decimals=0, out=None):
-    raise NotImplementedError
 
-def round_(a, decimals=0, out=None):
-    raise NotImplementedError
 
 def vstack(tup):
     raise NotImplementedError
@@ -715,14 +704,9 @@ def sort_complex(a):
 def split(ary, indices_or_sections, axis=0):
     raise NotImplementedError
 
-def stack(arrays, axis=0, out=None):
-    raise NotImplementedError
 
-def std(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
-    raise NotImplementedError
 
-def sum(a, axis=None, dtype=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImplementedError
+
 
 def swapaxes(a, axis1, axis2):
     raise NotImplementedError
@@ -742,35 +726,15 @@ def tile(A, reps):
 def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None):
     raise NotImplementedError
 
-def transpose(a, axes=None):
-    raise NotImplementedError
+
 
 def trapz(y, x=None, dx=1.0, axis=-1):
     raise NotImplementedError
 
-def tri(N, M=None, k=0, dtype=float, *, like=None):
-    raise NotImplementedError
-
-def tril(m, k=0):
-    raise NotImplementedError
-
-def tril_indices(n, k=0, m=None):
-    raise NotImplementedError
-
-def tril_indices_from(arr, k=0):
-    raise NotImplementedError
 
 def trim_zeros(filt, trim='fb'):
     raise NotImplementedError
 
-def triu(m, k=0):
-    raise NotImplementedError
-
-def triu_indices(n, k=0, m=None):
-    raise NotImplementedError
-
-def triu_indices_from(arr, k=0):
-    raise NotImplementedError
 
 def typename(char):
     raise NotImplementedError
@@ -790,8 +754,7 @@ def unwrap(p, discont=None, axis=-1, *, period=6.283185307179586):
 def vander(x, N=None, increasing=False):
     raise NotImplementedError
 
-def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
-    raise NotImplementedError
+
 
 def vdot(a, b, /):
     raise NotImplementedError
