@@ -3,6 +3,7 @@ import functools
 import torch
 
 from . import _util
+from . import _dtypes
 
 NoValue = None
 
@@ -29,7 +30,7 @@ class ndarray:
 
     @property
     def dtype(self):
-        return self._tensor.dtype
+        return _dtypes.dtype_from_torch(self._tensor.dtype)
 
     @property
     def strides(self):

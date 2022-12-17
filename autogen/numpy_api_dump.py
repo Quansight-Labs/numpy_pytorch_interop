@@ -161,8 +161,6 @@ def busday_offset(dates, offsets, roll='raise', weekmask='1111100', holidays=Non
 def byte_bounds(a):
     raise NotImplementedError
 
-def can_cast(from_, to, casting='safe'):
-    raise NotImplementedError
 
 def choose(a, choices, out=None, mode='raise'):
     raise NotImplementedError
@@ -620,8 +618,7 @@ def require(a, dtype=None, requirements=None, *, like=None):
 def resize(a, new_shape):
     raise NotImplementedError
 
-def result_type(*arrays_and_dtypes):
-    raise NotImplementedError
+
 
 
 def rollaxis(a, axis, start=0):
