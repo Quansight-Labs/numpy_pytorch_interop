@@ -33,19 +33,19 @@ class TestOneArr:
     Accepts array_likes, torch.Tensors, w.ndarays; returns an ndarray
     """
     def test_asarray_tensor(self, func):
-        t = torch.Tensor([[1, 2, 3], [4, 5, 6]])
+        t = torch.Tensor([[1., 2, 3], [4, 5, 6]])
         ta = func(t)
 
         assert isinstance(ta, w.ndarray)
 
     def test_asarray_list(self, func):
-        lst = [[1, 2, 3], [4, 5, 6]]
+        lst = [[1., 2, 3], [4, 5, 6]]
         la = func(lst)
 
         assert isinstance(la, w.ndarray)
 
     def test_asarray_array(self, func):
-        a = w.asarray([[1, 2, 3], [4, 5, 6]])
+        a = w.asarray([[1., 2, 3], [4, 5, 6]])
         la = func(a)
 
         assert isinstance(la, w.ndarray)

@@ -1,0 +1,54 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: dev
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  example-4:
+    name: test
+    runs-on: "ubuntu-latest"
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+
+      # cache
+      - uses: actions/cache@v2
+        env:
+          # Increase this value to reset cache if etc/example-environment.yml has not changed
+          CACHE_NUMBER: 0
+        with:
+          path: ~/conda_pkgs_dir
+          key:
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{
+            hashFiles('etc/example-environment.yml') }}
+          activate-environment: foo
+          python-version: 3.9
+          channels: conda-forge
+          allow-softlinks: true
+          channel-priority: strict
+          show-channel-urls: true
+          use-only-tar-bz2: true
+
+      - run: |
+          conda config --add channels conda-forge
+          conda config --set channel_priority strict
+          conda info
+          conda install python==3.9 pytorch==1.13.0 pytest numpy -y
+          conda list
+          conda config --show-sources
+      #    conda config --show
+      - run: |
+          echo $PWD
+          ls -l
+      - name: Run tests
+        run: |
+          pytest torch_np/ -v -s
+
