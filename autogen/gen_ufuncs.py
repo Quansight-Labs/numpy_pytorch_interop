@@ -24,17 +24,17 @@ torch_names = {np.radians : "deg2rad",
 
 
 # np functions which do not have a torch equivalent
-default_stanza = "torch.{torch_name}(torch.as_tensor(x), out=out)"
+default_stanza = "torch.{torch_name}(x, out=out)"
 
-stanzas = {np.cbrt : "torch.pow(torch.as_tensor(x), 1/3, out=out)",
+stanzas = {np.cbrt : "torch.pow(x, 1/3, out=out)",
 
            # XXX what on earth is np.positive
-           np.positive: "+torch.as_tensor(x)",
+           np.positive: "+x",
 
            # these three do not have an out arg
-           np.isinf: "torch.isinf(torch.as_tensor(x))",
-           np.isnan: "torch.isnan(torch.as_tensor(x))",
-           np.isfinite: "torch.isfinite(torch.as_tensor(x))",
+           np.isinf: "torch.isinf(x)",
+           np.isnan: "torch.isnan(x)",
+           np.isfinite: "torch.isfinite(x)",
 }
 
 
@@ -53,6 +53,7 @@ header = """\
 import torch
 
 import _util
+from _ndarray import asarray_replacer
 
 """
 
@@ -61,11 +62,13 @@ import numpy as np
 import torch
 
 from _unary_ufuncs import *
+from testing import assert_allclose
 """
 
 
 template = """
 
+@asarray_replacer()
 def {np_name}(x, /, out=None, *, where=True, casting='same_kind', order='K',
           dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -85,8 +88,8 @@ def {np_name}(x, /, out=None, *, where=True, casting='same_kind', order='K',
 test_template = """
 
 def test_{np_name}():
-    np.testing.assert_allclose(np.{np_name}(0.5),
-                               {np_name}(0.5), atol=1e-14)
+    assert_allclose(np.{np_name}(0.5),
+                    {np_name}(0.5), atol=1e-14, check_dtype=False)
 
 """
 
@@ -140,11 +143,13 @@ import numpy as np
 import torch
 
 from _binary_ufuncs import *
+from testing import assert_allclose
 """
 
 
 template = """
 
+@asarray_replacer("two")
 def {np_name}(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
     _util.subok_not_ok(subok=subok)
@@ -153,7 +158,7 @@ def {np_name}(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
     if out is not None:
         # XXX: dtypes, casting
         out = out.to(dtype)
-    result = torch.{torch_name}(torch.as_tensor(x1), torch.as_tensor(x2), out=out)
+    result = torch.{torch_name}(x1, x2, out=out)
     if dtype is not None:
         result = result.to(dtype)
     return result
@@ -163,8 +168,8 @@ def {np_name}(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
 test_template = """
 
 def test_{np_name}():
-    np.testing.assert_allclose(np.{np_name}(0.5, 0.6),
-                               {np_name}(0.5, 0.6), atol=1e-7)
+    assert_allclose(np.{np_name}(0.5, 0.6),
+                               {np_name}(0.5, 0.6), atol=1e-7, check_dtype=False)
 
 """
 

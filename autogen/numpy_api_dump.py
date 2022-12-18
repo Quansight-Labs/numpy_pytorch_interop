@@ -5,8 +5,7 @@
 # to wrapper.py and areremoved from the list below.
 # Not present: scalars, types, dtypes, `np.r_` etc
 
-def arange(start, stop, step, dtype=None, *, like=None):
-    raise NotImplementedError
+
 
 
 
@@ -62,8 +61,6 @@ def seterrobj(errobj):
 def alen(a):
     raise NotImplementedError
 
-def all(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-    raise NotImplementedError
 
 def allclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
     raise NotImplementedError
@@ -78,8 +75,7 @@ def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValu
     raise NotImplementedError
 
 
-def any(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-    raise NotImplementedError
+
 
 def append(arr, values, axis=None):
     raise NotImplementedError
@@ -91,8 +87,7 @@ def apply_over_axes(func, a, axes):
     raise NotImplementedError
 
 
-def argmin(a, axis=None, out=None, *, keepdims=NoValue):
-    raise NotImplementedError
+
 
 def argpartition(a, kth, axis=-1, kind='introselect', order=None):
     raise NotImplementedError
@@ -103,8 +98,6 @@ def argsort(a, axis=-1, kind=None, order=None):
 def argwhere(a):
     raise NotImplementedError
 
-def around(a, decimals=0, out=None):
-    raise NotImplementedError
 
 def array2string(a, max_line_width=None, precision=None, suppress_small=None, separator=' ', prefix='', style=NoValue, formatter=None, threshold=None, edgeitems=None, sign=None, floatmode=None, suffix='', *, legacy=None):
     raise NotImplementedError
@@ -272,8 +265,7 @@ def einsum_path(*operands, optimize='greedy', einsum_call=False):
     raise NotImplementedError
 
 
-def expand_dims(a, axis):
-    raise NotImplementedError
+
 
 def extract(condition, arr):
     raise NotImplementedError
@@ -318,8 +310,7 @@ def fromregex(file, regexp, dtype, encoding=None):
 def genfromtxt(fname, dtype=float, comments='#', delimiter=None, skip_header=0, skip_footer=0, converters=None, missing_values=None, filling_values=None, usecols=None, names=None, excludelist=None, deletechars=" !#$%&'()*+,-./:;<=>?@[\\]^{|}~", replace_space='_', autostrip=False, case_sensitive=True, defaultfmt='f%i', unpack=None, usemask=False, loose=True, invalid_raise=True, max_rows=None, encoding='bytes', *, like=None):
     raise NotImplementedError
 
-def geomspace(start, stop, num=50, endpoint=True, dtype=None, axis=0):
-    raise NotImplementedError
+
 
 def get_array_wrap(*args):
     raise NotImplementedError
@@ -444,8 +435,7 @@ def load(file, mmap_mode=None, allow_pickle=False, fix_imports=True, encoding='A
 def loadtxt(fname, dtype=float, comments='#', delimiter=None, converters=None, skiprows=0, usecols=None, unpack=False, ndmin=0, encoding='bytes', max_rows=None, *, quotechar=None, like=None):
     raise NotImplementedError
 
-def logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0):
-    raise NotImplementedError
+
 
 def lookfor(what, module=None, import_modules=True, regenerate=False, output=None):
     raise NotImplementedError
@@ -468,8 +458,7 @@ def maximum_sctype(t):
 def may_share_memory(a, b, /, max_work=None):
     raise NotImplementedError
 
-def mean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
-    raise NotImplementedError
+
 
 def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
     raise NotImplementedError
@@ -510,8 +499,6 @@ def nancumsum(a, axis=None, dtype=None, out=None):
 def nanmax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
     raise NotImplementedError
 
-def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
-    raise NotImplementedError
 
 def nanmedian(a, axis=None, out=None, overwrite_input=False, keepdims=NoValue):
     raise NotImplementedError
@@ -538,8 +525,6 @@ def nanvar(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, wher
     raise NotImplementedError
 
 
-def nonzero(a):
-    raise NotImplementedError
 
 def obj2sctype(rep, default=None):
     raise NotImplementedError
@@ -638,8 +623,6 @@ def resize(a, new_shape):
 def result_type(*arrays_and_dtypes):
     raise NotImplementedError
 
-def roll(a, shift, axis=None):
-    raise NotImplementedError
 
 def rollaxis(a, axis, start=0):
     raise NotImplementedError
@@ -650,11 +633,7 @@ def roots(p):
 def rot90(m, k=1, axes=(0, 1)):
     raise NotImplementedError
 
-def round_(a, decimals=0, out=None):
-    raise NotImplementedError
 
-def round_(a, decimals=0, out=None):
-    raise NotImplementedError
 
 def vstack(tup):
     raise NotImplementedError
@@ -725,14 +704,9 @@ def sort_complex(a):
 def split(ary, indices_or_sections, axis=0):
     raise NotImplementedError
 
-def stack(arrays, axis=0, out=None):
-    raise NotImplementedError
 
-def std(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
-    raise NotImplementedError
 
-def sum(a, axis=None, dtype=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImplementedError
+
 
 def swapaxes(a, axis1, axis2):
     raise NotImplementedError
@@ -752,35 +726,15 @@ def tile(A, reps):
 def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None):
     raise NotImplementedError
 
-def transpose(a, axes=None):
-    raise NotImplementedError
+
 
 def trapz(y, x=None, dx=1.0, axis=-1):
     raise NotImplementedError
 
-def tri(N, M=None, k=0, dtype=float, *, like=None):
-    raise NotImplementedError
-
-def tril(m, k=0):
-    raise NotImplementedError
-
-def tril_indices(n, k=0, m=None):
-    raise NotImplementedError
-
-def tril_indices_from(arr, k=0):
-    raise NotImplementedError
 
 def trim_zeros(filt, trim='fb'):
     raise NotImplementedError
 
-def triu(m, k=0):
-    raise NotImplementedError
-
-def triu_indices(n, k=0, m=None):
-    raise NotImplementedError
-
-def triu_indices_from(arr, k=0):
-    raise NotImplementedError
 
 def typename(char):
     raise NotImplementedError
@@ -800,8 +754,7 @@ def unwrap(p, discont=None, axis=-1, *, period=6.283185307179586):
 def vander(x, N=None, increasing=False):
     raise NotImplementedError
 
-def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
-    raise NotImplementedError
+
 
 def vdot(a, b, /):
     raise NotImplementedError

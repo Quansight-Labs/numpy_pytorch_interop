@@ -46,6 +46,28 @@ def dump_signatures(keys, namespace=None, replace=None):
             out += f"def {sig}:\n    raise NotImplementedError\n\n"
     return out
 
+
+def dump_difference(namespace):
+    import torch_np
+    dct_wrapper = grab_namespace(torch_np)
+    wrapper_funcs =set([obj.__name__ for obj in dct_wrapper['function']])
+
+    dct_api = grab_namespace(namespace)
+    namespace_funcs = set(obj.__name__ for obj in dct_api['function'])
+
+    missing_names = namespace_funcs.difference(wrapper_funcs)
+
+    for name in sorted(missing_names):
+        print('- [ ]', name)
+
+    breakpoint()
+
+    extras = wrapper_funcs.difference(namespace_funcs)
+    print('\n\n')
+    for name in sorted(extras):
+        print('- [ ]', name)
+
+
 if __name__ == "__main__":
 
 #    dct = grab_namespace(np)
@@ -54,9 +76,22 @@ if __name__ == "__main__":
 #    for obj in dct['function']:
 #        print( get_signature(obj) )
 
+
+# dump array_api, full_signatures
+  #  from numpy import array_api
+
+ #   keys = ["builtin_function_or_method", "function"]
+ #   replace = {"<no value>": "NoValue"}
+
+ #   print(dump_signatures(keys, namespace=array_api, replace=replace))
+
+# dump the difference
     from numpy import array_api
 
-    keys = ["builtin_function_or_method", "function"]
-    replace = {"<no value>": "NoValue"}
+    dump_difference(array_api)
 
-    print(dump_signatures(keys, namespace=array_api, replace=replace))
+   # keys = ["builtin_function_or_method", "function"]
+   # replace = {"<no value>": "NoValue"}
+   # print(dump_signatures(keys, namespace=array_api, replace=replace))
+
+
