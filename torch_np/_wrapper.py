@@ -340,6 +340,16 @@ def expand_dims(a, axis):
 
 
 @asarray_replacer()
+def flip(m, axis=None):
+    # XXX: semantic difference: np.flip returns a view, torch.flip copies
+    if axis is None:
+        axis = tuple(range(m.ndim))
+    else:
+        axis = _util.normalize_axis_tuple(axis, m.ndim)
+    return torch.flip(m, axis)
+
+
+@asarray_replacer()
 def broadcast_to(array, shape, subok=False):
     _util.subok_not_ok(subok=subok)
     return torch.broadcast_to(array, size=shape)

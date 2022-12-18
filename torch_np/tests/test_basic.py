@@ -19,7 +19,8 @@ one_arg_funcs = [w.asarray, w.empty_like, w.ones_like, w.zeros_like,
                  w.isreal, w.isrealobj, w.iscomplex, w.iscomplexobj,
                  w.isneginf, w.isposinf, w.i0,
                  w.copy, w.array,
-                 w.round_, w.around,]
+                 w.round_, w.around,
+                 w.flip,]
 
 
 one_arg_funcs += [getattr(w, name) for name in _unary_ufuncs.__all__]
@@ -72,7 +73,7 @@ class _TestOneArrAndAxis:
 
 one_arg_axis_funcs = [w.argmax, w.argmin, w.prod, w.sum, w.all, w.any,
                       w.mean, w.nanmean,
-                      w.argsort, w.std, w.var,
+                      w.argsort, w.std, w.var, w.flip,
                       ]
 
 @pytest.mark.parametrize('func', one_arg_axis_funcs)
