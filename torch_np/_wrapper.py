@@ -337,11 +337,9 @@ def size(a, axis=None):
 
 ###### shape manipulations and indexing
 
-@asarray_replacer()
 def reshape(a, newshape, order='C'):
-    if order != 'C':
-        raise NotImplementedError
-    return torch.reshape(a, newshape)
+    arr = asarray(a)
+    return arr.reshape(*newshape, order=order)
 
 
 @asarray_replacer()

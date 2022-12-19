@@ -12,6 +12,14 @@ NoValue = None
 class ndarray:
     def __init__(self):
         self._tensor = torch.Tensor()
+        self._base = None
+
+    @classmethod
+    def _from_tensor_and_base(cls, tensor, base):
+        self = cls()
+        self._tensor = tensor
+        self._base = base
+        return self
 
     def get(self):
         return self._tensor
@@ -36,6 +44,10 @@ class ndarray:
     def strides(self):
         return self._tensor.stride()   # XXX: byte strides
 
+    @property
+    def base(self):
+        return self._base
+
     # ctors
     def astype(self, dtype):
         newt = ndarray()
@@ -43,7 +55,7 @@ class ndarray:
         newt._tensor = self._tensor.to(torch_dtype)
         return newt
 
-    # niceties
+    ###  niceties ###
     def __str__(self):
         return str(self._tensor).replace("tensor", "array_w")
 
@@ -72,8 +84,13 @@ class ndarray:
     def argmax(self, axis=None, out=None, *, keepdims=NoValue):
         return argmax(self._tensor, axis, out=out, keepdims=keepdims)
 
-    def reshape(self, shape, order='C'):
-        return reshape(self._tensor, shape, order)
+    def reshape(self, *shape, order='C'):
+        newshape = shape[0] if len(shape) == 1 else shape
+        # if sh = (1, 2, 3), numpy allows both .reshape(sh) and .reshape(*sh)
+        if order != 'C':
+            raise NotImplementedError
+        tensor = self._tensor.reshape(newshape)
+        return ndarray._from_tensor_and_base(tensor, self)
 
     # indexing
     def __getitem__(self, *args, **kwds):
