@@ -269,18 +269,28 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
             # mimic numpy
             raise TypeError("concatenate() only takes `out` or `dtype` as an "
                             "argument, but both were provided.")
-        out = asarray(out).get()
+        if not isinstance(out, ndarray):
+            raise ValueError("'out' must be an array")
+        out_tensor = out.get()
+    else:
+        out_tensor = out
+
     if casting != "same_kind":
         raise NotImplementedError
     tensors = tuple(asarray(ar).get() for ar in ar_tuple)
     if dtype is not None:
         # XXX: map numpy dtypes
         tensors = tuple(ar.to(dtype) for ar in tensors)
+    if axis is None:
+        tensors = tuple(ar.ravel() for ar in tensors)
+        axis = 0
 
     try:
-        result = torch.cat(tensors, axis, out=out)
+        result = torch.cat(tensors, axis, out=out_tensor)
     except (IndexError, RuntimeError):
         raise AxisError
+    if out is not None:
+        return out
     return asarray(result)
 
 

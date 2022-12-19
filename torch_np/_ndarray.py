@@ -57,9 +57,14 @@ class ndarray:
 
     ###  niceties ###
     def __str__(self):
+        # FIXME: prints dtype=torch.float64 etc
         return str(self._tensor).replace("tensor", "array_w")
 
     __repr__ = __str__
+
+    ### comparisons ###
+    def __eq__(self, other):
+        return asarray(self._tensor == other._tensor)
 
 
     ### arithmetic ###
