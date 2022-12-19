@@ -50,6 +50,10 @@ from ._ndarray import ndarray, asarray, array, asarray_replacer
 
 NoValue = None
 
+class AxisError(ValueError):
+    pass
+
+
 ###### array creation routines
 
 
@@ -115,7 +119,8 @@ def arange(start, stop=None, step=1, dtype=None, *, like=None):
         # arange(stop)
         stop = start
         start = 0
-    return asarray(torch.arange(start, stop, step, dtype=dtype))
+    torch_dtype = _dtypes.torch_dtype_from_dtype(dtype)
+    return asarray(torch.arange(start, stop, step, dtype=torch_dtype))
 
 
 def empty(shape, dtype=float, order='C', *, like=None):
@@ -259,13 +264,24 @@ def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
 
 
 def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
+    if out is not None:
+        if dtype is not None:
+            # mimic numpy
+            raise TypeError("concatenate() only takes `out` or `dtype` as an "
+                            "argument, but both were provided.")
+        out = asarray(out).get()
     if casting != "same_kind":
         raise NotImplementedError
     tensors = tuple(asarray(ar).get() for ar in ar_tuple)
     if dtype is not None:
         # XXX: map numpy dtypes
-        tensors = tuple(ar.type(dtype) for ar in ar_typle)
-    return asarray(torch.cat(tensors, axis, out=out))
+        tensors = tuple(ar.to(dtype) for ar in tensors)
+
+    try:
+        result = torch.cat(tensors, axis, out=out)
+    except (IndexError, RuntimeError):
+        raise AxisError
+    return asarray(result)
 
 
 
@@ -364,6 +380,11 @@ def broadcast_arrays(*args, subok=False):
     _util.subok_not_ok(subok=subok)
     res = torch.broadcast_tensors(*[asarray(a).get() for a in args])
     return tuple(asarray(_) for _ in res)
+
+
+@asarray_replacer()
+def moveaxis(a, source, destination):
+    return asarray(torch.moveaxis(a, source, destination))
 
 
 def unravel_index(indices, shape, order='C'):

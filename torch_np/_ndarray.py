@@ -39,7 +39,8 @@ class ndarray:
     # ctors
     def astype(self, dtype):
         newt = ndarray()
-        newt._tensor = self._tensor.to(dtype)
+        torch_dtype = _dtypes.torch_dtype_from_dtype(dtype)
+        newt._tensor = self._tensor.to(torch_dtype)
         return newt
 
     # niceties
@@ -64,6 +65,7 @@ class ndarray:
         return self._tensor.__mul__(other)
 
     ### methods to match namespace functions
+
     def squeeze(self, axis=None):
         return squeeze(self._tensor, axis)
 
@@ -73,7 +75,12 @@ class ndarray:
     def reshape(self, shape, order='C'):
         return reshape(self._tensor, shape, order)
 
+    # indexing
+    def __getitem__(self, *args, **kwds):
+        return self._tensor.__getitem__(*args, **kwds)
 
+    def __setitem__(self, index, value):
+        return self._tensor.__setitem__(index, value)
 
 
 def asarray(a, dtype=None, order=None, *, like=None):
@@ -84,10 +91,12 @@ def asarray(a, dtype=None, order=None, *, like=None):
     if isinstance(a, ndarray):
         return a
 
+    torch_dtype = _dtypes.torch_dtype_from_dtype(dtype)
+
     # This and array(...) are the only places which talk to ndarray directly.
     # The rest goes through asarray (preferred) or array.
     out = ndarray()
-    tt = torch.as_tensor(a, dtype=dtype)
+    tt = torch.as_tensor(a, dtype=torch_dtype)
     out._tensor = tt
     return out
 

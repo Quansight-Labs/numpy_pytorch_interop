@@ -473,8 +473,7 @@ def min_scalar_type(a, /):
 def mintypecode(typechars, typeset='GDFgdf', default='d'):
     raise NotImplementedError
 
-def moveaxis(a, source, destination):
-    raise NotImplementedError
+
 
 def msort(a):
     raise NotImplementedError

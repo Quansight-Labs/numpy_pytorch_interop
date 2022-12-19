@@ -68,12 +68,27 @@ _dtype_from_torch_dict = {
 }
 
 
+# reverse mapping
+_torch_dtype_from_dtype_dict = {_dtype_from_torch_dict[key]: key
+                                for key in _dtype_from_torch_dict}
+
 def dtype_from_torch(torch_dtype):
     try:
         return _dtype_from_torch_dict[torch_dtype]
     except KeyError:
         # mimic numpy: >>> np.dtype('unknown') -->  TypeError
         raise TypeError
+
+
+def torch_dtype_from_dtype(dtype):
+    if dtype is None:
+        return None
+    try:
+        return _torch_dtype_from_dtype_dict[dtype]
+    except KeyError:
+        # mimic numpy: >>> np.dtype('unknown') -->  TypeError
+        raise TypeError
+
 
 
 # The casting below is defined *with dtypes only*, so no value-based casting!

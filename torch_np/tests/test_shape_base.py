@@ -1,22 +1,24 @@
 import pytest
+from pytest import raises as assert_raises
 
-import numpy as np
-import torch
 
-import torch_np as w
+import numpy as _np
+
+import torch_np as np
+from torch_np import concatenate
 
 
 class TestConcatenate:
-    def test_out_and_dtype(self):
+    def test_out_and_dtype_simple(self):
         # numpy raises TypeError on both out=... and dtype=...
-        a, b, out = w.ones(3), w.ones(4), w.ones(3+4)
+        a, b, out = np.ones(3), np.ones(4), np.ones(3+4)
 
         with pytest.raises(TypeError):
-            w.concatenate((a, b), out=out, dtype=float)
+            concatenate((a, b), out=out, dtype=float)
 
     def test_returns_copy(self):
         a = np.eye(3)
-        b = np.concatenate([a])
+        b = concatenate([a])
         b[0, 0] = 2
         assert b[0, 0] != a[0, 0]
 
@@ -33,11 +35,12 @@ class TestConcatenate:
         assert_raises(ValueError, concatenate, (np.array(0),))
 
         # dimensionality must match
-        assert_raises_regex(
-            ValueError,
-            r"all the input arrays must have same number of dimensions, but "
-            r"the array at index 0 has 1 dimension\(s\) and the array at "
-            r"index 1 has 2 dimension\(s\)",
+        assert_raises(ValueError,
+#        assert_raises_regex(
+#            ValueError,
+#            r"all the input arrays must have same number of dimensions, but "
+#            r"the array at index 0 has 1 dimension\(s\) and the array at "
+#            r"index 1 has 2 dimension\(s\)",
             np.concatenate, (np.zeros(1), np.zeros((1, 1))))
 
         # test shapes must match except for concatenation axis
@@ -46,12 +49,12 @@ class TestConcatenate:
         axis = list(range(3))
         for i in range(3):
             np.concatenate((a, b), axis=axis[0])  # OK
-            assert_raises_regex(
-                ValueError,
-                "all the input array dimensions except for the concatenation axis "
-                "must match exactly, but along dimension {}, the array at "
-                "index 0 has size 1 and the array at index 1 has size 2"
-                .format(i),
+#            assert_raises_regex(
+            assert_raises(ValueError,
+#                "all the input array dimensions except for the concatenation axis "
+#                "must match exactly, but along dimension {}, the array at "
+#                "index 0 has size 1 and the array at index 1 has size 2"
+#                .format(i),
                 np.concatenate, (a, b), axis=axis[1])
             assert_raises(ValueError, np.concatenate, (a, b), axis=axis[2])
             a = np.moveaxis(a, -1, 0)
@@ -134,19 +137,6 @@ class TestConcatenate:
         rout = concatenate((a0, a1, a2), 2, out=out)
         assert_(out is rout)
         assert_equal(res, rout)
-
-    @pytest.mark.skipif(IS_PYPY, reason="PYPY handles sq_concat, nb_add differently than cpython")
-    def test_operator_concat(self):
-        import operator
-        a = array([1, 2])
-        b = array([3, 4])
-        n = [1,2]
-        res = array([1, 2, 3, 4])
-        assert_raises(TypeError, operator.concat, a, b)
-        assert_raises(TypeError, operator.concat, a, n)
-        assert_raises(TypeError, operator.concat, n, a)
-        assert_raises(TypeError, operator.concat, a, 1)
-        assert_raises(TypeError, operator.concat, 1, a)
 
     def test_bad_out_shape(self):
         a = array([1, 2])
