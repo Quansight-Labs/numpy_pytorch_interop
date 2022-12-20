@@ -48,6 +48,10 @@ class ndarray:
     def base(self):
         return self._base
 
+    @property
+    def T(self):
+        return self.transpose()
+
     # ctors
     def astype(self, dtype):
         newt = ndarray()
@@ -55,17 +59,32 @@ class ndarray:
         newt._tensor = self._tensor.to(torch_dtype)
         return newt
 
+    def copy(self, order='C'):
+        if order != 'C':
+            raise NotImplementedError
+        tensor = self._tensor.clone()   # XXX: clone or detach?
+        return ndarray._from_tensor_and_base(tensor, None)
+
     ###  niceties ###
     def __str__(self):
         # FIXME: prints dtype=torch.float64 etc
-        return str(self._tensor).replace("tensor", "array_w")
+        return str(self._tensor).replace("tensor", "array_w").replace("dtype=torch.", "dtype=")
 
     __repr__ = __str__
 
     ### comparisons ###
     def __eq__(self, other):
-        return asarray(self._tensor == other._tensor)
+        return asarray(self._tensor == asarray(other).get())
 
+    def __neq__(self, other):
+        return asarray(self._tensor != asarray(other).get())
+
+    def __bool__(self):
+        try:
+            return bool(self._tensor)
+        except RuntimeError:
+            raise ValueError("The truth value of an array with more than one "
+                             "element is ambiguous. Use a.any() or a.all()")
 
     ### arithmetic ###
 
@@ -97,9 +116,21 @@ class ndarray:
         tensor = self._tensor.reshape(newshape)
         return ndarray._from_tensor_and_base(tensor, self)
 
-    # indexing
+    def transpose(self, *axes):
+        # numpy allows both .reshape(sh) and .reshape(*sh)
+        axes = axes[0] if len(axes) == 1 else axes
+        if axes == () or axes is None:
+            axes = tuple(range(self.ndim))[::-1]
+        try:
+            tensor = self._tensor.permute(axes)
+        except RuntimeError:
+            raise ValueError("axes don't match array")
+        return ndarray._from_tensor_and_base(tensor, self)
+
+
+    ### indexing ###
     def __getitem__(self, *args, **kwds):
-        return self._tensor.__getitem__(*args, **kwds)
+        return ndarray._from_tensor_and_base(self._tensor.__getitem__(*args, **kwds), self)
 
     def __setitem__(self, index, value):
         return self._tensor.__setitem__(index, value)

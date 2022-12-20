@@ -1,12 +1,15 @@
 import pytest
 from pytest import raises as assert_raises
 
-
 import numpy as _np
 
 import torch_np as np
 from torch_np import concatenate, array
 from torch_np.testing import assert_equal, assert_array_equal
+
+import warnings
+warnings.simplefilter('error', UserWarning)
+
 
 class TestConcatenate:
     def test_out_and_dtype_simple(self):
@@ -127,17 +130,18 @@ class TestConcatenate:
         # Arrays much match shape
         assert_raises(ValueError, concatenate, (a23.T, a13.T), 0)
         # 3D
-        res = arange(2 * 3 * 7).reshape((2, 3, 7))
+        res = np.arange(2 * 3 * 7).reshape((2, 3, 7))
         a0 = res[..., :4]
         a1 = res[..., 4:6]
         a2 = res[..., 6:]
         assert_array_equal(concatenate((a0, a1, a2), 2), res)
         assert_array_equal(concatenate((a0, a1, a2), -1), res)
+        c = concatenate((a0.T, a1.T, a2.T), 0)
         assert_array_equal(concatenate((a0.T, a1.T, a2.T), 0), res.T)
 
         out = res.copy()
         rout = concatenate((a0, a1, a2), 2, out=out)
-        assert_(out is rout)
+        assert out is rout
         assert_equal(res, rout)
 
     @pytest.mark.xfail

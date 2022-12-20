@@ -347,6 +347,11 @@ def size(a, axis=None):
 
 ###### shape manipulations and indexing
 
+def transpose(a, axes=None):
+    arr = asarray(a)
+    return arr.transpose(axes)
+
+
 def reshape(a, newshape, order='C'):
     arr = asarray(a)
     return arr.reshape(*newshape, order=order)
@@ -420,13 +425,6 @@ def ravel_multi_index(multi_index, dims, mode='raise', order='C'):
 def nonzero(a):
     a = asarray(a).get()
     return tuple(asarray(_) for _ in a.nonzero(as_tuple=True))
-
-
-@asarray_replacer()
-def transpose(a, axes=None):
-    if axes is None:
-        axes = tuple(range(a.ndim))[::-1]
-    return a.permute(axes)
 
 
 @asarray_replacer()
