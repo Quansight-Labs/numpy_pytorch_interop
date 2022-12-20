@@ -59,3 +59,15 @@ class TestReshape:
 ##        assert_equal(arr.reshape((3, 4), order='F'), tgt)
 ##
 
+class TestTranspose:
+    def test_transpose_function(self):
+        arr = [[1, 2], [3, 4], [5, 6]]
+        tgt = [[1, 3, 5], [2, 4, 6]]
+        assert_equal(np.transpose(arr, (1, 0)), tgt)
+
+    def test_transpose(self):
+        a = np.array([[1, 2], [3, 4]])
+        assert_equal(a.transpose(), [[1, 3], [2, 4]])
+        assert_raises(ValueError, lambda: a.transpose(0))
+        assert_raises(ValueError, lambda: a.transpose(0, 0))
+        assert_raises(ValueError, lambda: a.transpose(0, 1, 2))
