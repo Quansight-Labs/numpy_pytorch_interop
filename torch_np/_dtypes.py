@@ -5,20 +5,38 @@
 #       2. mimic numpy's various aliases (np.half == np.float16, dtype='i8' etc)
 #       3. convert from python types: np.ones(3, dtype=float) etc
 
+import builtins
 import torch
 
 # Define analogs of numpy dtypes supported by pytorch.
 
 class dtype:
     def __init__(self, name):
-        self._name = name
+        if isinstance(name, dtype):
+            _name = name.name
+        elif name in python_types_dict:
+            _name = python_types_dict[name]
+        elif name in dt_names:
+            _name = name
+        elif name in dt_aliases_dict:
+            _name = dt_aliases_dict[name]
+        else:
+            raise TypeError(f"data type '{name}' not understood")
+        self._name = _name
 
     @property
     def name(self):
         return self._name
 
+    def __eq__(self, other):
+        if isinstance(other, dtype):
+            return self._name == other.name
+        else:
+            other_instance = dtype(other)
+            return self._name == other_instance.name
+
     def __repr__(self):
-        return f'dtype("{self._name}")'
+        return f'dtype("{self.name}")'
 
     __str__ = __repr__
 
@@ -31,6 +49,27 @@ dt_names = ['float16', 'float32', 'float64',
          'int32',
          'int64',
          'bool']
+
+
+dt_aliases_dict = {
+    'i1' : 'int8',
+    'i2' : 'int16',
+    'i4' : 'int32',
+    'i8' : 'int64',
+    'b'  : 'int8',   # XXX: srsly?
+    'f2' : 'float16',
+    'f4' : 'float32',
+    'f8' : 'float64',
+    'c8' : 'complex64',
+    'c16': 'complex128',
+}
+
+
+python_types_dict = {
+    int: 'int64',
+    float: 'float64',
+    builtins.bool: 'bool'
+}
 
 
 float16 = dtype("float16")
@@ -50,21 +89,21 @@ bool = dtype("bool")
 # "quantized" types not available in numpy, skip
 _dtype_from_torch_dict = {
         # floating-point
-        torch.float16: float16,
-        torch.float32: float32,
-        torch.float64 : float64,
+        torch.float16: 'float16',
+        torch.float32: 'float32',
+        torch.float64 : 'float64',
         # np.complex32 does not exist
-        torch.complex64: complex64,
-        torch.complex128: complex128,
+        torch.complex64: 'complex64',
+        torch.complex128: 'complex128',
         # integer, unsigned (unit8 only, torch.uint32 etc do not exist)
-        torch.uint8: uint8,
+        torch.uint8: 'uint8',
         # integer
-        torch.int8: int8,
-        torch.int16: int16,
-        torch.int32: int32,
-        torch.int64: int64,
+        torch.int8: 'int8',
+        torch.int16: 'int16',
+        torch.int32: 'int32',
+        torch.int64: 'int64',
         # boolean
-        torch.bool : bool
+        torch.bool : 'bool'
 }
 
 
@@ -72,19 +111,25 @@ _dtype_from_torch_dict = {
 _torch_dtype_from_dtype_dict = {_dtype_from_torch_dict[key]: key
                                 for key in _dtype_from_torch_dict}
 
+
 def dtype_from_torch(torch_dtype):
     try:
-        return _dtype_from_torch_dict[torch_dtype]
+        name = _dtype_from_torch_dict[torch_dtype]
+        return dtype(name)
     except KeyError:
         # mimic numpy: >>> np.dtype('unknown') -->  TypeError
         raise TypeError
 
 
-def torch_dtype_from_dtype(dtype):
-    if dtype is None:
+def torch_dtype_from(dtyp):
+    if dtyp is None:
         return None
+    if isinstance(dtyp, dtype):
+        name = dtyp.name
+    else:
+        name = dtyp
     try:
-        return _torch_dtype_from_dtype_dict[dtype]
+        return _torch_dtype_from_dtype_dict[name]
     except KeyError:
         # mimic numpy: >>> np.dtype('unknown') -->  TypeError
         raise TypeError

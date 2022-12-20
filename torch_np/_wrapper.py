@@ -121,7 +121,7 @@ def arange(start, stop=None, step=1, dtype=None, *, like=None):
         # arange(stop)
         stop = start
         start = 0
-    torch_dtype = _dtypes.torch_dtype_from_dtype(dtype)
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
     return asarray(torch.arange(start, stop, step, dtype=torch_dtype))
 
 
@@ -129,7 +129,9 @@ def empty(shape, dtype=float, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
-    return asarray(torch.empty(shape, dtype=dtype))
+    dtype = _dtypes.dtype(dtype)
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    return asarray(torch.empty(shape, dtype=torch_dtype))
 
 
 # NB: *_like function deliberately deviate from numpy: it has subok=True
@@ -277,21 +279,41 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     else:
         out_tensor = out
 
-    if casting != "same_kind":
-        raise NotImplementedError
-    tensors = tuple(asarray(ar).get() for ar in ar_tuple)
-    if dtype is not None:
-        # XXX: map numpy dtypes
-        tensors = tuple(ar.to(dtype) for ar in tensors)
+    # make sure inputs are arrays
+    arrays = tuple(asarray(ar) for ar in ar_tuple)
+    tensors = tuple(ar.get() for ar in arrays)
+
+    if arrays == ():
+        raise ValueError("need at least one array to concatenate")
+
+    # XXX: factor out this logic
+    # figure out the type of the inputs and outputs
+    if out is None and dtype is None:
+        out_dtype = None
+    else:
+        out_dtype = _dtypes.dtype(dtype) if dtype is not None else out.dtype
+
+        # check if we can cast all arguments
+        for ar in arrays:
+            if not can_cast(ar.dtype, out_dtype, casting=casting):
+                raise TypeError(f"Cannot cast array data from {ar.dtype} to"
+                                 " {out_dtype} according to the rule '{casting}'")
+
+        # cast
+        torch_dtype = _dtypes.torch_dtype_from(out_dtype)
+        tensors = tuple(tensor.to(torch_dtype) for tensor in tensors)
+    
     if axis is None:
-        tensors = tuple(ar.ravel() for ar in tensors)
+        tensors = tuple(tensor.ravel() for tensor in tensors)
         axis = 0
 
     try:
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter('error', UserWarning)
-                # torch emits a UserWarning if the out tensor has wrong size
+                # torch emits a UserWarning if the out tensor has wrong size,
+                # while numpy errors out
+                # TODO: centralize validation of out (incl this numpy/torch discrepancy)
                 result = torch.cat(tensors, axis, out=out_tensor)
         except UserWarning:
             raise ValueError("output array has wrong shape or dimensionality")
@@ -720,7 +742,10 @@ def i0(x):
 ###### dtype routines
 
 def can_cast(from_, to, casting='safe'):
-    return _dtypes._can_cast_dict[casting][from_.name][to.name]
+    from_dtype = from_.dtype if isinstance(from_, ndarray) else _dtypes.dtype(from_)   
+    to_dtype = to.dtype if isinstance(to, ndarray) else _dtypes.dtype(to)
+
+    return _dtypes._can_cast_dict[casting][from_dtype.name][to_dtype.name]
 
 
 def result_type(*arrays_and_dtypes):

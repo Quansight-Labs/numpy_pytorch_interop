@@ -86,6 +86,11 @@ class ndarray:
             raise ValueError("The truth value of an array with more than one "
                              "element is ambiguous. Use a.any() or a.all()")
 
+    # HACK : otherwise cannot check array.dtype in _dtypes.dict
+    def __hash__(self):
+        return id(self)
+
+
     ### arithmetic ###
 
     def __add__(self, other):
@@ -144,7 +149,7 @@ def asarray(a, dtype=None, order=None, *, like=None):
     if isinstance(a, ndarray):
         return a
 
-    torch_dtype = _dtypes.torch_dtype_from_dtype(dtype)
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
 
     # This and array(...) are the only places which talk to ndarray directly.
     # The rest goes through asarray (preferred) or array.

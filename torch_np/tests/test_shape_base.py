@@ -153,9 +153,8 @@ class TestConcatenate:
         assert_raises(ValueError, concatenate, (a, b), out=np.empty((1,4)))
         concatenate((a, b), out=np.empty(4))
 
-    @pytest.mark.xfail
     @pytest.mark.parametrize("axis", [None, 0])
-    @pytest.mark.parametrize("out_dtype", ["c8", "f4", "f8", ">f8", "i8", "S4"])
+    @pytest.mark.parametrize("out_dtype", ["c8", "f4", "f8",  "i8"])  # torch does not have ">f8", "S4"
     @pytest.mark.parametrize("casting",
             ['no', 'equiv', 'safe', 'same_kind', 'unsafe'])
     def test_out_and_dtype(self, axis, out_dtype, casting):
