@@ -3,6 +3,8 @@
 Things imported from here have numpy-compatible signatures but operate on
 pytorch tensors.
 """
+import warnings
+
 import numpy as np
 
 
@@ -286,7 +288,13 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
         axis = 0
 
     try:
-        result = torch.cat(tensors, axis, out=out_tensor)
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('error', UserWarning)
+                # torch emits a UserWarning if the out tensor has wrong size
+                result = torch.cat(tensors, axis, out=out_tensor)
+        except UserWarning:
+            raise ValueError("output array has wrong shape or dimensionality")
     except (IndexError, RuntimeError):
         raise AxisError
     if out is not None:

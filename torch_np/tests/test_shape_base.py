@@ -144,7 +144,6 @@ class TestConcatenate:
         assert out is rout
         assert_equal(res, rout)
 
-    @pytest.mark.xfail
     def test_bad_out_shape(self):
         a = array([1, 2])
         b = array([3, 4])
