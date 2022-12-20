@@ -180,29 +180,3 @@ class TestConcatenate:
         with assert_raises(TypeError):
             concatenate(to_concat, out=out, dtype=out_dtype, axis=axis)
 
-    @pytest.mark.xfail
-    @pytest.mark.parametrize("axis", [None, 0])
-    @pytest.mark.parametrize("string_dt", ["S", "U", "S0", "U0"])
-    @pytest.mark.parametrize("arrs",
-            [([0.],), ([0.], [1]), ([0], ["string"], [1.])])
-    def test_dtype_with_promotion(self, arrs, string_dt, axis):
-        # Note that U0 and S0 should be deprecated eventually and changed to
-        # actually give the empty string result (together with `np.array`)
-        res = np.concatenate(arrs, axis=axis, dtype=string_dt, casting="unsafe")
-        # The actual dtype should be identical to a cast (of a double array):
-        assert res.dtype == np.array(1.).astype(string_dt).dtype
-
-    @pytest.mark.xfail
-    @pytest.mark.parametrize("axis", [None, 0])
-    def test_string_dtype_does_not_inspect(self, axis):
-        with pytest.raises(TypeError):
-            np.concatenate(([None], [1]), dtype="S", axis=axis)
-        with pytest.raises(TypeError):
-            np.concatenate(([None], [1]), dtype="U", axis=axis)
-
-    @pytest.mark.xfail
-    @pytest.mark.parametrize("axis", [None, 0])
-    def test_subarray_error(self, axis):
-        with pytest.raises(TypeError, match=".*subarray dtype"):
-            np.concatenate(([1], [1]), dtype="(2,)i", axis=axis)
-
