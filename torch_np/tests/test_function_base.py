@@ -1,7 +1,7 @@
 import pytest
 
 import torch_np as np
-from torch_np.testing import assert_equal
+from torch_np.testing import assert_equal, assert_array_equal
 
 
 class TestCopy:

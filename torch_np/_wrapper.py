@@ -59,12 +59,13 @@ class AxisError(ValueError):
 ###### array creation routines
 
 
-@asarray_replacer()
 def copy(a, order='K', subok=False):
+    a = asarray(a)
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    return torch.clone(a)
+    # XXX: ndarray.copy only accepts order='C'
+    return a.copy(order='C')
 
 
 def atleast_1d(*arys):
