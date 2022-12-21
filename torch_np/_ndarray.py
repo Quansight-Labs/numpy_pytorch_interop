@@ -90,6 +90,9 @@ class ndarray:
     def __hash__(self):
         return id(self)
 
+    def __float__(self):
+        return float(self._tensor)
+
 
     ### arithmetic ###
 

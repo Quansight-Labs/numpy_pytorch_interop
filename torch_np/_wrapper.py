@@ -142,7 +142,8 @@ def empty_like(prototype, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    result = torch.empty_like(prototype, dtype=dtype)
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    result = torch.empty_like(prototype, dtype=torch_dtype)
     if shape is not None:
         result = result.reshape(shape)
     return result
@@ -152,7 +153,8 @@ def full(shape, fill_value, dtype=None, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
-    return asarray(torch.full(shape, fill_value, dtype=dtype))
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    return asarray(torch.full(shape, fill_value, dtype=torch_dtype))
 
 
 @asarray_replacer()
@@ -160,7 +162,8 @@ def full_like(a, fill_value, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    result = torch.full_like(a, fill_value, dtype=dtype)
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    result = torch.full_like(a, fill_value, dtype=torch_dtype)
     if shape is not None:
         result = result.reshape(shape)
     return result
@@ -170,7 +173,8 @@ def ones(shape, dtype=None, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
-    return asarray(torch.ones(shape, dtype=dtype))
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    return asarray(torch.ones(shape, dtype=torch_dtype))
 
 
 @asarray_replacer()
@@ -178,7 +182,8 @@ def ones_like(a, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    result = torch.ones_like(a, dtype=dtype)
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    result = torch.ones_like(a, dtype=torch_dtype)
     if shape is not None:
         result = result.reshape(shape)
     return result
@@ -189,7 +194,8 @@ def zeros(shape, dtype=float, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
-    return asarray(torch.zeros(shape, dtype=dtype))
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    return asarray(torch.zeros(shape, dtype=torch_dtype))
 
 
 @asarray_replacer()
@@ -197,7 +203,8 @@ def zeros_like(a, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    result = torch.zeros_like(a, dtype=dtype)
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    result = torch.zeros_like(a, dtype=torch_dtype)
     if shape is not None:
         result = result.reshape(shape)
     return result
@@ -663,8 +670,8 @@ def argsort(a, axis=-1, kind=None, order=None):
 
 ##### math functions
 
-from ._unary_ufuncs import *
-abs = absolute
+#from ._unary_ufuncs import *
+#abs = absolute
 
 from ._binary_ufuncs import *
 

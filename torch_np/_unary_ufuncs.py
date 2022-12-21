@@ -6,6 +6,62 @@ import torch
 from . import _util
 from ._ndarray import asarray_replacer
 
+from ._ndarray import asarray, ndarray
+from  . import _dtypes
+from ._wrapper import can_cast
+
+
+def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or not where:
+        raise NotImplementedError
+
+    # XXX: dtype=... parameter is silently ignored
+
+    x_array = asarray(x)
+    x_tensor = x_array.get()
+
+    if out is not None:
+        if not isinstance(out, ndarray):
+            raise TypeError("Return arrays must be of ArrayType")
+
+        out_tensor = out.get()
+        # check dtypes of x and out
+        if not can_cast(x_array.dtype, out.dtype, casting=casting):
+            raise TypeError(f"Cannot cast array data from {x.dtype} to"
+                             " {out_dtype} according to the rule '{casting}'")            
+
+        # `out` broadcasts `x`
+        if x_array.shape != out.shape:
+            x_tensor = torch.broadcast_to(x_tensor, out.shape)
+
+        # cast x if needed
+        if x_array.dtype != out.dtype:
+            x_tensor = x_tensor.to(_dtypes.torch_dtype_from(out.dtype))
+
+
+    result = torch.sin(x_tensor)
+
+    if out is not None:
+        out_tensor.copy_(result)
+        return out
+    else:
+        return asarray(result)
+
+'''
+    # XXX: or this, which one is better for TorchInductor?
+    # result = {torch_stanza}
+    if out is not None:
+        torch.sin(x_tensor, out=out_tensor)
+        return out
+    else:
+        result = torch.sin(x_tensor)
+        return asarray(result)
+'''
+
+
+#################################
 
 
 @asarray_replacer()
@@ -649,20 +705,7 @@ def signbit(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer()
-def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=False, **kwds):
-    _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
-        raise NotImplementedError
-    if out is not None:
-      # XXX dtypes, casting
-        out = out.to(dtype)
-    result = torch.sin(x, out=out)
-    if dtype is not None:
-        result = result.to(dtype)
-    
-    return result
+
 
 
 
