@@ -81,9 +81,6 @@ class TestConcatenate:
 
         out = np.zeros(a.size + len(b))
         r = np.concatenate((a, b), axis=None)
-
-   ##     breakpoint()
-
         rout = np.concatenate((a, b), axis=None, out=out)
         assert out is rout
         assert np.all(r == rout)

@@ -286,13 +286,11 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
                             "argument, but both were provided.")
         if not isinstance(out, ndarray):
             raise ValueError("'out' must be an array")
-        out_tensor = out.get()
-    else:
-        out_tensor = out
+    if ar_tuple == ():
+        # XXX: RuntimeError in torch, ValueError in numpy
+        raise ValueError("need at least one array to concatenate")
 
     # make sure inputs are arrays
-    if ar_tuple == ():
-        raise ValueError("need at least one array to concatenate")
     arrays = tuple(asarray(ar) for ar in ar_tuple)
 
     # figure out the type of the inputs and outputs
@@ -316,17 +314,24 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
             # while numpy errors out
             try:
                 # TODO: centralize validation of out (incl this numpy/torch discrepancy)
-                result = torch.cat(tensors, axis, out=out_tensor)
+                result = torch.cat(tensors, axis)
             except (IndexError, RuntimeError):
                 raise AxisError
 
     except UserWarning:
         raise ValueError("output array has wrong shape or dimensionality")
 
+    if out is not None:
+        if result.shape != out.shape:
+            raise ValueError
 
     if out is not None:
+        out_tensor = out.get()
+        out_tensor.copy_(result)
         return out
-    return asarray(result)
+    else:
+        return asarray(result)
+
 
 
 
