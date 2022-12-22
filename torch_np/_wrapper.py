@@ -131,7 +131,6 @@ def empty(shape, dtype=float, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
-    dtype = _dtypes.dtype(dtype)
     torch_dtype = _dtypes.torch_dtype_from(dtype)
     return asarray(torch.empty(shape, dtype=torch_dtype))
 
@@ -302,7 +301,7 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
         out_dtype = _dtypes.dtype(dtype) if dtype is not None else out.dtype
 
         # cast input arrays if necessary; do not broadcast them agains `out`
-        tensors = _helpers.check_dtype(arrays, out_dtype, casting)
+        tensors = _helpers.cast_dont_broadcast(arrays, out_dtype, casting)
 
     try:
         result = torch.cat(tensors, axis)
@@ -654,12 +653,6 @@ def argsort(a, axis=-1, kind=None, order=None):
 
 
 ##### math functions
-
-#from ._unary_ufuncs import *
-#abs = absolute
-
-#from ._binary_ufuncs import *
-
 
 @asarray_replacer()
 def angle(z, deg=False):

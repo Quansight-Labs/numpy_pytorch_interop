@@ -22,18 +22,11 @@ def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
     x_array = asarray(x)
 
     arrays = (x_array,)
-    x_tensor, = _helpers.check_bcast(arrays, out, casting)
+    x_tensor, = _helpers.cast_and_broadcast(arrays, out, casting)
 
     result = torch.sin(x_tensor)
 
     return _helpers.result_or_out(result, out)
-
-#    if out is not None:
-#        out_tensor = out.get()
-#        out_tensor.copy_(result)
-#        return out
-#    else:
-#        return asarray(result)
 
 '''
     # XXX: or this, which one is better for TorchInductor?

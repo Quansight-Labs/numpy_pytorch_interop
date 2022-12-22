@@ -24,7 +24,7 @@ def add(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     x2_array = asarray(x2)
 
     arrays = (x1_array, x2_array)
-    x1_tensor, x2_tensor = _helpers.check_bcast(arrays, out, casting)
+    x1_tensor, x2_tensor = _helpers.cast_and_broadcast(arrays, out, casting)
 
     result = torch.add(x1_tensor, x2_tensor)
 
