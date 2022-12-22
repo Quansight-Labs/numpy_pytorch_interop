@@ -212,3 +212,27 @@ class asarray_replacer:
             raise ValueError
 
 
+###### dtype routines
+
+def can_cast(from_, to, casting='safe'):
+    from_dtype = from_.dtype if isinstance(from_, ndarray) else _dtypes.dtype(from_)
+    to_dtype = to.dtype if isinstance(to, ndarray) else _dtypes.dtype(to)
+
+    return _dtypes._can_cast_dict[casting][from_dtype.name][to_dtype.name]
+
+
+def result_type(*arrays_and_dtypes):
+    dtypes = [elem if isinstance(elem, _dtypes.dtype) else asarray(elem).dtype
+              for elem in arrays_and_dtypes]
+
+    dtyp = dtypes[0]
+    if len(dtypes) == 1:
+        return dtyp
+
+    for curr in dtypes[1:]:
+        name = _dtypes._result_type_dict[dtyp.name][curr.name]
+        dtyp = _dtypes.dtype(name)
+
+    return dtyp
+
+

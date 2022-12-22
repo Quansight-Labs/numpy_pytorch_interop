@@ -6,9 +6,9 @@ import torch
 from . import _util
 from ._ndarray import asarray_replacer
 
-from ._ndarray import asarray, ndarray
-from  . import _dtypes
-from ._wrapper import can_cast
+from ._ndarray import asarray, ndarray, can_cast
+from . import _dtypes
+from . import _helpers
 
 
 def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
@@ -20,27 +20,11 @@ def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
     # XXX: dtype=... parameter is silently ignored
 
     x_array = asarray(x)
-    x_tensor = x_array.get()
 
-    if out is not None:
-        if not isinstance(out, ndarray):
-            raise TypeError("Return arrays must be of ArrayType")
+    arrays = (x_array,)
+    _helpers.check_bcast(arrays, out, casting)
 
-        # check dtypes of x and out
-        if not can_cast(x_array.dtype, out.dtype, casting=casting):
-            raise TypeError(f"Cannot cast array data from {x.dtype} to"
-                             " {out_dtype} according to the rule '{casting}'")            
-
-        # `out` broadcasts `x`
-        if x_array.shape != out.shape:
-            x_tensor = torch.broadcast_to(x_tensor, out.shape)
-
-        # cast x if needed
-        if x_array.dtype != out.dtype:
-            x_tensor = x_tensor.to(_dtypes.torch_dtype_from(out.dtype))
-
-
-    result = torch.sin(x_tensor)
+    result = torch.sin(x_array.get())
 
     if out is not None:
         out_tensor = out.get()

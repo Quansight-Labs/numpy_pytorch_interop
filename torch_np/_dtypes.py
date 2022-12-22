@@ -124,10 +124,7 @@ def dtype_from_torch(torch_dtype):
 def torch_dtype_from(dtyp):
     if dtyp is None:
         return None
-    if isinstance(dtyp, dtype):
-        name = dtyp.name
-    else:
-        name = dtyp
+    name = dtype(dtyp).name
     try:
         return _torch_dtype_from_dtype_dict[name]
     except KeyError:

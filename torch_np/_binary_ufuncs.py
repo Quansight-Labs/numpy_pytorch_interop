@@ -7,9 +7,9 @@ from . import _util
 from ._ndarray import asarray_replacer
 
 
-from ._ndarray import asarray, ndarray
-from  . import _dtypes
-from ._wrapper import can_cast
+from ._ndarray import asarray, ndarray, can_cast
+from . import _dtypes
+from . import _helpers
 
 
 def add(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
@@ -23,24 +23,8 @@ def add(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     x1_array = asarray(x1)
     x2_array = asarray(x2)
 
-    if out is not None:
-        if not isinstance(out, ndarray):
-            raise TypeError("Return arrays must be of ArrayType")
-
-        for arr in (x1_array, x2_array):
-            # check dtypes of x and out
-            if not can_cast(arr.dtype, out.dtype, casting=casting):
-                raise TypeError(f"Cannot cast array data from {x.dtype} to"
-                                 " {out_dtype} according to the rule '{casting}'")
-            tensor = arr.get()
-
-            # `out` broadcasts `x`
-            if arr.shape != out.shape:
-                tensor = torch.broadcast_to(tensor, out.shape)
-
-            # cast x if needed
-            if arr.dtype != out.dtype:
-                tensor = tensor.to(_dtypes.torch_dtype_from(out.dtype))
+    arrays = (x1_array, x2_array)
+    _helpers.check_bcast(arrays, out, casting)
 
     result = torch.add(x1_array.get(), x2_array.get())
 

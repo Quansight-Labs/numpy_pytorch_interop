@@ -12,6 +12,7 @@ import torch
 from . import _util
 from . import _dtypes
 from ._ndarray import ndarray, asarray, array, asarray_replacer
+from ._ndarray import can_cast, result_type
 
 
 # Things to decide on (punt for now)
@@ -748,28 +749,6 @@ def i0(x):
     return torch.special.i0(x)
 
 
-###### dtype routines
-
-def can_cast(from_, to, casting='safe'):
-    from_dtype = from_.dtype if isinstance(from_, ndarray) else _dtypes.dtype(from_)   
-    to_dtype = to.dtype if isinstance(to, ndarray) else _dtypes.dtype(to)
-
-    return _dtypes._can_cast_dict[casting][from_dtype.name][to_dtype.name]
-
-
-def result_type(*arrays_and_dtypes):
-    dtypes = [elem if isinstance(elem, _dtypes.dtype) else asarray(elem).dtype
-              for elem in arrays_and_dtypes]
-
-    dtyp = dtypes[0]
-    if len(dtypes) == 1:
-        return dtyp
-
-    for curr in dtypes[1:]:
-        name = _dtypes._result_type_dict[dtyp.name][curr.name]
-        dtyp = _dtypes.dtype(name)
-
-    return dtyp
 
 
 ###### mapping from numpy API objects to wrappers from this module ######
