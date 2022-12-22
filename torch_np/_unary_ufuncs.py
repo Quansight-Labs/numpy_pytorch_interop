@@ -22,9 +22,9 @@ def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
     x_array = asarray(x)
 
     arrays = (x_array,)
-    _helpers.check_bcast(arrays, out, casting)
+    x_tensor, = _helpers.check_bcast(arrays, out, casting)
 
-    result = torch.sin(x_array.get())
+    result = torch.sin(x_tensor)
 
     if out is not None:
         out_tensor = out.get()

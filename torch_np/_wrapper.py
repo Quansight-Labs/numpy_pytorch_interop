@@ -11,6 +11,7 @@ import torch
 
 from . import _util
 from . import _dtypes
+from . import _helpers
 from ._ndarray import ndarray, asarray, array, asarray_replacer
 from ._ndarray import can_cast, result_type
 
@@ -290,45 +291,39 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
         out_tensor = out
 
     # make sure inputs are arrays
-    arrays = tuple(asarray(ar) for ar in ar_tuple)
-    tensors = tuple(ar.get() for ar in arrays)
-
-    if arrays == ():
+    if ar_tuple == ():
         raise ValueError("need at least one array to concatenate")
+    arrays = tuple(asarray(ar) for ar in ar_tuple)
 
-    # XXX: factor out this logic
     # figure out the type of the inputs and outputs
     if out is None and dtype is None:
         out_dtype = None
+        tensors = tuple(ar.get() for ar in arrays)
     else:
         out_dtype = _dtypes.dtype(dtype) if dtype is not None else out.dtype
 
-        # check if we can cast all arguments
-        for ar in arrays:
-            if not can_cast(ar.dtype, out_dtype, casting=casting):
-                raise TypeError(f"Cannot cast array data from {ar.dtype} to"
-                                 " {out_dtype} according to the rule '{casting}'")
+        # cast input arrays if necessary; do not broadcast them agains `out`
+        tensors = _helpers.check_dtype(arrays, out_dtype, casting)
 
-        # cast
-        torch_dtype = _dtypes.torch_dtype_from(out_dtype)
-        tensors = tuple(tensor.to(torch_dtype) for tensor in tensors)
-    
     if axis is None:
         tensors = tuple(tensor.ravel() for tensor in tensors)
         axis = 0
 
     try:
-        try:
-            with warnings.catch_warnings():
-                warnings.simplefilter('error', UserWarning)
-                # torch emits a UserWarning if the out tensor has wrong size,
-                # while numpy errors out
+        with warnings.catch_warnings():
+            warnings.simplefilter('error', UserWarning)
+            # torch emits a UserWarning if the out tensor has wrong size,
+            # while numpy errors out
+            try:
                 # TODO: centralize validation of out (incl this numpy/torch discrepancy)
                 result = torch.cat(tensors, axis, out=out_tensor)
-        except UserWarning:
-            raise ValueError("output array has wrong shape or dimensionality")
-    except (IndexError, RuntimeError):
-        raise AxisError
+            except (IndexError, RuntimeError):
+                raise AxisError
+
+    except UserWarning:
+        raise ValueError("output array has wrong shape or dimensionality")
+
+
     if out is not None:
         return out
     return asarray(result)

@@ -70,7 +70,6 @@ class TestConcatenate:
     def test_concatenate_axis_None(self):
         a = np.arange(4, dtype=np.float64).reshape((2, 2))
         b = list(range(3))
-        c = ['x']
 
         r = np.concatenate((a, a), axis=None)
         assert r.dtype == a.dtype
@@ -82,6 +81,8 @@ class TestConcatenate:
 
         out = np.zeros(a.size + len(b))
         r = np.concatenate((a, b), axis=None)
+
+   ##     breakpoint()
 
         rout = np.concatenate((a, b), axis=None, out=out)
         assert out is rout
