@@ -3,8 +3,6 @@
 Things imported from here have numpy-compatible signatures but operate on
 pytorch tensors.
 """
-import warnings
-
 #import numpy as np
 
 import torch
@@ -293,6 +291,9 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     # make sure inputs are arrays
     arrays = tuple(asarray(ar) for ar in ar_tuple)
 
+    # np.concatenate ravels if axis=None
+    arrays, axis = _helpers.axis_none_ravel(*arrays, axis=axis)
+
     # figure out the type of the inputs and outputs
     if out is None and dtype is None:
         out_dtype = None
@@ -303,36 +304,12 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
         # cast input arrays if necessary; do not broadcast them agains `out`
         tensors = _helpers.check_dtype(arrays, out_dtype, casting)
 
-    if axis is None:
-        tensors = tuple(tensor.ravel() for tensor in tensors)
-        axis = 0
-
     try:
-        with warnings.catch_warnings():
-            warnings.simplefilter('error', UserWarning)
-            # torch emits a UserWarning if the out tensor has wrong size,
-            # while numpy errors out
-            try:
-                # TODO: centralize validation of out (incl this numpy/torch discrepancy)
-                result = torch.cat(tensors, axis)
-            except (IndexError, RuntimeError):
-                raise AxisError
+        result = torch.cat(tensors, axis)
+    except (IndexError, RuntimeError):
+        raise AxisError
 
-    except UserWarning:
-        raise ValueError("output array has wrong shape or dimensionality")
-
-    if out is not None:
-        if result.shape != out.shape:
-            raise ValueError
-
-    if out is not None:
-        out_tensor = out.get()
-        out_tensor.copy_(result)
-        return out
-    else:
-        return asarray(result)
-
-
+    return _helpers.result_or_out(result, out)
 
 
 def stack(arrays, axis=0, out=None):
@@ -395,6 +372,12 @@ def transpose(a, axes=None):
 def reshape(a, newshape, order='C'):
     arr = asarray(a)
     return arr.reshape(*newshape, order=order)
+
+
+def ravel(a, order='C'):
+    arr = asarray(a)
+    return arr.ravel(order=order)
+
 
 
 @asarray_replacer()

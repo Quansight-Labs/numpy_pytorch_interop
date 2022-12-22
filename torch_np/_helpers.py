@@ -1,9 +1,18 @@
 import torch
 from . import _dtypes
-from ._ndarray import can_cast, ndarray
+from ._ndarray import can_cast, ndarray, asarray
 
 def check_bcast(arrays, out, casting):
     """Cast dtypes of arrays to out.dtype and broadcast if needed.
+
+    Parameters
+    ----------
+    arrays : sequence of arrays
+        Each element is broadcast against `out` and typecast to out.dtype
+    out : the "output" array
+        Not modified.
+    casting : str
+        One of numpy casting modes
 
     Returns
     -------
@@ -12,8 +21,8 @@ def check_bcast(arrays, out, casting):
 
     Notes
     -----
-    1. `arrays` are modified in place.
-    2. The `out` arrays broadcasts `arrays`, but not vice versa.
+    The `out` arrays broadcasts and dtype-casts `arrays`, but not vice versa.
+
     """
     if out is None:
         return tuple(arr.get() for arr in arrays)
@@ -61,3 +70,26 @@ def check_dtype(arrays, out_dtype, casting):
         tensors.append(tensor)
 
     return tuple(tensors)
+
+
+
+def axis_none_ravel(*arrays, axis=None):
+    """Ravel the arrays if axis is none."""
+    if axis is None:
+        arrays = tuple(ar.ravel() for ar in arrays)
+        return arrays, 0
+    else:
+        return arrays, axis
+
+
+def result_or_out(result, out=None):
+    """A helper for returns with out= argument."""
+    if out is not None:
+        if result.shape != out.shape:
+            raise ValueError
+        out_tensor = out.get()
+        out_tensor.copy_(result)
+        return out
+    else:
+        return asarray(result)
+

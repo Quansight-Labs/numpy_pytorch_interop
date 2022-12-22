@@ -98,3 +98,22 @@ class TestTranspose:
         assert_raises(ValueError, lambda: a.transpose(0, 1, 2))
 
         assert a.transpose().base is a
+
+
+class TestRavel:
+    def test_ravel_function(self):
+        a = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
+        tgt = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        assert_equal(np.ravel(a), tgt)
+
+        arr = np.asarray(a)
+        assert np.ravel(arr).base is arr
+
+    def test_ravel_method(self):
+        a = np.array([[0, 1], [2, 3]])
+        assert_equal(a.ravel(), [0, 1, 2, 3])
+
+        assert a.ravel().base is a
+
+
+

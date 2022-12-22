@@ -28,12 +28,7 @@ def add(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
 
     result = torch.add(x1_tensor, x2_tensor)
 
-    if out is not None:
-        out_tensor = out.get()
-        out_tensor.copy_(result)
-        return out
-    else:
-        return asarray(result)
+    return _helpers.result_or_out(result, out)
 
 
 

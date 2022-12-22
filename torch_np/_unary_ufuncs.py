@@ -26,12 +26,14 @@ def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
     result = torch.sin(x_tensor)
 
-    if out is not None:
-        out_tensor = out.get()
-        out_tensor.copy_(result)
-        return out
-    else:
-        return asarray(result)
+    return _helpers.result_or_out(result, out)
+
+#    if out is not None:
+#        out_tensor = out.get()
+#        out_tensor.copy_(result)
+#        return out
+#    else:
+#        return asarray(result)
 
 '''
     # XXX: or this, which one is better for TorchInductor?

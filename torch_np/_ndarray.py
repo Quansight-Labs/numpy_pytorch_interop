@@ -135,6 +135,10 @@ class ndarray:
             raise ValueError("axes don't match array")
         return ndarray._from_tensor_and_base(tensor, self)
 
+    def ravel(self, order='C'):
+        if order != 'C':
+            raise NotImplementedError
+        return ndarray._from_tensor_and_base(self._tensor.ravel(), self)
 
     ### indexing ###
     def __getitem__(self, *args, **kwds):
