@@ -26,7 +26,6 @@ def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
         if not isinstance(out, ndarray):
             raise TypeError("Return arrays must be of ArrayType")
 
-        out_tensor = out.get()
         # check dtypes of x and out
         if not can_cast(x_array.dtype, out.dtype, casting=casting):
             raise TypeError(f"Cannot cast array data from {x.dtype} to"
@@ -44,6 +43,7 @@ def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
     result = torch.sin(x_tensor)
 
     if out is not None:
+        out_tensor = out.get()
         out_tensor.copy_(result)
         return out
     else:

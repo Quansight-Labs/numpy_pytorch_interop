@@ -5,8 +5,9 @@ pytorch tensors.
 """
 import warnings
 
-import numpy as np
+#import numpy as np
 
+import torch
 
 from . import _util
 from . import _dtypes
@@ -673,7 +674,7 @@ def argsort(a, axis=-1, kind=None, order=None):
 #from ._unary_ufuncs import *
 #abs = absolute
 
-from ._binary_ufuncs import *
+#from ._binary_ufuncs import *
 
 
 @asarray_replacer()
