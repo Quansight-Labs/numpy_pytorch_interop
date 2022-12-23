@@ -6,6 +6,41 @@ import torch
 from . import _util
 from ._ndarray import asarray_replacer
 
+from ._ndarray import asarray, ndarray, can_cast
+from . import _dtypes
+from . import _helpers
+
+
+def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or not where:
+        raise NotImplementedError
+
+    # XXX: dtype=... parameter is silently ignored
+
+    x_array = asarray(x)
+
+    arrays = (x_array,)
+    x_tensor, = _helpers.cast_and_broadcast(arrays, out, casting)
+
+    result = torch.sin(x_tensor)
+
+    return _helpers.result_or_out(result, out)
+
+'''
+    # XXX: or this, which one is better for TorchInductor?
+    # result = {torch_stanza}
+    if out is not None:
+        torch.sin(x_tensor, out=out_tensor)
+        return out
+    else:
+        result = torch.sin(x_tensor)
+        return asarray(result)
+'''
+
+
+#################################
 
 
 @asarray_replacer()
@@ -649,20 +684,7 @@ def signbit(x, /, out=None, *, where=True, casting='same_kind', order='K',
 
 
 
-@asarray_replacer()
-def sin(x, /, out=None, *, where=True, casting='same_kind', order='K',
-          dtype=None, subok=False, **kwds):
-    _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
-        raise NotImplementedError
-    if out is not None:
-      # XXX dtypes, casting
-        out = out.to(dtype)
-    result = torch.sin(x, out=out)
-    if dtype is not None:
-        result = result.to(dtype)
-    
-    return result
+
 
 
 

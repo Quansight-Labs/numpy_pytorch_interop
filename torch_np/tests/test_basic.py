@@ -20,7 +20,9 @@ one_arg_funcs = [w.asarray, w.empty_like, w.ones_like, w.zeros_like,
                  w.isneginf, w.isposinf, w.i0,
                  w.copy, w.array,
                  w.round_, w.around,
-                 w.flip,]
+                 w.flip,
+                 w.vstack, w.hstack, w.dstack, w.column_stack, w.row_stack,
+]
 
 
 one_arg_funcs += [getattr(w, name) for name in _unary_ufuncs.__all__]
@@ -254,12 +256,13 @@ class TestSequenceOfArrays:
                 [[1, 2, 3], [4, 5, 6]],)
 
         result = func(*arys)
-        assert isinstance(result, tuple)
+        assert isinstance(result, (tuple, list))
         assert len(result) == len(arys)
         assert all(isinstance(_, w.ndarray) for _ in result)
 
 
-seq_to_single_funcs = [w.concatenate, w.stack]
+seq_to_single_funcs = [w.concatenate, w.stack, w.vstack, w.hstack, w.dstack,
+                       w.column_stack, w.row_stack]
 
 
 @pytest.mark.parametrize('func', seq_to_single_funcs)

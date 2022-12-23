@@ -3,11 +3,15 @@
 Things imported from here have numpy-compatible signatures but operate on
 pytorch tensors.
 """
-import numpy as np
+#import numpy as np
 
+import torch
 
 from . import _util
-from ._ndarray import ndarray, asarray, array, asarray_replacer
+from . import _dtypes
+from . import _helpers
+from ._ndarray import ndarray, asarray, array, asarray_replacer, newaxis
+from ._ndarray import can_cast, result_type
 
 
 # Things to decide on (punt for now)
@@ -49,15 +53,18 @@ from ._ndarray import ndarray, asarray, array, asarray_replacer
 
 NoValue = None
 
+
+
 ###### array creation routines
 
 
-@asarray_replacer()
 def copy(a, order='K', subok=False):
+    a = asarray(a)
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    return torch.clone(a)
+    # XXX: ndarray.copy only accepts order='C'
+    return a.copy(order='C')
 
 
 def atleast_1d(*arys):
@@ -65,7 +72,7 @@ def atleast_1d(*arys):
     if len(res) == 1:
         return asarray(res[0])
     else:
-        return tuple(asarray(_) for _ in res)
+        return list(asarray(_) for _ in res)
 
 
 def atleast_2d(*arys):
@@ -73,7 +80,7 @@ def atleast_2d(*arys):
     if len(res) == 1:
         return asarray(res[0])
     else:
-        return tuple(asarray(_) for _ in res)
+        return list(asarray(_) for _ in res)
 
 
 def atleast_3d(*arys):
@@ -81,7 +88,71 @@ def atleast_3d(*arys):
     if len(res) == 1:
         return asarray(res[0])
     else:
-        return tuple(asarray(_) for _ in res)
+        return list(asarray(_) for _ in res)
+
+
+def vstack(tup, *, dtype=None, casting='same_kind'):
+    arrs = atleast_2d(*tup)
+    if not isinstance(arrs, list):
+        arrs = [arrs]
+    return concatenate(arrs, 0, dtype=dtype, casting=casting)
+
+
+row_stack = vstack
+
+
+def hstack(tup, *, dtype=None, casting='same_kind'):
+    arrs = atleast_1d(*tup)
+    if not isinstance(arrs, list):
+        arrs = [arrs]
+    # As a special case, dimension 0 of 1-dimensional arrays is "horizontal"
+    if arrs and arrs[0].ndim == 1:
+        return concatenate(arrs, 0, dtype=dtype, casting=casting)
+    else:
+        return concatenate(arrs, 1, dtype=dtype, casting=casting)
+
+
+def dstack(tup, *, dtype=None, casting='same_kind'):
+    # XXX: in numpy 1.24 dstack does not have dtype and casting keywords
+    # but {h,v}stack do.  Hence add them here for consistency.
+    arrs = atleast_3d(*tup)
+    if not isinstance(arrs, list):
+        arrs = [arrs]
+    return concatenate(arrs, 2, dtype=dtype, casting=casting)
+
+
+def column_stack(tup, *, dtype=None, casting='same_kind'):
+    # XXX: in numpy 1.24 column_stack does not have dtype and casting keywords
+    # but row_stack does. (because row_stack is an alias for vstack, really).
+    # Hence add these keywords here for consistency.
+    arrays = []
+    for v in tup:
+        arr = asarray(v)
+        if arr.ndim < 2:
+            arr = array(arr, copy=False, ndmin=2).T
+        arrays.append(arr)
+    return concatenate(arrays, 1, dtype=dtype, casting=casting)
+
+
+def stack(arrays, axis=0, out=None, *, dtype=None, casting='same_kind'):
+#    tensors = tuple(asarray(ar).get() for ar in arrays)
+#    return asarray(torch.stack(tensors, axis, out=out))
+    arrays = [asarray(arr) for arr in arrays]
+    if not arrays:
+        raise ValueError('need at least one array to stack')
+
+    shapes = {arr.shape for arr in arrays}
+    if len(shapes) != 1:
+        raise ValueError('all input arrays must have the same shape')
+
+    result_ndim = arrays[0].ndim + 1
+    axis = _util.normalize_axis_index(axis, result_ndim)
+
+    sl = (slice(None),) * axis + (newaxis,)
+    expanded_arrays = [arr[sl] for arr in arrays]
+    return concatenate(expanded_arrays, axis=axis, out=out,
+                       dtype=dtype, casting=casting)
+
 
 
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
@@ -114,14 +185,16 @@ def arange(start, stop=None, step=1, dtype=None, *, like=None):
         # arange(stop)
         stop = start
         start = 0
-    return asarray(torch.arange(start, stop, step, dtype=dtype))
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    return asarray(torch.arange(start, stop, step, dtype=torch_dtype))
 
 
 def empty(shape, dtype=float, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
-    return asarray(torch.empty(shape, dtype=dtype))
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    return asarray(torch.empty(shape, dtype=torch_dtype))
 
 
 # NB: *_like function deliberately deviate from numpy: it has subok=True
@@ -131,7 +204,8 @@ def empty_like(prototype, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    result = torch.empty_like(prototype, dtype=dtype)
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    result = torch.empty_like(prototype, dtype=torch_dtype)
     if shape is not None:
         result = result.reshape(shape)
     return result
@@ -141,7 +215,8 @@ def full(shape, fill_value, dtype=None, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
-    return asarray(torch.full(shape, fill_value, dtype=dtype))
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    return asarray(torch.full(shape, fill_value, dtype=torch_dtype))
 
 
 @asarray_replacer()
@@ -149,7 +224,8 @@ def full_like(a, fill_value, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    result = torch.full_like(a, fill_value, dtype=dtype)
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    result = torch.full_like(a, fill_value, dtype=torch_dtype)
     if shape is not None:
         result = result.reshape(shape)
     return result
@@ -159,7 +235,8 @@ def ones(shape, dtype=None, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
-    return asarray(torch.ones(shape, dtype=dtype))
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    return asarray(torch.ones(shape, dtype=torch_dtype))
 
 
 @asarray_replacer()
@@ -167,7 +244,8 @@ def ones_like(a, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    result = torch.ones_like(a, dtype=dtype)
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    result = torch.ones_like(a, dtype=torch_dtype)
     if shape is not None:
         result = result.reshape(shape)
     return result
@@ -178,7 +256,8 @@ def zeros(shape, dtype=float, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
-    return asarray(torch.zeros(shape, dtype=dtype))
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    return asarray(torch.zeros(shape, dtype=torch_dtype))
 
 
 @asarray_replacer()
@@ -186,7 +265,8 @@ def zeros_like(a, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    result = torch.zeros_like(a, dtype=dtype)
+    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    result = torch.zeros_like(a, dtype=torch_dtype)
     if shape is not None:
         result = result.reshape(shape)
     return result
@@ -258,19 +338,39 @@ def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
 
 
 def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
-    if casting != "same_kind":
-        raise NotImplementedError
-    tensors = tuple(asarray(ar).get() for ar in ar_tuple)
-    if dtype is not None:
-        # XXX: map numpy dtypes
-        tensors = tuple(ar.type(dtype) for ar in ar_typle)
-    return asarray(torch.cat(tensors, axis, out=out))
+    if out is not None:
+        if dtype is not None:
+            # mimic numpy
+            raise TypeError("concatenate() only takes `out` or `dtype` as an "
+                            "argument, but both were provided.")
+        if not isinstance(out, ndarray):
+            raise ValueError("'out' must be an array")
+    if ar_tuple == ():
+        # XXX: RuntimeError in torch, ValueError in numpy
+        raise ValueError("need at least one array to concatenate")
 
+    # make sure inputs are arrays
+    arrays = tuple(asarray(ar) for ar in ar_tuple)
 
+    # np.concatenate ravels if axis=None
+    arrays, axis = _helpers.axis_none_ravel(*arrays, axis=axis)
 
-def stack(arrays, axis=0, out=None):
-    tensors = tuple(asarray(ar).get() for ar in arrays)
-    return asarray(torch.stack(tensors, axis, out=out))
+    # figure out the type of the inputs and outputs
+    if out is None and dtype is None:
+        out_dtype = None
+        tensors = tuple(ar.get() for ar in arrays)
+    else:
+        out_dtype = _dtypes.dtype(dtype) if dtype is not None else out.dtype
+
+        # cast input arrays if necessary; do not broadcast them agains `out`
+        tensors = _helpers.cast_dont_broadcast(arrays, out_dtype, casting)
+
+    try:
+        result = torch.cat(tensors, axis)
+    except (IndexError, RuntimeError):
+        raise _util.AxisError
+
+    return _helpers.result_or_out(result, out)
 
 
 @asarray_replacer()
@@ -320,11 +420,20 @@ def size(a, axis=None):
 
 ###### shape manipulations and indexing
 
-@asarray_replacer()
+def transpose(a, axes=None):
+    arr = asarray(a)
+    return arr.transpose(axes)
+
+
 def reshape(a, newshape, order='C'):
-    if order != 'C':
-        raise NotImplementedError
-    return torch.reshape(a, newshape)
+    arr = asarray(a)
+    return arr.reshape(*newshape, order=order)
+
+
+def ravel(a, order='C'):
+    arr = asarray(a)
+    return arr.ravel(order=order)
+
 
 
 @asarray_replacer()
@@ -365,6 +474,11 @@ def broadcast_arrays(*args, subok=False):
     return tuple(asarray(_) for _ in res)
 
 
+@asarray_replacer()
+def moveaxis(a, source, destination):
+    return asarray(torch.moveaxis(a, source, destination))
+
+
 def unravel_index(indices, shape, order='C'):
 # cf https://github.com/pytorch/pytorch/pull/66687
 # this version is from
@@ -390,13 +504,6 @@ def ravel_multi_index(multi_index, dims, mode='raise', order='C'):
 def nonzero(a):
     a = asarray(a).get()
     return tuple(asarray(_) for _ in a.nonzero(as_tuple=True))
-
-
-@asarray_replacer()
-def transpose(a, axes=None):
-    if axes is None:
-        axes = tuple(range(a.ndim))[::-1]
-    return a.permute(axes)
 
 
 @asarray_replacer()
@@ -604,12 +711,6 @@ def argsort(a, axis=-1, kind=None, order=None):
 
 ##### math functions
 
-from ._unary_ufuncs import *
-abs = absolute
-
-from ._binary_ufuncs import *
-
-
 @asarray_replacer()
 def angle(z, deg=False):
     result = torch.angle(z)
@@ -679,6 +780,8 @@ def isposinf(x, out=None):
 @asarray_replacer()
 def i0(x):
     return torch.special.i0(x)
+
+
 
 
 ###### mapping from numpy API objects to wrappers from this module ######

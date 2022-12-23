@@ -7,7 +7,37 @@ from . import _util
 from ._ndarray import asarray_replacer
 
 
+from ._ndarray import asarray, ndarray, can_cast
+from . import _dtypes
+from . import _helpers
 
+
+def add(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
+          dtype=None, subok=False, **kwds):
+    _util.subok_not_ok(subok=subok)
+    if order != 'K' or not where:
+        raise NotImplementedError
+
+    # XXX: dtype=... parameter is silently ignored
+
+    x1_array = asarray(x1)
+    x2_array = asarray(x2)
+
+    arrays = (x1_array, x2_array)
+    x1_tensor, x2_tensor = _helpers.cast_and_broadcast(arrays, out, casting)
+
+    result = torch.add(x1_tensor, x2_tensor)
+
+    return _helpers.result_or_out(result, out)
+
+
+
+
+
+
+#####################################
+
+'''
 @asarray_replacer("two")
 def add(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
             dtype=None, subok=False, **kwds):
@@ -21,7 +51,7 @@ def add(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if dtype is not None:
         result = result.to(dtype)
     return result
-
+'''
 
 
 @asarray_replacer("two")

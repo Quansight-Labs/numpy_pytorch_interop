@@ -161,8 +161,6 @@ def busday_offset(dates, offsets, roll='raise', weekmask='1111100', holidays=Non
 def byte_bounds(a):
     raise NotImplementedError
 
-def can_cast(from_, to, casting='safe'):
-    raise NotImplementedError
 
 def choose(a, choices, out=None, mode='raise'):
     raise NotImplementedError
@@ -170,8 +168,7 @@ def choose(a, choices, out=None, mode='raise'):
 def clip(a, a_min, a_max, out=None, **kwargs):
     raise NotImplementedError
 
-def column_stack(tup):
-    raise NotImplementedError
+
 
 def common_type(*arrays):
     raise NotImplementedError
@@ -252,8 +249,7 @@ def dot(a, b, out=None):
 def dsplit(ary, indices_or_sections):
     raise NotImplementedError
 
-def dstack(tup):
-    raise NotImplementedError
+
 
 def ediff1d(ary, to_end=None, to_begin=None):
     raise NotImplementedError
@@ -354,8 +350,7 @@ def histogramdd(sample, bins=10, range=None, normed=None, weights=None, density=
 def hsplit(ary, indices_or_sections):
     raise NotImplementedError
 
-def hstack(tup):
-    raise NotImplementedError
+
 
 
 
@@ -475,8 +470,7 @@ def min_scalar_type(a, /):
 def mintypecode(typechars, typeset='GDFgdf', default='d'):
     raise NotImplementedError
 
-def moveaxis(a, source, destination):
-    raise NotImplementedError
+
 
 def msort(a):
     raise NotImplementedError
@@ -620,8 +614,7 @@ def require(a, dtype=None, requirements=None, *, like=None):
 def resize(a, new_shape):
     raise NotImplementedError
 
-def result_type(*arrays_and_dtypes):
-    raise NotImplementedError
+
 
 
 def rollaxis(a, axis, start=0):
@@ -635,8 +628,6 @@ def rot90(m, k=1, axes=(0, 1)):
 
 
 
-def vstack(tup):
-    raise NotImplementedError
 
 def safe_eval(source):
     raise NotImplementedError
@@ -762,8 +753,7 @@ def vdot(a, b, /):
 def vsplit(ary, indices_or_sections):
     raise NotImplementedError
 
-def vstack(tup):
-    raise NotImplementedError
+
 
 def where(condition, x, y, /):
     raise NotImplementedError
