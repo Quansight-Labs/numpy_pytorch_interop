@@ -5,7 +5,7 @@ import numpy as _np
 
 import torch_np as np
 from torch_np import (concatenate, array, atleast_1d, atleast_2d, atleast_3d,
-                      vstack, hstack, dstack)
+                      vstack, hstack, dstack, column_stack)
 from torch_np.testing import assert_equal, assert_array_equal
 
 import warnings
@@ -288,7 +288,8 @@ class TestColumnStack:
         assert_equal(actual, expected)
 
     def test_generator(self):
-        with assert_warns(FutureWarning):
+        # numpy 1.24 emits a warning but we don't
+        # with assert_warns(FutureWarning):
             column_stack((np.arange(3) for _ in range(2)))
 
 

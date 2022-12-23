@@ -120,7 +120,8 @@ def dstack(tup, *, dtype=None, casting='same_kind'):
     arrs = atleast_3d(*tup)
     if not isinstance(arrs, list):
         arrs = [arrs]
-    return concatenate(arrs, 2)
+    return concatenate(arrs, 2, dtype=dtype, casting=casting)
+
 
 def column_stack(tup, *, dtype=None, casting='same_kind'):
     # XXX: in numpy 1.24 column_stack does not have dtype and casting keywords
@@ -128,11 +129,16 @@ def column_stack(tup, *, dtype=None, casting='same_kind'):
     # Hence add these keywords here for consistency.
     arrays = []
     for v in tup:
-        arr = asanyarray(v)
+        arr = asarray(v)
         if arr.ndim < 2:
-            arr = array(arr, copy=False, subok=True, ndmin=2).T
+            arr = array(arr, copy=False, ndmin=2).T
         arrays.append(arr)
-    return _nx.concatenate(arrays, 1)
+    return concatenate(arrays, 1, dtype=dtype, casting=casting)
+
+
+def stack(arrays, axis=0, out=None):
+    tensors = tuple(asarray(ar).get() for ar in arrays)
+    return asarray(torch.stack(tensors, axis, out=out))
 
 
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
@@ -351,11 +357,6 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
         raise AxisError
 
     return _helpers.result_or_out(result, out)
-
-
-def stack(arrays, axis=0, out=None):
-    tensors = tuple(asarray(ar).get() for ar in arrays)
-    return asarray(torch.stack(tensors, axis, out=out))
 
 
 @asarray_replacer()
