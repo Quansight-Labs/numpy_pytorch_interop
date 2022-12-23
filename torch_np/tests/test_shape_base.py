@@ -4,7 +4,8 @@ from pytest import raises as assert_raises
 import numpy as _np
 
 import torch_np as np
-from torch_np import concatenate, array, atleast_1d, atleast_2d, atleast_3d
+from torch_np import (concatenate, array, atleast_1d, atleast_2d, atleast_3d,
+                      vstack, hstack)
 from torch_np.testing import assert_equal, assert_array_equal
 
 import warnings
@@ -151,9 +152,10 @@ class TestHstack:
         assert_array_equal(res, desired)
 
     def test_generator(self):
-        with assert_warns(FutureWarning):
+        # numpy emits warnings and we don't
+        # with assert_warns(FutureWarning):
             hstack((np.arange(3) for _ in range(2)))
-        with assert_warns(FutureWarning):
+        # with assert_warns(FutureWarning):
             hstack(map(lambda x: x, np.ones((3, 2))))
 
     def test_casting_and_dtype(self):
@@ -206,8 +208,7 @@ class TestVstack:
         assert_array_equal(res, desired)
 
     def test_generator(self):
-        with assert_warns(FutureWarning):
-            vstack((np.arange(3) for _ in range(2)))
+        vstack((np.arange(3) for _ in range(2)))
 
     def test_casting_and_dtype(self):
         a = np.array([1, 2, 3])

@@ -352,8 +352,7 @@ def histogramdd(sample, bins=10, range=None, normed=None, weights=None, density=
 def hsplit(ary, indices_or_sections):
     raise NotImplementedError
 
-def hstack(tup):
-    raise NotImplementedError
+
 
 
 
@@ -631,8 +630,6 @@ def rot90(m, k=1, axes=(0, 1)):
 
 
 
-def vstack(tup):
-    raise NotImplementedError
 
 def safe_eval(source):
     raise NotImplementedError
