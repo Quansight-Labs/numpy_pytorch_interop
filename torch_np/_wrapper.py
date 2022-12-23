@@ -114,6 +114,15 @@ def hstack(tup, *, dtype=None, casting='same_kind'):
         return concatenate(arrs, 1, dtype=dtype, casting=casting)
 
 
+def dstack(tup, *, dtype=None, casting='same_kind'):
+    # XXX: in numpy 1.24 dstack does not have dtype and casting keywords
+    # but {h,v}stack do.  Hence add them here for consistency.
+    arrs = atleast_3d(*tup)
+    if not isinstance(arrs, list):
+        arrs = [arrs]
+    return concatenate(arrs, 2)
+
+
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0):
     if axis != 0 or retstep or not endpoint:

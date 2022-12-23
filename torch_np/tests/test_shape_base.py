@@ -5,7 +5,7 @@ import numpy as _np
 
 import torch_np as np
 from torch_np import (concatenate, array, atleast_1d, atleast_2d, atleast_3d,
-                      vstack, hstack)
+                      vstack, hstack, dstack)
 from torch_np.testing import assert_equal, assert_array_equal
 
 import warnings
@@ -152,7 +152,7 @@ class TestHstack:
         assert_array_equal(res, desired)
 
     def test_generator(self):
-        # numpy emits warnings and we don't
+        # numpy 1.24 emits warnings but we don't
         # with assert_warns(FutureWarning):
             hstack((np.arange(3) for _ in range(2)))
         # with assert_warns(FutureWarning):
@@ -208,6 +208,7 @@ class TestVstack:
         assert_array_equal(res, desired)
 
     def test_generator(self):
+        # numpy 1.24 emits a warning but we don't
         vstack((np.arange(3) for _ in range(2)))
 
     def test_casting_and_dtype(self):
@@ -222,6 +223,44 @@ class TestVstack:
         b = np.array([2.5, 3.5, 4.5])
         with pytest.raises(TypeError):
             vstack((a, b), casting="safe", dtype=np.int64)
+
+
+class TestDstack:
+    def test_non_iterable(self):
+        assert_raises(TypeError, dstack, 1)
+
+    def test_0D_array(self):
+        a = np.array(1)
+        b = np.array(2)
+        res = dstack([a, b])
+        desired = np.array([[[1, 2]]])
+        assert_array_equal(res, desired)
+
+    def test_1D_array(self):
+        a = np.array([1])
+        b = np.array([2])
+        res = dstack([a, b])
+        desired = np.array([[[1, 2]]])
+        assert_array_equal(res, desired)
+
+    def test_2D_array(self):
+        a = np.array([[1], [2]])
+        b = np.array([[1], [2]])
+        res = dstack([a, b])
+        desired = np.array([[[1, 1]], [[2, 2, ]]])
+        assert_array_equal(res, desired)
+
+    def test_2D_array2(self):
+        a = np.array([1, 2])
+        b = np.array([1, 2])
+        res = dstack([a, b])
+        desired = np.array([[[1, 1], [2, 2]]])
+        assert_array_equal(res, desired)
+
+    def test_generator(self):
+        # numpy 1.24 emits a warning but we don't
+        # with assert_warns(FutureWarning):
+            dstack((np.arange(3) for _ in range(2)))
 
 
 class TestConcatenate:

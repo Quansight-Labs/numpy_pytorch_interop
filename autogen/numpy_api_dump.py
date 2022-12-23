@@ -755,8 +755,7 @@ def vdot(a, b, /):
 def vsplit(ary, indices_or_sections):
     raise NotImplementedError
 
-def vstack(tup):
-    raise NotImplementedError
+
 
 def where(condition, x, y, /):
     raise NotImplementedError
