@@ -6,6 +6,7 @@ from . import _util
 from . import _dtypes
 
 NoValue = None
+newaxis = None
 
 ##################### ndarray class ###########################
 
@@ -156,12 +157,23 @@ def asarray(a, dtype=None, order=None, *, like=None):
     if isinstance(a, ndarray):
         return a
 
+    if isinstance(a, (list, tuple)):
+        # handle lists of ndarrays, [1, [2, 3], ndarray(4)] etc
+        a1 = []
+        for elem in a:
+            if isinstance(elem, ndarray):
+                a1.append(elem.get().tolist())
+            else:
+                a1.append(elem)
+    else:
+        a1 = a
+
     torch_dtype = _dtypes.torch_dtype_from(dtype)
 
     # This and array(...) are the only places which talk to ndarray directly.
     # The rest goes through asarray (preferred) or array.
     out = ndarray()
-    tt = torch.as_tensor(a, dtype=torch_dtype)
+    tt = torch.as_tensor(a1, dtype=torch_dtype)
     out._tensor = tt
     return out
 
@@ -172,10 +184,16 @@ def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
     if order != 'K':
         raise NotImplementedError
 
+    if isinstance(object, (list, tuple)):
+        obj = asarray(object)
+        return array(obj, dtype, copy=copy, order=order, subok=subok,
+                     ndmin=ndmin, like=like)
+
     if isinstance(object, ndarray):
         result = object._tensor
     else:
-        result = torch.as_tensor(object, dtype=dtype)
+        torch_dtype = _dtypes.torch_dtype_from(dtype)
+        result = torch.as_tensor(object, dtype=torch_dtype)
 
     if copy:
         result = result.clone()    

@@ -4,7 +4,7 @@ from pytest import raises as assert_raises
 import numpy as _np
 
 import torch_np as np
-from torch_np import concatenate, array
+from torch_np import concatenate, array, atleast_1d, atleast_2d, atleast_3d
 from torch_np.testing import assert_equal, assert_array_equal
 
 import warnings
@@ -45,10 +45,10 @@ class TestAtleast1d:
     def test_r1array(self):
         """ Test to make sure equivalent Travis O's r1array function
         """
-        assert_(atleast_1d(3).shape == (1,))
-        assert_(atleast_1d(3j).shape == (1,))
-        assert_(atleast_1d(3.0).shape == (1,))
-        assert_(atleast_1d([[2, 3], [4, 5]]).shape == (2, 2))
+        assert (atleast_1d(3).shape == (1,))
+        assert (atleast_1d(3j).shape == (1,))
+        assert (atleast_1d(3.0).shape == (1,))
+        assert (atleast_1d([[2, 3], [4, 5]]).shape == (2, 2))
 
 
 class TestAtleast2d:
@@ -85,9 +85,9 @@ class TestAtleast2d:
     def test_r2array(self):
         """ Test to make sure equivalent Travis O's r2array function
         """
-        assert_(atleast_2d(3).shape == (1, 1))
-        assert_(atleast_2d([3j, 1]).shape == (1, 2))
-        assert_(atleast_2d([[[3, 1], [4, 5]], [[3, 5], [1, 2]]]).shape == (2, 2, 2))
+        assert (atleast_2d(3).shape == (1, 1))
+        assert (atleast_2d([3j, 1]).shape == (1, 2))
+        assert (atleast_2d([[[3, 1], [4, 5]], [[3, 5], [1, 2]]]).shape == (2, 2, 2))
 
 
 class TestAtleast3d:
@@ -109,7 +109,7 @@ class TestAtleast3d:
         a = array([[1, 2], [1, 2]])
         b = array([[2, 3], [2, 3]])
         res = [atleast_3d(a), atleast_3d(b)]
-        desired = [a[:,:, newaxis], b[:,:, newaxis]]
+        desired = [a[:,:, np.newaxis], b[:,:, np.newaxis]]
         assert_array_equal(res, desired)
 
     def test_3D_array(self):
