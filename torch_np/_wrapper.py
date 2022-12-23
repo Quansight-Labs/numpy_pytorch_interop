@@ -10,7 +10,7 @@ import torch
 from . import _util
 from . import _dtypes
 from . import _helpers
-from ._ndarray import ndarray, asarray, array, asarray_replacer
+from ._ndarray import ndarray, asarray, array, asarray_replacer, newaxis
 from ._ndarray import can_cast, result_type
 
 
@@ -136,9 +136,25 @@ def column_stack(tup, *, dtype=None, casting='same_kind'):
     return concatenate(arrays, 1, dtype=dtype, casting=casting)
 
 
-def stack(arrays, axis=0, out=None):
-    tensors = tuple(asarray(ar).get() for ar in arrays)
-    return asarray(torch.stack(tensors, axis, out=out))
+def stack(arrays, axis=0, out=None, *, dtype=None, casting='same_kind'):
+#    tensors = tuple(asarray(ar).get() for ar in arrays)
+#    return asarray(torch.stack(tensors, axis, out=out))
+    arrays = [asarray(arr) for arr in arrays]
+    if not arrays:
+        raise ValueError('need at least one array to stack')
+
+    shapes = {arr.shape for arr in arrays}
+    if len(shapes) != 1:
+        raise ValueError('all input arrays must have the same shape')
+
+    result_ndim = arrays[0].ndim + 1
+    axis = _util.normalize_axis_index(axis, result_ndim)
+
+    sl = (slice(None),) * axis + (newaxis,)
+    expanded_arrays = [arr[sl] for arr in arrays]
+    return concatenate(expanded_arrays, axis=axis, out=out,
+                       dtype=dtype, casting=casting)
+
 
 
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None,

@@ -19,14 +19,14 @@ def subok_not_ok(like=None, subok=False):
         raise ValueError("subok parameter is not supported.")
 
 
-class AxisError(ValueError):
+class AxisError(ValueError, IndexError):
     pass
 
 
 # a replica of the version in ./numpy/numpy/core/src/multiarray/common.h
-def normalize_axis_index(ax, ndim, argname):
+def normalize_axis_index(ax, ndim, argname=None):
     if ax < -ndim or ax > ndim:
-        raise AxisError(f"axis {axis} is out of bounds for array of dimension {ndim}")
+        raise AxisError(f"axis {ax} is out of bounds for array of dimension {ndim}")
     if ax < 0:
         ax += ndim
     return ax
