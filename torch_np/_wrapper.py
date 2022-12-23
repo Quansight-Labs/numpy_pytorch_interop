@@ -122,6 +122,18 @@ def dstack(tup, *, dtype=None, casting='same_kind'):
         arrs = [arrs]
     return concatenate(arrs, 2)
 
+def column_stack(tup, *, dtype=None, casting='same_kind'):
+    # XXX: in numpy 1.24 column_stack does not have dtype and casting keywords
+    # but row_stack does. (because row_stack is an alias for vstack, really).
+    # Hence add these keywords here for consistency.
+    arrays = []
+    for v in tup:
+        arr = asanyarray(v)
+        if arr.ndim < 2:
+            arr = array(arr, copy=False, subok=True, ndmin=2).T
+        arrays.append(arr)
+    return _nx.concatenate(arrays, 1)
+
 
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None,
              axis=0):

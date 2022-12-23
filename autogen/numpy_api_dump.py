@@ -168,8 +168,7 @@ def choose(a, choices, out=None, mode='raise'):
 def clip(a, a_min, a_max, out=None, **kwargs):
     raise NotImplementedError
 
-def column_stack(tup):
-    raise NotImplementedError
+
 
 def common_type(*arrays):
     raise NotImplementedError
@@ -250,8 +249,7 @@ def dot(a, b, out=None):
 def dsplit(ary, indices_or_sections):
     raise NotImplementedError
 
-def dstack(tup):
-    raise NotImplementedError
+
 
 def ediff1d(ary, to_end=None, to_begin=None):
     raise NotImplementedError
