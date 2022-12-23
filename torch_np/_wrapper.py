@@ -53,8 +53,6 @@ from ._ndarray import can_cast, result_type
 
 NoValue = None
 
-class AxisError(ValueError):
-    pass
 
 
 ###### array creation routines
@@ -370,7 +368,7 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     try:
         result = torch.cat(tensors, axis)
     except (IndexError, RuntimeError):
-        raise AxisError
+        raise _util.AxisError
 
     return _helpers.result_or_out(result, out)
 
