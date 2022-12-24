@@ -112,7 +112,13 @@ class ndarray:
     ### methods to match namespace functions
 
     def squeeze(self, axis=None):
-        return squeeze(self._tensor, axis)
+        if axis == ():
+            tensor = self._tensor
+        elif axis is None:
+            tensor = self._tensor.squeeze()
+        else:
+            tensor = self._tensor.squeeze(axis)
+        return ndarray._from_tensor_and_base(tensor, self)
 
     def argmax(self, axis=None, out=None, *, keepdims=NoValue):
         return argmax(self._tensor, axis, out=out, keepdims=keepdims)

@@ -373,12 +373,13 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     return _helpers.result_or_out(result, out)
 
 
-@asarray_replacer()
 def squeeze(a, axis=None):
-    if axis is None:
-        return torch.squeeze(a)
-    else:
-        return torch.squeeze(a, axis)
+    arr = asarray(a)
+    return arr.squeeze(axis)
+#    if axis is None:
+#        return torch.squeeze(a)
+#    else:
+#        return torch.squeeze(a, axis)
 
 
 @asarray_replacer()
