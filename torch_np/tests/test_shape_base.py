@@ -623,8 +623,10 @@ class TestExpandDims:
         a = np.empty(s)
         for axis in range(-5, 4):
             b = expand_dims(a, axis)
-            assert_(b.shape[axis] == 1)
-            assert_(np.squeeze(b).shape == s)
+            assert b.shape[axis] == 1
+            assert np.squeeze(b).shape == s
+            assert b.base is a
+            assert isinstance(b, np.ndarray)
 
     def test_axis_tuple(self):
         a = np.empty((3, 3, 3))
@@ -647,11 +649,3 @@ class TestExpandDims:
         a = np.empty((3, 3, 3))
         assert_raises(ValueError, expand_dims, a, axis=(1, 1))
 
-    def test_subclasses(self):
-        a = np.arange(10).reshape((2, 5))
-        a = np.ma.array(a, mask=a%3 == 0)
-
-        expanded = np.expand_dims(a, axis=1)
-        assert_(isinstance(expanded, np.ma.MaskedArray))
-        assert_equal(expanded.shape, (2, 1, 5))
-        assert_equal(expanded.mask.shape, (2, 1, 5))

@@ -25,7 +25,7 @@ class AxisError(ValueError, IndexError):
 
 # a replica of the version in ./numpy/numpy/core/src/multiarray/common.h
 def normalize_axis_index(ax, ndim, argname=None):
-    if ax < -ndim or ax > ndim:
+    if ax < -ndim or ax >= ndim:
         raise AxisError(f"axis {ax} is out of bounds for array of dimension {ndim}")
     if ax < 0:
         ax += ndim

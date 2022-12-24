@@ -433,8 +433,8 @@ def squeeze(a, axis=None):
     return arr.squeeze(axis)
 
 
-@asarray_replacer()
 def expand_dims(a, axis):
+    a = asarray(a)
     # taken from numpy 1.23.x
     if type(axis) not in (list, tuple):
         axis = (axis,)
