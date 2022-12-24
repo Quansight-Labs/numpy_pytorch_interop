@@ -147,17 +147,6 @@ class TestNonzero:
         assert_equal(np.count_nonzero(x), 4)
         assert_equal(np.nonzero(x), ([0, 2, 3, 6],))
 
-        # x = np.array([(1, 2), (0, 0), (1, 1), (-1, 3), (0, 7)],
-        #              dtype=[('a', 'i4'), ('b', 'i2')])
-        x = np.array([(1, 2, -5, -3), (0, 0, 2, 7), (1, 1, 0, 1), (-1, 3, 1, 0), (0, 7, 0, 4)],
-                     dtype=[('a', 'i4'), ('b', 'i2'), ('c', 'i1'), ('d', 'i8')])
-        assert_equal(np.count_nonzero(x['a']), 3)
-        assert_equal(np.count_nonzero(x['b']), 4)
-        assert_equal(np.count_nonzero(x['c']), 3)
-        assert_equal(np.count_nonzero(x['d']), 4)
-        assert_equal(np.nonzero(x['a']), ([0, 2, 3],))
-        assert_equal(np.nonzero(x['b']), ([0, 2, 3, 4],))
-
     def test_nonzero_twodim(self):
         x = np.array([[0, 1, 0], [2, 0, 3]])
         assert_equal(np.count_nonzero(x.astype('i1')), 3)
@@ -172,20 +161,6 @@ class TestNonzero:
         assert_equal(np.count_nonzero(x.astype('i4')), 3)
         assert_equal(np.count_nonzero(x.astype('i8')), 3)
         assert_equal(np.nonzero(x), ([0, 1, 2], [0, 1, 2]))
-
-        x = np.array([[(0, 1), (0, 0), (1, 11)],
-                   [(1, 1), (1, 0), (0, 0)],
-                   [(0, 0), (1, 5), (0, 1)]], dtype=[('a', 'f4'), ('b', 'u1')])
-        assert_equal(np.count_nonzero(x['a']), 4)
-        assert_equal(np.count_nonzero(x['b']), 5)
-        assert_equal(np.nonzero(x['a']), ([0, 1, 1, 2], [2, 0, 1, 1]))
-        assert_equal(np.nonzero(x['b']), ([0, 0, 1, 2, 2], [0, 2, 0, 1, 2]))
-
-        assert_(not x['a'].T.flags.aligned)
-        assert_equal(np.count_nonzero(x['a'].T), 4)
-        assert_equal(np.count_nonzero(x['b'].T), 5)
-        assert_equal(np.nonzero(x['a'].T), ([0, 1, 1, 2], [1, 1, 2, 0]))
-        assert_equal(np.nonzero(x['b'].T), ([0, 0, 1, 2, 2], [0, 1, 2, 0, 2]))
 
     def test_sparse(self):
         # test special sparse condition boolean code path
@@ -340,115 +315,4 @@ class TestNonzero:
         tgt = [[0, 1, 1], [0, 0, 2]]
 
         assert_equal(m.nonzero(), tgt)
-
-    def test_nonzero_invalid_object(self):
-        # gh-9295
-        a = np.array([np.array([1, 2]), 3], dtype=object)
-        assert_raises(ValueError, np.nonzero, a)
-
-        class BoolErrors:
-            def __bool__(self):
-                raise ValueError("Not allowed")
-
-        assert_raises(ValueError, np.nonzero, np.array([BoolErrors()]))
-
-    def test_nonzero_sideeffect_safety(self):
-        # gh-13631
-        class FalseThenTrue:
-            _val = False
-            def __bool__(self):
-                try:
-                    return self._val
-                finally:
-                    self._val = True
-
-        class TrueThenFalse:
-            _val = True
-            def __bool__(self):
-                try:
-                    return self._val
-                finally:
-                    self._val = False
-
-        # result grows on the second pass
-        a = np.array([True, FalseThenTrue()])
-        assert_raises(RuntimeError, np.nonzero, a)
-
-        a = np.array([[True], [FalseThenTrue()]])
-        assert_raises(RuntimeError, np.nonzero, a)
-
-        # result shrinks on the second pass
-        a = np.array([False, TrueThenFalse()])
-        assert_raises(RuntimeError, np.nonzero, a)
-
-        a = np.array([[False], [TrueThenFalse()]])
-        assert_raises(RuntimeError, np.nonzero, a)
-
-    def test_nonzero_sideffects_structured_void(self):
-        # Checks that structured void does not mutate alignment flag of
-        # original array.
-        arr = np.zeros(5, dtype="i1,i8,i8")  # `ones` may short-circuit
-        assert arr.flags.aligned  # structs are considered "aligned"
-        assert not arr["f2"].flags.aligned
-        # make sure that nonzero/count_nonzero do not flip the flag:
-        np.nonzero(arr)
-        assert arr.flags.aligned
-        np.count_nonzero(arr)
-        assert arr.flags.aligned
-
-    def test_nonzero_exception_safe(self):
-        # gh-13930
-
-        class ThrowsAfter:
-            def __init__(self, iters):
-                self.iters_left = iters
-
-            def __bool__(self):
-                if self.iters_left == 0:
-                    raise ValueError("called `iters` times")
-
-                self.iters_left -= 1
-                return True
-
-        """
-        Test that a ValueError is raised instead of a SystemError
-
-        If the __bool__ function is called after the error state is set,
-        Python (cpython) will raise a SystemError.
-        """
-
-        # assert that an exception in first pass is handled correctly
-        a = np.array([ThrowsAfter(5)]*10)
-        assert_raises(ValueError, np.nonzero, a)
-
-        # raise exception in second pass for 1-dimensional loop
-        a = np.array([ThrowsAfter(15)]*10)
-        assert_raises(ValueError, np.nonzero, a)
-
-        # raise exception in second pass for n-dimensional loop
-        a = np.array([[ThrowsAfter(15)]]*10)
-        assert_raises(ValueError, np.nonzero, a)
-
-    @pytest.mark.skipif(IS_WASM, reason="wasm doesn't have threads")
-    def test_structured_threadsafety(self):
-        # Nonzero (and some other functions) should be threadsafe for
-        # structured datatypes, see gh-15387. This test can behave randomly.
-        from concurrent.futures import ThreadPoolExecutor
-
-        # Create a deeply nested dtype to make a failure more likely:
-        dt = np.dtype([("", "f8")])
-        dt = np.dtype([("", dt)])
-        dt = np.dtype([("", dt)] * 2)
-        # The array should be large enough to likely run into threading issues
-        arr = np.random.uniform(size=(5000, 4)).view(dt)[:, 0]
-        def func(arr):
-            arr.nonzero()
-
-        tpe = ThreadPoolExecutor(max_workers=8)
-        futures = [tpe.submit(func, arr) for _ in range(10)]
-        for f in futures:
-            f.result()
-
-        assert arr.dtype is dt
-
 
