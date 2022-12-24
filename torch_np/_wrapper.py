@@ -495,10 +495,14 @@ def ravel_multi_index(multi_index, dims, mode='raise', order='C'):
     return sum(idx*dim for idx, dim in zip(multi_index, dims))
 
 
-# YYY : pattern: array_like input, tuple of arrays as output; cf broadcast_arrays
 def nonzero(a):
-    a = asarray(a).get()
-    return tuple(asarray(_) for _ in a.nonzero(as_tuple=True))
+    arr = asarray(a)
+    return arr.nonzero()
+
+
+def count_nonzero(a, axis=None, *, keepdims=False):
+    arr = asarray(a)
+    return a.count_nonzero(axis, keepdims=keepdims)
 
 
 @asarray_replacer()

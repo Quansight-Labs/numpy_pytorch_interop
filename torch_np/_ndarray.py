@@ -56,7 +56,7 @@ class ndarray:
     # ctors
     def astype(self, dtype):
         newt = ndarray()
-        torch_dtype = _dtypes.torch_dtype_from_dtype(dtype)
+        torch_dtype = _dtypes.torch_dtype_from(dtype)
         newt._tensor = self._tensor.to(torch_dtype)
         return newt
 
@@ -147,11 +147,32 @@ class ndarray:
             raise NotImplementedError
         return ndarray._from_tensor_and_base(self._tensor.ravel(), self)
 
+    def nonzero(self):
+        tensor = self._tensor
+        return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
+
+    def count_nonzero(self, axis=None, *, keepdims=False):
+        # XXX: this all should probably be generalized to a sum(a != 0, dtype=bool)
+        if isinstance(axis, ndarray):
+            raise TypeError   # XXX: scalars and zero-dim arrays
+        if axis == ():
+            return ndarray._from_tensor_and_base(self._tensor, None)
+        if axis is not None:
+            if type(axis) not in (list, tuple):
+                axis = (axis,)
+            axis = _util.normalize_axis_tuple(axis, self.ndim)
+        try:
+            tensor = self._tensor.count_nonzero(axis)
+        except RuntimeError:
+            raise ValueError
+        return ndarray._from_tensor_and_base(tensor, None)
+
     ### indexing ###
     def __getitem__(self, *args, **kwds):
         return ndarray._from_tensor_and_base(self._tensor.__getitem__(*args, **kwds), self)
 
     def __setitem__(self, index, value):
+        value = asarray(value).get()
         return self._tensor.__setitem__(index, value)
 
 
