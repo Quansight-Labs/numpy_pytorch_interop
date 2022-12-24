@@ -373,14 +373,6 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     return _helpers.result_or_out(result, out)
 
 
-def squeeze(a, axis=None):
-    arr = asarray(a)
-    return arr.squeeze(axis)
-#    if axis is None:
-#        return torch.squeeze(a)
-#    else:
-#        return torch.squeeze(a, axis)
-
 
 @asarray_replacer()
 def bincount(x, /, weights=None, minlength=0):
@@ -435,6 +427,10 @@ def ravel(a, order='C'):
     arr = asarray(a)
     return arr.ravel(order=order)
 
+
+def squeeze(a, axis=None):
+    arr = asarray(a)
+    return arr.squeeze(axis)
 
 
 @asarray_replacer()
