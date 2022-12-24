@@ -135,8 +135,6 @@ def column_stack(tup, *, dtype=None, casting='same_kind'):
 
 
 def stack(arrays, axis=0, out=None, *, dtype=None, casting='same_kind'):
-#    tensors = tuple(asarray(ar).get() for ar in arrays)
-#    return asarray(torch.stack(tensors, axis, out=out))
     arrays = [asarray(arr) for arr in arrays]
     if not arrays:
         raise ValueError('need at least one array to stack')
