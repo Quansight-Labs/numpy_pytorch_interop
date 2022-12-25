@@ -248,6 +248,3 @@ class TestNonzero:
 
         assert_equal(m.nonzero(), tgt)
 
-        assert isinstance(m.count_nonzero(), np.ndarray)
-        assert isinstance(np.count_nonzero(m), np.ndarray)
-

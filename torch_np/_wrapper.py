@@ -495,8 +495,31 @@ def nonzero(a):
 
 
 def count_nonzero(a, axis=None, *, keepdims=False):
+    # XXX: this all should probably be generalized to a sum(a != 0, dtype=bool)
     arr = asarray(a)
-    return a.count_nonzero(axis, keepdims=keepdims)
+    if isinstance(axis, ndarray):
+        raise TypeError   # XXX: scalars and zero-dim arrays
+    if axis == ():
+        return arr
+    if axis is not None:
+        if type(axis) not in (list, tuple):
+            axis = (axis,)
+        axis = _util.normalize_axis_tuple(axis, arr.ndim)
+
+    try:
+        tensor = arr.get().count_nonzero(axis)
+    except RuntimeError:
+        raise ValueError
+
+    if keepdims:
+        if axis is None:
+            # tensor was a scalar
+            tensor = torch.full(arr.shape, fill_value=tensor)
+        else:
+            shape = _util.expand_shape(tensor, axis)
+            tensor = tensor.reshape(shape)
+
+    return asarray(tensor)
 
 
 @asarray_replacer()

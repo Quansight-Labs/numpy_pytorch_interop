@@ -151,32 +151,6 @@ class ndarray:
         tensor = self._tensor
         return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
 
-    def count_nonzero(self, axis=None, *, keepdims=False):
-        # XXX: this all should probably be generalized to a sum(a != 0, dtype=bool)
-        if isinstance(axis, ndarray):
-            raise TypeError   # XXX: scalars and zero-dim arrays
-        if axis == ():
-            return ndarray._from_tensor_and_base(self._tensor, None)
-        if axis is not None:
-            if type(axis) not in (list, tuple):
-                axis = (axis,)
-            axis = _util.normalize_axis_tuple(axis, self.ndim)
-
-        try:
-            tensor = self._tensor.count_nonzero(axis)
-        except RuntimeError:
-            raise ValueError
-
-        if keepdims:
-            if axis is None:
-                # tensor was a scalar
-                tensor = torch.full(self.shape, fill_value=tensor)
-            else:
-                shape = _util.expand_shape(tensor, axis)
-                tensor = tensor.reshape(shape)
-
-        return ndarray._from_tensor_and_base(tensor, None)
-
     ### indexing ###
     def __getitem__(self, *args, **kwds):
         return ndarray._from_tensor_and_base(self._tensor.__getitem__(*args, **kwds), self)
