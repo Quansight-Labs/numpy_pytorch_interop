@@ -98,6 +98,10 @@ class ndarray:
         return float(self._tensor)
 
 
+    ### sequence ###
+    def __len__(self):
+        return self._tensor.shape[0]
+
     ### arithmetic ###
 
     def __add__(self, other):

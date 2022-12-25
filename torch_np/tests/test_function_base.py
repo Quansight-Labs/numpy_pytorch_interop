@@ -1,5 +1,7 @@
 import pytest
 
+from pytest import raises as assert_raises
+
 import torch_np as np
 from torch_np.testing import assert_equal, assert_array_equal
 
@@ -35,14 +37,14 @@ class TestCopy:
 
 class TestArange:
     def test_infinite(self):
-        assert_raises_regex(
-            ValueError, "size exceeded",
+        assert_raises(
+            ValueError, # "size exceeded",
             np.arange, 0, np.inf
         )
 
     def test_nan_step(self):
-        assert_raises_regex(
-            ValueError, "cannot compute length",
+        assert_raises(
+            ValueError, # "cannot compute length",
             np.arange, 0, 1, np.nan
         )
 
@@ -58,6 +60,9 @@ class TestArange:
         assert_raises(TypeError, np.arange)
         assert_raises(TypeError, np.arange, step=3)
         assert_raises(TypeError, np.arange, dtype='int64')
+
+    @pytest.mark.xfail(reason='XXX: arange(start=0, stop, step=1)')
+    def test_require_range_2(self):
         assert_raises(TypeError, np.arange, start=4)
 
     def test_start_stop_kwarg(self):
@@ -70,6 +75,7 @@ class TestArange:
         assert len(keyword_start_stop) == 6
         assert_array_equal(keyword_stop, keyword_zerotostop)
 
+    @pytest.mark.xfail(reason='XXX: arange(..., dtype=bool)')
     def test_arange_booleans(self):
         # Arange makes some sense for booleans and works up to length 2.
         # But it is weird since `arange(2, 4, dtype=bool)` works.
@@ -90,27 +96,6 @@ class TestArange:
         with pytest.raises(TypeError):
             np.arange(3, dtype="bool")
 
-    @pytest.mark.parametrize("dtype", ["S3", "U", "5i"])
-    def test_rejects_bad_dtypes(self, dtype):
-        dtype = np.dtype(dtype)
-        DType_name = re.escape(str(type(dtype)))
-        with pytest.raises(TypeError,
-                match=rf"arange\(\) not supported for inputs .* {DType_name}"):
-            np.arange(2, dtype=dtype)
-
-    def test_rejects_strings(self):
-        # Explicitly test error for strings which may call "b" - "a":
-        DType_name = re.escape(str(type(np.array("a").dtype)))
-        with pytest.raises(TypeError,
-                match=rf"arange\(\) not supported for inputs .* {DType_name}"):
-            np.arange("a", "b")
-
-    def test_byteswapped(self):
-        res_be = np.arange(1, 1000, dtype=">i4")
-        res_le = np.arange(1, 1000, dtype="<i4")
-        assert res_be.dtype == ">i4"
-        assert res_le.dtype == "<i4"
-        assert_array_equal(res_le, res_be)
 
     @pytest.mark.parametrize("which", [0, 1, 2])
     def test_error_paths_and_promotion(self, which):

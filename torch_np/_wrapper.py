@@ -177,14 +177,29 @@ def logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0):
     return asarray(torch.logspace(start, stop, num, base=base, dtype=dtype))
 
 
-def arange(start, stop=None, step=1, dtype=None, *, like=None):
+
+        
+
+
+def arange(start=None, stop=None, step=1, dtype=None, *, like=None):
     _util.subok_not_ok(like)
+    if step == 0:
+        raise ZeroDivisionError
+    if stop is None and start is None:
+        raise TypeError
     if stop is None:
-        # arange(stop)
-        stop = start
-        start = 0
+        # XXX: this breaks if start is passed as a kwarg:
+        # arange(start=4) should raise (no stop) but doesn't
+        start = stop
+    else:
+        if start is None:
+            start = 0 
+
     torch_dtype = _dtypes.torch_dtype_from(dtype)
-    return asarray(torch.arange(start, stop, step, dtype=torch_dtype))
+    try:
+        return asarray(torch.arange(start, stop, step, dtype=torch_dtype))
+    except RuntimeError:
+        raise ValueError("Maximum allowed size exceeded")
 
 
 def empty(shape, dtype=float, order='C', *, like=None):
