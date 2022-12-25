@@ -82,3 +82,15 @@ def normalize_axis_tuple(axis, ndim, argname=None, allow_duplicate=False):
         else:
             raise ValueError('repeated axis')
     return axis
+
+
+def expand_shape(arr, axis):
+    # taken from numpy 1.23.x, expand_dims function
+    if type(axis) not in (list, tuple):
+        axis = (axis,)
+    out_ndim = len(axis) + arr.ndim
+    axis = normalize_axis_tuple(axis, out_ndim)
+    shape_it = iter(arr.shape)
+    shape = [1 if ax in axis else next(shape_it) for ax in range(out_ndim)]
+    return shape
+

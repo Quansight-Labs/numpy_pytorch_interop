@@ -232,6 +232,14 @@ class TestNonzero:
         assert_equal(np.count_nonzero(a, keepdims=True),
                      [[6]])
 
+    @pytest.mark.parametrize('axis',
+            [0, 1, 2, -1, -2, None, (), (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)])
+    def count_nonzero_keepdims2(self, axis):
+        a = np.arange(2*3*4).reshape((2, 3, 4))
+        with_keepdims = np.count_nonzero(a, axis, keepdims=True)
+        expanded = np.expand_dims( np.count_nonzero(a, axis=axis), axis=axis)
+        assert_equal(with_keepdims, expanded)
+
     def test_array_method(self):
         # Tests that the array method
         # call to nonzero works

@@ -161,10 +161,20 @@ class ndarray:
             if type(axis) not in (list, tuple):
                 axis = (axis,)
             axis = _util.normalize_axis_tuple(axis, self.ndim)
+
         try:
             tensor = self._tensor.count_nonzero(axis)
         except RuntimeError:
             raise ValueError
+
+        if keepdims:
+            if axis is None:
+                # tensor was a scalar
+                tensor = torch.full(self.shape, fill_value=tensor)
+            else:
+                shape = _util.expand_shape(tensor, axis)
+                tensor = tensor.reshape(shape)
+
         return ndarray._from_tensor_and_base(tensor, None)
 
     ### indexing ###

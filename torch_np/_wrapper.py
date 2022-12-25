@@ -433,13 +433,7 @@ def squeeze(a, axis=None):
 
 def expand_dims(a, axis):
     a = asarray(a)
-    # taken from numpy 1.23.x
-    if type(axis) not in (list, tuple):
-        axis = (axis,)
-    out_ndim = len(axis) + a.ndim
-    axis = _util.normalize_axis_tuple(axis, out_ndim)
-    shape_it = iter(a.shape)
-    shape = [1 if ax in axis else next(shape_it) for ax in range(out_ndim)]
+    shape = _util.expand_shape(a, axis)
     return a.reshape(shape)
 
 
