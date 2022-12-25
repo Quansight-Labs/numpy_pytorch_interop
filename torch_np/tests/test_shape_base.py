@@ -799,3 +799,40 @@ class TestFlatnonzero:
         assert_equal(np.flatnonzero(x),
                      [0, 1, 3, 4])
 
+
+class TestArgwhere:
+
+    @pytest.mark.parametrize('nd', [0, 1, 2])
+    def test_nd(self, nd):
+        # get an nd array with multiple elements in every dimension
+        x = np.empty((2,)*nd, bool)
+
+        # none
+        x[...] = False
+        assert_equal(np.argwhere(x).shape, (0, nd))
+
+        # only one
+        x[...] = False
+        x.ravel()[0] = True
+        assert_equal(np.argwhere(x).shape, (1, nd))
+
+        # all but one
+        x[...] = True
+        x.ravel()[0] = False
+        assert_equal(np.argwhere(x).shape, (x.size - 1, nd))
+
+        # all
+        x[...] = True
+        assert_equal(np.argwhere(x).shape, (x.size, nd))
+
+    def test_2D(self):
+        x = np.arange(6).reshape((2, 3))
+        assert_array_equal(np.argwhere(x > 1),
+                           [[0, 2],
+                            [1, 0],
+                            [1, 1],
+                            [1, 2]])
+
+    def test_list(self):
+        assert_equal(np.argwhere([4, 0, 2, 1, 3]), [[0], [2], [3], [4]])
+

@@ -499,6 +499,15 @@ def flatnonzero(a):
     return nonzero(arr.ravel())[0]
 
 
+def argwhere(a):
+    arr = asarray(a)
+    if arr.ndim == 0:
+        a = atleast_1d(a)
+        # then remove the added dimension
+        return argwhere(a)[:, :0]
+    return transpose(nonzero(a))
+
+
 def count_nonzero(a, axis=None, *, keepdims=False):
     # XXX: this all should probably be generalized to a sum(a != 0, dtype=bool)
     arr = asarray(a)

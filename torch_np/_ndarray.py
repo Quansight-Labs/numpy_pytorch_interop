@@ -80,6 +80,9 @@ class ndarray:
     def __neq__(self, other):
         return asarray(self._tensor != asarray(other).get())
 
+    def __gt__(self, other):
+        return asarray(self._tensor > asarray(other).get())
+
     def __bool__(self):
         try:
             return bool(self._tensor)

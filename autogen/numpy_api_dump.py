@@ -95,10 +95,6 @@ def argpartition(a, kth, axis=-1, kind='introselect', order=None):
 def argsort(a, axis=-1, kind=None, order=None):
     raise NotImplementedError
 
-def argwhere(a):
-    raise NotImplementedError
-
-
 def array2string(a, max_line_width=None, precision=None, suppress_small=None, separator=' ', prefix='', style=NoValue, formatter=None, threshold=None, edgeitems=None, sign=None, floatmode=None, suffix='', *, legacy=None):
     raise NotImplementedError
 
