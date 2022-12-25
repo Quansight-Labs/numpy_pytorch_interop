@@ -118,45 +118,30 @@ class TestRavel:
 
 class TestNonzero:
     def test_nonzero_trivial(self):
-        assert_equal(np.count_nonzero(np.array([])), 0)
-        assert_equal(np.count_nonzero(np.array([], dtype='?')), 0)
         assert_equal(np.nonzero(np.array([])), ([],))
+        assert_equal(np.array([]).nonzero(), ([],))
 
-        assert_equal(np.count_nonzero(np.array([0])), 0)
-        assert_equal(np.count_nonzero(np.array([0], dtype='?')), 0)
+
         assert_equal(np.nonzero(np.array([0])), ([],))
+        assert_equal(np.array([0]).nonzero(), ([],))
 
-        assert_equal(np.count_nonzero(np.array([1])), 1)
-        assert_equal(np.count_nonzero(np.array([1], dtype='?')), 1)
         assert_equal(np.nonzero(np.array([1])), ([0],))
-
-    def test_nonzero_zerod(self):
-        assert_equal(np.count_nonzero(np.array(0)), 0)
-        assert_equal(np.count_nonzero(np.array(0, dtype='?')), 0)
-
-        assert_equal(np.count_nonzero(np.array(1)), 1)
-        assert_equal(np.count_nonzero(np.array(1, dtype='?')), 1)
+        assert_equal(np.array([1]).nonzero(), ([0],))
 
     def test_nonzero_onedim(self):
         x = np.array([1, 0, 2, -1, 0, 0, 8])
-        assert_equal(np.count_nonzero(x), 4)
-        assert_equal(np.count_nonzero(x), 4)
         assert_equal(np.nonzero(x), ([0, 2, 3, 6],))
+        assert_equal(x.nonzero(), ([0, 2, 3, 6],))
+
 
     def test_nonzero_twodim(self):
         x = np.array([[0, 1, 0], [2, 0, 3]])
-        assert_equal(np.count_nonzero(x.astype('i1')), 3)
-        assert_equal(np.count_nonzero(x.astype('i2')), 3)
-        assert_equal(np.count_nonzero(x.astype('i4')), 3)
-        assert_equal(np.count_nonzero(x.astype('i8')), 3)
         assert_equal(np.nonzero(x), ([0, 1, 1], [1, 0, 2]))
+        assert_equal(x.nonzero(), ([0, 1, 1], [1, 0, 2]))
 
         x = np.eye(3)
-        assert_equal(np.count_nonzero(x.astype('i1')), 3)
-        assert_equal(np.count_nonzero(x.astype('i2')), 3)
-        assert_equal(np.count_nonzero(x.astype('i4')), 3)
-        assert_equal(np.count_nonzero(x.astype('i8')), 3)
         assert_equal(np.nonzero(x), ([0, 1, 2], [0, 1, 2]))
+        assert_equal(x.nonzero(), ([0, 1, 2], [0, 1, 2]))
 
     def test_sparse(self):
         # test special sparse condition boolean code path
@@ -164,81 +149,13 @@ class TestNonzero:
             c = np.zeros(200, dtype=bool)
             c[i::20] = True
             assert_equal(np.nonzero(c)[0], np.arange(i, 200 + i, 20))
+            assert_equal(c.nonzero()[0], np.arange(i, 200 + i, 20))
 
             c = np.zeros(400, dtype=bool)
             c[10 + i:20 + i] = True
             c[20 + i*2] = True
             assert_equal(np.nonzero(c)[0],
                          np.concatenate((np.arange(10 + i, 20 + i), [20 + i*2])))
-
-    def test_count_nonzero_axis(self):
-        # Basic check of functionality
-        m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
-
-        expected = np.array([1, 1, 1, 1, 1])
-        assert_equal(np.count_nonzero(m, axis=0), expected)
-
-        expected = np.array([2, 3])
-        assert_equal(np.count_nonzero(m, axis=1), expected)
-
-        assert_raises(ValueError, np.count_nonzero, m, axis=(1, 1))
-        assert_raises(TypeError, np.count_nonzero, m, axis='foo')
-        assert_raises(np.AxisError, np.count_nonzero, m, axis=3)
-        assert_raises(TypeError, np.count_nonzero,
-                      m, axis=np.array([[1], [2]]))
-
-    @pytest.mark.parametrize('typecode', np.typecodes['All'])
-    def test_count_nonzero_axis_all_dtypes(self, typecode):
-        # More thorough test that the axis argument is respected
-        # for all dtypes and responds correctly when presented with
-        # either integer or tuple arguments for axis
-
-        m = np.zeros((3, 3), dtype=typecode)
-        n = np.ones(1, dtype=typecode)
-
-        m[0, 0] = n[0]
-        m[1, 0] = n[0]
-
-        expected = np.array([2, 0, 0], dtype=np.intp)
-        result = np.count_nonzero(m, axis=0)
-        assert_equal(result, expected)
-        assert expected.dtype == result.dtype
-
-        expected = np.array([1, 1, 0], dtype=np.intp)
-        result = np.count_nonzero(m, axis=1)
-        assert_equal(result, expected)
-        assert expected.dtype == result.dtype
-
-        expected = np.array(2)
-        assert_equal(np.count_nonzero(m, axis=(0, 1)),
-                     expected)
-        assert_equal(np.count_nonzero(m, axis=None),
-                     expected)
-        assert_equal(np.count_nonzero(m),
-                     expected)
-
-    def test_countnonzero_axis_empty(self):
-        a = np.array([[0, 0, 1], [1, 0, 1]])
-        assert_equal(np.count_nonzero(a, axis=()), a.astype(bool))
-
-    def test_countnonzero_keepdims(self):
-        a = np.array([[0, 0, 1, 0],
-                      [0, 3, 5, 0],
-                      [7, 9, 2, 0]])
-        assert_equal(np.count_nonzero(a, axis=0, keepdims=True),
-                     [[1, 2, 3, 0]])
-        assert_equal(np.count_nonzero(a, axis=1, keepdims=True),
-                     [[1], [2], [3]])
-        assert_equal(np.count_nonzero(a, keepdims=True),
-                     [[6]])
-
-    @pytest.mark.parametrize('axis',
-            [0, 1, 2, -1, -2, None, (), (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)])
-    def count_nonzero_keepdims2(self, axis):
-        a = np.arange(2*3*4).reshape((2, 3, 4))
-        with_keepdims = np.count_nonzero(a, axis, keepdims=True)
-        expanded = np.expand_dims( np.count_nonzero(a, axis=axis), axis=axis)
-        assert_equal(with_keepdims, expanded)
 
     def test_array_method(self):
         # Tests that the array method
