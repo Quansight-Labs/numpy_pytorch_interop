@@ -22,6 +22,7 @@ one_arg_funcs = [w.asarray, w.empty_like, w.ones_like, w.zeros_like,
                  w.round_, w.around,
                  w.flip,
                  w.vstack, w.hstack, w.dstack, w.column_stack, w.row_stack,
+                 w.flatnonzero,
 ]
 
 

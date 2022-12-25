@@ -793,3 +793,9 @@ class TestNonzeroAndCountNonzero:
         assert_equal(m.nonzero(), tgt)
 
 
+class TestFlatnonzero:
+    def test_basic(self):
+        x = np.arange(-2, 3)
+        assert_equal(np.flatnonzero(x),
+                     [0, 1, 3, 4])
+

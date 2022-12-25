@@ -494,6 +494,11 @@ def nonzero(a):
     return arr.nonzero()
 
 
+def flatnonzero(a):
+    arr = asarray(a)
+    return nonzero(arr.ravel())[0]
+
+
 def count_nonzero(a, axis=None, *, keepdims=False):
     # XXX: this all should probably be generalized to a sum(a != 0, dtype=bool)
     arr = asarray(a)

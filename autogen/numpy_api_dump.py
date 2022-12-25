@@ -189,8 +189,6 @@ def copyto(dst, src, casting='same_kind', where=True):
 def correlate(a, v, mode='valid'):
     raise NotImplementedError
 
-def count_nonzero(a, axis=None, *, keepdims=False):
-    raise NotImplementedError
 
 def cov(m, y=None, rowvar=True, bias=False, ddof=None, fweights=None, aweights=None, *, dtype=None):
     raise NotImplementedError
@@ -275,9 +273,6 @@ def find_common_type(array_types, scalar_types):
     raise NotImplementedError
 
 def fix(x, out=None):
-    raise NotImplementedError
-
-def flatnonzero(a):
     raise NotImplementedError
 
 def flip(m, axis=None):
