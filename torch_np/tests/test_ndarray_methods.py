@@ -533,10 +533,28 @@ class TestAny:
         assert np.any(y1)
         assert_equal(np.any(y1, axis=0), [1, 1, 0])
         assert_equal(np.any(y1, axis=1), [0, 1, 1])
+        assert_equal(np.any(y1), True)
+        assert isinstance(np.any(y1, axis=1), np.ndarray)
 
+    # YYY: deduplicate 
     def test_method_vs_function(self):
         y = np.array([[0, 1, 0, 3], [1, 0, 2, 0]])
         assert_equal(np.any(y), y.any())
+
+    def test_any_bad_axis(self):
+        # Basic check of functionality
+        m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
+
+        assert_raises(TypeError, np.any, m, axis='foo')
+        assert_raises(np.AxisError, np.any, m, axis=3)
+        assert_raises(TypeError, np.any,
+                      m, axis=np.array([[1], [2]]))
+
+    @pytest.mark.xfail(reason='XXX: pytorch does not support any(..., axis=tuple)')
+    def test_any_axis_bad_tuple(self):
+        # Basic check of functionality
+        m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
+        assert_raises(ValueError, np.any, m, axis=(1, 1))
 
 
 class TestAll:
@@ -554,8 +572,24 @@ class TestAll:
         assert not np.all(y1)
         assert_equal(np.all(y1, axis=0), [0, 0, 1])
         assert_equal(np.all(y1, axis=1), [0, 0, 1])
+        assert_equal(np.all(y1), False)
 
     def test_method_vs_function(self):
         y = np.array([[0, 1, 0, 3], [1, 0, 2, 0]])
         assert_equal(np.all(y), y.all())
+
+    def test_any_bad_axis(self):
+        # Basic check of functionality
+        m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
+
+        assert_raises(TypeError, np.all, m, axis='foo')
+        assert_raises(np.AxisError, np.all, m, axis=3)
+        assert_raises(TypeError, np.all,
+                      m, axis=np.array([[1], [2]]))
+
+    @pytest.mark.xfail(reason='XXX: pytorch does not support all(..., axis=tuple)')
+    def test_any_axis_bad_tuple(self):
+        # Basic check of functionality
+        m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
+        assert_raises(ValueError, np.all, m, axis=(1, 1))
 

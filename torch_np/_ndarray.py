@@ -188,6 +188,7 @@ class ndarray:
             if keepdims:
                 result = torch.full(self.shape, result, dtype=result.dtype)
         else:
+            axis = _util.normalize_axis_index(axis, self._tensor.ndim)
             result = self._tensor.any(axis, keepdim=bool(keepdims))
         return _helpers.result_or_out(result, out)
 
@@ -199,6 +200,7 @@ class ndarray:
             if keepdims:
                 result = torch.full(self.shape, result, dtype=result.dtype)
         else:
+            axis = _util.normalize_axis_index(axis, self._tensor.ndim)
             result = self._tensor.all(axis, keepdim=bool(keepdims))
         return _helpers.result_or_out(result, out)
 
