@@ -165,3 +165,462 @@ class TestNonzero:
 
         assert_equal(m.nonzero(), tgt)
 
+
+
+class TestArgmaxArgminCommon:
+
+    sizes = [(), (3,), (3, 2), (2, 3),
+             (3, 3), (2, 3, 4), (4, 3, 2),
+             (1, 2, 3, 4), (2, 3, 4, 1),
+             (3, 4, 1, 2), (4, 1, 2, 3),
+             (64,), (128,), (256,)]
+
+    @pytest.mark.parametrize("size, axis", itertools.chain(*[[(size, axis)
+        for axis in list(range(-len(size), len(size))) + [None]]
+        for size in sizes]))
+    @pytest.mark.parametrize('method', [np.argmax, np.argmin])
+    def test_np_argmin_argmax_keepdims(self, size, axis, method):
+
+        arr = np.random.normal(size=size)
+
+        # contiguous arrays
+        if axis is None:
+            new_shape = [1 for _ in range(len(size))]
+        else:
+            new_shape = list(size)
+            new_shape[axis] = 1
+        new_shape = tuple(new_shape)
+
+        _res_orig = method(arr, axis=axis)
+        res_orig = _res_orig.reshape(new_shape)
+        res = method(arr, axis=axis, keepdims=True)
+        assert_equal(res, res_orig)
+        assert_(res.shape == new_shape)
+        outarray = np.empty(res.shape, dtype=res.dtype)
+        res1 = method(arr, axis=axis, out=outarray,
+                            keepdims=True)
+        assert_(res1 is outarray)
+        assert_equal(res, outarray)
+
+        if len(size) > 0:
+            wrong_shape = list(new_shape)
+            if axis is not None:
+                wrong_shape[axis] = 2
+            else:
+                wrong_shape[0] = 2
+            wrong_outarray = np.empty(wrong_shape, dtype=res.dtype)
+            with pytest.raises(ValueError):
+                method(arr.T, axis=axis,
+                        out=wrong_outarray, keepdims=True)
+
+        # non-contiguous arrays
+        if axis is None:
+            new_shape = [1 for _ in range(len(size))]
+        else:
+            new_shape = list(size)[::-1]
+            new_shape[axis] = 1
+        new_shape = tuple(new_shape)
+
+        _res_orig = method(arr.T, axis=axis)
+        res_orig = _res_orig.reshape(new_shape)
+        res = method(arr.T, axis=axis, keepdims=True)
+        assert_equal(res, res_orig)
+        assert_(res.shape == new_shape)
+        outarray = np.empty(new_shape[::-1], dtype=res.dtype)
+        outarray = outarray.T
+        res1 = method(arr.T, axis=axis, out=outarray,
+                            keepdims=True)
+        assert_(res1 is outarray)
+        assert_equal(res, outarray)
+
+        if len(size) > 0:
+            # one dimension lesser for non-zero sized
+            # array should raise an error
+            with pytest.raises(ValueError):
+                method(arr[0], axis=axis,
+                        out=outarray, keepdims=True)
+
+        if len(size) > 0:
+            wrong_shape = list(new_shape)
+            if axis is not None:
+                wrong_shape[axis] = 2
+            else:
+                wrong_shape[0] = 2
+            wrong_outarray = np.empty(wrong_shape, dtype=res.dtype)
+            with pytest.raises(ValueError):
+                method(arr.T, axis=axis,
+                        out=wrong_outarray, keepdims=True)
+
+    @pytest.mark.parametrize('method', ['max', 'min'])
+    def test_all(self, method):
+        a = np.random.normal(0, 1, (4, 5, 6, 7, 8))
+        arg_method = getattr(a, 'arg' + method)
+        val_method = getattr(a, method)
+        for i in range(a.ndim):
+            a_maxmin = val_method(i)
+            aarg_maxmin = arg_method(i)
+            axes = list(range(a.ndim))
+            axes.remove(i)
+            assert_(np.all(a_maxmin == aarg_maxmin.choose(
+                                        *a.transpose(i, *axes))))
+
+    @pytest.mark.parametrize('method', ['argmax', 'argmin'])
+    def test_output_shape(self, method):
+        # see also gh-616
+        a = np.ones((10, 5))
+        arg_method = getattr(a, method)
+        # Check some simple shape mismatches
+        out = np.ones(11, dtype=np.int_)
+        assert_raises(ValueError, arg_method, -1, out)
+
+        out = np.ones((2, 5), dtype=np.int_)
+        assert_raises(ValueError, arg_method, -1, out)
+
+        # these could be relaxed possibly (used to allow even the previous)
+        out = np.ones((1, 10), dtype=np.int_)
+        assert_raises(ValueError, arg_method, -1, out)
+
+        out = np.ones(10, dtype=np.int_)
+        arg_method(-1, out=out)
+        assert_equal(out, arg_method(-1))
+
+    @pytest.mark.parametrize('ndim', [0, 1])
+    @pytest.mark.parametrize('method', ['argmax', 'argmin'])
+    def test_ret_is_out(self, ndim, method):
+        a = np.ones((4,) + (256,)*ndim)
+        arg_method = getattr(a, method)
+        out = np.empty((256,)*ndim, dtype=np.intp)
+        ret = arg_method(axis=0, out=out)
+        assert ret is out
+
+    @pytest.mark.parametrize('np_array, method, idx, val',
+        [(np.zeros, 'argmax', 5942, "as"),
+         (np.ones, 'argmin', 6001, "0")])
+    def test_unicode(self, np_array, method, idx, val):
+        d = np_array(6031, dtype='<U9')
+        arg_method = getattr(d, method)
+        d[idx] = val
+        assert_equal(arg_method(), idx)
+
+    @pytest.mark.parametrize('arr_method, np_method',
+        [('argmax', np.argmax),
+         ('argmin', np.argmin)])
+    def test_np_vs_ndarray(self, arr_method, np_method):
+        # make sure both ndarray.argmax/argmin and
+        # numpy.argmax/argmin support out/axis args
+        a = np.random.normal(size=(2, 3))
+        arg_method = getattr(a, arr_method)
+
+        # check positional args
+        out1 = np.zeros(2, dtype=int)
+        out2 = np.zeros(2, dtype=int)
+        assert_equal(arg_method(1, out1), np_method(a, 1, out2))
+        assert_equal(out1, out2)
+
+        # check keyword args
+        out1 = np.zeros(3, dtype=int)
+        out2 = np.zeros(3, dtype=int)
+        assert_equal(arg_method(out=out1, axis=0),
+                     np_method(a, out=out2, axis=0))
+        assert_equal(out1, out2)
+
+    @pytest.mark.leaks_references(reason="replaces None with NULL.")
+    @pytest.mark.parametrize('method, vals',
+        [('argmax', (10, 30)),
+         ('argmin', (30, 10))])
+    def test_object_with_NULLs(self, method, vals):
+        # See gh-6032
+        a = np.empty(4, dtype='O')
+        arg_method = getattr(a, method)
+        ctypes.memset(a.ctypes.data, 0, a.nbytes)
+        assert_equal(arg_method(), 0)
+        a[3] = vals[0]
+        assert_equal(arg_method(), 3)
+        a[1] = vals[1]
+        assert_equal(arg_method(), 1)
+
+class TestArgmax:
+    usg_data = [
+        ([1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0], 0),
+        ([3, 3, 3, 3,  2,  2,  2,  2], 0),
+        ([0, 1, 2, 3,  4,  5,  6,  7], 7),
+        ([7, 6, 5, 4,  3,  2,  1,  0], 0)
+    ]
+    sg_data = usg_data + [
+        ([1, 2, 3, 4, -4, -3, -2, -1], 3),
+        ([1, 2, 3, 4, -1, -2, -3, -4], 3)
+    ]
+    darr = [(np.array(d[0], dtype=t), d[1]) for d, t in (
+        itertools.product(usg_data, (
+            np.uint8, np.uint16, np.uint32, np.uint64
+        ))
+    )]
+    darr = darr + [(np.array(d[0], dtype=t), d[1]) for d, t in (
+        itertools.product(sg_data, (
+            np.int8, np.int16, np.int32, np.int64, np.float32, np.float64
+        ))
+    )]
+    darr = darr + [(np.array(d[0], dtype=t), d[1]) for d, t in (
+        itertools.product((
+            ([0, 1, 2, 3, np.nan], 4),
+            ([0, 1, 2, np.nan, 3], 3),
+            ([np.nan, 0, 1, 2, 3], 0),
+            ([np.nan, 0, np.nan, 2, 3], 0),
+            # To hit the tail of SIMD multi-level(x4, x1) inner loops
+            # on variant SIMD widthes
+            ([1] * (2*5-1) + [np.nan], 2*5-1),
+            ([1] * (4*5-1) + [np.nan], 4*5-1),
+            ([1] * (8*5-1) + [np.nan], 8*5-1),
+            ([1] * (16*5-1) + [np.nan], 16*5-1),
+            ([1] * (32*5-1) + [np.nan], 32*5-1)
+        ), (
+            np.float32, np.float64
+        ))
+    )]
+    nan_arr = darr + [
+        ([0, 1, 2, 3, complex(0, np.nan)], 4),
+        ([0, 1, 2, 3, complex(np.nan, 0)], 4),
+        ([0, 1, 2, complex(np.nan, 0), 3], 3),
+        ([0, 1, 2, complex(0, np.nan), 3], 3),
+        ([complex(0, np.nan), 0, 1, 2, 3], 0),
+        ([complex(np.nan, np.nan), 0, 1, 2, 3], 0),
+        ([complex(np.nan, 0), complex(np.nan, 2), complex(np.nan, 1)], 0),
+        ([complex(np.nan, np.nan), complex(np.nan, 2), complex(np.nan, 1)], 0),
+        ([complex(np.nan, 0), complex(np.nan, 2), complex(np.nan, np.nan)], 0),
+
+        ([complex(0, 0), complex(0, 2), complex(0, 1)], 1),
+        ([complex(1, 0), complex(0, 2), complex(0, 1)], 0),
+        ([complex(1, 0), complex(0, 2), complex(1, 1)], 2),
+
+        ([np.datetime64('1923-04-14T12:43:12'),
+          np.datetime64('1994-06-21T14:43:15'),
+          np.datetime64('2001-10-15T04:10:32'),
+          np.datetime64('1995-11-25T16:02:16'),
+          np.datetime64('2005-01-04T03:14:12'),
+          np.datetime64('2041-12-03T14:05:03')], 5),
+        ([np.datetime64('1935-09-14T04:40:11'),
+          np.datetime64('1949-10-12T12:32:11'),
+          np.datetime64('2010-01-03T05:14:12'),
+          np.datetime64('2015-11-20T12:20:59'),
+          np.datetime64('1932-09-23T10:10:13'),
+          np.datetime64('2014-10-10T03:50:30')], 3),
+        # Assorted tests with NaTs
+        ([np.datetime64('NaT'),
+          np.datetime64('NaT'),
+          np.datetime64('2010-01-03T05:14:12'),
+          np.datetime64('NaT'),
+          np.datetime64('2015-09-23T10:10:13'),
+          np.datetime64('1932-10-10T03:50:30')], 0),
+        ([np.datetime64('2059-03-14T12:43:12'),
+          np.datetime64('1996-09-21T14:43:15'),
+          np.datetime64('NaT'),
+          np.datetime64('2022-12-25T16:02:16'),
+          np.datetime64('1963-10-04T03:14:12'),
+          np.datetime64('2013-05-08T18:15:23')], 2),
+        ([np.timedelta64(2, 's'),
+          np.timedelta64(1, 's'),
+          np.timedelta64('NaT', 's'),
+          np.timedelta64(3, 's')], 2),
+        ([np.timedelta64('NaT', 's')] * 3, 0),
+
+        ([timedelta(days=5, seconds=14), timedelta(days=2, seconds=35),
+          timedelta(days=-1, seconds=23)], 0),
+        ([timedelta(days=1, seconds=43), timedelta(days=10, seconds=5),
+          timedelta(days=5, seconds=14)], 1),
+        ([timedelta(days=10, seconds=24), timedelta(days=10, seconds=5),
+          timedelta(days=10, seconds=43)], 2),
+
+        ([False, False, False, False, True], 4),
+        ([False, False, False, True, False], 3),
+        ([True, False, False, False, False], 0),
+        ([True, False, True, False, False], 0),
+    ]
+
+    @pytest.mark.parametrize('data', nan_arr)
+    def test_combinations(self, data):
+        arr, pos = data
+        with suppress_warnings() as sup:
+            sup.filter(RuntimeWarning,
+                        "invalid value encountered in reduce")
+            val = np.max(arr)
+
+        assert_equal(np.argmax(arr), pos, err_msg="%r" % arr)
+        assert_equal(arr[np.argmax(arr)], val, err_msg="%r" % arr)
+
+        # add padding to test SIMD loops
+        rarr = np.repeat(arr, 129)
+        rpos = pos * 129
+        assert_equal(np.argmax(rarr), rpos, err_msg="%r" % rarr)
+        assert_equal(rarr[np.argmax(rarr)], val, err_msg="%r" % rarr)
+
+        padd = np.repeat(np.min(arr), 513)
+        rarr = np.concatenate((arr, padd))
+        rpos = pos
+        assert_equal(np.argmax(rarr), rpos, err_msg="%r" % rarr)
+        assert_equal(rarr[np.argmax(rarr)], val, err_msg="%r" % rarr)
+
+
+    def test_maximum_signed_integers(self):
+
+        a = np.array([1, 2**7 - 1, -2**7], dtype=np.int8)
+        assert_equal(np.argmax(a), 1)
+        a.repeat(129)
+        assert_equal(np.argmax(a), 1)
+
+        a = np.array([1, 2**15 - 1, -2**15], dtype=np.int16)
+        assert_equal(np.argmax(a), 1)
+        a.repeat(129)
+        assert_equal(np.argmax(a), 1)
+
+        a = np.array([1, 2**31 - 1, -2**31], dtype=np.int32)
+        assert_equal(np.argmax(a), 1)
+        a.repeat(129)
+        assert_equal(np.argmax(a), 1)
+
+        a = np.array([1, 2**63 - 1, -2**63], dtype=np.int64)
+        assert_equal(np.argmax(a), 1)
+        a.repeat(129)
+        assert_equal(np.argmax(a), 1)
+
+class TestArgmin:
+    usg_data = [
+        ([1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0], 8),
+        ([3, 3, 3, 3,  2,  2,  2,  2], 4),
+        ([0, 1, 2, 3,  4,  5,  6,  7], 0),
+        ([7, 6, 5, 4,  3,  2,  1,  0], 7)
+    ]
+    sg_data = usg_data + [
+        ([1, 2, 3, 4, -4, -3, -2, -1], 4),
+        ([1, 2, 3, 4, -1, -2, -3, -4], 7)
+    ]
+    darr = [(np.array(d[0], dtype=t), d[1]) for d, t in (
+        itertools.product(usg_data, (
+            np.uint8, np.uint16, np.uint32, np.uint64
+        ))
+    )]
+    darr = darr + [(np.array(d[0], dtype=t), d[1]) for d, t in (
+        itertools.product(sg_data, (
+            np.int8, np.int16, np.int32, np.int64, np.float32, np.float64
+        ))
+    )]
+    darr = darr + [(np.array(d[0], dtype=t), d[1]) for d, t in (
+        itertools.product((
+            ([0, 1, 2, 3, np.nan], 4),
+            ([0, 1, 2, np.nan, 3], 3),
+            ([np.nan, 0, 1, 2, 3], 0),
+            ([np.nan, 0, np.nan, 2, 3], 0),
+            # To hit the tail of SIMD multi-level(x4, x1) inner loops
+            # on variant SIMD widthes
+            ([1] * (2*5-1) + [np.nan], 2*5-1),
+            ([1] * (4*5-1) + [np.nan], 4*5-1),
+            ([1] * (8*5-1) + [np.nan], 8*5-1),
+            ([1] * (16*5-1) + [np.nan], 16*5-1),
+            ([1] * (32*5-1) + [np.nan], 32*5-1)
+        ), (
+            np.float32, np.float64
+        ))
+    )]
+    nan_arr = darr + [
+        ([0, 1, 2, 3, complex(0, np.nan)], 4),
+        ([0, 1, 2, 3, complex(np.nan, 0)], 4),
+        ([0, 1, 2, complex(np.nan, 0), 3], 3),
+        ([0, 1, 2, complex(0, np.nan), 3], 3),
+        ([complex(0, np.nan), 0, 1, 2, 3], 0),
+        ([complex(np.nan, np.nan), 0, 1, 2, 3], 0),
+        ([complex(np.nan, 0), complex(np.nan, 2), complex(np.nan, 1)], 0),
+        ([complex(np.nan, np.nan), complex(np.nan, 2), complex(np.nan, 1)], 0),
+        ([complex(np.nan, 0), complex(np.nan, 2), complex(np.nan, np.nan)], 0),
+
+        ([complex(0, 0), complex(0, 2), complex(0, 1)], 0),
+        ([complex(1, 0), complex(0, 2), complex(0, 1)], 2),
+        ([complex(1, 0), complex(0, 2), complex(1, 1)], 1),
+
+        ([np.datetime64('1923-04-14T12:43:12'),
+          np.datetime64('1994-06-21T14:43:15'),
+          np.datetime64('2001-10-15T04:10:32'),
+          np.datetime64('1995-11-25T16:02:16'),
+          np.datetime64('2005-01-04T03:14:12'),
+          np.datetime64('2041-12-03T14:05:03')], 0),
+        ([np.datetime64('1935-09-14T04:40:11'),
+          np.datetime64('1949-10-12T12:32:11'),
+          np.datetime64('2010-01-03T05:14:12'),
+          np.datetime64('2014-11-20T12:20:59'),
+          np.datetime64('2015-09-23T10:10:13'),
+          np.datetime64('1932-10-10T03:50:30')], 5),
+        # Assorted tests with NaTs
+        ([np.datetime64('NaT'),
+          np.datetime64('NaT'),
+          np.datetime64('2010-01-03T05:14:12'),
+          np.datetime64('NaT'),
+          np.datetime64('2015-09-23T10:10:13'),
+          np.datetime64('1932-10-10T03:50:30')], 0),
+        ([np.datetime64('2059-03-14T12:43:12'),
+          np.datetime64('1996-09-21T14:43:15'),
+          np.datetime64('NaT'),
+          np.datetime64('2022-12-25T16:02:16'),
+          np.datetime64('1963-10-04T03:14:12'),
+          np.datetime64('2013-05-08T18:15:23')], 2),
+        ([np.timedelta64(2, 's'),
+          np.timedelta64(1, 's'),
+          np.timedelta64('NaT', 's'),
+          np.timedelta64(3, 's')], 2),
+        ([np.timedelta64('NaT', 's')] * 3, 0),
+
+        ([timedelta(days=5, seconds=14), timedelta(days=2, seconds=35),
+          timedelta(days=-1, seconds=23)], 2),
+        ([timedelta(days=1, seconds=43), timedelta(days=10, seconds=5),
+          timedelta(days=5, seconds=14)], 0),
+        ([timedelta(days=10, seconds=24), timedelta(days=10, seconds=5),
+          timedelta(days=10, seconds=43)], 1),
+
+        ([True, True, True, True, False], 4),
+        ([True, True, True, False, True], 3),
+        ([False, True, True, True, True], 0),
+        ([False, True, False, True, True], 0),
+    ]
+
+    @pytest.mark.parametrize('data', nan_arr)
+    def test_combinations(self, data):
+        arr, pos = data
+        with suppress_warnings() as sup:
+            sup.filter(RuntimeWarning,
+                       "invalid value encountered in reduce")
+            min_val = np.min(arr)
+
+        assert_equal(np.argmin(arr), pos, err_msg="%r" % arr)
+        assert_equal(arr[np.argmin(arr)], min_val, err_msg="%r" % arr)
+
+        # add padding to test SIMD loops
+        rarr = np.repeat(arr, 129)
+        rpos = pos * 129
+        assert_equal(np.argmin(rarr), rpos, err_msg="%r" % rarr)
+        assert_equal(rarr[np.argmin(rarr)], min_val, err_msg="%r" % rarr)
+
+        padd = np.repeat(np.max(arr), 513)
+        rarr = np.concatenate((arr, padd))
+        rpos = pos
+        assert_equal(np.argmin(rarr), rpos, err_msg="%r" % rarr)
+        assert_equal(rarr[np.argmin(rarr)], min_val, err_msg="%r" % rarr)
+
+    def test_minimum_signed_integers(self):
+
+        a = np.array([1, -2**7, -2**7 + 1, 2**7 - 1], dtype=np.int8)
+        assert_equal(np.argmin(a), 1)
+        a.repeat(129)
+        assert_equal(np.argmin(a), 1)
+
+        a = np.array([1, -2**15, -2**15 + 1, 2**15 - 1], dtype=np.int16)
+        assert_equal(np.argmin(a), 1)
+        a.repeat(129)
+        assert_equal(np.argmin(a), 1)
+
+        a = np.array([1, -2**31, -2**31 + 1, 2**31 - 1], dtype=np.int32)
+        assert_equal(np.argmin(a), 1)
+        a.repeat(129)
+        assert_equal(np.argmin(a), 1)
+
+        a = np.array([1, -2**63, -2**63 + 1, 2**63 - 1], dtype=np.int64)
+        assert_equal(np.argmin(a), 1)
+        a.repeat(129)
+        assert_equal(np.argmin(a), 1)
+
