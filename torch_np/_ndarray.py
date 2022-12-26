@@ -128,15 +128,13 @@ class ndarray:
             tensor = self._tensor.squeeze(axis)
         return ndarray._from_tensor_and_base(tensor, self)
 
+    # XXX: arg{min, max} only accept a single axis in numpy, no axis tuples.
     def argmax(self, axis=None, out=None, *, keepdims=NoValue):
         if axis is None:
             tensor = torch.argmax(self._tensor, keepdim=bool(keepdims))
         else:
-            try:
-                tensor = torch.argmax(self._tensor, axis, keepdim=bool(keepdims))
-            except IndexError:
-                raise ValueError(f"axis {axis} is out of bounds for array of"
-                                  " dimension {self.ndim}")
+            axis = _util.normalize_axis_index(axis, self._tensor.ndim)
+            tensor = torch.argmax(self._tensor, axis, keepdim=bool(keepdims))
         return _helpers.result_or_out(tensor, out) 
 
 
@@ -144,11 +142,8 @@ class ndarray:
         if axis is None:
             tensor = torch.argmin(self._tensor, keepdim=bool(keepdims))
         else:
-            try:
-                tensor = torch.argmin(self._tensor, axis, keepdim=bool(keepdims))
-            except IndexError:
-                raise ValueError(f"axis {axis} is out of bounds for array of"
-                                  " dimension {self.ndim}")
+            axis = _util.normalize_axis_index(axis, self._tensor.ndim)
+            tensor = torch.argmin(self._tensor, axis, keepdim=bool(keepdims))
         return _helpers.result_or_out(tensor, out) 
 
 
