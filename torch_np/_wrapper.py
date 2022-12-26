@@ -190,10 +190,16 @@ def arange(start=None, stop=None, step=1, dtype=None, *, like=None):
     if stop is None:
         # XXX: this breaks if start is passed as a kwarg:
         # arange(start=4) should raise (no stop) but doesn't
-        start = stop
-    else:
-        if start is None:
-            start = 0 
+        start, stop = 0, start
+    if start is None:
+        start = 0
+
+    # FIXME: min_scalar_type
+    if dtype is None:
+        dtype = _dtypes.default_int_type()
+    import builtins
+    if builtins.any(int(value) != value for value in [start, stop, step]):
+        dtype = 'float64'
 
     torch_dtype = _dtypes.torch_dtype_from(dtype)
     try:
@@ -618,26 +624,15 @@ def tri(N, M=None, k=0, dtype=float, *, like=None):
 
 # YYY: pattern : argmax, argmin
 
-@asarray_replacer()
 def argmax(a, axis=None, out=None, *, keepdims=NoValue):
-    if axis is None:
-        result = torch.argmax(a, keepdim=bool(keepdims))
-    else:
-        result = torch.argmax(a, axis, keepdim=bool(keepdims))
-    if out is not None:
-        out.copy_(result)
-    return result
+    arr = asarray(a)
+    return arr.argmax(axis=axis, out=out, keepdims=keepdims)
 
 
-@asarray_replacer()
 def argmin(a, axis=None, out=None, *, keepdims=NoValue):
-    if axis is None:
-        result = torch.argmin(a, keepdim=bool(keepdims))
-    else:
-        result = torch.argmin(a, axis, keepdim=bool(keepdims))
-    if out is not None:
-        out.copy_(result)
-    return result
+    arr = asarray(a)
+    return arr.argmin(axis=axis, out=out, keepdims=keepdims)
+
 
 
 # YYY: pattern all, any

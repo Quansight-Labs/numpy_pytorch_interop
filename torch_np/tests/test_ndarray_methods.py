@@ -1,3 +1,5 @@
+import itertools
+
 import pytest
 from pytest import raises as assert_raises
 
@@ -181,7 +183,8 @@ class TestArgmaxArgminCommon:
     @pytest.mark.parametrize('method', [np.argmax, np.argmin])
     def test_np_argmin_argmax_keepdims(self, size, axis, method):
 
-        arr = np.random.normal(size=size)
+        # arr = np.random.normal(size=size)
+        arr = np.empty(shape=size)
 
         # contiguous arrays
         if axis is None:
@@ -195,11 +198,12 @@ class TestArgmaxArgminCommon:
         res_orig = _res_orig.reshape(new_shape)
         res = method(arr, axis=axis, keepdims=True)
         assert_equal(res, res_orig)
-        assert_(res.shape == new_shape)
+        assert res.shape == new_shape
+
         outarray = np.empty(res.shape, dtype=res.dtype)
         res1 = method(arr, axis=axis, out=outarray,
                             keepdims=True)
-        assert_(res1 is outarray)
+        assert res1 is outarray
         assert_equal(res, outarray)
 
         if len(size) > 0:
@@ -225,12 +229,12 @@ class TestArgmaxArgminCommon:
         res_orig = _res_orig.reshape(new_shape)
         res = method(arr.T, axis=axis, keepdims=True)
         assert_equal(res, res_orig)
-        assert_(res.shape == new_shape)
+        assert res.shape == new_shape
         outarray = np.empty(new_shape[::-1], dtype=res.dtype)
         outarray = outarray.T
         res1 = method(arr.T, axis=axis, out=outarray,
                             keepdims=True)
-        assert_(res1 is outarray)
+        assert res1 is outarray
         assert_equal(res, outarray)
 
         if len(size) > 0:
@@ -251,6 +255,7 @@ class TestArgmaxArgminCommon:
                 method(arr.T, axis=axis,
                         out=wrong_outarray, keepdims=True)
 
+    @pytest.mark.skipif(reason='XXX: ndarray.min/max need implementing')
     @pytest.mark.parametrize('method', ['max', 'min'])
     def test_all(self, method):
         a = np.random.normal(0, 1, (4, 5, 6, 7, 8))
@@ -269,6 +274,7 @@ class TestArgmaxArgminCommon:
         # see also gh-616
         a = np.ones((10, 5))
         arg_method = getattr(a, method)
+
         # Check some simple shape mismatches
         out = np.ones(11, dtype=np.int_)
         assert_raises(ValueError, arg_method, -1, out)
@@ -293,22 +299,14 @@ class TestArgmaxArgminCommon:
         ret = arg_method(axis=0, out=out)
         assert ret is out
 
-    @pytest.mark.parametrize('np_array, method, idx, val',
-        [(np.zeros, 'argmax', 5942, "as"),
-         (np.ones, 'argmin', 6001, "0")])
-    def test_unicode(self, np_array, method, idx, val):
-        d = np_array(6031, dtype='<U9')
-        arg_method = getattr(d, method)
-        d[idx] = val
-        assert_equal(arg_method(), idx)
-
     @pytest.mark.parametrize('arr_method, np_method',
         [('argmax', np.argmax),
          ('argmin', np.argmin)])
     def test_np_vs_ndarray(self, arr_method, np_method):
         # make sure both ndarray.argmax/argmin and
         # numpy.argmax/argmin support out/axis args
-        a = np.random.normal(size=(2, 3))
+        # a = np.random.normal(size=(2, 3))
+        a = np.arange(6).reshape((2, 3))
         arg_method = getattr(a, arr_method)
 
         # check positional args
@@ -324,20 +322,6 @@ class TestArgmaxArgminCommon:
                      np_method(a, out=out2, axis=0))
         assert_equal(out1, out2)
 
-    @pytest.mark.leaks_references(reason="replaces None with NULL.")
-    @pytest.mark.parametrize('method, vals',
-        [('argmax', (10, 30)),
-         ('argmin', (30, 10))])
-    def test_object_with_NULLs(self, method, vals):
-        # See gh-6032
-        a = np.empty(4, dtype='O')
-        arg_method = getattr(a, method)
-        ctypes.memset(a.ctypes.data, 0, a.nbytes)
-        assert_equal(arg_method(), 0)
-        a[3] = vals[0]
-        assert_equal(arg_method(), 3)
-        a[1] = vals[1]
-        assert_equal(arg_method(), 1)
 
 class TestArgmax:
     usg_data = [
@@ -352,7 +336,7 @@ class TestArgmax:
     ]
     darr = [(np.array(d[0], dtype=t), d[1]) for d, t in (
         itertools.product(usg_data, (
-            np.uint8, np.uint16, np.uint32, np.uint64
+            np.uint8,
         ))
     )]
     darr = darr + [(np.array(d[0], dtype=t), d[1]) for d, t in (
@@ -392,50 +376,13 @@ class TestArgmax:
         ([complex(1, 0), complex(0, 2), complex(0, 1)], 0),
         ([complex(1, 0), complex(0, 2), complex(1, 1)], 2),
 
-        ([np.datetime64('1923-04-14T12:43:12'),
-          np.datetime64('1994-06-21T14:43:15'),
-          np.datetime64('2001-10-15T04:10:32'),
-          np.datetime64('1995-11-25T16:02:16'),
-          np.datetime64('2005-01-04T03:14:12'),
-          np.datetime64('2041-12-03T14:05:03')], 5),
-        ([np.datetime64('1935-09-14T04:40:11'),
-          np.datetime64('1949-10-12T12:32:11'),
-          np.datetime64('2010-01-03T05:14:12'),
-          np.datetime64('2015-11-20T12:20:59'),
-          np.datetime64('1932-09-23T10:10:13'),
-          np.datetime64('2014-10-10T03:50:30')], 3),
-        # Assorted tests with NaTs
-        ([np.datetime64('NaT'),
-          np.datetime64('NaT'),
-          np.datetime64('2010-01-03T05:14:12'),
-          np.datetime64('NaT'),
-          np.datetime64('2015-09-23T10:10:13'),
-          np.datetime64('1932-10-10T03:50:30')], 0),
-        ([np.datetime64('2059-03-14T12:43:12'),
-          np.datetime64('1996-09-21T14:43:15'),
-          np.datetime64('NaT'),
-          np.datetime64('2022-12-25T16:02:16'),
-          np.datetime64('1963-10-04T03:14:12'),
-          np.datetime64('2013-05-08T18:15:23')], 2),
-        ([np.timedelta64(2, 's'),
-          np.timedelta64(1, 's'),
-          np.timedelta64('NaT', 's'),
-          np.timedelta64(3, 's')], 2),
-        ([np.timedelta64('NaT', 's')] * 3, 0),
-
-        ([timedelta(days=5, seconds=14), timedelta(days=2, seconds=35),
-          timedelta(days=-1, seconds=23)], 0),
-        ([timedelta(days=1, seconds=43), timedelta(days=10, seconds=5),
-          timedelta(days=5, seconds=14)], 1),
-        ([timedelta(days=10, seconds=24), timedelta(days=10, seconds=5),
-          timedelta(days=10, seconds=43)], 2),
-
         ([False, False, False, False, True], 4),
         ([False, False, False, True, False], 3),
         ([True, False, False, False, False], 0),
         ([True, False, True, False, False], 0),
     ]
 
+    @pytest.mark.skip(reason='XXX: ndarray.min/max need implementing')
     @pytest.mark.parametrize('data', nan_arr)
     def test_combinations(self, data):
         arr, pos = data
@@ -464,22 +411,14 @@ class TestArgmax:
 
         a = np.array([1, 2**7 - 1, -2**7], dtype=np.int8)
         assert_equal(np.argmax(a), 1)
-        a.repeat(129)
-        assert_equal(np.argmax(a), 1)
 
         a = np.array([1, 2**15 - 1, -2**15], dtype=np.int16)
-        assert_equal(np.argmax(a), 1)
-        a.repeat(129)
         assert_equal(np.argmax(a), 1)
 
         a = np.array([1, 2**31 - 1, -2**31], dtype=np.int32)
         assert_equal(np.argmax(a), 1)
-        a.repeat(129)
-        assert_equal(np.argmax(a), 1)
 
         a = np.array([1, 2**63 - 1, -2**63], dtype=np.int64)
-        assert_equal(np.argmax(a), 1)
-        a.repeat(129)
         assert_equal(np.argmax(a), 1)
 
 class TestArgmin:
@@ -495,7 +434,7 @@ class TestArgmin:
     ]
     darr = [(np.array(d[0], dtype=t), d[1]) for d, t in (
         itertools.product(usg_data, (
-            np.uint8, np.uint16, np.uint32, np.uint64
+            np.uint8,
         ))
     )]
     darr = darr + [(np.array(d[0], dtype=t), d[1]) for d, t in (
@@ -535,50 +474,13 @@ class TestArgmin:
         ([complex(1, 0), complex(0, 2), complex(0, 1)], 2),
         ([complex(1, 0), complex(0, 2), complex(1, 1)], 1),
 
-        ([np.datetime64('1923-04-14T12:43:12'),
-          np.datetime64('1994-06-21T14:43:15'),
-          np.datetime64('2001-10-15T04:10:32'),
-          np.datetime64('1995-11-25T16:02:16'),
-          np.datetime64('2005-01-04T03:14:12'),
-          np.datetime64('2041-12-03T14:05:03')], 0),
-        ([np.datetime64('1935-09-14T04:40:11'),
-          np.datetime64('1949-10-12T12:32:11'),
-          np.datetime64('2010-01-03T05:14:12'),
-          np.datetime64('2014-11-20T12:20:59'),
-          np.datetime64('2015-09-23T10:10:13'),
-          np.datetime64('1932-10-10T03:50:30')], 5),
-        # Assorted tests with NaTs
-        ([np.datetime64('NaT'),
-          np.datetime64('NaT'),
-          np.datetime64('2010-01-03T05:14:12'),
-          np.datetime64('NaT'),
-          np.datetime64('2015-09-23T10:10:13'),
-          np.datetime64('1932-10-10T03:50:30')], 0),
-        ([np.datetime64('2059-03-14T12:43:12'),
-          np.datetime64('1996-09-21T14:43:15'),
-          np.datetime64('NaT'),
-          np.datetime64('2022-12-25T16:02:16'),
-          np.datetime64('1963-10-04T03:14:12'),
-          np.datetime64('2013-05-08T18:15:23')], 2),
-        ([np.timedelta64(2, 's'),
-          np.timedelta64(1, 's'),
-          np.timedelta64('NaT', 's'),
-          np.timedelta64(3, 's')], 2),
-        ([np.timedelta64('NaT', 's')] * 3, 0),
-
-        ([timedelta(days=5, seconds=14), timedelta(days=2, seconds=35),
-          timedelta(days=-1, seconds=23)], 2),
-        ([timedelta(days=1, seconds=43), timedelta(days=10, seconds=5),
-          timedelta(days=5, seconds=14)], 0),
-        ([timedelta(days=10, seconds=24), timedelta(days=10, seconds=5),
-          timedelta(days=10, seconds=43)], 1),
-
         ([True, True, True, True, False], 4),
         ([True, True, True, False, True], 3),
         ([False, True, True, True, True], 0),
         ([False, True, False, True, True], 0),
     ]
 
+    @pytest.mark.skip(reason='XXX: ndarray.min/max need implementing')
     @pytest.mark.parametrize('data', nan_arr)
     def test_combinations(self, data):
         arr, pos = data
@@ -606,21 +508,13 @@ class TestArgmin:
 
         a = np.array([1, -2**7, -2**7 + 1, 2**7 - 1], dtype=np.int8)
         assert_equal(np.argmin(a), 1)
-        a.repeat(129)
-        assert_equal(np.argmin(a), 1)
 
         a = np.array([1, -2**15, -2**15 + 1, 2**15 - 1], dtype=np.int16)
-        assert_equal(np.argmin(a), 1)
-        a.repeat(129)
         assert_equal(np.argmin(a), 1)
 
         a = np.array([1, -2**31, -2**31 + 1, 2**31 - 1], dtype=np.int32)
         assert_equal(np.argmin(a), 1)
-        a.repeat(129)
-        assert_equal(np.argmin(a), 1)
 
         a = np.array([1, -2**63, -2**63 + 1, 2**63 - 1], dtype=np.int64)
-        assert_equal(np.argmin(a), 1)
-        a.repeat(129)
         assert_equal(np.argmin(a), 1)
 

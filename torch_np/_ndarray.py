@@ -3,6 +3,7 @@ import functools
 import torch
 
 from . import _util
+from . import _helpers
 from . import _dtypes
 
 NoValue = None
@@ -128,7 +129,28 @@ class ndarray:
         return ndarray._from_tensor_and_base(tensor, self)
 
     def argmax(self, axis=None, out=None, *, keepdims=NoValue):
-        return argmax(self._tensor, axis, out=out, keepdims=keepdims)
+        if axis is None:
+            tensor = torch.argmax(self._tensor, keepdim=bool(keepdims))
+        else:
+            try:
+                tensor = torch.argmax(self._tensor, axis, keepdim=bool(keepdims))
+            except IndexError:
+                raise ValueError(f"axis {axis} is out of bounds for array of"
+                                  " dimension {self.ndim}")
+        return _helpers.result_or_out(tensor, out) 
+
+
+    def argmin(self, axis=None, out=None, *, keepdims=NoValue):
+        if axis is None:
+            tensor = torch.argmin(self._tensor, keepdim=bool(keepdims))
+        else:
+            try:
+                tensor = torch.argmin(self._tensor, axis, keepdim=bool(keepdims))
+            except IndexError:
+                raise ValueError(f"axis {axis} is out of bounds for array of"
+                                  " dimension {self.ndim}")
+        return _helpers.result_or_out(tensor, out) 
+
 
     def reshape(self, *shape, order='C'):
         newshape = shape[0] if len(shape) == 1 else shape

@@ -82,14 +82,14 @@ def axis_none_ravel(*arrays, axis=None):
         return arrays, axis
 
 
-def result_or_out(result, out=None):
+def result_or_out(result_tensor, out_array=None):
     """A helper for returns with out= argument."""
-    if out is not None:
-        if result.shape != out.shape:
+    if out_array is not None:
+        if result_tensor.shape != out_array.shape:
             raise ValueError
-        out_tensor = out.get()
-        out_tensor.copy_(result)
-        return out
+        out_tensor = out_array.get()
+        out_tensor.copy_(result_tensor)
+        return out_array
     else:
-        return asarray(result)
+        return asarray(result_tensor)
 
