@@ -117,6 +117,10 @@ class ndarray:
     def __mul__(self, other):
         return self._tensor.__mul__(other)
 
+
+    def __invert__(self):
+        return self._tensor.__invert__()
+
     ### methods to match namespace functions
 
     def squeeze(self, axis=None):
@@ -174,6 +178,32 @@ class ndarray:
     def nonzero(self):
         tensor = self._tensor
         return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
+
+    # YYY: pattern: any, all
+    def any(self, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
+        if where is not None:
+            raise NotImplementedError
+        if axis is None:
+            result = self._tensor.any()
+            if keepdims:
+                result = torch.full(self.shape, result, dtype=result.dtype)
+        else:
+            result = self._tensor.any(axis, keepdim=bool(keepdims))
+        return _helpers.result_or_out(result, out)
+
+    def all(self, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
+        if where is not None:
+            raise NotImplementedError
+        if axis is None:
+            result = self._tensor.all()
+            if keepdims:
+                result = torch.full(self.shape, result, dtype=result.dtype)
+        else:
+            result = self._tensor.all(axis, keepdim=bool(keepdims))
+        return _helpers.result_or_out(result, out)
+
+
+
 
     ### indexing ###
     def __getitem__(self, *args, **kwds):

@@ -524,30 +524,38 @@ class TestAny:
         y1 = [0, 0, 1, 0]
         y2 = [0, 0, 0, 0]
         y3 = [1, 0, 1, 0]
-        assert_(np.any(y1))
-        assert_(np.any(y3))
-        assert_(not np.any(y2))
+        assert np.any(y1)
+        assert np.any(y3)
+        assert not np.any(y2)
 
     def test_nd(self):
         y1 = [[0, 0, 0], [0, 1, 0], [1, 1, 0]]
-        assert_(np.any(y1))
-        assert_array_equal(np.sometrue(y1, axis=0), [1, 1, 0])
-        assert_array_equal(np.sometrue(y1, axis=1), [0, 1, 1])
+        assert np.any(y1)
+        assert_equal(np.any(y1, axis=0), [1, 1, 0])
+        assert_equal(np.any(y1, axis=1), [0, 1, 1])
+
+    def test_method_vs_function(self):
+        y = np.array([[0, 1, 0, 3], [1, 0, 2, 0]])
+        assert_equal(np.any(y), y.any())
 
 
 class TestAll:
-
     def test_basic(self):
         y1 = [0, 1, 1, 0]
         y2 = [0, 0, 0, 0]
         y3 = [1, 1, 1, 1]
-        assert_(not np.all(y1))
-        assert_(np.all(y3))
-        assert_(not np.all(y2))
-        assert_(np.all(~np.array(y2)))
+        assert not np.all(y1)
+        assert np.all(y3)
+        assert not np.all(y2)
+        assert np.all(~np.array(y2))
 
     def test_nd(self):
         y1 = [[0, 0, 1], [0, 1, 1], [1, 1, 1]]
-        assert_(not np.all(y1))
-        assert_array_equal(np.alltrue(y1, axis=0), [0, 0, 1])
-        assert_array_equal(np.alltrue(y1, axis=1), [0, 0, 1])
+        assert not np.all(y1)
+        assert_equal(np.all(y1, axis=0), [0, 0, 1])
+        assert_equal(np.all(y1, axis=1), [0, 0, 1])
+
+    def test_method_vs_function(self):
+        y = np.array([[0, 1, 0, 3], [1, 0, 2, 0]])
+        assert_equal(np.all(y), y.all())
+

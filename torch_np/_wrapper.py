@@ -634,38 +634,14 @@ def argmin(a, axis=None, out=None, *, keepdims=NoValue):
     return arr.argmin(axis=axis, out=out, keepdims=keepdims)
 
 
-
-# YYY: pattern all, any
-
-@asarray_replacer()
 def all(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-    if where is not None:
-        raise NotImplementedError
-    if axis is None:
-        result = torch.all(a)
-        # pytorch does not support keepdims=True and no axis
-        if keepdims:
-            result = torch.full(a.shape, result, dtype=result.dtype)
-    else:
-        result = torch.all(a, axis, keepdim=bool(keepdims))
-    if out is not None:
-        out.copy_(result)
-    return result
+    arr = asarray(a)
+    return arr.all(axis=axis, out=out, keepdims=keepdims, where=where)
 
 
-@asarray_replacer()
 def any(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-    if where is not None:
-        raise NotImplementedError
-    if axis is None:
-        result = a.any()
-        if keepdims:
-            result = torch.full(a.shape, result, dtype=result.dtype)
-    else:
-        result = a.any(axis, keepdim=bool(keepdims))
-    if out is not None:
-        out.copy_(result)
-    return result
+    arr = asarray(a)
+    return arr.any(axis=axis, out=out, keepdims=keepdims, where=where)
 
 
 # YYY: pattern: dtype kwarg, None not accepted
