@@ -151,15 +151,6 @@ class TestNonzeroAndCountNonzero:
         assert_equal(with_keepdims, expanded)
 
 
-    def test_array_method(self):
-        # Tests that the array method
-        # call to nonzero works
-        m = np.array([[1, 0, 0], [4, 0, 6]])
-        tgt = [[0, 1, 1], [0, 0, 2]]
-
-        assert_equal(m.nonzero(), tgt)
-
-
 class TestFlatnonzero:
     def test_basic(self):
         x = np.arange(-2, 3)
