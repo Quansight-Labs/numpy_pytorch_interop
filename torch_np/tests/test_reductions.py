@@ -276,7 +276,7 @@ class _GenericHasOutTestMixin:
         a = np.arange(2*3*4).reshape((2, 3, 4))
 
         result = self.func(a)
-        out = np.empty_like(result, dtype=bool)
+        out = np.empty_like(result)
         result_with_out = self.func(a, out=out)
 
         assert result_with_out is out
@@ -285,7 +285,7 @@ class _GenericHasOutTestMixin:
     def _check_out_axis(self, axis, dtype, keepdims):
         # out with axis
         a = np.arange(2*3*4).reshape((2, 3, 4))
-        result = self.func(a, axis=axis, keepdims=keepdims)
+        result = self.func(a, axis=axis, keepdims=keepdims).astype(dtype)
 
         out = np.empty_like(result, dtype=dtype)
         result_with_out = self.func(a, axis=axis, keepdims=keepdims, out=out)
@@ -336,4 +336,29 @@ class TestCountNonzeroGeneric(_GenericReductionsTestMixin):
                               (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
 
 
+class TestArgminGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
+    def setup_method(self):
+        self.func = np.argmin
+        self.allowed_axes =  [0, 1, 2, -1, -2, ]
 
+    @pytest.mark.xfail(reason='XXX: argmin does not allow axis=tuple')
+    def test_axis_bad_tuple(self):
+        super().test_axis_bad_tuple()
+
+    @pytest.mark.xfail(reason='XXX: argmin does not allow axis=tuple)')
+    def test_axis_empty_generic(self):
+        super().test_axis_empty_generic()
+
+
+class TestArgmaxGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
+    def setup_method(self):
+        self.func = np.argmax
+        self.allowed_axes =  [0, 1, 2, -1, -2, ]
+
+    @pytest.mark.xfail(reason='XXX: argmax does not allow axis=tuple')
+    def test_axis_bad_tuple(self):
+        super().test_axis_bad_tuple()
+
+    @pytest.mark.xfail(reason='XXX: argmax does not allow axis=tuple)')
+    def test_axis_empty_generic(self):
+        super().test_axis_empty_generic()
