@@ -227,6 +227,8 @@ def full(shape, fill_value, dtype=None, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
+    if isinstance(fill_value, ndarray):
+        fill_value = fill_value.get()
     torch_dtype = _dtypes.torch_dtype_from(dtype)
     return asarray(torch.full(shape, fill_value, dtype=torch_dtype))
 

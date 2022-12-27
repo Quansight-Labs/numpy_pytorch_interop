@@ -135,14 +135,21 @@ class TestNonzeroAndCountNonzero:
                      [[6]])
         assert isinstance(np.count_nonzero(a, axis=1, keepdims=True), np.ndarray)
 
-
     @pytest.mark.parametrize('axis',
-            [0, 1, 2, -1, -2, None, (), (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)])
-    def count_nonzero_keepdims2(self, axis):
+            [0, 1, 2, -1, -2, (), (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)])
+    def test_keepdims_generic(self, axis):
         a = np.arange(2*3*4).reshape((2, 3, 4))
         with_keepdims = np.count_nonzero(a, axis, keepdims=True)
         expanded = np.expand_dims( np.count_nonzero(a, axis=axis), axis=axis)
         assert_equal(with_keepdims, expanded)
+
+    def test_keepdims_generic_axis_none(self):
+        a = np.arange(2*3*4).reshape((2, 3, 4))
+        with_keepdims = np.count_nonzero(a, axis=None, keepdims=True)
+        scalar = np.count_nonzero(a, axis=None)
+        expanded = np.full(a.shape, fill_value=scalar)
+        assert_equal(with_keepdims, expanded)
+
 
     def test_array_method(self):
         # Tests that the array method
@@ -242,6 +249,9 @@ class TestAny:
         # Basic check of functionality
         m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
         assert_raises(ValueError, np.any, m, axis=(1, 1))
+
+
+
 
 
 class TestAll:
