@@ -118,11 +118,6 @@ class TestNonzeroAndCountNonzero:
         a = np.array([[0, 0, 1], [1, 0, 1]])
         assert_equal(np.count_nonzero(a, axis=()), a.astype(bool))
 
-    def test_axis_empty_generic(self):
-        a = np.array([[0, 0, 1], [1, 0, 1]])
-        assert_equal(np.count_nonzero(a, axis=()),
-                     np.count_nonzero(np.expand_dims(a, axis=0), axis=0))
-
     def test_countnonzero_keepdims(self):
         a = np.array([[0, 0, 1, 0],
                       [0, 3, 5, 0],
@@ -135,20 +130,6 @@ class TestNonzeroAndCountNonzero:
                      [[6]])
         assert isinstance(np.count_nonzero(a, axis=1, keepdims=True), np.ndarray)
 
-    @pytest.mark.parametrize('axis',
-            [0, 1, 2, -1, -2, (), (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)])
-    def test_keepdims_generic(self, axis):
-        a = np.arange(2*3*4).reshape((2, 3, 4))
-        with_keepdims = np.count_nonzero(a, axis, keepdims=True)
-        expanded = np.expand_dims( np.count_nonzero(a, axis=axis), axis=axis)
-        assert_equal(with_keepdims, expanded)
-
-    def test_keepdims_generic_axis_none(self):
-        a = np.arange(2*3*4).reshape((2, 3, 4))
-        with_keepdims = np.count_nonzero(a, axis=None, keepdims=True)
-        scalar = np.count_nonzero(a, axis=None)
-        expanded = np.full(a.shape, fill_value=scalar)
-        assert_equal(with_keepdims, expanded)
 
 
 class TestFlatnonzero:
@@ -240,9 +221,14 @@ class TestAll:
         assert_equal(np.all(y), y.all())
 
 
-class _GenericReductionTests:
-    """For a subclass which defines self.func, run a set of generic tests
-    to verify that self.func does act like a reduction operation.
+class _GenericReductionsTestMixin:
+    """Run a set of generic tests to verify that self.func acts like a
+    reduction operation.
+
+    Specifically, this class checks axis=... and keepdims=... parameters.
+    To check the out=... parameter, see the _GenericHasOutTestMixin class below.
+
+    To use: subclass, define self.func and self.allowed_axes.
     """
     def test_bad_axis(self):
         # Basic check of functionality
@@ -258,27 +244,30 @@ class _GenericReductionTests:
         assert_equal(self.func(a, axis=()),
                      self.func(np.expand_dims(a, axis=0), axis=0))
 
-    @pytest.mark.xfail(reason='XXX: pytorch does not support all(..., axis=tuple)')
-    def test_any_axis_bad_tuple(self):
+    def test_axis_bad_tuple(self):
         # Basic check of functionality
         m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
         with assert_raises(ValueError):
              self.func(m, axis=(1, 1))
 
-    @pytest.mark.parametrize('axis',
-            [0, 1, 2, -1, -2, (),
-#             (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)
-            ])
-    def test_keepdims_generic(self, axis):
+    def _check_keepdims_generic(self, axis):
         a = np.arange(2*3*4).reshape((2, 3, 4))
         with_keepdims = self.func(a, axis, keepdims=True)
         expanded = np.expand_dims( self.func(a, axis=axis), axis=axis)
         assert_equal(with_keepdims, expanded)
 
+    def test_keepdims_generic(self):
+        for axis in self.allowed_axes:
+            self._check_keepdims_generic(axis)
+
+
+class _GenericHasOutTestMixin:
+    """Tests for reduction functions which support out=... parameter.
+    """
     def test_keepdims_generic_axis_none(self):
         a = np.arange(2*3*4).reshape((2, 3, 4))
-        with_keepdims = np.all(a, axis=None, keepdims=True)
-        scalar = np.all(a, axis=None)
+        with_keepdims = self.func(a, axis=None, keepdims=True)
+        scalar = self.func(a, axis=None)
         expanded = np.full(a.shape, fill_value=scalar)
         assert_equal(with_keepdims, expanded)
 
@@ -286,17 +275,14 @@ class _GenericReductionTests:
         # out no axis: scalar
         a = np.arange(2*3*4).reshape((2, 3, 4))
 
-        result = np.all(a)
+        result = self.func(a)
         out = np.empty_like(result, dtype=bool)
-        result_with_out = np.all(a, out=out)
+        result_with_out = self.func(a, out=out)
 
         assert result_with_out is out
         assert_equal(result, result_with_out)
 
-    @pytest.mark.parametrize('keepdims', [True, False, None])
-    @pytest.mark.parametrize('dtype', [bool, 'int32', 'float64'])
-    @pytest.mark.parametrize('axis', [0, 1, 2, -1, -2, None, ()])
-    def test_out_axis(self, axis, dtype, keepdims):
+    def _check_out_axis(self, axis, dtype, keepdims):
         # out with axis
         a = np.arange(2*3*4).reshape((2, 3, 4))
         result = self.func(a, axis=axis, keepdims=keepdims)
@@ -315,11 +301,39 @@ class _GenericReductionTests:
         # Here we follow pytorch, since the result is a superset
         # of the numpy functionality
 
+    @pytest.mark.parametrize('keepdims', [True, False, None])
+    @pytest.mark.parametrize('dtype', [bool, 'int32', 'float64'])
+    def test_out_axis(self, dtype, keepdims):
+        for axis in self.allowed_axes + [None,]:
+            self._check_out_axis(axis, dtype, keepdims)
 
-class TestAnyGeneric(_GenericReductionTests):
+
+class TestAnyGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     def setup_method(self):
         self.func = np.any
+        self.allowed_axes =  [0, 1, 2, -1, -2, (),]
 
-class TestAllGeneric(_GenericReductionTests):
+    @pytest.mark.xfail(reason='XXX: pytorch does not support any(..., axis=tuple)')
+    def test_axis_bad_tuple(self):
+        super().test_axis_bad_tuple()
+
+
+class TestAllGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     def setup_method(self):
         self.func = np.all
+        self.allowed_axes =  [0, 1, 2, -1, -2, (),]
+
+    @pytest.mark.xfail(reason='XXX: pytorch does not support all(..., axis=tuple)')
+    def test_axis_bad_tuple(self):
+        super().test_axis_bad_tuple()
+
+
+class TestCountNonzeroGeneric(_GenericReductionsTestMixin):
+    # count_nonzero does not have the out=... argument
+    def setup_method(self):
+        self.func = np.count_nonzero
+        self.allowed_axes =  [0, 1, 2, -1, -2, (),
+                              (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
+
+
+
