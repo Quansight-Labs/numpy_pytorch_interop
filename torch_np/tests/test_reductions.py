@@ -254,7 +254,38 @@ class TestAny:
         expanded = np.full(a.shape, fill_value=scalar)
         assert_equal(with_keepdims, expanded)
 
+    def test_out_scalar(self):
+        # out no axis: scalar
+        a = np.arange(2*3*4).reshape((2, 3, 4))
 
+        result = np.any(a)
+        out = np.empty_like(result, dtype=bool)
+        result_with_out = np.any(a, out=out)
+
+        assert result_with_out is out
+        assert_equal(result, result_with_out)
+
+    @pytest.mark.parametrize('keepdims', [True, False, None])
+    @pytest.mark.parametrize('dtype', [bool, 'int32', 'float64'])
+    @pytest.mark.parametrize('axis', [0, 1, 2, -1, -2, None, ()])
+    def test_out_axis(self, axis, dtype, keepdims):
+        # out with axis
+        a = np.arange(2*3*4).reshape((2, 3, 4))
+        result = np.any(a, axis=axis, keepdims=keepdims)
+
+        out = np.empty_like(result, dtype=dtype)
+        result_with_out = np.any(a, axis=axis, keepdims=keepdims, out=out)
+
+        assert result_with_out is out
+        assert result_with_out.dtype == dtype
+        assert_equal(result, result_with_out)
+
+        # out of wrong shape (any/out does not broadcast)
+        # np.any(m, out=np.empty_like(m)) raises a ValueError from
+        # np.logical_or.reduce, quoting the number of dimensions.
+        # pytorch emits a warning and resizes out.
+        # Here we follow pytorch, since the result is a superset
+        # of the numpy functionality
 
 
 class TestAll:
@@ -315,3 +346,35 @@ class TestAll:
         expanded = np.full(a.shape, fill_value=scalar)
         assert_equal(with_keepdims, expanded)
 
+    def test_out_scalar(self):
+        # out no axis: scalar
+        a = np.arange(2*3*4).reshape((2, 3, 4))
+
+        result = np.all(a)
+        out = np.empty_like(result, dtype=bool)
+        result_with_out = np.all(a, out=out)
+
+        assert result_with_out is out
+        assert_equal(result, result_with_out)
+
+    @pytest.mark.parametrize('keepdims', [True, False, None])
+    @pytest.mark.parametrize('dtype', [bool, 'int32', 'float64'])
+    @pytest.mark.parametrize('axis', [0, 1, 2, -1, -2, None, ()])
+    def test_out_axis(self, axis, dtype, keepdims):
+        # out with axis
+        a = np.arange(2*3*4).reshape((2, 3, 4))
+        result = np.all(a, axis=axis, keepdims=keepdims)
+
+        out = np.empty_like(result, dtype=dtype)
+        result_with_out = np.all(a, axis=axis, keepdims=keepdims, out=out)
+
+        assert result_with_out is out
+        assert result_with_out.dtype == dtype
+        assert_equal(result, result_with_out)
+
+        # out of wrong shape (any/out does not broadcast)
+        # np.any(m, out=np.empty_like(m)) raises a ValueError (wrong number
+        # of dimensions.)
+        # pytorch.any emits a warning and resizes the out array.
+        # Here we follow pytorch, since the result is a superset
+        # of the numpy functionality
