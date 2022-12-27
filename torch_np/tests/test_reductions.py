@@ -237,12 +237,8 @@ class TestAny:
 
     def test_axis_empty_generic(self):
         a = np.array([[0, 0, 1], [1, 0, 1]])
-
-        np.any(a, axis=()),
-
         assert_equal(np.any(a, axis=()),
                      np.any(np.expand_dims(a, axis=0), axis=0))
-
 
     @pytest.mark.xfail(reason='XXX: pytorch does not support any(..., axis=tuple)')
     def test_any_axis_bad_tuple(self):
@@ -250,6 +246,22 @@ class TestAny:
         m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
         assert_raises(ValueError, np.any, m, axis=(1, 1))
 
+    @pytest.mark.parametrize('axis',
+            [0, 1, 2, -1, -2, (),
+#             (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)
+            ])
+    def test_keepdims_generic(self, axis):
+        a = np.arange(2*3*4).reshape((2, 3, 4))
+        with_keepdims = np.any(a, axis, keepdims=True)
+        expanded = np.expand_dims( np.any(a, axis=axis), axis=axis)
+        assert_equal(with_keepdims, expanded)
+
+    def test_keepdims_generic_axis_none(self):
+        a = np.arange(2*3*4).reshape((2, 3, 4))
+        with_keepdims = np.any(a, axis=None, keepdims=True)
+        scalar = np.any(a, axis=None)
+        expanded = np.full(a.shape, fill_value=scalar)
+        assert_equal(with_keepdims, expanded)
 
 
 
@@ -295,4 +307,20 @@ class TestAll:
         m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
         assert_raises(ValueError, np.all, m, axis=(1, 1))
 
+    @pytest.mark.parametrize('axis',
+            [0, 1, 2, -1, -2, (),
+#             (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)
+            ])
+    def test_keepdims_generic(self, axis):
+        a = np.arange(2*3*4).reshape((2, 3, 4))
+        with_keepdims = np.all(a, axis, keepdims=True)
+        expanded = np.expand_dims( np.all(a, axis=axis), axis=axis)
+        assert_equal(with_keepdims, expanded)
+
+    def test_keepdims_generic_axis_none(self):
+        a = np.arange(2*3*4).reshape((2, 3, 4))
+        with_keepdims = np.all(a, axis=None, keepdims=True)
+        scalar = np.all(a, axis=None)
+        expanded = np.full(a.shape, fill_value=scalar)
+        assert_equal(with_keepdims, expanded)
 
