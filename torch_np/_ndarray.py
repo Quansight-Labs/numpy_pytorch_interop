@@ -192,6 +192,7 @@ class ndarray:
             return _util.handle_empty_axis(self, self.any.__func__, out=out,
                                            keepdims=keepdims, where=where)
         if axis is None:
+            # torch does not accept keepdim without axis
             result = self._tensor.any()
             if keepdims:
                 result = torch.full(self.shape, result, dtype=result.dtype)

@@ -217,76 +217,6 @@ class TestAny:
         y = np.array([[0, 1, 0, 3], [1, 0, 2, 0]])
         assert_equal(np.any(y), y.any())
 
-    def test_any_bad_axis(self):
-        # Basic check of functionality
-        m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
-
-        assert_raises(TypeError, np.any, m, axis='foo')
-        assert_raises(np.AxisError, np.any, m, axis=3)
-        assert_raises(TypeError, np.any,
-                      m, axis=np.array([[1], [2]]))
-
-    def test_axis_empty_generic(self):
-        a = np.array([[0, 0, 1], [1, 0, 1]])
-        assert_equal(np.any(a, axis=()),
-                     np.any(np.expand_dims(a, axis=0), axis=0))
-
-    @pytest.mark.xfail(reason='XXX: pytorch does not support any(..., axis=tuple)')
-    def test_any_axis_bad_tuple(self):
-        # Basic check of functionality
-        m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
-        assert_raises(ValueError, np.any, m, axis=(1, 1))
-
-    @pytest.mark.parametrize('axis',
-            [0, 1, 2, -1, -2, (),
-#             (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)
-            ])
-    def test_keepdims_generic(self, axis):
-        a = np.arange(2*3*4).reshape((2, 3, 4))
-        with_keepdims = np.any(a, axis, keepdims=True)
-        expanded = np.expand_dims( np.any(a, axis=axis), axis=axis)
-        assert_equal(with_keepdims, expanded)
-
-    def test_keepdims_generic_axis_none(self):
-        a = np.arange(2*3*4).reshape((2, 3, 4))
-        with_keepdims = np.any(a, axis=None, keepdims=True)
-        scalar = np.any(a, axis=None)
-        expanded = np.full(a.shape, fill_value=scalar)
-        assert_equal(with_keepdims, expanded)
-
-    def test_out_scalar(self):
-        # out no axis: scalar
-        a = np.arange(2*3*4).reshape((2, 3, 4))
-
-        result = np.any(a)
-        out = np.empty_like(result, dtype=bool)
-        result_with_out = np.any(a, out=out)
-
-        assert result_with_out is out
-        assert_equal(result, result_with_out)
-
-    @pytest.mark.parametrize('keepdims', [True, False, None])
-    @pytest.mark.parametrize('dtype', [bool, 'int32', 'float64'])
-    @pytest.mark.parametrize('axis', [0, 1, 2, -1, -2, None, ()])
-    def test_out_axis(self, axis, dtype, keepdims):
-        # out with axis
-        a = np.arange(2*3*4).reshape((2, 3, 4))
-        result = np.any(a, axis=axis, keepdims=keepdims)
-
-        out = np.empty_like(result, dtype=dtype)
-        result_with_out = np.any(a, axis=axis, keepdims=keepdims, out=out)
-
-        assert result_with_out is out
-        assert result_with_out.dtype == dtype
-        assert_equal(result, result_with_out)
-
-        # out of wrong shape (any/out does not broadcast)
-        # np.any(m, out=np.empty_like(m)) raises a ValueError from
-        # np.logical_or.reduce, quoting the number of dimensions.
-        # pytorch emits a warning and resizes out.
-        # Here we follow pytorch, since the result is a superset
-        # of the numpy functionality
-
 
 class TestAll:
     def test_basic(self):
@@ -309,25 +239,31 @@ class TestAll:
         y = np.array([[0, 1, 0, 3], [1, 0, 2, 0]])
         assert_equal(np.all(y), y.all())
 
-    def test_any_bad_axis(self):
+
+class _GenericReductionTests:
+    """For a subclass which defines self.func, run a set of generic tests
+    to verify that self.func does act like a reduction operation.
+    """
+    def test_bad_axis(self):
         # Basic check of functionality
         m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
 
-        assert_raises(TypeError, np.all, m, axis='foo')
-        assert_raises(np.AxisError, np.all, m, axis=3)
-        assert_raises(TypeError, np.all,
+        assert_raises(TypeError, self.func, m, axis='foo')
+        assert_raises(np.AxisError, self.func, m, axis=3)
+        assert_raises(TypeError, self.func,
                       m, axis=np.array([[1], [2]]))
 
     def test_axis_empty_generic(self):
         a = np.array([[0, 0, 1], [1, 0, 1]])
-        assert_equal(np.all(a, axis=()),
-                     np.all(np.expand_dims(a, axis=0), axis=0))
+        assert_equal(self.func(a, axis=()),
+                     self.func(np.expand_dims(a, axis=0), axis=0))
 
     @pytest.mark.xfail(reason='XXX: pytorch does not support all(..., axis=tuple)')
     def test_any_axis_bad_tuple(self):
         # Basic check of functionality
         m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
-        assert_raises(ValueError, np.all, m, axis=(1, 1))
+        with assert_raises(ValueError):
+             self.func(m, axis=(1, 1))
 
     @pytest.mark.parametrize('axis',
             [0, 1, 2, -1, -2, (),
@@ -335,8 +271,8 @@ class TestAll:
             ])
     def test_keepdims_generic(self, axis):
         a = np.arange(2*3*4).reshape((2, 3, 4))
-        with_keepdims = np.all(a, axis, keepdims=True)
-        expanded = np.expand_dims( np.all(a, axis=axis), axis=axis)
+        with_keepdims = self.func(a, axis, keepdims=True)
+        expanded = np.expand_dims( self.func(a, axis=axis), axis=axis)
         assert_equal(with_keepdims, expanded)
 
     def test_keepdims_generic_axis_none(self):
@@ -363,10 +299,10 @@ class TestAll:
     def test_out_axis(self, axis, dtype, keepdims):
         # out with axis
         a = np.arange(2*3*4).reshape((2, 3, 4))
-        result = np.all(a, axis=axis, keepdims=keepdims)
+        result = self.func(a, axis=axis, keepdims=keepdims)
 
         out = np.empty_like(result, dtype=dtype)
-        result_with_out = np.all(a, axis=axis, keepdims=keepdims, out=out)
+        result_with_out = self.func(a, axis=axis, keepdims=keepdims, out=out)
 
         assert result_with_out is out
         assert result_with_out.dtype == dtype
@@ -378,3 +314,12 @@ class TestAll:
         # pytorch.any emits a warning and resizes the out array.
         # Here we follow pytorch, since the result is a superset
         # of the numpy functionality
+
+
+class TestAnyGeneric(_GenericReductionTests):
+    def setup_method(self):
+        self.func = np.any
+
+class TestAllGeneric(_GenericReductionTests):
+    def setup_method(self):
+        self.func = np.all
