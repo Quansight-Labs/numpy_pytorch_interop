@@ -94,3 +94,10 @@ def expand_shape(arr, axis):
     shape = [1 if ax in axis else next(shape_it) for ax in range(out_ndim)]
     return shape
 
+def handle_empty_axis(arr, func, *args, **kwds):
+    """Reductions: func(arr, axis=(), *args, **kwds)
+    """
+    shape = expand_shape(arr, axis=0)
+    arr1 = arr.reshape(shape)
+    return func(arr1, axis=0, *args, **kwds)
+

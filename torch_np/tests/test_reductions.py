@@ -118,6 +118,11 @@ class TestNonzeroAndCountNonzero:
         a = np.array([[0, 0, 1], [1, 0, 1]])
         assert_equal(np.count_nonzero(a, axis=()), a.astype(bool))
 
+    def test_axis_empty_generic(self):
+        a = np.array([[0, 0, 1], [1, 0, 1]])
+        assert_equal(np.count_nonzero(a, axis=()),
+                     np.count_nonzero(np.expand_dims(a, axis=0), axis=0))
+
     def test_countnonzero_keepdims(self):
         a = np.array([[0, 0, 1, 0],
                       [0, 3, 5, 0],
@@ -223,6 +228,15 @@ class TestAny:
         assert_raises(TypeError, np.any,
                       m, axis=np.array([[1], [2]]))
 
+    def test_axis_empty_generic(self):
+        a = np.array([[0, 0, 1], [1, 0, 1]])
+
+        np.any(a, axis=()),
+
+        assert_equal(np.any(a, axis=()),
+                     np.any(np.expand_dims(a, axis=0), axis=0))
+
+
     @pytest.mark.xfail(reason='XXX: pytorch does not support any(..., axis=tuple)')
     def test_any_axis_bad_tuple(self):
         # Basic check of functionality
@@ -259,6 +273,11 @@ class TestAll:
         assert_raises(np.AxisError, np.all, m, axis=3)
         assert_raises(TypeError, np.all,
                       m, axis=np.array([[1], [2]]))
+
+    def test_axis_empty_generic(self):
+        a = np.array([[0, 0, 1], [1, 0, 1]])
+        assert_equal(np.all(a, axis=()),
+                     np.all(np.expand_dims(a, axis=0), axis=0))
 
     @pytest.mark.xfail(reason='XXX: pytorch does not support all(..., axis=tuple)')
     def test_any_axis_bad_tuple(self):

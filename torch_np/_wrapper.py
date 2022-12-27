@@ -528,7 +528,7 @@ def count_nonzero(a, axis=None, *, keepdims=False):
     if isinstance(axis, ndarray):
         raise TypeError   # XXX: scalars and zero-dim arrays
     if axis == ():
-        return arr
+        return _util.handle_empty_axis(arr, count_nonzero, keepdims=keepdims)
     if axis is not None:
         if type(axis) not in (list, tuple):
             axis = (axis,)

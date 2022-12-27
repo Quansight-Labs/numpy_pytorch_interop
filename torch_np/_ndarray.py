@@ -183,6 +183,14 @@ class ndarray:
     def any(self, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
         if where is not None:
             raise NotImplementedError
+
+        if isinstance(axis, ndarray):
+            raise TypeError("Only scalar arrays can be converted to an index")
+        if axis == ():
+            # XXX: can use either `self.__class__.any` or self.any.__func__
+            # cannot use self.any however (errors on "multiple values for axis")
+            return _util.handle_empty_axis(self, self.any.__func__, out=out,
+                                           keepdims=keepdims, where=where)
         if axis is None:
             result = self._tensor.any()
             if keepdims:
@@ -195,6 +203,12 @@ class ndarray:
     def all(self, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
         if where is not None:
             raise NotImplementedError
+
+        if isinstance(axis, ndarray):
+            raise TypeError("Only scalar arrays can be converted to an index")
+        if axis == ():
+            return _util.handle_empty_axis(self, self.all.__func__, out=out,
+                                           keepdims=keepdims, where=where)
         if axis is None:
             result = self._tensor.all()
             if keepdims:
