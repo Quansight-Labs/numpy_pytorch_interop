@@ -177,10 +177,6 @@ def logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0):
     return asarray(torch.logspace(start, stop, num, base=base, dtype=dtype))
 
 
-
-        
-
-
 def arange(start=None, stop=None, step=1, dtype=None, *, like=None):
     _util.subok_not_ok(like)
     if step == 0:
@@ -194,12 +190,9 @@ def arange(start=None, stop=None, step=1, dtype=None, *, like=None):
     if start is None:
         start = 0
 
-    # FIXME: min_scalar_type
     if dtype is None:
         dtype = _dtypes.default_int_type()
-    import builtins
-    if builtins.any(int(value) != value for value in [start, stop, step]):
-        dtype = 'float64'
+        dtype = result_type(start, stop, step, dtype)
 
     torch_dtype = _dtypes.torch_dtype_from(dtype)
     try:
