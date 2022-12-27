@@ -632,15 +632,19 @@ def argmin(a, axis=None, out=None, *, keepdims=NoValue):
 def amax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue,
          where=NoValue):
     arr = asarray(a)
-    return arr.amax(axis=axis, out=out, keepdims=keepdims, initial=initial,
+    return arr.max(axis=axis, out=out, keepdims=keepdims, initial=initial,
                     where=where)
+
+max = amax
 
 
 def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue,
          where=NoValue):
     arr = asarray(a)
-    return arr.amin(axis=axis, out=out, keepdims=keepdims, initial=initial,
+    return arr.min(axis=axis, out=out, keepdims=keepdims, initial=initial,
                     where=where)
+
+min = amin
 
 
 def all(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):

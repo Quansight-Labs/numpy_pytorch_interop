@@ -219,7 +219,7 @@ class ndarray:
             result = self._tensor.all(axis, keepdim=bool(keepdims))
         return _helpers.result_or_out(result, out)
 
-    def amax(self, axis=None, out=None, keepdims=NoValue, initial=NoValue,
+    def max(self, axis=None, out=None, keepdims=NoValue, initial=NoValue,
              where=NoValue):
         if where is not None:
             raise NotImplementedError
@@ -229,7 +229,7 @@ class ndarray:
         if isinstance(axis, ndarray):
             raise TypeError("Only scalar arrays can be converted to an index")
         if axis == ():
-            return _util.handle_empty_axis(self, self.amax.__func__, out=out,
+            return _util.handle_empty_axis(self, self.max.__func__, out=out,
                                            keepdims=keepdims, where=where)
 
         if axis is not None:
@@ -240,7 +240,7 @@ class ndarray:
         result = self._tensor.amax(axis, keepdim=bool(keepdims))
         return _helpers.result_or_out(result, out)
 
-    def amin(self, axis=None, out=None, keepdims=NoValue, initial=NoValue,
+    def min(self, axis=None, out=None, keepdims=NoValue, initial=NoValue,
              where=NoValue):
         if where is not None:
             raise NotImplementedError
@@ -250,7 +250,7 @@ class ndarray:
         if isinstance(axis, ndarray):
             raise TypeError("Only scalar arrays can be converted to an index")
         if axis == ():
-            return _util.handle_empty_axis(self, self.amin.__func__, out=out,
+            return _util.handle_empty_axis(self, self.min.__func__, out=out,
                                            keepdims=keepdims, where=where)
 
         if axis is not None:

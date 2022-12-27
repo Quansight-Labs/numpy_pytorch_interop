@@ -68,15 +68,6 @@ def allclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
 def alltrue(*args, **kwargs):
     raise NotImplementedError
 
-def amax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImplementedError
-
-def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImplementedError
-
-
-
-
 def append(arr, values, axis=None):
     raise NotImplementedError
 
@@ -435,8 +426,7 @@ def mask_indices(n, mask_func, k=0):
 def asmatrix(data, dtype=None):
     raise NotImplementedError
 
-def amax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImplementedError
+
 
 def maximum_sctype(t):
     raise NotImplementedError
@@ -452,8 +442,7 @@ def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
 def meshgrid(*xi, copy=True, sparse=False, indexing='xy'):
     raise NotImplementedError
 
-def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImplementedError
+
 
 def min_scalar_type(a, /):
     raise NotImplementedError

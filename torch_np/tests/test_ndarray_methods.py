@@ -255,10 +255,11 @@ class TestArgmaxArgminCommon:
                 method(arr.T, axis=axis,
                         out=wrong_outarray, keepdims=True)
 
-    @pytest.mark.skipif(reason='XXX: ndarray.min/max need implementing')
+    @pytest.mark.skipif(reason='XXX: need ndarray.chooses')
     @pytest.mark.parametrize('method', ['max', 'min'])
     def test_all(self, method):
-        a = np.random.normal(0, 1, (4, 5, 6, 7, 8))
+        #a = np.random.normal(0, 1, (4, 5, 6, 7, 8))
+        a = np.arange((4*5*6*7*8)).reshape((4, 5, 6, 7, 8))
         arg_method = getattr(a, 'arg' + method)
         val_method = getattr(a, method)
         for i in range(a.ndim):
@@ -266,7 +267,7 @@ class TestArgmaxArgminCommon:
             aarg_maxmin = arg_method(i)
             axes = list(range(a.ndim))
             axes.remove(i)
-            assert_(np.all(a_maxmin == aarg_maxmin.choose(
+            assert (np.all(a_maxmin == aarg_maxmin.choose(
                                         *a.transpose(i, *axes))))
 
     @pytest.mark.parametrize('method', ['argmax', 'argmin'])
@@ -382,17 +383,17 @@ class TestArgmax:
         ([True, False, True, False, False], 0),
     ]
 
-    @pytest.mark.skip(reason='XXX: ndarray.min/max need implementing')
+    @pytest.mark.skip(reason='XXX: need np.repeat + 0D array indexing (?)')
     @pytest.mark.parametrize('data', nan_arr)
     def test_combinations(self, data):
         arr, pos = data
-        with suppress_warnings() as sup:
-            sup.filter(RuntimeWarning,
-                        "invalid value encountered in reduce")
-            val = np.max(arr)
+  #      with suppress_warnings() as sup:
+  #          sup.filter(RuntimeWarning,
+  #                      "invalid value encountered in reduce")
+        val = np.max(arr)
 
-        assert_equal(np.argmax(arr), pos, err_msg="%r" % arr)
-        assert_equal(arr[np.argmax(arr)], val, err_msg="%r" % arr)
+        assert_equal(np.argmax(arr), pos) #, err_msg="%r" % arr)
+        assert_equal(arr[np.argmax(arr)], val) #, err_msg="%r" % arr)
 
         # add padding to test SIMD loops
         rarr = np.repeat(arr, 129)
@@ -480,7 +481,7 @@ class TestArgmin:
         ([False, True, False, True, True], 0),
     ]
 
-    @pytest.mark.skip(reason='XXX: ndarray.min/max need implementing')
+    @pytest.mark.skip(reason='XXX: np.repeat, 0D indexing (?)')
     @pytest.mark.parametrize('data', nan_arr)
     def test_combinations(self, data):
         arr, pos = data
@@ -517,4 +518,34 @@ class TestArgmin:
 
         a = np.array([1, -2**63, -2**63 + 1, 2**63 - 1], dtype=np.int64)
         assert_equal(np.argmin(a), 1)
+
+
+class TestAmax:
+
+    def test_basic(self):
+        a = [3, 4, 5, 10, -3, -5, 6.0]
+        assert_equal(np.amax(a), 10.0)
+        b = [[3, 6.0, 9.0],
+             [4, 10.0, 5.0],
+             [8, 3.0, 2.0]]
+        assert_equal(np.amax(b, axis=0), [8.0, 10.0, 9.0])
+        assert_equal(np.amax(b, axis=1), [9.0, 10.0, 8.0])
+
+        arr = np.asarray(a)
+        assert_equal(np.amax(arr), arr.max())
+
+class TestAmin:
+
+    def test_basic(self):
+        a = [3, 4, 5, 10, -3, -5, 6.0]
+        assert_equal(np.amin(a), -5.0)
+        b = [[3, 6.0, 9.0],
+             [4, 10.0, 5.0],
+             [8, 3.0, 2.0]]
+        assert_equal(np.amin(b, axis=0), [3.0, 3.0, 2.0])
+        assert_equal(np.amin(b, axis=1), [3.0, 4.0, 2.0])
+
+        arr = np.asarray(a)
+        assert_equal(np.amin(arr), arr.min())
+
 
