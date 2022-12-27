@@ -219,8 +219,47 @@ class ndarray:
             result = self._tensor.all(axis, keepdim=bool(keepdims))
         return _helpers.result_or_out(result, out)
 
+    def amax(self, axis=None, out=None, keepdims=NoValue, initial=NoValue,
+             where=NoValue):
+        if where is not None:
+            raise NotImplementedError
+        if initial is not None:
+            raise NotImplementedError
 
+        if isinstance(axis, ndarray):
+            raise TypeError("Only scalar arrays can be converted to an index")
+        if axis == ():
+            return _util.handle_empty_axis(self, self.amax.__func__, out=out,
+                                           keepdims=keepdims, where=where)
 
+        if axis is not None:
+            if type(axis) not in (list, tuple):
+                axis = (axis,)
+            axis = _util.normalize_axis_tuple(axis, self.ndim)
+
+        result = self._tensor.amax(axis, keepdim=bool(keepdims))
+        return _helpers.result_or_out(result, out)
+
+    def amin(self, axis=None, out=None, keepdims=NoValue, initial=NoValue,
+             where=NoValue):
+        if where is not None:
+            raise NotImplementedError
+        if initial is not None:
+            raise NotImplementedError
+
+        if isinstance(axis, ndarray):
+            raise TypeError("Only scalar arrays can be converted to an index")
+        if axis == ():
+            return _util.handle_empty_axis(self, self.amin.__func__, out=out,
+                                           keepdims=keepdims, where=where)
+
+        if axis is not None:
+            if type(axis) not in (list, tuple):
+                axis = (axis,)
+            axis = _util.normalize_axis_tuple(axis, self.ndim)
+
+        result = self._tensor.amin(axis, keepdim=bool(keepdims))
+        return _helpers.result_or_out(result, out)
 
     ### indexing ###
     def __getitem__(self, *args, **kwds):

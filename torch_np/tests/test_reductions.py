@@ -362,3 +362,18 @@ class TestArgmaxGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     @pytest.mark.xfail(reason='XXX: argmax does not allow axis=tuple)')
     def test_axis_empty_generic(self):
         super().test_axis_empty_generic()
+
+
+class TestAmaxGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
+    def setup_method(self):
+        self.func = np.amax
+        self.allowed_axes =  [0, 1, 2, -1, -2, (),
+                              (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
+
+
+class TestAminGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
+    def setup_method(self):
+        self.func = np.amin
+        self.allowed_axes =  [0, 1, 2, -1, -2, (),
+                              (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
+
