@@ -58,9 +58,6 @@ def seterrobj(errobj):
 
 
 
-def alen(a):
-    raise NotImplementedError
-
 
 def allclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
     raise NotImplementedError
@@ -111,9 +108,6 @@ def asfarray(a, dtype='numpy.float64'):
     raise NotImplementedError
 
 def asmatrix(data, dtype=None):
-    raise NotImplementedError
-
-def asscalar(a):
     raise NotImplementedError
 
 
