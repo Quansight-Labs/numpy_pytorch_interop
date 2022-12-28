@@ -72,10 +72,10 @@ class TestNonzeroAndCountNonzero:
         m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
 
         expected = np.array([1, 1, 1, 1, 1])
-        assert_equal(np.count_nonzero(m, axis=0), expected)
+        assert_array_equal(np.count_nonzero(m, axis=0), expected)
 
         expected = np.array([2, 3])
-        assert_equal(np.count_nonzero(m, axis=1), expected)
+        assert_array_equal(np.count_nonzero(m, axis=1), expected)
 
         assert isinstance(np.count_nonzero(m, axis=1), np.ndarray)
 
@@ -99,20 +99,20 @@ class TestNonzeroAndCountNonzero:
 
         expected = np.array([2, 0, 0], dtype=np.intp)
         result = np.count_nonzero(m, axis=0)
-        assert_equal(result, expected)
+        assert_array_equal(result, expected)
         assert expected.dtype == result.dtype
 
         expected = np.array([1, 1, 0], dtype=np.intp)
         result = np.count_nonzero(m, axis=1)
-        assert_equal(result, expected)
+        assert_array_equal(result, expected)
         assert expected.dtype == result.dtype
 
         expected = np.array(2)
-        assert_equal(np.count_nonzero(m, axis=(0, 1)),
+        assert_array_equal(np.count_nonzero(m, axis=(0, 1)),
                      expected)
-        assert_equal(np.count_nonzero(m, axis=None),
+        assert_array_equal(np.count_nonzero(m, axis=None),
                      expected)
-        assert_equal(np.count_nonzero(m),
+        assert_array_equal(np.count_nonzero(m),
                      expected)
 
     def test_countnonzero_axis_empty(self):
@@ -123,11 +123,11 @@ class TestNonzeroAndCountNonzero:
         a = np.array([[0, 0, 1, 0],
                       [0, 3, 5, 0],
                       [7, 9, 2, 0]])
-        assert_equal(np.count_nonzero(a, axis=0, keepdims=True),
+        assert_array_equal(np.count_nonzero(a, axis=0, keepdims=True),
                      [[1, 2, 3, 0]])
-        assert_equal(np.count_nonzero(a, axis=1, keepdims=True),
+        assert_array_equal(np.count_nonzero(a, axis=1, keepdims=True),
                      [[1], [2], [3]])
-        assert_equal(np.count_nonzero(a, keepdims=True),
+        assert_array_equal(np.count_nonzero(a, keepdims=True),
                      [[6]])
         assert isinstance(np.count_nonzero(a, axis=1, keepdims=True), np.ndarray)
 
@@ -241,8 +241,8 @@ class _GenericReductionsTestMixin:
 
     def test_axis_empty_generic(self):
         a = np.array([[0, 0, 1], [1, 0, 1]])
-        assert_equal(self.func(a, axis=()),
-                     self.func(np.expand_dims(a, axis=0), axis=0))
+        assert_array_equal(self.func(a, axis=()),
+                           self.func(np.expand_dims(a, axis=0), axis=0))
 
     def test_axis_bad_tuple(self):
         # Basic check of functionality
@@ -254,7 +254,7 @@ class _GenericReductionsTestMixin:
         a = np.arange(2*3*4).reshape((2, 3, 4))
         with_keepdims = self.func(a, axis, keepdims=True)
         expanded = np.expand_dims( self.func(a, axis=axis), axis=axis)
-        assert_equal(with_keepdims, expanded)
+        assert_array_equal(with_keepdims, expanded)
 
     def test_keepdims_generic(self):
         for axis in self.allowed_axes:
@@ -269,7 +269,7 @@ class _GenericHasOutTestMixin:
         with_keepdims = self.func(a, axis=None, keepdims=True)
         scalar = self.func(a, axis=None)
         expanded = np.full(a.shape, fill_value=scalar)
-        assert_equal(with_keepdims, expanded)
+        assert_array_equal(with_keepdims, expanded)
 
     def test_out_scalar(self):
         # out no axis: scalar
@@ -280,7 +280,7 @@ class _GenericHasOutTestMixin:
         result_with_out = self.func(a, out=out)
 
         assert result_with_out is out
-        assert_equal(result, result_with_out)
+        assert_array_equal(result, result_with_out)
 
     def _check_out_axis(self, axis, dtype, keepdims):
         # out with axis
@@ -292,7 +292,7 @@ class _GenericHasOutTestMixin:
 
         assert result_with_out is out
         assert result_with_out.dtype == dtype
-        assert_equal(result, result_with_out)
+        assert_array_equal(result, result_with_out)
 
         # out of wrong shape (any/out does not broadcast)
         # np.any(m, out=np.empty_like(m)) raises a ValueError (wrong number

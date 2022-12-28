@@ -544,7 +544,7 @@ def count_nonzero(a, axis=None, *, keepdims=False):
     if keepdims:
         if axis is None:
             # tensor was a scalar
-            tensor = torch.full(arr.shape, fill_value=tensor)
+            tensor = torch.full((1,)*arr.ndim, fill_value=tensor)
         else:
             shape = _util.expand_shape(tensor, axis)
             tensor = tensor.reshape(shape)
