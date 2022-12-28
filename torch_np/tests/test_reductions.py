@@ -308,6 +308,21 @@ class _GenericHasOutTestMixin:
             self._check_out_axis(axis, dtype, keepdims)
 
 
+    def test_keepdims_out(self, axis):
+        d = np.ones((3, 5, 7, 11))
+        if axis is None:
+            shape_out = (1,) * d.ndim
+        else:
+            axis_norm = normalize_axis_tuple(axis, d.ndim)
+            shape_out = tuple(
+                1 if i in axis_norm else d.shape[i] for i in range(d.ndim))
+        out = np.empty(shape_out)
+        result = np.median(d, axis=axis, keepdims=True, out=out)
+        assert result is out
+        assert_equal(result.shape, shape_out)
+
+
+
 class TestAnyGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     def setup_method(self):
         self.func = np.any
