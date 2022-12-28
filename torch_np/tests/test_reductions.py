@@ -221,6 +221,73 @@ class TestAll:
         assert_equal(np.all(y), y.all())
 
 
+class TestMean:
+    def test_mean(self):
+        A = [[1, 2, 3], [4, 5, 6]]
+        assert np.mean(A) == 3.5
+        assert np.all(np.mean(A, 0) == np.array([2.5, 3.5, 4.5]))
+        assert np.all(np.mean(A, 1) == np.array([2., 5.]))
+
+        # XXX: numpy emits a warning on empty slice
+        assert np.isnan(np.mean([]))
+
+    def test_mean_values(self):
+        for mat in [self.rmat, self.cmat, self.omat]:
+            for axis in [0, 1]:
+                tgt = mat.sum(axis=axis)
+                res = _mean(mat, axis=axis) * mat.shape[axis]
+                assert_almost_equal(res, tgt)
+            for axis in [None]:
+                tgt = mat.sum(axis=axis)
+                res = _mean(mat, axis=axis) * np.prod(mat.shape)
+                assert_almost_equal(res, tgt)
+
+    def test_mean_float16(self):
+        # This fail if the sum inside mean is done in float16 instead
+        # of float32.
+        assert_(_mean(np.ones(100000, dtype='float16')) == 1)
+
+    @pytest.mark.skip(reason="XXX: mean(..., where=...) not implemented")
+    def test_mean_where(self):
+        a = np.arange(16).reshape((4, 4))
+        wh_full = np.array([[False, True, False, True],
+                            [True, False, True, False],
+                            [True, True, False, False],
+                            [False, False, True, True]])
+        wh_partial = np.array([[False],
+                               [True],
+                               [True],
+                               [False]])
+        _cases = [(1, True, [1.5, 5.5, 9.5, 13.5]),
+                  (0, wh_full, [6., 5., 10., 9.]),
+                  (1, wh_full, [2., 5., 8.5, 14.5]),
+                  (0, wh_partial, [6., 7., 8., 9.])]
+        for _ax, _wh, _res in _cases:
+            assert_allclose(a.mean(axis=_ax, where=_wh),
+                            np.array(_res))
+            assert_allclose(np.mean(a, axis=_ax, where=_wh),
+                            np.array(_res))
+
+        a3d = np.arange(16).reshape((2, 2, 4))
+        _wh_partial = np.array([False, True, True, False])
+        _res = [[1.5, 5.5], [9.5, 13.5]]
+        assert_allclose(a3d.mean(axis=2, where=_wh_partial),
+                        np.array(_res))
+        assert_allclose(np.mean(a3d, axis=2, where=_wh_partial),
+                        np.array(_res))
+
+        with pytest.warns(RuntimeWarning) as w:
+            assert_allclose(a.mean(axis=1, where=wh_partial),
+                            np.array([np.nan, 5.5, 9.5, np.nan]))
+        with pytest.warns(RuntimeWarning) as w:
+            assert_equal(a.mean(where=False), np.nan)
+        with pytest.warns(RuntimeWarning) as w:
+            assert_equal(np.mean(a, where=False), np.nan)
+
+
+
+
+
 class _GenericReductionsTestMixin:
     """Run a set of generic tests to verify that self.func acts like a
     reduction operation.
