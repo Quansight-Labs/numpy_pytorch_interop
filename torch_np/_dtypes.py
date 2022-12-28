@@ -30,6 +30,10 @@ class dtype:
     def name(self):
         return self._name
 
+    @property
+    def typecode(self):
+        return _typecodes_from_dtype_dict[self._name]
+
     def __eq__(self, other):
         if isinstance(other, dtype):
             return self._name == other.name
@@ -89,8 +93,14 @@ typecode_chars_dict = {
     '?': 'bool'
 }
 
+# reverse mapping
+_typecodes_from_dtype_dict = {typecode_chars_dict[key]: key
+                                for key in typecode_chars_dict}
 
-typecodes = {'All': 'efdFDBbhil?'}
+
+typecodes = {'All': 'efdFDBbhil?',
+        'AllFloat': 'efdFD',
+}
 
 
 float16 = dtype("float16")
@@ -157,6 +167,15 @@ def torch_dtype_from(dtyp):
 
 def default_int_type():
     return dtype('int64')
+
+
+def default_float_type():
+    return dtype('float64')
+
+
+def is_floating(dtyp):
+    dtyp = dtype(dtyp)
+    return dtyp.typecode in typecodes['AllFloat']
 
 
 # The casting below is defined *with dtypes only*, so no value-based casting!

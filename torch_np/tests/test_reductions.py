@@ -398,3 +398,10 @@ class TestAminGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
         self.allowed_axes =  [0, 1, 2, -1, -2,
                               (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
 
+
+class TestMeanGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
+    def setup_method(self):
+        self.func = np.mean
+        self.allowed_axes =  [0, 1, 2, -1, -2,
+                              (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
+

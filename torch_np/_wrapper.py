@@ -658,21 +658,10 @@ def any(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
 
 
 # YYY: pattern: dtype kwarg, None not accepted
-@asarray_replacer()
+
 def mean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
-    if where is not None:
-        raise NotImplementedError
-    if dtype is None:
-        dtype = a.dtype
-    if axis is None:
-        result = a.mean(dtype=dtype)
-        if keepdims:
-            result = torch.full(a.shape, result, dtype=result.dtype)
-    else:
-        result = a.mean(dtype=dtype, dim=axis, keepdim=bool(keepdims))
-    if out is not None:
-        out.copy_(result)
-    return result
+    arr = asarray(a)
+    return arr.mean(axis=axis, dtype=dtype, out=out, keepdims=keepdims, where=where)
 
 
 @asarray_replacer()
