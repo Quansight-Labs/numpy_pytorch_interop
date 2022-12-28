@@ -268,7 +268,7 @@ class _GenericHasOutTestMixin:
         a = np.arange(2*3*4).reshape((2, 3, 4))
         with_keepdims = self.func(a, axis=None, keepdims=True)
         scalar = self.func(a, axis=None)
-        expanded = np.full(a.shape, fill_value=scalar)
+        expanded = np.full((1,)*a.ndim, fill_value=scalar)
         assert_array_equal(with_keepdims, expanded)
 
     def test_out_scalar(self):
@@ -304,7 +304,7 @@ class _GenericHasOutTestMixin:
     @pytest.mark.parametrize('keepdims', [True, False, None])
     @pytest.mark.parametrize('dtype', [bool, 'int32', 'float64'])
     def test_out_axis(self, dtype, keepdims):
-        for axis in self.allowed_axes + [None,]:
+        for axis in self.allowed_axes + [None]:
             self._check_out_axis(axis, dtype, keepdims)
 
     def _check_keepdims_out(self, axis):
@@ -332,7 +332,7 @@ class _GenericHasOutTestMixin:
 class TestAnyGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     def setup_method(self):
         self.func = np.any
-        self.allowed_axes =  [0, 1, 2, -1, -2, (),]
+        self.allowed_axes =  [0, 1, 2, -1, -2,]
 
     @pytest.mark.xfail(reason='XXX: pytorch does not support any(..., axis=tuple)')
     def test_axis_bad_tuple(self):
@@ -342,7 +342,7 @@ class TestAnyGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
 class TestAllGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     def setup_method(self):
         self.func = np.all
-        self.allowed_axes =  [0, 1, 2, -1, -2, (),]
+        self.allowed_axes =  [0, 1, 2, -1, -2,]
 
     @pytest.mark.xfail(reason='XXX: pytorch does not support all(..., axis=tuple)')
     def test_axis_bad_tuple(self):
@@ -353,7 +353,7 @@ class TestCountNonzeroGeneric(_GenericReductionsTestMixin):
     # count_nonzero does not have the out=... argument
     def setup_method(self):
         self.func = np.count_nonzero
-        self.allowed_axes =  [0, 1, 2, -1, -2, (),
+        self.allowed_axes =  [0, 1, 2, -1, -2,
                               (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
 
 
@@ -388,13 +388,13 @@ class TestArgmaxGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
 class TestAmaxGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     def setup_method(self):
         self.func = np.amax
-        self.allowed_axes =  [0, 1, 2, -1, -2, (),
+        self.allowed_axes =  [0, 1, 2, -1, -2,
                               (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
 
 
 class TestAminGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     def setup_method(self):
         self.func = np.amin
-        self.allowed_axes =  [0, 1, 2, -1, -2, (),
+        self.allowed_axes =  [0, 1, 2, -1, -2,
                               (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
 
