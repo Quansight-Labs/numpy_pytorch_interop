@@ -125,6 +125,10 @@ class ndarray:
         other_tensor = asarray(other).get()
         return asarray(self._tensor.__mul__(other_tensor))
 
+    def __truediv__(self, other):
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__truediv__(other_tensor))
+
     def __invert__(self):
         return asarray(self._tensor.__invert__())
 
