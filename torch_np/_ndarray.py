@@ -195,7 +195,7 @@ class ndarray:
             # torch does not accept keepdim without axis
             result = self._tensor.any()
             if keepdims:
-                result = torch.full(self.shape, result, dtype=result.dtype)
+                result = torch.full((1,)*self.ndim, result, dtype=result.dtype)
         else:
             axis = _util.normalize_axis_index(axis, self._tensor.ndim)
             result = self._tensor.any(axis, keepdim=bool(keepdims))
@@ -213,7 +213,7 @@ class ndarray:
         if axis is None:
             result = self._tensor.all()
             if keepdims:
-                result = torch.full(self.shape, result, dtype=result.dtype)
+                result = torch.full((1,)*self.ndim, result, dtype=result.dtype)
         else:
             axis = _util.normalize_axis_index(axis, self._tensor.ndim)
             result = self._tensor.all(axis, keepdim=bool(keepdims))

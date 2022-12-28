@@ -4,6 +4,7 @@ from pytest import raises as assert_raises
 import torch_np as np
 from torch_np.testing import assert_equal, assert_array_equal
 
+import torch_np._util as _util
 
 class TestNonzeroAndCountNonzero:
     def test_nonzero_trivial(self):
@@ -129,7 +130,6 @@ class TestNonzeroAndCountNonzero:
         assert_equal(np.count_nonzero(a, keepdims=True),
                      [[6]])
         assert isinstance(np.count_nonzero(a, axis=1, keepdims=True), np.ndarray)
-
 
 
 class TestFlatnonzero:
@@ -307,19 +307,25 @@ class _GenericHasOutTestMixin:
         for axis in self.allowed_axes + [None,]:
             self._check_out_axis(axis, dtype, keepdims)
 
-
-    def test_keepdims_out(self, axis):
+    def _check_keepdims_out(self, axis):
+        """Check the expicit shape of out w/keepdims=True"""
         d = np.ones((3, 5, 7, 11))
         if axis is None:
             shape_out = (1,) * d.ndim
         else:
-            axis_norm = normalize_axis_tuple(axis, d.ndim)
+            axis_norm = _util.normalize_axis_tuple(axis, d.ndim)
             shape_out = tuple(
                 1 if i in axis_norm else d.shape[i] for i in range(d.ndim))
         out = np.empty(shape_out)
-        result = np.median(d, axis=axis, keepdims=True, out=out)
+        result = self.func(d, axis=axis, keepdims=True, out=out)
         assert result is out
         assert_equal(result.shape, shape_out)
+
+    def test_keepdims_out(self):
+        allowed_axes = [ax for ax in self.allowed_axes if ax != ()]
+        for axis in allowed_axes + [None,]:
+            self._check_keepdims_out(axis)
+
 
 
 
