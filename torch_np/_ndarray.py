@@ -117,6 +117,9 @@ class ndarray:
     def __mul__(self, other):
         return self._tensor.__mul__(other)
 
+    def __rmul__(self, other):
+        return self._tensor.__mul__(other)
+
 
     def __invert__(self):
         return self._tensor.__invert__()

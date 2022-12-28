@@ -231,21 +231,31 @@ class TestMean:
         # XXX: numpy emits a warning on empty slice
         assert np.isnan(np.mean([]))
 
+        m = np.asarray(A)
+        assert np.mean(A) == m.mean()
+
+    @pytest.mark.skip(reason="XXX: np.sum(...) needs implementing")
     def test_mean_values(self):
-        for mat in [self.rmat, self.cmat, self.omat]:
+        #rmat = np.random.random((4, 5))
+        rmat = np.arange(20, dtype=float).reshape((4, 5))
+        cmat = rmat + 1j*rmat
+
+        for mat in [rmat, cmat]:
             for axis in [0, 1]:
                 tgt = mat.sum(axis=axis)
-                res = _mean(mat, axis=axis) * mat.shape[axis]
-                assert_almost_equal(res, tgt)
+                res = np.mean(mat, axis=axis) * mat.shape[axis]
+                assert_allclose(res, tgt)
+
             for axis in [None]:
                 tgt = mat.sum(axis=axis)
-                res = _mean(mat, axis=axis) * np.prod(mat.shape)
-                assert_almost_equal(res, tgt)
+                res = np.mean(mat, axis=axis) * np.prod(mat.shape)
+                assert_allclose(res, tgt)
 
+    @pytest.mark.xfail(reason="XXX: mean(..., dtype=..) smarter dtype selection")
     def test_mean_float16(self):
         # This fail if the sum inside mean is done in float16 instead
         # of float32.
-        assert_(_mean(np.ones(100000, dtype='float16')) == 1)
+        assert np.mean(np.ones(100000, dtype='float16')) == 1
 
     @pytest.mark.skip(reason="XXX: mean(..., where=...) not implemented")
     def test_mean_where(self):
