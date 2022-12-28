@@ -316,12 +316,13 @@ class TestSum:
         assert_allclose((a / 10.).sum() - a.size / 10., 0., atol=1.5e-13,
                         check_dtype=False)
 
-    @pytest.mark.skipif(IS_WASM, reason="fp errors don't work in wasm")
-    def test_sum(self):
-        for dt in (int, np.float16, np.float32, np.float64, np.longdouble):
+    @pytest.mark.xfail(reason="dtype(value) needs implementing")
+    def test_sum_dtypes(self):
+        for dt in (int, np.float16, np.float32, np.float64):
             for v in (0, 1, 2, 7, 8, 9, 15, 16, 19, 127,
                       128, 1024, 1235):
                 # warning if sum overflows, which it does in float16
+                import warnings
                 with warnings.catch_warnings(record=True) as w:
                     warnings.simplefilter("always", RuntimeWarning)
 
@@ -351,31 +352,33 @@ class TestSum:
             d += d
             assert_almost_equal(d, 2.)
 
+    @pytest.mark.xfail(reason="dtype(value) needs implementing")
     def test_sum_complex(self):
-        for dt in (np.complex64, np.complex128, np.clongdouble):
+        for dt in (np.complex64, np.complex128):
             for v in (0, 1, 2, 7, 8, 9, 15, 16, 19, 127,
                       128, 1024, 1235):
                 tgt = dt(v * (v + 1) / 2) - dt((v * (v + 1) / 2) * 1j)
                 d = np.empty(v, dtype=dt)
                 d.real = np.arange(1, v + 1)
                 d.imag = -np.arange(1, v + 1)
-                assert_almost_equal(np.sum(d), tgt)
-                assert_almost_equal(np.sum(d[::-1]), tgt)
+                assert_allclose(np.sum(d), tgt, atol=1.5e-5)
+                assert_allcllose(np.sum(d[::-1]), tgt, atol=1.5e-7)
 
             d = np.ones(500, dtype=dt) + 1j
-            assert_almost_equal(np.sum(d[::2]), 250. + 250j)
-            assert_almost_equal(np.sum(d[1::2]), 250. + 250j)
-            assert_almost_equal(np.sum(d[::3]), 167. + 167j)
-            assert_almost_equal(np.sum(d[1::3]), 167. + 167j)
-            assert_almost_equal(np.sum(d[::-2]), 250. + 250j)
-            assert_almost_equal(np.sum(d[-1::-2]), 250. + 250j)
-            assert_almost_equal(np.sum(d[::-3]), 167. + 167j)
-            assert_almost_equal(np.sum(d[-1::-3]), 167. + 167j)
+            assert_allclose(np.sum(d[::2]), 250. + 250j, atol=1.5e-7)
+            assert_allclose(np.sum(d[1::2]), 250. + 250j, atol=1.5e-7)
+            assert_allclose(np.sum(d[::3]), 167. + 167j, atol=1.5e-7)
+            assert_allclose(np.sum(d[1::3]), 167. + 167j, atol=1.5e-7)
+            assert_allclose(np.sum(d[::-2]), 250. + 250j, atol=1.5e-7)
+            assert_allclose(np.sum(d[-1::-2]), 250. + 250j, atol=1.5e-7)
+            assert_allclose(np.sum(d[::-3]), 167. + 167j, atol=1.5e-7)
+            assert_allclose(np.sum(d[-1::-3]), 167. + 167j, atol=1.5e-7)
             # sum with first reduction entry != 0
             d = np.ones((1,), dtype=dt) + 1j
             d += d
-            assert_almost_equal(d, 2. + 2j)
+            assert_allclose(d, 2. + 2j, atol=1.5e-7)
 
+    @pytest.mark.xfail(reason='initial=... need implementing')
     def test_sum_initial(self):
         # Integer, single axis
         assert_equal(np.sum([3], initial=2), 5)
@@ -387,6 +390,7 @@ class TestSum:
         assert_equal(np.sum(np.ones((2, 3, 5), dtype=np.int64), axis=(0, 2), initial=2),
                      [12, 12, 12])
 
+    @pytest.mark.xfail(reason='where=... need implementing')
     def test_sum_where(self):
         # More extensive tests done in test_reduction_with_where.
         assert_equal(np.sum([[1., 2.], [3., 4.]], where=[True, False]), 4.)
