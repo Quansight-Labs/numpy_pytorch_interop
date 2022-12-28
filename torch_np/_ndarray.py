@@ -106,23 +106,27 @@ class ndarray:
     ### arithmetic ###
 
     def __add__(self, other):
-        return self._tensor.__add__(other)
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__add__(other_tensor))
 
     def __iadd__(self, other):
-        return self._tensor.__add__(other)
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__add__(other_tensor))
 
     def __sub__(self, other):
-        return self._tensor.__sub__(other)
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__sub__(other_tensor))
 
     def __mul__(self, other):
-        return self._tensor.__mul__(other)
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__mul__(other_tensor))
 
     def __rmul__(self, other):
-        return self._tensor.__mul__(other)
-
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__mul__(other_tensor))
 
     def __invert__(self):
-        return self._tensor.__invert__()
+        return asarray(self._tensor.__invert__())
 
     ### methods to match namespace functions
 
@@ -289,6 +293,35 @@ class ndarray:
                 axis = (axis,)
             axis = _util.normalize_axis_tuple(axis, self.ndim)
             result = self._tensor.mean(dtype=torch_dtype, dim=axis, keepdim=bool(keepdims))
+
+        return _helpers.result_or_out(result, out)
+
+    def sum(self, axis=None, dtype=None, out=None, keepdims=NoValue,
+            initial=NoValue, where=NoValue):
+        if initial is not None or where is not None:
+            raise NotImplementedError
+
+        if isinstance(axis, ndarray):
+            raise TypeError("Only scalar arrays can be converted to an index")
+        if axis == ():
+            return _util.handle_empty_axis(self, self.sum.__func__, dtype=dtype,
+                    out=out, initial=initial, keepdims=keepdims, where=where)
+
+        if dtype is None:
+            dtype = self.dtype
+        if not _dtypes.is_floating(dtype):
+            dtype = _dtypes.default_float_type()
+        torch_dtype = _dtypes.torch_dtype_from(dtype)
+
+        if axis is None:
+            result = self._tensor.sum(dtype=torch_dtype)
+            if keepdims:
+                result = torch.full((1,)*self.ndim, result, dtype=result.dtype)
+        else:
+            if type(axis) not in (list, tuple):
+                axis = (axis,)
+            axis = _util.normalize_axis_tuple(axis, self.ndim)
+            result = self._tensor.sum(dtype=torch_dtype, dim=axis, keepdim=bool(keepdims))
 
         return _helpers.result_or_out(result, out)
 

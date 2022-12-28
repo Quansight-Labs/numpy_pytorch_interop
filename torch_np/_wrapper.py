@@ -321,19 +321,6 @@ def prod(a, axis=None, dtype=None, out=None, keepdims=NoValue,
     return torch.prod(a, dim=axis, dtype=dtype, keepdim=bool(keepdims), out=out)
 
 
-@asarray_replacer()
-def sum(a, axis=None, dtype=None, out=None, keepdims=NoValue,
-        initial=NoValue, where=NoValue):
-    if initial is not None or where is not None:
-        raise NotImplementedError
-    if axis is None:
-        if keepdims is not None:
-            raise NotImplementedError
-        return torch.sum(a, dtype=dtype)
-    elif _util.is_sequence(axis):
-        raise NotImplementedError
-    return torch.sum(a, dim=axis, dtype=dtype, keepdim=bool(keepdims), out=out)
-
 
 @asarray_replacer()
 def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
@@ -662,6 +649,13 @@ def any(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
 def mean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
     arr = asarray(a)
     return arr.mean(axis=axis, dtype=dtype, out=out, keepdims=keepdims, where=where)
+
+
+def sum(a, axis=None, dtype=None, out=None, keepdims=NoValue,
+        initial=NoValue, where=NoValue):
+    arr = asarray(a)
+    return arr.sum(axis=axis, dtype=dtype, out=out, keepdims=keepdims,
+                   initial=initial, where=where)
 
 
 @asarray_replacer()

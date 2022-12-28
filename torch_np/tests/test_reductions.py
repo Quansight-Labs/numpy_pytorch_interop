@@ -2,7 +2,7 @@ import pytest
 from pytest import raises as assert_raises
 
 import torch_np as np
-from torch_np.testing import assert_equal, assert_array_equal
+from torch_np.testing import assert_equal, assert_array_equal, assert_allclose
 
 import torch_np._util as _util
 
@@ -234,7 +234,6 @@ class TestMean:
         m = np.asarray(A)
         assert np.mean(A) == m.mean()
 
-    @pytest.mark.skip(reason="XXX: np.sum(...) needs implementing")
     def test_mean_values(self):
         #rmat = np.random.random((4, 5))
         rmat = np.arange(20, dtype=float).reshape((4, 5))
@@ -248,7 +247,7 @@ class TestMean:
 
             for axis in [None]:
                 tgt = mat.sum(axis=axis)
-                res = np.mean(mat, axis=axis) * np.prod(mat.shape)
+                res = np.mean(mat, axis=axis) * mat.size
                 assert_allclose(res, tgt)
 
     @pytest.mark.xfail(reason="XXX: mean(..., dtype=..) smarter dtype selection")
@@ -337,10 +336,6 @@ class _GenericReductionsTestMixin:
         for axis in self.allowed_axes:
             self._check_keepdims_generic(axis)
 
-
-class _GenericHasOutTestMixin:
-    """Tests for reduction functions which support out=... parameter.
-    """
     def test_keepdims_generic_axis_none(self):
         a = np.arange(2*3*4).reshape((2, 3, 4))
         with_keepdims = self.func(a, axis=None, keepdims=True)
@@ -348,6 +343,10 @@ class _GenericHasOutTestMixin:
         expanded = np.full((1,)*a.ndim, fill_value=scalar)
         assert_array_equal(with_keepdims, expanded)
 
+
+class _GenericHasOutTestMixin:
+    """Tests for reduction functions which support out=... parameter.
+    """
     def test_out_scalar(self):
         # out no axis: scalar
         a = np.arange(2*3*4).reshape((2, 3, 4))
@@ -479,6 +478,14 @@ class TestAminGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
 class TestMeanGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     def setup_method(self):
         self.func = np.mean
+        self.allowed_axes =  [0, 1, 2, -1, -2,
+                              (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
+
+
+
+class TestSumGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
+    def setup_method(self):
+        self.func = np.sum
         self.allowed_axes =  [0, 1, 2, -1, -2,
                               (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
 
