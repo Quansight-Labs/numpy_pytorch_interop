@@ -3,6 +3,8 @@
 Things imported from here have numpy-compatible signatures but operate on
 pytorch tensors.
 """
+import operator
+
 #import numpy as np
 
 import torch
@@ -515,7 +517,8 @@ def count_nonzero(a, axis=None, *, keepdims=False):
     # XXX: this all should probably be generalized to a sum(a != 0, dtype=bool)
     arr = asarray(a)
     if isinstance(axis, ndarray):
-        raise TypeError   # XXX: scalars and zero-dim arrays
+        axis = operator.index(axis)
+
     if axis == ():
         return _util.handle_empty_axis(arr, count_nonzero, keepdims=keepdims)
     if axis is not None:

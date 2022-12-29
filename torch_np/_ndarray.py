@@ -1,4 +1,5 @@
 import functools
+import operator
 
 import torch
 
@@ -69,7 +70,6 @@ class ndarray:
 
     ###  niceties ###
     def __str__(self):
-        # FIXME: prints dtype=torch.float64 etc
         return str(self._tensor).replace("tensor", "array_w").replace("dtype=torch.", "dtype=")
 
     __repr__ = __str__
@@ -90,6 +90,13 @@ class ndarray:
         except RuntimeError:
             raise ValueError("The truth value of an array with more than one "
                              "element is ambiguous. Use a.any() or a.all()")
+
+    def __index__(self):
+        if self.size == 1:
+            if _dtypes.is_integer(self.dtype):
+                return int(self._tensor.item())
+        mesg = "only integer scalar arrays can be converted to a scalar index"
+        raise TypeError(mesg)
 
     # HACK : otherwise cannot check array.dtype in _dtypes.dict
     def __hash__(self):
@@ -145,6 +152,9 @@ class ndarray:
 
     # XXX: arg{min, max} only accept a single axis in numpy, no axis tuples.
     def argmax(self, axis=None, out=None, *, keepdims=NoValue):
+        if isinstance(axis, ndarray):
+            axis = operator.index(axis)
+
         if axis is None:
             tensor = torch.argmax(self._tensor, keepdim=bool(keepdims))
         else:
@@ -154,6 +164,9 @@ class ndarray:
 
 
     def argmin(self, axis=None, out=None, *, keepdims=NoValue):
+        if isinstance(axis, ndarray):
+            axis = operator.index(axis)
+
         if axis is None:
             tensor = torch.argmin(self._tensor, keepdim=bool(keepdims))
         else:
@@ -196,7 +209,8 @@ class ndarray:
             raise NotImplementedError
 
         if isinstance(axis, ndarray):
-            raise TypeError("Only scalar arrays can be converted to an index")
+            axis = operator.index(axis)
+
         if axis == ():
             # XXX: can use either `self.__class__.any` or self.any.__func__
             # cannot use self.any however (errors on "multiple values for axis")
@@ -217,7 +231,8 @@ class ndarray:
             raise NotImplementedError
 
         if isinstance(axis, ndarray):
-            raise TypeError("Only scalar arrays can be converted to an index")
+            axis = operator.index(axis)
+
         if axis == ():
             return _util.handle_empty_axis(self, self.all.__func__, out=out,
                                            keepdims=keepdims, where=where)
@@ -238,7 +253,9 @@ class ndarray:
             raise NotImplementedError
 
         if isinstance(axis, ndarray):
-            raise TypeError("Only scalar arrays can be converted to an index")
+            axis = operator.index(axis)
+
+
         if axis == ():
             return _util.handle_empty_axis(self, self.max.__func__, out=out,
                                            keepdims=keepdims, where=where)
@@ -259,7 +276,8 @@ class ndarray:
             raise NotImplementedError
 
         if isinstance(axis, ndarray):
-            raise TypeError("Only scalar arrays can be converted to an index")
+            axis = operator.index(axis)
+
         if axis == ():
             return _util.handle_empty_axis(self, self.min.__func__, out=out,
                                            keepdims=keepdims, where=where)
@@ -277,7 +295,8 @@ class ndarray:
             raise NotImplementedError
 
         if isinstance(axis, ndarray):
-            raise TypeError("Only scalar arrays can be converted to an index")
+            axis = operator.index(axis)
+
         if axis == ():
             return _util.handle_empty_axis(self, self.mean.__func__, dtype=dtype,
                                            out=out, keepdims=keepdims, where=where)
@@ -306,7 +325,8 @@ class ndarray:
             raise NotImplementedError
 
         if isinstance(axis, ndarray):
-            raise TypeError("Only scalar arrays can be converted to an index")
+            axis = operator.index(axis)
+
         if axis == ():
             return _util.handle_empty_axis(self, self.sum.__func__, dtype=dtype,
                     out=out, initial=initial, keepdims=keepdims, where=where)

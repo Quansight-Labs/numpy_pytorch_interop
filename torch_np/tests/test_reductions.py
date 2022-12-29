@@ -418,6 +418,17 @@ class _GenericReductionsTestMixin:
         assert_raises(np.AxisError, self.func, m, axis=3)
         assert_raises(TypeError, self.func,
                       m, axis=np.array([[1], [2]]))
+        assert_raises(TypeError, self.func, m, axis=1.5)
+
+        # TODO: add tests with np.int32(3) etc, when implemented
+
+    def test_array_axis(self):
+        a = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
+        assert_equal(self.func(a, axis=np.array(-1)),
+                     self.func(a, axis=-1))
+
+        with assert_raises(TypeError):
+            self.func(a, axis=np.array([1, 2]))
 
     def test_axis_empty_generic(self):
         a = np.array([[0, 0, 1], [1, 0, 1]])

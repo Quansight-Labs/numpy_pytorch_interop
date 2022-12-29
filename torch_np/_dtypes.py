@@ -100,6 +100,7 @@ _typecodes_from_dtype_dict = {typecode_chars_dict[key]: key
 
 typecodes = {'All': 'efdFDBbhil?',
         'AllFloat': 'efdFD',
+        'AllInteger': 'Bbhil',
 }
 
 
@@ -176,6 +177,10 @@ def default_float_type():
 def is_floating(dtyp):
     dtyp = dtype(dtyp)
     return dtyp.typecode in typecodes['AllFloat']
+
+def is_integer(dtyp):
+    dtyp = dtype(dtyp)
+    return dtyp.typecode in typecodes['AllInteger']
 
 
 # The casting below is defined *with dtypes only*, so no value-based casting!
