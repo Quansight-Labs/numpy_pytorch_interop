@@ -485,6 +485,8 @@ class _GenericHasOutTestMixin:
         assert result_with_out.dtype == dtype
         assert_array_equal(result, result_with_out)
 
+        # TODO: what if result.dtype != out.dtype; does out typecast the result?
+
         # out of wrong shape (any/out does not broadcast)
         # np.any(m, out=np.empty_like(m)) raises a ValueError (wrong number
         # of dimensions.)
