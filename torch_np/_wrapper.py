@@ -511,22 +511,16 @@ def argwhere(a):
     return transpose(nonzero(a))
 
 
+from ._ndarray import axis_out_keepdims_wrapper
+
+@axis_out_keepdims_wrapper
 def count_nonzero(a, axis=None, *, keepdims=False):
     # XXX: this all should probably be generalized to a sum(a != 0, dtype=bool)
-    arr = asarray(a)
-
-    axis = _helpers.standardize_axis_arg(axis, arr.ndim)
-    if axis == ():
-        return _util.handle_empty_axis(arr, count_nonzero, keepdims=keepdims)
-
     try:
-        tensor = arr.get().count_nonzero(axis)
+        tensor = a.get().count_nonzero(axis)
     except RuntimeError:
         raise ValueError
-
-    if keepdims:
-        tensor = _helpers.apply_keepdims(tensor, axis, arr.ndim)
-    return _helpers.result_or_out(tensor, None)
+    return tensor
 
 
 @asarray_replacer()

@@ -7,6 +7,15 @@ from torch_np.testing import assert_equal, assert_array_equal, assert_allclose
 import torch_np._util as _util
 
 class TestNonzeroAndCountNonzero:
+
+    def test_count_nonzero_list(self):
+        lst = [[0, 1, 2, 3], [1, 0, 0, 6]]
+        assert np.count_nonzero(lst) == 5
+        assert_array_equal(np.count_nonzero(lst, axis=0),
+                           np.array([1, 1, 1, 2]))
+        assert_array_equal(np.count_nonzero(lst, axis=1),
+                           np.array([3, 2]))
+
     def test_nonzero_trivial(self):
         assert_equal(np.count_nonzero(np.array([])), 0)
         assert_equal(np.count_nonzero(np.array([], dtype='?')), 0)

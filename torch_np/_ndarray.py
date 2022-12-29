@@ -9,6 +9,34 @@ from . import _dtypes
 NoValue = None
 newaxis = None
 
+
+def axis_out_keepdims_wrapper(func):
+    """`func` accepts an array-like as a 1st arg, returns a tensor.
+
+    This decorator implements the generic handling of axis, out and keepdims
+    arguments for reduction functions.
+    """
+    # XXX: move this out of _ndarray.py (circular imports)
+    @functools.wraps(func)
+    def wrapped(a, axis=None, out=None, keepdims=NoValue, *args, **kwds):
+        arr = asarray(a)
+        axis = _helpers.standardize_axis_arg(axis, arr.ndim)
+
+        arr1 = arr
+        if axis == ():
+            newshape = _util.expand_shape(arr, axis=0)
+            arr1 = arr.reshape(newshape)
+            axis = (0,)
+
+        result = func(arr1, axis=axis, *args, **kwds)
+
+        if keepdims:
+            result = _helpers.apply_keepdims(result, axis, arr1.ndim)
+        return _helpers.result_or_out(result, out)
+
+    return wrapped
+
+
 ##################### ndarray class ###########################
 
 class ndarray:
@@ -149,9 +177,8 @@ class ndarray:
             tensor = self._tensor.squeeze(axis)
         return ndarray._from_tensor_and_base(tensor, self)
 
-    # XXX: arg{min, max} only accept a single axis in numpy, no axis tuples.
+    @axis_out_keepdims_wrapper
     def argmax(self, axis=None, out=None, *, keepdims=NoValue):
-        axis = _helpers.standardize_axis_arg(axis, self.ndim)
         axis = _helpers.allow_only_single_axis(axis)
 
         if axis is None:
@@ -159,13 +186,10 @@ class ndarray:
         else:
             tensor = torch.argmax(self._tensor, axis)
 
-        if keepdims:
-            tensor = _helpers.apply_keepdims(tensor, axis, self.ndim)
-        return _helpers.result_or_out(tensor, out) 
+        return tensor
 
-
+    @axis_out_keepdims_wrapper
     def argmin(self, axis=None, out=None, *, keepdims=NoValue):
-        axis = _helpers.standardize_axis_arg(axis, self.ndim)
         axis = _helpers.allow_only_single_axis(axis)
 
         if axis is None:
@@ -173,10 +197,7 @@ class ndarray:
         else:
             tensor = torch.argmin(self._tensor, axis)
 
-        if keepdims:
-            tensor = _helpers.apply_keepdims(tensor, axis, self.ndim)
-        return _helpers.result_or_out(tensor, out) 
-
+        return tensor
 
     def reshape(self, *shape, order='C'):
         newshape = shape[0] if len(shape) == 1 else shape
@@ -206,47 +227,35 @@ class ndarray:
         tensor = self._tensor
         return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
 
-    # YYY: pattern: any, all
+    @axis_out_keepdims_wrapper
     def any(self, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
         if where is not None:
             raise NotImplementedError
 
-        axis = _helpers.standardize_axis_arg(axis, self.ndim)
-        if axis == ():
-            # XXX: can use either `self.__class__.any` or self.any.__func__
-            # cannot use self.any however (errors on "multiple values for axis")
-            return _util.handle_empty_axis(self, self.any.__func__, out=out,
-                                           keepdims=keepdims, where=where)
         axis = _helpers.allow_only_single_axis(axis)
 
         if axis is None:
             result = self._tensor.any()
         else:
             result = self._tensor.any(axis)
+        return result
 
-        if keepdims:
-            result = _helpers.apply_keepdims(result, axis, self.ndim)
-        return _helpers.result_or_out(result, out)
 
+    @axis_out_keepdims_wrapper
     def all(self, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
         if where is not None:
             raise NotImplementedError
 
-        axis = _helpers.standardize_axis_arg(axis, self.ndim)
-        if axis == ():
-            return _util.handle_empty_axis(self, self.all.__func__, out=out,
-                                           keepdims=keepdims, where=where)
         axis = _helpers.allow_only_single_axis(axis)
 
         if axis is None:
             result = self._tensor.all()
         else:
             result = self._tensor.all(axis)
+        return result
 
-        if keepdims:
-            result = _helpers.apply_keepdims(result, axis, self.ndim)
-        return _helpers.result_or_out(result, out)
 
+    @axis_out_keepdims_wrapper
     def max(self, axis=None, out=None, keepdims=NoValue, initial=NoValue,
              where=NoValue):
         if where is not None:
@@ -254,17 +263,10 @@ class ndarray:
         if initial is not None:
             raise NotImplementedError
 
-        axis = _helpers.standardize_axis_arg(axis, self.ndim)
-        if axis == ():
-            return _util.handle_empty_axis(self, self.max.__func__, out=out,
-                                           keepdims=keepdims, where=where)
-
         result = self._tensor.amax(axis)
+        return result
 
-        if keepdims:
-            result = _helpers.apply_keepdims(result, axis, self.ndim)
-        return _helpers.result_or_out(result, out)
-
+    @axis_out_keepdims_wrapper
     def min(self, axis=None, out=None, keepdims=NoValue, initial=NoValue,
              where=NoValue):
         if where is not None:
@@ -272,25 +274,13 @@ class ndarray:
         if initial is not None:
             raise NotImplementedError
 
-        axis = _helpers.standardize_axis_arg(axis, self.ndim)
-        if axis == ():
-            return _util.handle_empty_axis(self, self.min.__func__, out=out,
-                                           keepdims=keepdims, where=where)
-
         result = self._tensor.amin(axis)
+        return result
 
-        if keepdims:
-            result = _helpers.apply_keepdims(result, axis, self.ndim)
-        return _helpers.result_or_out(result, out)
-
+    @axis_out_keepdims_wrapper
     def mean(self, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
         if where is not None:
             raise NotImplementedError
-
-        axis = _helpers.standardize_axis_arg(axis, self.ndim)
-        if axis == ():
-            return _util.handle_empty_axis(self, self.mean.__func__, dtype=dtype,
-                                           out=out, keepdims=keepdims, where=where)
 
         if dtype is None:
             dtype = self.dtype
@@ -303,19 +293,14 @@ class ndarray:
         else:
             result = self._tensor.mean(dtype=torch_dtype, dim=axis)
 
-        if keepdims:
-            result = _helpers.apply_keepdims(result, axis, self.ndim)
-        return _helpers.result_or_out(result, out)
+        return result
 
+
+    @axis_out_keepdims_wrapper
     def sum(self, axis=None, dtype=None, out=None, keepdims=NoValue,
             initial=NoValue, where=NoValue):
         if initial is not None or where is not None:
             raise NotImplementedError
-
-        axis = _helpers.standardize_axis_arg(axis, self.ndim)
-        if axis == ():
-            return _util.handle_empty_axis(self, self.sum.__func__, dtype=dtype,
-                    out=out, initial=initial, keepdims=keepdims, where=where)
 
         if dtype is None:
             dtype = self.dtype
@@ -328,9 +313,7 @@ class ndarray:
         else:
             result = self._tensor.sum(dtype=torch_dtype, dim=axis)
 
-        if keepdims:
-            result = _helpers.apply_keepdims(result, axis, self.ndim)
-        return _helpers.result_or_out(result, out)
+        return result
 
 
     ### indexing ###
