@@ -1,5 +1,4 @@
 import functools
-import operator
 
 import torch
 
@@ -152,25 +151,23 @@ class ndarray:
 
     # XXX: arg{min, max} only accept a single axis in numpy, no axis tuples.
     def argmax(self, axis=None, out=None, *, keepdims=NoValue):
-        if isinstance(axis, ndarray):
-            axis = operator.index(axis)
+        axis = _helpers.standardize_axis_arg(axis, self.ndim)
+        axis = _helpers.allow_only_single_axis(axis)
 
         if axis is None:
             tensor = torch.argmax(self._tensor, keepdim=bool(keepdims))
         else:
-            axis = _util.normalize_axis_index(axis, self._tensor.ndim)
             tensor = torch.argmax(self._tensor, axis, keepdim=bool(keepdims))
         return _helpers.result_or_out(tensor, out) 
 
 
     def argmin(self, axis=None, out=None, *, keepdims=NoValue):
-        if isinstance(axis, ndarray):
-            axis = operator.index(axis)
+        axis = _helpers.standardize_axis_arg(axis, self.ndim)
+        axis = _helpers.allow_only_single_axis(axis)
 
         if axis is None:
             tensor = torch.argmin(self._tensor, keepdim=bool(keepdims))
         else:
-            axis = _util.normalize_axis_index(axis, self._tensor.ndim)
             tensor = torch.argmin(self._tensor, axis, keepdim=bool(keepdims))
         return _helpers.result_or_out(tensor, out) 
 
@@ -208,21 +205,20 @@ class ndarray:
         if where is not None:
             raise NotImplementedError
 
-        if isinstance(axis, ndarray):
-            axis = operator.index(axis)
-
+        axis = _helpers.standardize_axis_arg(axis, self.ndim)
         if axis == ():
             # XXX: can use either `self.__class__.any` or self.any.__func__
             # cannot use self.any however (errors on "multiple values for axis")
             return _util.handle_empty_axis(self, self.any.__func__, out=out,
                                            keepdims=keepdims, where=where)
+        axis = _helpers.allow_only_single_axis(axis)
+
         if axis is None:
             # torch does not accept keepdim without axis
             result = self._tensor.any()
             if keepdims:
                 result = torch.full((1,)*self.ndim, result, dtype=result.dtype)
         else:
-            axis = _util.normalize_axis_index(axis, self._tensor.ndim)
             result = self._tensor.any(axis, keepdim=bool(keepdims))
         return _helpers.result_or_out(result, out)
 
@@ -230,18 +226,17 @@ class ndarray:
         if where is not None:
             raise NotImplementedError
 
-        if isinstance(axis, ndarray):
-            axis = operator.index(axis)
-
+        axis = _helpers.standardize_axis_arg(axis, self.ndim)
         if axis == ():
             return _util.handle_empty_axis(self, self.all.__func__, out=out,
                                            keepdims=keepdims, where=where)
+        axis = _helpers.allow_only_single_axis(axis)
+
         if axis is None:
             result = self._tensor.all()
             if keepdims:
                 result = torch.full((1,)*self.ndim, result, dtype=result.dtype)
         else:
-            axis = _util.normalize_axis_index(axis, self._tensor.ndim)
             result = self._tensor.all(axis, keepdim=bool(keepdims))
         return _helpers.result_or_out(result, out)
 
@@ -252,18 +247,10 @@ class ndarray:
         if initial is not None:
             raise NotImplementedError
 
-        if isinstance(axis, ndarray):
-            axis = operator.index(axis)
-
-
+        axis = _helpers.standardize_axis_arg(axis, self.ndim)
         if axis == ():
             return _util.handle_empty_axis(self, self.max.__func__, out=out,
                                            keepdims=keepdims, where=where)
-
-        if axis is not None:
-            if type(axis) not in (list, tuple):
-                axis = (axis,)
-            axis = _util.normalize_axis_tuple(axis, self.ndim)
 
         result = self._tensor.amax(axis, keepdim=bool(keepdims))
         return _helpers.result_or_out(result, out)
@@ -275,17 +262,10 @@ class ndarray:
         if initial is not None:
             raise NotImplementedError
 
-        if isinstance(axis, ndarray):
-            axis = operator.index(axis)
-
+        axis = _helpers.standardize_axis_arg(axis, self.ndim)
         if axis == ():
             return _util.handle_empty_axis(self, self.min.__func__, out=out,
                                            keepdims=keepdims, where=where)
-
-        if axis is not None:
-            if type(axis) not in (list, tuple):
-                axis = (axis,)
-            axis = _util.normalize_axis_tuple(axis, self.ndim)
 
         result = self._tensor.amin(axis, keepdim=bool(keepdims))
         return _helpers.result_or_out(result, out)
@@ -294,9 +274,7 @@ class ndarray:
         if where is not None:
             raise NotImplementedError
 
-        if isinstance(axis, ndarray):
-            axis = operator.index(axis)
-
+        axis = _helpers.standardize_axis_arg(axis, self.ndim)
         if axis == ():
             return _util.handle_empty_axis(self, self.mean.__func__, dtype=dtype,
                                            out=out, keepdims=keepdims, where=where)
@@ -312,9 +290,6 @@ class ndarray:
             if keepdims:
                 result = torch.full((1,)*self.ndim, result, dtype=result.dtype)
         else:
-            if type(axis) not in (list, tuple):
-                axis = (axis,)
-            axis = _util.normalize_axis_tuple(axis, self.ndim)
             result = self._tensor.mean(dtype=torch_dtype, dim=axis, keepdim=bool(keepdims))
 
         return _helpers.result_or_out(result, out)
@@ -324,9 +299,7 @@ class ndarray:
         if initial is not None or where is not None:
             raise NotImplementedError
 
-        if isinstance(axis, ndarray):
-            axis = operator.index(axis)
-
+        axis = _helpers.standardize_axis_arg(axis, self.ndim)
         if axis == ():
             return _util.handle_empty_axis(self, self.sum.__func__, dtype=dtype,
                     out=out, initial=initial, keepdims=keepdims, where=where)
@@ -342,9 +315,6 @@ class ndarray:
             if keepdims:
                 result = torch.full((1,)*self.ndim, result, dtype=result.dtype)
         else:
-            if type(axis) not in (list, tuple):
-                axis = (axis,)
-            axis = _util.normalize_axis_tuple(axis, self.ndim)
             result = self._tensor.sum(dtype=torch_dtype, dim=axis, keepdim=bool(keepdims))
 
         return _helpers.result_or_out(result, out)

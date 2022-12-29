@@ -1,6 +1,9 @@
+import operator
+
 import torch
 from . import _dtypes
 from ._ndarray import can_cast, ndarray, asarray
+from . import _util
 
 def cast_and_broadcast(arrays, out, casting):
     """Cast dtypes of arrays to out.dtype and broadcast if needed.
@@ -93,3 +96,22 @@ def result_or_out(result_tensor, out_array=None):
     else:
         return asarray(result_tensor)
 
+
+def standardize_axis_arg(axis, ndim):
+    """Return axis as either None or a tuple of normalized axes."""
+    if isinstance(axis, ndarray):
+        axis = operator.index(axis)
+
+    if axis is not None:
+        if type(axis) not in (list, tuple):
+            axis = (axis,)
+        axis = _util.normalize_axis_tuple(axis, ndim)
+    return axis
+
+
+def allow_only_single_axis(axis):
+    if axis is None:
+        return axis
+    if len(axis) != 1:
+        raise NotImplementedError("does not handle tuple axis")
+    return axis[0]

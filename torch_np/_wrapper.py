@@ -3,8 +3,6 @@
 Things imported from here have numpy-compatible signatures but operate on
 pytorch tensors.
 """
-import operator
-
 #import numpy as np
 
 import torch
@@ -516,15 +514,10 @@ def argwhere(a):
 def count_nonzero(a, axis=None, *, keepdims=False):
     # XXX: this all should probably be generalized to a sum(a != 0, dtype=bool)
     arr = asarray(a)
-    if isinstance(axis, ndarray):
-        axis = operator.index(axis)
 
+    axis = _helpers.standardize_axis_arg(axis, arr.ndim)
     if axis == ():
         return _util.handle_empty_axis(arr, count_nonzero, keepdims=keepdims)
-    if axis is not None:
-        if type(axis) not in (list, tuple):
-            axis = (axis,)
-        axis = _util.normalize_axis_tuple(axis, arr.ndim)
 
     try:
         tensor = arr.get().count_nonzero(axis)
