@@ -525,14 +525,8 @@ def count_nonzero(a, axis=None, *, keepdims=False):
         raise ValueError
 
     if keepdims:
-        if axis is None:
-            # tensor was a scalar
-            tensor = torch.full((1,)*arr.ndim, fill_value=tensor)
-        else:
-            shape = _util.expand_shape(tensor, axis)
-            tensor = tensor.reshape(shape)
-
-    return asarray(tensor)
+        tensor = _helpers.apply_keepdims(tensor, axis, arr.ndim)
+    return _helpers.result_or_out(tensor, None)
 
 
 @asarray_replacer()

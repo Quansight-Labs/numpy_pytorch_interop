@@ -155,9 +155,12 @@ class ndarray:
         axis = _helpers.allow_only_single_axis(axis)
 
         if axis is None:
-            tensor = torch.argmax(self._tensor, keepdim=bool(keepdims))
+            tensor = torch.argmax(self._tensor)
         else:
-            tensor = torch.argmax(self._tensor, axis, keepdim=bool(keepdims))
+            tensor = torch.argmax(self._tensor, axis)
+
+        if keepdims:
+            tensor = _helpers.apply_keepdims(tensor, axis, self.ndim)
         return _helpers.result_or_out(tensor, out) 
 
 
@@ -166,9 +169,12 @@ class ndarray:
         axis = _helpers.allow_only_single_axis(axis)
 
         if axis is None:
-            tensor = torch.argmin(self._tensor, keepdim=bool(keepdims))
+            tensor = torch.argmin(self._tensor)
         else:
-            tensor = torch.argmin(self._tensor, axis, keepdim=bool(keepdims))
+            tensor = torch.argmin(self._tensor, axis)
+
+        if keepdims:
+            tensor = _helpers.apply_keepdims(tensor, axis, self.ndim)
         return _helpers.result_or_out(tensor, out) 
 
 
@@ -214,12 +220,12 @@ class ndarray:
         axis = _helpers.allow_only_single_axis(axis)
 
         if axis is None:
-            # torch does not accept keepdim without axis
             result = self._tensor.any()
-            if keepdims:
-                result = torch.full((1,)*self.ndim, result, dtype=result.dtype)
         else:
-            result = self._tensor.any(axis, keepdim=bool(keepdims))
+            result = self._tensor.any(axis)
+
+        if keepdims:
+            result = _helpers.apply_keepdims(result, axis, self.ndim)
         return _helpers.result_or_out(result, out)
 
     def all(self, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
@@ -234,10 +240,11 @@ class ndarray:
 
         if axis is None:
             result = self._tensor.all()
-            if keepdims:
-                result = torch.full((1,)*self.ndim, result, dtype=result.dtype)
         else:
-            result = self._tensor.all(axis, keepdim=bool(keepdims))
+            result = self._tensor.all(axis)
+
+        if keepdims:
+            result = _helpers.apply_keepdims(result, axis, self.ndim)
         return _helpers.result_or_out(result, out)
 
     def max(self, axis=None, out=None, keepdims=NoValue, initial=NoValue,
@@ -252,7 +259,10 @@ class ndarray:
             return _util.handle_empty_axis(self, self.max.__func__, out=out,
                                            keepdims=keepdims, where=where)
 
-        result = self._tensor.amax(axis, keepdim=bool(keepdims))
+        result = self._tensor.amax(axis)
+
+        if keepdims:
+            result = _helpers.apply_keepdims(result, axis, self.ndim)
         return _helpers.result_or_out(result, out)
 
     def min(self, axis=None, out=None, keepdims=NoValue, initial=NoValue,
@@ -267,7 +277,10 @@ class ndarray:
             return _util.handle_empty_axis(self, self.min.__func__, out=out,
                                            keepdims=keepdims, where=where)
 
-        result = self._tensor.amin(axis, keepdim=bool(keepdims))
+        result = self._tensor.amin(axis)
+
+        if keepdims:
+            result = _helpers.apply_keepdims(result, axis, self.ndim)
         return _helpers.result_or_out(result, out)
 
     def mean(self, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
@@ -287,11 +300,11 @@ class ndarray:
 
         if axis is None:
             result = self._tensor.mean(dtype=torch_dtype)
-            if keepdims:
-                result = torch.full((1,)*self.ndim, result, dtype=result.dtype)
         else:
-            result = self._tensor.mean(dtype=torch_dtype, dim=axis, keepdim=bool(keepdims))
+            result = self._tensor.mean(dtype=torch_dtype, dim=axis)
 
+        if keepdims:
+            result = _helpers.apply_keepdims(result, axis, self.ndim)
         return _helpers.result_or_out(result, out)
 
     def sum(self, axis=None, dtype=None, out=None, keepdims=NoValue,
@@ -312,11 +325,11 @@ class ndarray:
 
         if axis is None:
             result = self._tensor.sum(dtype=torch_dtype)
-            if keepdims:
-                result = torch.full((1,)*self.ndim, result, dtype=result.dtype)
         else:
-            result = self._tensor.sum(dtype=torch_dtype, dim=axis, keepdim=bool(keepdims))
+            result = self._tensor.sum(dtype=torch_dtype, dim=axis)
 
+        if keepdims:
+            result = _helpers.apply_keepdims(result, axis, self.ndim)
         return _helpers.result_or_out(result, out)
 
 

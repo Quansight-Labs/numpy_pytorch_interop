@@ -97,6 +97,16 @@ def result_or_out(result_tensor, out_array=None):
         return asarray(result_tensor)
 
 
+def apply_keepdims(tensor, axis, ndim):
+    if axis is None:
+        # tensor was a scalar
+        tensor = torch.full((1,)*ndim, fill_value=tensor)
+    else:
+        shape = _util.expand_shape(tensor, axis)
+        tensor = tensor.reshape(shape)
+    return tensor
+
+
 def standardize_axis_arg(axis, ndim):
     """Return axis as either None or a tuple of normalized axes."""
     if isinstance(axis, ndarray):
