@@ -193,8 +193,9 @@ def arange(start=None, stop=None, step=1, dtype=None, *, like=None):
     if dtype is None:
         dtype = _dtypes.default_int_type()
         dtype = result_type(start, stop, step, dtype)
-
     torch_dtype = _dtypes.torch_dtype_from(dtype)
+    start, stop, step = _helpers.to_tensors(start, stop, step)
+
     try:
         return asarray(torch.arange(start, stop, step, dtype=torch_dtype))
     except RuntimeError:

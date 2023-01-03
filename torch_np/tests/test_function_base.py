@@ -96,16 +96,15 @@ class TestArange:
         with pytest.raises(TypeError):
             np.arange(3, dtype="bool")
 
-    @pytest.mark.skip(reason='XXX: python scalars from array scalars')
     @pytest.mark.parametrize("which", [0, 1, 2])
     def test_error_paths_and_promotion(self, which):
-        args = [0, 1, 2]  # start, stop, and step
+        args = [0, 10, 2]  # start, stop, and step
         args[which] = np.float64(2.)  # should ensure float64 output
         assert np.arange(*args).dtype == np.float64
 
         # Cover stranger error path, test only to achieve code coverage!
         args[which] = [None, []]
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, RuntimeError)):
             # Fails discovering start dtype
             np.arange(*args)
 
