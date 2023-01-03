@@ -24,7 +24,7 @@ def axis_out_keepdims_wrapper(func):
 
         arr1 = arr
         if axis == ():
-            newshape = _util.expand_shape(arr, axis=0)
+            newshape = _util.expand_shape(arr.shape, axis=0)
             arr1 = arr.reshape(newshape)
             axis = (0,)
 
@@ -145,7 +145,7 @@ class ndarray:
 
     def __iadd__(self, other):
         other_tensor = asarray(other).get()
-        return asarray(self._tensor.__add__(other_tensor))
+        return asarray(self._tensor.__iadd__(other_tensor))
 
     def __sub__(self, other):
         other_tensor = asarray(other).get()

@@ -436,7 +436,7 @@ def squeeze(a, axis=None):
 
 def expand_dims(a, axis):
     a = asarray(a)
-    shape = _util.expand_shape(a, axis)
+    shape = _util.expand_shape(a.shape, axis)
     return a.reshape(shape)
 
 
@@ -504,11 +504,8 @@ def flatnonzero(a):
 
 def argwhere(a):
     arr = asarray(a)
-    if arr.ndim == 0:
-        a = atleast_1d(a)
-        # then remove the added dimension
-        return argwhere(a)[:, :0]
-    return transpose(nonzero(a))
+    tensor = arr.get()
+    return asarray(torch.argwhere(tensor))
 
 
 from ._ndarray import axis_out_keepdims_wrapper

@@ -84,20 +84,13 @@ def normalize_axis_tuple(axis, ndim, argname=None, allow_duplicate=False):
     return axis
 
 
-def expand_shape(arr, axis):
+def expand_shape(arr_shape, axis):
     # taken from numpy 1.23.x, expand_dims function
     if type(axis) not in (list, tuple):
         axis = (axis,)
-    out_ndim = len(axis) + arr.ndim
+    out_ndim = len(axis) + len(arr_shape)
     axis = normalize_axis_tuple(axis, out_ndim)
-    shape_it = iter(arr.shape)
+    shape_it = iter(arr_shape)
     shape = [1 if ax in axis else next(shape_it) for ax in range(out_ndim)]
     return shape
-
-def handle_empty_axis(arr, func, *args, **kwds):
-    """Reductions: func(arr, axis=(), *args, **kwds)
-    """
-    shape = expand_shape(arr, axis=0)
-    arr1 = arr.reshape(shape)
-    return func(arr1, axis=0, *args, **kwds)
 

@@ -102,7 +102,7 @@ def apply_keepdims(tensor, axis, ndim):
         # tensor was a scalar
         tensor = torch.full((1,)*ndim, fill_value=tensor)
     else:
-        shape = _util.expand_shape(tensor, axis)
+        shape = _util.expand_shape(tensor.shape, axis)
         tensor = tensor.reshape(shape)
     return tensor
 
@@ -113,7 +113,7 @@ def standardize_axis_arg(axis, ndim):
         axis = operator.index(axis)
 
     if axis is not None:
-        if type(axis) not in (list, tuple):
+        if not isinstance(axis, (list, tuple)):
             axis = (axis,)
         axis = _util.normalize_axis_tuple(axis, ndim)
     return axis

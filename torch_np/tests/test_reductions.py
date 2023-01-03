@@ -265,7 +265,7 @@ class TestMean:
         # of float32.
         assert np.mean(np.ones(100000, dtype='float16')) == 1
 
-    @pytest.mark.skip(reason="XXX: mean(..., where=...) not implemented")
+    @pytest.mark.xfail(reason="XXX: mean(..., where=...) not implemented")
     def test_mean_where(self):
         a = np.arange(16).reshape((4, 4))
         wh_full = np.array([[False, True, False, True],
@@ -566,10 +566,12 @@ class TestArgminGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
 
     @pytest.mark.xfail(reason='XXX: argmin does not allow axis=tuple')
     def test_axis_bad_tuple(self):
+        # argmin reject axis tuples in both numpy and pytorch
         super().test_axis_bad_tuple()
 
     @pytest.mark.xfail(reason='XXX: argmin does not allow axis=tuple)')
     def test_axis_empty_generic(self):
+        # argmin reject axis tuples in both numpy and pytorch
         super().test_axis_empty_generic()
 
 
@@ -580,10 +582,12 @@ class TestArgmaxGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
 
     @pytest.mark.xfail(reason='XXX: argmax does not allow axis=tuple')
     def test_axis_bad_tuple(self):
+        # argmax reject axis tuples in both numpy and pytorch
         super().test_axis_bad_tuple()
 
     @pytest.mark.xfail(reason='XXX: argmax does not allow axis=tuple)')
     def test_axis_empty_generic(self):
+        # argmax reject axis tuples in both numpy and pytorch
         super().test_axis_empty_generic()
 
 
