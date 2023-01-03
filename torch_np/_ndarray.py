@@ -22,16 +22,15 @@ def axis_out_keepdims_wrapper(func):
         arr = asarray(a)
         axis = _helpers.standardize_axis_arg(axis, arr.ndim)
 
-        arr1 = arr
         if axis == ():
             newshape = _util.expand_shape(arr.shape, axis=0)
-            arr1 = arr.reshape(newshape)
+            arr = arr.reshape(newshape)
             axis = (0,)
 
-        result = func(arr1, axis=axis, *args, **kwds)
+        result = func(arr, axis=axis, *args, **kwds)
 
         if keepdims:
-            result = _helpers.apply_keepdims(result, axis, arr1.ndim)
+            result = _helpers.apply_keepdims(result, axis, arr.ndim)
         return _helpers.result_or_out(result, out)
 
     return wrapped
