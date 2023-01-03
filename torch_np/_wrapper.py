@@ -437,7 +437,8 @@ def squeeze(a, axis=None):
 def expand_dims(a, axis):
     a = asarray(a)
     shape = _util.expand_shape(a.shape, axis)
-    return a.reshape(shape)
+    tensor = a.get().view(shape)    # never copies
+    return ndarray._from_tensor_and_base(tensor, a)
 
 
 @asarray_replacer()
