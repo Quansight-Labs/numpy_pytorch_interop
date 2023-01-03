@@ -530,25 +530,16 @@ class _GenericHasOutTestMixin:
 
 
 
-
 class TestAnyGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     def setup_method(self):
         self.func = np.any
         self.allowed_axes =  [0, 1, 2, -1, -2,]
-
-    @pytest.mark.xfail(reason='XXX: pytorch does not support any(..., axis=tuple)')
-    def test_axis_bad_tuple(self):
-        super().test_axis_bad_tuple()
 
 
 class TestAllGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     def setup_method(self):
         self.func = np.all
         self.allowed_axes =  [0, 1, 2, -1, -2,]
-
-    @pytest.mark.xfail(reason='XXX: pytorch does not support all(..., axis=tuple)')
-    def test_axis_bad_tuple(self):
-        super().test_axis_bad_tuple()
 
 
 class TestCountNonzeroGeneric(_GenericReductionsTestMixin):
@@ -564,31 +555,11 @@ class TestArgminGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
         self.func = np.argmin
         self.allowed_axes =  [0, 1, 2, -1, -2, ]
 
-    @pytest.mark.xfail(reason='XXX: argmin does not allow axis=tuple')
-    def test_axis_bad_tuple(self):
-        # argmin reject axis tuples in both numpy and pytorch
-        super().test_axis_bad_tuple()
-
-    @pytest.mark.xfail(reason='XXX: argmin does not allow axis=tuple)')
-    def test_axis_empty_generic(self):
-        # argmin reject axis tuples in both numpy and pytorch
-        super().test_axis_empty_generic()
-
 
 class TestArgmaxGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     def setup_method(self):
         self.func = np.argmax
         self.allowed_axes =  [0, 1, 2, -1, -2, ]
-
-    @pytest.mark.xfail(reason='XXX: argmax does not allow axis=tuple')
-    def test_axis_bad_tuple(self):
-        # argmax reject axis tuples in both numpy and pytorch
-        super().test_axis_bad_tuple()
-
-    @pytest.mark.xfail(reason='XXX: argmax does not allow axis=tuple)')
-    def test_axis_empty_generic(self):
-        # argmax reject axis tuples in both numpy and pytorch
-        super().test_axis_empty_generic()
 
 
 class TestAmaxGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
