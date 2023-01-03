@@ -259,7 +259,7 @@ class TestMean:
                 res = np.mean(mat, axis=axis) * mat.size
                 assert_allclose(res, tgt)
 
-    @pytest.mark.xfail(reason="XXX: mean(..., dtype=..) smarter dtype selection")
+    @pytest.mark.xfail(reason="see pytorch/gh-91597")
     def test_mean_float16(self):
         # This fail if the sum inside mean is done in float16 instead
         # of float32.
