@@ -678,15 +678,9 @@ def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=N
         raise NotImplementedError
     if dtype is not None:
         raise NotImplementedError 
-    if ddof == 0:
-        unbiased = False
-    elif ddof == 1:
-        unbiased = True
-    else:
-        raise ValueError(f"std: ddof = {ddof}")
-    if not torch.is_floating_point:
+    if not torch.is_floating_point(a):
         a = a * 1.0
-    return torch.var(a, axis, keepdim=bool(keepdims), out=out)
+    return torch.var(a, axis, correction=ddof, keepdim=bool(keepdims), out=out)
 
 
 
