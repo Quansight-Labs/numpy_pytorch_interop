@@ -1,6 +1,9 @@
+import operator
+
 import torch
 from . import _dtypes
 from ._ndarray import can_cast, ndarray, asarray
+from . import _util
 
 def cast_and_broadcast(arrays, out, casting):
     """Cast dtypes of arrays to out.dtype and broadcast if needed.
@@ -82,14 +85,43 @@ def axis_none_ravel(*arrays, axis=None):
         return arrays, axis
 
 
-def result_or_out(result, out=None):
+def result_or_out(result_tensor, out_array=None):
     """A helper for returns with out= argument."""
-    if out is not None:
-        if result.shape != out.shape:
+    if out_array is not None:
+        if result_tensor.shape != out_array.shape:
             raise ValueError
-        out_tensor = out.get()
-        out_tensor.copy_(result)
-        return out
+        out_tensor = out_array.get()
+        out_tensor.copy_(result_tensor)
+        return out_array
     else:
-        return asarray(result)
+        return asarray(result_tensor)
 
+
+def apply_keepdims(tensor, axis, ndim):
+    if axis is None:
+        # tensor was a scalar
+        tensor = torch.full((1,)*ndim, fill_value=tensor)
+    else:
+        shape = _util.expand_shape(tensor.shape, axis)
+        tensor = tensor.reshape(shape)
+    return tensor
+
+
+def standardize_axis_arg(axis, ndim):
+    """Return axis as either None or a tuple of normalized axes."""
+    if isinstance(axis, ndarray):
+        axis = operator.index(axis)
+
+    if axis is not None:
+        if not isinstance(axis, (list, tuple)):
+            axis = (axis,)
+        axis = _util.normalize_axis_tuple(axis, ndim)
+    return axis
+
+
+def allow_only_single_axis(axis):
+    if axis is None:
+        return axis
+    if len(axis) != 1:
+        raise NotImplementedError("does not handle tuple axis")
+    return axis[0]

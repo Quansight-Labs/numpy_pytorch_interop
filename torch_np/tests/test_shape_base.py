@@ -8,9 +8,6 @@ from torch_np import (concatenate, array, atleast_1d, atleast_2d, atleast_3d,
                       vstack, hstack, dstack, column_stack, stack, expand_dims)
 from torch_np.testing import assert_equal, assert_array_equal
 
-import warnings
-warnings.simplefilter('error', UserWarning)
-
 
 class TestAtleast1d:
     def test_0D_array(self):

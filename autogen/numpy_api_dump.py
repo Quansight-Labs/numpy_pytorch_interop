@@ -58,24 +58,12 @@ def seterrobj(errobj):
 
 
 
-def alen(a):
-    raise NotImplementedError
-
 
 def allclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
     raise NotImplementedError
 
 def alltrue(*args, **kwargs):
     raise NotImplementedError
-
-def amax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImplementedError
-
-def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImplementedError
-
-
-
 
 def append(arr, values, axis=None):
     raise NotImplementedError
@@ -94,10 +82,6 @@ def argpartition(a, kth, axis=-1, kind='introselect', order=None):
 
 def argsort(a, axis=-1, kind=None, order=None):
     raise NotImplementedError
-
-def argwhere(a):
-    raise NotImplementedError
-
 
 def array2string(a, max_line_width=None, precision=None, suppress_small=None, separator=' ', prefix='', style=NoValue, formatter=None, threshold=None, edgeitems=None, sign=None, floatmode=None, suffix='', *, legacy=None):
     raise NotImplementedError
@@ -124,9 +108,6 @@ def asfarray(a, dtype='numpy.float64'):
     raise NotImplementedError
 
 def asmatrix(data, dtype=None):
-    raise NotImplementedError
-
-def asscalar(a):
     raise NotImplementedError
 
 
@@ -189,8 +170,6 @@ def copyto(dst, src, casting='same_kind', where=True):
 def correlate(a, v, mode='valid'):
     raise NotImplementedError
 
-def count_nonzero(a, axis=None, *, keepdims=False):
-    raise NotImplementedError
 
 def cov(m, y=None, rowvar=True, bias=False, ddof=None, fweights=None, aweights=None, *, dtype=None):
     raise NotImplementedError
@@ -275,9 +254,6 @@ def find_common_type(array_types, scalar_types):
     raise NotImplementedError
 
 def fix(x, out=None):
-    raise NotImplementedError
-
-def flatnonzero(a):
     raise NotImplementedError
 
 def flip(m, axis=None):
@@ -444,8 +420,7 @@ def mask_indices(n, mask_func, k=0):
 def asmatrix(data, dtype=None):
     raise NotImplementedError
 
-def amax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImplementedError
+
 
 def maximum_sctype(t):
     raise NotImplementedError
@@ -461,8 +436,7 @@ def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
 def meshgrid(*xi, copy=True, sparse=False, indexing='xy'):
     raise NotImplementedError
 
-def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImplementedError
+
 
 def min_scalar_type(a, /):
     raise NotImplementedError

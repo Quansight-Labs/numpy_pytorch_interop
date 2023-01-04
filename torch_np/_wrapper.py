@@ -135,8 +135,6 @@ def column_stack(tup, *, dtype=None, casting='same_kind'):
 
 
 def stack(arrays, axis=0, out=None, *, dtype=None, casting='same_kind'):
-#    tensors = tuple(asarray(ar).get() for ar in arrays)
-#    return asarray(torch.stack(tensors, axis, out=out))
     arrays = [asarray(arr) for arr in arrays]
     if not arrays:
         raise ValueError('need at least one array to stack')
@@ -179,14 +177,28 @@ def logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0):
     return asarray(torch.logspace(start, stop, num, base=base, dtype=dtype))
 
 
-def arange(start, stop=None, step=1, dtype=None, *, like=None):
+def arange(start=None, stop=None, step=1, dtype=None, *, like=None):
     _util.subok_not_ok(like)
+    if step == 0:
+        raise ZeroDivisionError
+    if stop is None and start is None:
+        raise TypeError
     if stop is None:
-        # arange(stop)
-        stop = start
+        # XXX: this breaks if start is passed as a kwarg:
+        # arange(start=4) should raise (no stop) but doesn't
+        start, stop = 0, start
+    if start is None:
         start = 0
+
+    if dtype is None:
+        dtype = _dtypes.default_int_type()
+        dtype = result_type(start, stop, step, dtype)
+
     torch_dtype = _dtypes.torch_dtype_from(dtype)
-    return asarray(torch.arange(start, stop, step, dtype=torch_dtype))
+    try:
+        return asarray(torch.arange(start, stop, step, dtype=torch_dtype))
+    except RuntimeError:
+        raise ValueError("Maximum allowed size exceeded")
 
 
 def empty(shape, dtype=float, order='C', *, like=None):
@@ -215,6 +227,8 @@ def full(shape, fill_value, dtype=None, order='C', *, like=None):
     _util.subok_not_ok(like)
     if order != 'C':
         raise NotImplementedError
+    if isinstance(fill_value, ndarray):
+        fill_value = fill_value.get()
     torch_dtype = _dtypes.torch_dtype_from(dtype)
     return asarray(torch.full(shape, fill_value, dtype=torch_dtype))
 
@@ -306,19 +320,6 @@ def prod(a, axis=None, dtype=None, out=None, keepdims=NoValue,
         raise NotImplementedError
     return torch.prod(a, dim=axis, dtype=dtype, keepdim=bool(keepdims), out=out)
 
-
-@asarray_replacer()
-def sum(a, axis=None, dtype=None, out=None, keepdims=NoValue,
-        initial=NoValue, where=NoValue):
-    if initial is not None or where is not None:
-        raise NotImplementedError
-    if axis is None:
-        if keepdims is not None:
-            raise NotImplementedError
-        return torch.sum(a, dtype=dtype)
-    elif _util.is_sequence(axis):
-        raise NotImplementedError
-    return torch.sum(a, dim=axis, dtype=dtype, keepdim=bool(keepdims), out=out)
 
 
 @asarray_replacer()
@@ -435,14 +436,9 @@ def squeeze(a, axis=None):
 
 def expand_dims(a, axis):
     a = asarray(a)
-    # taken from numpy 1.23.x
-    if type(axis) not in (list, tuple):
-        axis = (axis,)
-    out_ndim = len(axis) + a.ndim
-    axis = _util.normalize_axis_tuple(axis, out_ndim)
-    shape_it = iter(a.shape)
-    shape = [1 if ax in axis else next(shape_it) for ax in range(out_ndim)]
-    return a.reshape(shape)
+    shape = _util.expand_shape(a.shape, axis)
+    tensor = a.get().view(shape)    # never copies
+    return ndarray._from_tensor_and_base(tensor, a)
 
 
 @asarray_replacer()
@@ -497,10 +493,32 @@ def ravel_multi_index(multi_index, dims, mode='raise', order='C'):
     return sum(idx*dim for idx, dim in zip(multi_index, dims))
 
 
-# YYY : pattern: array_like input, tuple of arrays as output; cf broadcast_arrays
 def nonzero(a):
-    a = asarray(a).get()
-    return tuple(asarray(_) for _ in a.nonzero(as_tuple=True))
+    arr = asarray(a)
+    return arr.nonzero()
+
+
+def flatnonzero(a):
+    arr = asarray(a)
+    return nonzero(arr.ravel())[0]
+
+
+def argwhere(a):
+    arr = asarray(a)
+    tensor = arr.get()
+    return asarray(torch.argwhere(tensor))
+
+
+from ._ndarray import axis_out_keepdims_wrapper
+
+@axis_out_keepdims_wrapper
+def count_nonzero(a, axis=None, *, keepdims=False):
+    # XXX: this all should probably be generalized to a sum(a != 0, dtype=bool)
+    try:
+        tensor = a.get().count_nonzero(axis)
+    except RuntimeError:
+        raise ValueError
+    return tensor
 
 
 @asarray_replacer()
@@ -570,77 +588,56 @@ def tri(N, M=None, k=0, dtype=float, *, like=None):
 
 # YYY: pattern : argmax, argmin
 
-@asarray_replacer()
 def argmax(a, axis=None, out=None, *, keepdims=NoValue):
-    if axis is None:
-        result = torch.argmax(a, keepdim=bool(keepdims))
-    else:
-        result = torch.argmax(a, axis, keepdim=bool(keepdims))
-    if out is not None:
-        out.copy_(result)
-    return result
+    arr = asarray(a)
+    return arr.argmax(axis=axis, out=out, keepdims=keepdims)
 
 
-@asarray_replacer()
 def argmin(a, axis=None, out=None, *, keepdims=NoValue):
-    if axis is None:
-        result = torch.argmin(a, keepdim=bool(keepdims))
-    else:
-        result = torch.argmin(a, axis, keepdim=bool(keepdims))
-    if out is not None:
-        out.copy_(result)
-    return result
+    arr = asarray(a)
+    return arr.argmin(axis=axis, out=out, keepdims=keepdims)
 
 
-# YYY: pattern all, any
+def amax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue,
+         where=NoValue):
+    arr = asarray(a)
+    return arr.max(axis=axis, out=out, keepdims=keepdims, initial=initial,
+                    where=where)
 
-@asarray_replacer()
+max = amax
+
+
+def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue,
+         where=NoValue):
+    arr = asarray(a)
+    return arr.min(axis=axis, out=out, keepdims=keepdims, initial=initial,
+                    where=where)
+
+min = amin
+
+
 def all(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-    if where is not None:
-        raise NotImplementedError
-    if axis is None:
-        result = torch.all(a)
-        # pytorch does not support keepdims=True and no axis
-        if keepdims:
-            result = torch.full(a.shape, result, dtype=result.dtype)
-    else:
-        result = torch.all(a, axis, keepdim=bool(keepdims))
-    if out is not None:
-        out.copy_(result)
-    return result
+    arr = asarray(a)
+    return arr.all(axis=axis, out=out, keepdims=keepdims, where=where)
 
 
-@asarray_replacer()
 def any(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-    if where is not None:
-        raise NotImplementedError
-    if axis is None:
-        result = a.any()
-        if keepdims:
-            result = torch.full(a.shape, result, dtype=result.dtype)
-    else:
-        result = a.any(axis, keepdim=bool(keepdims))
-    if out is not None:
-        out.copy_(result)
-    return result
+    arr = asarray(a)
+    return arr.any(axis=axis, out=out, keepdims=keepdims, where=where)
 
 
 # YYY: pattern: dtype kwarg, None not accepted
-@asarray_replacer()
+
 def mean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
-    if where is not None:
-        raise NotImplementedError
-    if dtype is None:
-        dtype = a.dtype
-    if axis is None:
-        result = a.mean(dtype=dtype)
-        if keepdims:
-            result = torch.full(a.shape, result, dtype=result.dtype)
-    else:
-        result = a.mean(dtype=dtype, dim=axis, keepdim=bool(keepdims))
-    if out is not None:
-        out.copy_(result)
-    return result
+    arr = asarray(a)
+    return arr.mean(axis=axis, dtype=dtype, out=out, keepdims=keepdims, where=where)
+
+
+def sum(a, axis=None, dtype=None, out=None, keepdims=NoValue,
+        initial=NoValue, where=NoValue):
+    arr = asarray(a)
+    return arr.sum(axis=axis, dtype=dtype, out=out, keepdims=keepdims,
+                   initial=initial, where=where)
 
 
 @asarray_replacer()
