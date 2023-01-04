@@ -765,6 +765,13 @@ def i0(x):
     return torch.special.i0(x)
 
 
+def isscalar(a):
+    # XXX: this is a stub
+    try:
+        arr = asarray(a)
+        return arr.size == 1
+    except Exception:
+        return False
 
 
 ###### mapping from numpy API objects to wrappers from this module ######

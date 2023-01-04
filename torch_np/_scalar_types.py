@@ -18,7 +18,20 @@ class generic(abc.ABC):
         from . import _ndarray
 
         torch_dtype = _dtypes.torch_dtype_from(self.name)
-        tensor = torch.as_tensor(value, dtype=torch_dtype)
+        if isinstance(value, _ndarray.ndarray):
+            tensor = value.get()
+        else:
+            tensor = torch.as_tensor(value, dtype=torch_dtype)
+        #
+        # With numpy:
+        # >>> a = np.ones(3)
+        # >>> np.float64(a) is a        # True
+        # >>> np.float64(a[0]) is a[0]  # False
+        #
+        # A reasonable assumption is that the second case is more common,
+        # and here we follow the second approach and create a new object
+        # *for all inputs*. 
+        #
         return _ndarray.ndarray._from_tensor_and_base(tensor, None)
 
 

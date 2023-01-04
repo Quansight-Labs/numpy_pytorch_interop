@@ -162,6 +162,15 @@ class ndarray:
         other_tensor = asarray(other).get()
         return asarray(self._tensor.__truediv__(other_tensor))
 
+    def __or__(self, other):
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__or__(other_tensor))
+
+    def __ior__(self, other):
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__ior__(other_tensor))
+
+
     def __invert__(self):
         return asarray(self._tensor.__invert__())
 
@@ -307,7 +316,8 @@ class ndarray:
 
     ### indexing ###
     def __getitem__(self, *args, **kwds):
-        return ndarray._from_tensor_and_base(self._tensor.__getitem__(*args, **kwds), self)
+        t_args = _helpers.to_tensors(*args)
+        return ndarray._from_tensor_and_base(self._tensor.__getitem__(*t_args, **kwds), self)
 
     def __setitem__(self, index, value):
         value = asarray(value).get()
