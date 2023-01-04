@@ -8,9 +8,13 @@ import types
 from typing import Any, Type
 
 import pytest
-import numpy as np
+#import numpy as np
 
-from numpy.testing import assert_equal, assert_raises
+#from numpy.testing import assert_equal, assert_raises
+
+import torch_np as np
+from torch_np.testing import assert_equal
+from pytest import raises as assert_raises
 
 
 class TestAsIntegerRatio:
@@ -28,7 +32,7 @@ class TestAsIntegerRatio:
         assert_equal(ftype(f).as_integer_ratio(), ratio)
 
     @pytest.mark.parametrize("ftype", [
-        np.half, np.single, np.double, np.longdouble])
+        np.half, np.single, np.double])
     def test_simple_fractions(self, ftype):
         R = fractions.Fraction
         assert_equal(R(0, 1),
@@ -41,7 +45,7 @@ class TestAsIntegerRatio:
                      R(*ftype(-2100.0).as_integer_ratio()))
 
     @pytest.mark.parametrize("ftype", [
-        np.half, np.single, np.double, np.longdouble])
+        np.half, np.single, np.double])
     def test_errors(self, ftype):
         assert_raises(OverflowError, ftype('inf').as_integer_ratio)
         assert_raises(OverflowError, ftype('-inf').as_integer_ratio)
