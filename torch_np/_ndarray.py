@@ -156,7 +156,7 @@ class ndarray:
 
     def __rmul__(self, other):
         other_tensor = asarray(other).get()
-        return asarray(self._tensor.__mul__(other_tensor))
+        return asarray(self._tensor.__rmul__(other_tensor))
 
     def __truediv__(self, other):
         other_tensor = asarray(other).get()
@@ -179,23 +179,13 @@ class ndarray:
     @axis_out_keepdims_wrapper
     def argmax(self, axis=None, out=None, *, keepdims=NoValue):
         axis = _helpers.allow_only_single_axis(axis)
-
-        if axis is None:
-            tensor = torch.argmax(self._tensor)
-        else:
-            tensor = torch.argmax(self._tensor, axis)
-
+        tensor = torch.argmax(self._tensor, axis)
         return tensor
 
     @axis_out_keepdims_wrapper
     def argmin(self, axis=None, out=None, *, keepdims=NoValue):
         axis = _helpers.allow_only_single_axis(axis)
-
-        if axis is None:
-            tensor = torch.argmin(self._tensor)
-        else:
-            tensor = torch.argmin(self._tensor, axis)
-
+        tensor = torch.argmin(self._tensor, axis)
         return tensor
 
     def reshape(self, *shape, order='C'):
