@@ -330,6 +330,8 @@ def asarray(a, dtype=None, order=None, *, like=None):
         raise NotImplementedError
 
     if isinstance(a, ndarray):
+        if dtype != a.dtype:
+            a = a.astype(dtype)
         return a
 
     if isinstance(a, (list, tuple)):
@@ -366,6 +368,10 @@ def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
 
     if isinstance(object, ndarray):
         result = object._tensor
+
+        if dtype != object.dtype:
+            torch_dtype = _dtypes.torch_dtype_from(dtype)
+            result = result.to(torch_dtype)
     else:
         torch_dtype = _dtypes.torch_dtype_from(dtype)
         result = torch.as_tensor(object, dtype=torch_dtype)

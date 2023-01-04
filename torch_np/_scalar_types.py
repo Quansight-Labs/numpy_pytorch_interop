@@ -124,6 +124,20 @@ class bool_(generic):
 # name aliases : FIXME (OS, bitness)
 intp = int64
 int_ = int64
+intc = int32
+
+byte = int8
+short = int16
+longlong = int64    # XXX: is this correct?
+
+ubyte = uint8
+
+half = float16
+single = float32
+double = float64
+
+csingle = complex64
+cdouble = complex128
 
 
 _typemap ={
@@ -144,7 +158,8 @@ _typemap ={
 __all__ = list(_typemap.keys())
 __all__.remove('bool')
 
-__all__ += ['bool_', 'intp', 'int_']
+__all__ += ['bool_', 'intp', 'int_', 'intc', 'byte', 'short', 'longlong', 'ubyte', 'half', 'single', 'double',
+'csingle', 'cdouble']
 __all__ += ['generic', 'number',
             'signedinteger', 'unsignedinteger',
             'inexact', 'floating', 'complexfloating']
