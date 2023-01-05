@@ -1,8 +1,10 @@
 """
-Basic tests to fix and illustrate the  behavior around the decision to use 0D
-arrays in place of array scalars. Also fix what is a scalar really.
+Basic tests to assert and illustrate the  behavior around the decision to use 0D
+arrays in place of array scalars.
 
 Extensive tests of this sort of functionality is in numpy_tests/core/*scalar*
+
+Also test the isscalar function (which is deliberately a bit more lax).
 """
 import pytest
 
