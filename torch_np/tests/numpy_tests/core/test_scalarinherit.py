@@ -3,8 +3,9 @@
 """
 import pytest
 
-import numpy as np
-from numpy.testing import assert_, assert_raises
+import torch_np as np
+from torch_np.testing import assert_
+from pytest import raises as assert_raises
 
 
 class A:
@@ -30,6 +31,7 @@ class B1(np.float64, HasNew):
     pass
 
 
+@pytest.mark.xfail(reason='scalar repr: numpy plain to make more explicit')
 class TestInherit:
     def test_init(self):
         x = B(1.0)
@@ -54,45 +56,3 @@ class TestInherit:
         with pytest.raises(TypeError):
             B1(1.0, 2.0)
 
-
-class TestCharacter:
-    def test_char_radd(self):
-        # GH issue 9620, reached gentype_add and raise TypeError
-        np_s = np.string_('abc')
-        np_u = np.unicode_('abc')
-        s = b'def'
-        u = 'def'
-        assert_(np_s.__radd__(np_s) is NotImplemented)
-        assert_(np_s.__radd__(np_u) is NotImplemented)
-        assert_(np_s.__radd__(s) is NotImplemented)
-        assert_(np_s.__radd__(u) is NotImplemented)
-        assert_(np_u.__radd__(np_s) is NotImplemented)
-        assert_(np_u.__radd__(np_u) is NotImplemented)
-        assert_(np_u.__radd__(s) is NotImplemented)
-        assert_(np_u.__radd__(u) is NotImplemented)
-        assert_(s + np_s == b'defabc')
-        assert_(u + np_u == 'defabc')
-
-        class MyStr(str, np.generic):
-            # would segfault
-            pass
-
-        with assert_raises(TypeError):
-            # Previously worked, but gave completely wrong result
-            ret = s + MyStr('abc')
-
-        class MyBytes(bytes, np.generic):
-            # would segfault
-            pass
-
-        ret = s + MyBytes(b'abc')
-        assert(type(ret) is type(s))
-        assert ret == b"defabc"
-
-    def test_char_repeat(self):
-        np_s = np.string_('abc')
-        np_u = np.unicode_('abc')
-        res_s = b'abc' * 5
-        res_u = 'abc' * 5
-        assert_(np_s * 5 == res_s)
-        assert_(np_u * 5 == res_u)

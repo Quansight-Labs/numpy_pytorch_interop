@@ -4,23 +4,28 @@ import warnings
 import itertools
 import operator
 import platform
-from numpy._utils import _pep440
-import pytest
-from hypothesis import given, settings
-from hypothesis.strategies import sampled_from
-from hypothesis.extra import numpy as hynp
 
-import numpy as np
-from numpy.testing import (
-    assert_, assert_equal, assert_raises, assert_almost_equal,
-    assert_array_equal, IS_PYPY, suppress_warnings, _gen_alignment_data,
-    assert_warns,
+#from numpy._utils import _pep440
+import pytest
+from pytest import raises as assert_raises
+
+#from hypothesis import given, settings
+#from hypothesis.strategies import sampled_from
+#from hypothesis.extra import numpy as hynp
+
+import torch_np as np
+from torch_np.testing import (
+    assert_, assert_equal, assert_almost_equal,
+#    assert_array_equal, suppress_warnings, _gen_alignment_data,
+#    assert_warns,
     )
 
-types = [np.bool_, np.byte, np.ubyte, np.short, np.ushort, np.intc, np.uintc,
-         np.int_, np.uint, np.longlong, np.ulonglong,
-         np.single, np.double, np.longdouble, np.csingle,
-         np.cdouble, np.clongdouble]
+IS_PYPY = False
+
+types = [np.bool_, np.byte, np.ubyte, np.short, np.intc,
+         np.int_, np.longlong,
+         np.single, np.double, np.csingle,
+         np.cdouble]
 
 floating_types = np.floating.__subclasses__()
 complex_floating_types = np.complexfloating.__subclasses__()
@@ -75,6 +80,7 @@ class TestTypes:
             np.add(1, 1)
 
 
+'''
 @pytest.mark.slow
 @settings(max_examples=10000, deadline=2000)
 @given(sampled_from(reasonable_operators_for_scalars),
@@ -108,7 +114,7 @@ def test_array_scalar_ufunc_equivalence(op, arr1, arr2):
         else:
             scalar_res = op(scalar1, scalar2)
             assert_array_equal(scalar_res, res)
-
+'''
 
 class TestBaseMath:
     def test_blocked(self):
@@ -164,7 +170,7 @@ class TestPower:
             assert_(b == 81, "error with %r: got %r" % (t, b))
 
     def test_large_types(self):
-        for t in [np.int32, np.int64, np.float32, np.float64, np.longdouble]:
+        for t in [np.int32, np.int64, np.float32, np.float64]:
             a = t(51)
             b = a ** 4
             msg = "error with %r: got %r" % (t, b)
@@ -464,45 +470,6 @@ class TestConversion:
         for code in [np.int_, np.uint, np.longlong, np.ulonglong]:
             assert_raises(OverflowError, overflow_error_func, code)
 
-    def test_int_from_infinite_longdouble(self):
-        # gh-627
-        x = np.longdouble(np.inf)
-        assert_raises(OverflowError, int, x)
-        with suppress_warnings() as sup:
-            sup.record(np.ComplexWarning)
-            x = np.clongdouble(np.inf)
-            assert_raises(OverflowError, int, x)
-            assert_equal(len(sup.log), 1)
-
-    @pytest.mark.skipif(not IS_PYPY, reason="Test is PyPy only (gh-9972)")
-    def test_int_from_infinite_longdouble___int__(self):
-        x = np.longdouble(np.inf)
-        assert_raises(OverflowError, x.__int__)
-        with suppress_warnings() as sup:
-            sup.record(np.ComplexWarning)
-            x = np.clongdouble(np.inf)
-            assert_raises(OverflowError, x.__int__)
-            assert_equal(len(sup.log), 1)
-
-    @pytest.mark.skipif(np.finfo(np.double) == np.finfo(np.longdouble),
-                        reason="long double is same as double")
-    @pytest.mark.skipif(platform.machine().startswith("ppc"),
-                        reason="IBM double double")
-    def test_int_from_huge_longdouble(self):
-        # Produce a longdouble that would overflow a double,
-        # use exponent that avoids bug in Darwin pow function.
-        exp = np.finfo(np.double).maxexp - 1
-        huge_ld = 2 * 1234 * np.longdouble(2) ** exp
-        huge_i = 2 * 1234 * 2 ** exp
-        assert_(huge_ld != np.inf)
-        assert_equal(int(huge_ld), huge_i)
-
-    def test_int_from_longdouble(self):
-        x = np.longdouble(1.5)
-        assert_equal(int(x), 1)
-        x = np.longdouble(-10.5)
-        assert_equal(int(x), -10)
-
     def test_numpy_scalar_relational_operators(self):
         # All integer
         for dt1 in np.typecodes['AllInteger']:
@@ -730,30 +697,10 @@ class TestAbs:
 
     @pytest.mark.parametrize("dtype", floating_types + complex_floating_types)
     def test_builtin_abs(self, dtype):
-        if (
-                sys.platform == "cygwin" and dtype == np.clongdouble and
-                (
-                    _pep440.parse(platform.release().split("-")[0])
-                    < _pep440.Version("3.3.0")
-                )
-        ):
-            pytest.xfail(
-                reason="absl is computed in double precision on cygwin < 3.3"
-            )
         self._test_abs_func(abs, dtype)
 
     @pytest.mark.parametrize("dtype", floating_types + complex_floating_types)
     def test_numpy_abs(self, dtype):
-        if (
-                sys.platform == "cygwin" and dtype == np.clongdouble and
-                (
-                    _pep440.parse(platform.release().split("-")[0])
-                    < _pep440.Version("3.3.0")
-                )
-        ):
-            pytest.xfail(
-                reason="absl is computed in double precision on cygwin < 3.3"
-            )
         self._test_abs_func(np.abs, dtype)
 
 class TestBitShifts:
@@ -827,6 +774,7 @@ def recursionlimit(n):
         sys.setrecursionlimit(o)
 
 
+'''
 @given(sampled_from(objecty_things),
        sampled_from(reasonable_operators_for_scalars),
        sampled_from(types))
@@ -836,6 +784,7 @@ def test_operator_object_left(o, op, type_):
             op(o, type_(1))
     except TypeError:
         pass
+
 
 
 @given(sampled_from(objecty_things),
@@ -857,34 +806,7 @@ def test_operator_scalars(op, type1, type2):
         op(type1(1), type2(1))
     except TypeError:
         pass
-
-
-@pytest.mark.parametrize("op", reasonable_operators_for_scalars)
-@pytest.mark.parametrize("val", [None, 2**64])
-def test_longdouble_inf_loop(op, val):
-    # Note: The 2**64 value will pass once NEP 50 is adopted.
-    try:
-        op(np.longdouble(3), val)
-    except TypeError:
-        pass
-    try:
-        op(val, np.longdouble(3))
-    except TypeError:
-        pass
-
-
-@pytest.mark.parametrize("op", reasonable_operators_for_scalars)
-@pytest.mark.parametrize("val", [None, 2**64])
-def test_clongdouble_inf_loop(op, val):
-    # Note: The 2**64 value will pass once NEP 50 is adopted.
-    try:
-        op(np.clongdouble(3), val)
-    except TypeError:
-        pass
-    try:
-        op(val, np.longdouble(3))
-    except TypeError:
-        pass
+'''
 
 
 @pytest.mark.parametrize("dtype", np.typecodes["AllInteger"])
@@ -960,7 +882,7 @@ ops_with_names = [
 
 
 @pytest.mark.parametrize(["__op__", "__rop__", "op", "cmp"], ops_with_names)
-@pytest.mark.parametrize("sctype", [np.float32, np.float64, np.longdouble])
+@pytest.mark.parametrize("sctype", [np.float32, np.float64])
 def test_subclass_deferral(sctype, __op__, __rop__, op, cmp):
     """
     This test covers scalar subclass deferral.  Note that this is exceedingly
@@ -997,17 +919,10 @@ def test_subclass_deferral(sctype, __op__, __rop__, op, cmp):
     assert op(myf_simple1(1), myf_op(2)) == op(1, 2)  # inherited
 
 
-def test_longdouble_complex():
-    # Simple test to check longdouble and complex combinations, since these
-    # need to go through promotion, which longdouble needs to be careful about.
-    x = np.longdouble(1)
-    assert x + 1j == 1+1j
-    assert 1j + x == 1+1j
-
 
 @pytest.mark.parametrize(["__op__", "__rop__", "op", "cmp"], ops_with_names)
 @pytest.mark.parametrize("subtype", [float, int, complex, np.float16])
-@np._no_nep50_warning()
+#@np._no_nep50_warning()
 def test_pyscalar_subclasses(subtype, __op__, __rop__, op, cmp):
     def op_func(self, other):
         return __op__
@@ -1042,11 +957,3 @@ def test_pyscalar_subclasses(subtype, __op__, __rop__, op, cmp):
     assert res == expected
     assert type(res) == type(expected)
 
-    # Same check for longdouble:
-    res = op(myt(1), np.longdouble(2))
-    expected = op(subtype(1), np.longdouble(2))
-    assert res == expected
-    assert type(res) == type(expected)
-    res = op(np.float32(2), myt(1))
-    expected = op(np.longdouble(2), subtype(1))
-    assert res == expected

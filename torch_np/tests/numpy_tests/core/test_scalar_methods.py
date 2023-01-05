@@ -17,11 +17,12 @@ from torch_np.testing import assert_equal
 from pytest import raises as assert_raises
 
 
+@pytest.mark.skip(reason='XXX: scalar.as_integer_ratio not implemented')
 class TestAsIntegerRatio:
     # derived in part from the cpython test "test_floatasratio"
 
     @pytest.mark.parametrize("ftype", [
-        np.half, np.single, np.double, np.longdouble])
+        np.half, np.single, np.double])
     @pytest.mark.parametrize("f, ratio", [
         (0.875, (7, 8)),
         (-0.875, (-7, 8)),
@@ -79,20 +80,6 @@ class TestAsIntegerRatio:
         (np.double, [0.0, 0.031066908499895136, 0.5214135908877832,
                      0.45780736035689296, 0.5906586745934036],
                     [0, -801, 51, 194, -653]),
-        pytest.param(
-            np.longdouble,
-            [0.0, 0.20492557202724854, 0.4277180662199366, 0.9888085019891495,
-             0.9620175814461964],
-            [0, -7400, 14266, -7822, -8721],
-            marks=[
-                pytest.mark.skipif(
-                    np.finfo(np.double) == np.finfo(np.longdouble),
-                    reason="long double is same as double"),
-                pytest.mark.skipif(
-                    platform.machine().startswith("ppc"),
-                    reason="IBM double double"),
-            ]
-        )
     ])
     def test_roundtrip(self, ftype, frac_vals, exp_vals):
         for frac, exp in zip(frac_vals, exp_vals):
@@ -136,6 +123,7 @@ class TestIsInteger:
             assert not value.is_integer()
 
 
+@pytest.mark.skip(reason='XXX: implementation details of the type system differ')
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="Requires python 3.9")
 class TestClassGetItem:
     @pytest.mark.parametrize("cls", [
@@ -166,7 +154,7 @@ class TestClassGetItem:
             with pytest.raises(TypeError, match=match):
                 np.complexfloating[arg_tup]
 
-    @pytest.mark.parametrize("cls", [np.generic, np.flexible, np.character])
+    @pytest.mark.parametrize("cls", [np.generic])
     def test_abc_non_numeric(self, cls: Type[np.generic]) -> None:
         with pytest.raises(TypeError):
             cls[Any]
@@ -198,6 +186,7 @@ def test_class_getitem_38(cls: Type[np.number]) -> None:
         cls[Any]
 
 
+@pytest.mark.skip(reason="scalartype(...).bit_count() not implemented")
 class TestBitCount:
     # derived in part from the cpython test "test_bit_count"
 

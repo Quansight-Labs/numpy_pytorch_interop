@@ -4,15 +4,11 @@ import pytest
 import types
 from typing import Any
 
-import numpy as np
-from numpy.testing import (
-    assert_, assert_equal, assert_array_equal, assert_raises)
-from numpy.compat import pickle
-
 import torch_np as np
 from torch_np.testing import (
-    assert_, assert_equal, assert_array_equal, assert_raises)
-#from numpy.compat import pickle
+    assert_, assert_equal, assert_array_equal)
+from pytest import raises as assert_raises
+
 
 import pickle
 from itertools import permutations
@@ -248,28 +244,13 @@ class TestPromotion:
     """Test cases related to more complex DType promotions.  Further promotion
     tests are defined in `test_numeric.py`
     """
-###    @np._no_nep50_warning()
     @pytest.mark.parametrize(["other", "expected", "expected_weak"],
             [(2**16-1, np.complex64, None),
              (2**32-1, np.complex128, np.complex64),
              (np.float16(2), np.complex64, None),
              (np.float32(2), np.complex64, None),
-             (np.longdouble(2), np.complex64, np.clongdouble),
-             # Base of the double value to sidestep any rounding issues:
-             (np.longdouble(np.nextafter(1.7e308, 0.)),
-                  np.complex128, np.clongdouble),
-             # Additionally use "nextafter" so the cast can't round down:
-             (np.longdouble(np.nextafter(1.7e308, np.inf)),
-                  np.clongdouble, None),
              # repeat for complex scalars:
              (np.complex64(2), np.complex64, None),
-             (np.clongdouble(2), np.complex64, np.clongdouble),
-             # Base of the double value to sidestep any rounding issues:
-             (np.clongdouble(np.nextafter(1.7e308, 0.) * 1j),
-                  np.complex128, np.clongdouble),
-             # Additionally use "nextafter" so the cast can't round down:
-             (np.clongdouble(np.nextafter(1.7e308, np.inf)),
-                  np.clongdouble, None),
              ])
     def test_complex_other_value_based(self,
             weak_promotion, other, expected, expected_weak):
@@ -318,8 +299,8 @@ class TestPromotion:
 
     @pytest.mark.parametrize(["dtypes", "expected"], [
              # These promotions are not associative/commutative:
-             ([np.uint16, np.int16, np.float16], np.float32),
-             ([np.uint16, np.int8, np.float16], np.float32),
+             ([np.int16, np.float16], np.float32),
+             ([np.int8, np.float16], np.float32),
              ([np.uint8, np.int16, np.float16], np.float32),
              # The following promotions are not ambiguous, but cover code
              # paths of abstract promotion (no particular logic being tested)

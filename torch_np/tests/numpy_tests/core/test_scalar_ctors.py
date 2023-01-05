@@ -8,7 +8,9 @@ from torch_np.testing import (
     assert_equal, assert_almost_equal, assert_warns,
     )
 
+
 class TestFromString:
+    @pytest.mark.xfail(reason='XXX: floats from strings')
     def test_floating(self):
         # Ticket #640, floats from string
         fsingle = np.single('1.234')
@@ -16,6 +18,7 @@ class TestFromString:
         assert_almost_equal(fsingle, 1.234)
         assert_almost_equal(fdouble, 1.234)
 
+    @pytest.mark.xfail(reason='XXX: floats from strings')
     def test_floating_overflow(self):
         """ Strings containing an unrepresentable float overflow """
         fhalf = np.half('1e10000')
@@ -32,7 +35,6 @@ class TestFromString:
         fdouble = np.double('-1e10000')
         assert_equal(fdouble, -np.inf)
 
-
     def test_bool(self):
         with pytest.raises(TypeError):
             np.bool_(False, garbage=True)
@@ -44,8 +46,8 @@ class TestFromInt:
         assert_equal(1024, np.intp(1024))
 
     def test_uint64_from_negative(self):
-        with pytest.warns(DeprecationWarning):
-            assert_equal(np.uint64(-2), np.uint64(18446744073709551614))
+        # NumPy test was asserting a DeprecationWarning
+        assert_equal(np.uint8(-2), np.uint8(254))
 
 
 int_types = [np.byte, np.short, np.intc, np.int_, np.longlong]
@@ -65,6 +67,12 @@ class TestArrayFromScalar:
             assert arr.dtype.type is t1
         else:
             assert arr.dtype.type is t2
+
+        arr1 = np.asarray(x, dtype=t2)
+        if t2 is None:
+            assert arr1.dtype.type is t1
+        else:
+            assert arr1.dtype.type is t2
 
     @pytest.mark.parametrize('t1', int_types + uint_types)
     @pytest.mark.parametrize('t2', int_types + uint_types + [None])
