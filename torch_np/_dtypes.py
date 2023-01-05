@@ -57,10 +57,18 @@ class dtype:
                 return False
             return self._name == other_instance.name
 
+    def __hash__(self):
+        return hash(self._name)
+
     def __repr__(self):
         return f'dtype("{self.name}")'
 
     __str__ = __repr__
+
+    def itemsize(self):
+        elem = self.type(1)
+        return elem.get().element_size()
+
 
 
 dt_names = ['float16', 'float32', 'float64',

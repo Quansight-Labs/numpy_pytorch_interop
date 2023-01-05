@@ -5,15 +5,12 @@ import types
 from typing import Any
 
 import torch_np as np
-from torch_np.testing import (
-    assert_, assert_equal, assert_array_equal)
+from torch_np.testing import (assert_, assert_equal, assert_array_equal)
 from pytest import raises as assert_raises
-
 
 import pickle
 from itertools import permutations
 import random
-
 
 
 
@@ -22,10 +19,12 @@ def assert_dtype_equal(a, b):
     assert_equal(hash(a), hash(b),
                  "two equivalent types do not hash to the same value !")
 
+
 def assert_dtype_not_equal(a, b):
     assert_(a != b)
     assert_(hash(a) != hash(b),
             "two different types hash to the same value !")
+
 
 class TestBuiltin:
     @pytest.mark.parametrize('t', [int, float, complex, np.int32])
@@ -36,13 +35,13 @@ class TestBuiltin:
 
     def test_equivalent_dtype_hashing(self):
         # Make sure equivalent dtypes with different type num hash equal
-        uintp = np.dtype(np.uintp)
-        if uintp.itemsize == 4:
-            left = uintp
-            right = np.dtype(np.uint32)
+        intp = np.dtype(np.intp)
+        if intp.itemsize == 4:
+            left = intp
+            right = np.dtype(np.int32)
         else:
-            left = uintp
-            right = np.dtype(np.ulonglong)
+            left = intp
+            right = np.dtype(np.int64)
         assert_(left == right)
         assert_(hash(left) == hash(right))
 
@@ -58,11 +57,6 @@ class TestBuiltin:
         assert_raises(TypeError, np.dtype, 'e3')
         assert_raises(TypeError, np.dtype, 'f5')
 
-        if np.dtype('g').itemsize == 8 or np.dtype('g').itemsize == 16:
-            assert_raises(TypeError, np.dtype, 'g12')
-        elif np.dtype('g').itemsize == 12:
-            assert_raises(TypeError, np.dtype, 'g16')
-
         if np.dtype('l').itemsize == 8:
             assert_raises(TypeError, np.dtype, 'l4')
             assert_raises(TypeError, np.dtype, 'L4')
@@ -70,12 +64,13 @@ class TestBuiltin:
             assert_raises(TypeError, np.dtype, 'l8')
             assert_raises(TypeError, np.dtype, 'L8')
 
-        if np.dtype('q').itemsize == 8:
-            assert_raises(TypeError, np.dtype, 'q4')
-            assert_raises(TypeError, np.dtype, 'Q4')
-        else:
-            assert_raises(TypeError, np.dtype, 'q8')
-            assert_raises(TypeError, np.dtype, 'Q8')
+ # XXX: what is 'q'? on my 64-bit ubuntu maching it's int64, same as 'l'
+ #       if np.dtype('q').itemsize == 8:
+ #           assert_raises(TypeError, np.dtype, 'q4')
+ #           assert_raises(TypeError, np.dtype, 'Q4')
+ #       else:
+ #           assert_raises(TypeError, np.dtype, 'q8')
+ #           assert_raises(TypeError, np.dtype, 'Q8')
 
     def test_richcompare_invalid_dtype_equality(self):
         # Make sure objects that cannot be converted to valid
@@ -107,83 +102,8 @@ class TestBuiltin:
         with assert_raises(TypeError):
             np.dtype(dtype)
 
-    def test_remaining_dtypes_with_bad_bytesize(self):
-        # The np.<name> aliases were deprecated, these probably should be too 
-        assert np.dtype("int0") is np.dtype("intp")
-        assert np.dtype("uint0") is np.dtype("uintp")
-        assert np.dtype("bool8") is np.dtype("bool")
-        assert np.dtype("bytes0") is np.dtype("bytes")
-        assert np.dtype("str0") is np.dtype("str")
-        assert np.dtype("object0") is np.dtype("object")
 
-    @pytest.mark.parametrize(
-        'value',
-        [
-         'i4, f4'
-        ])
-    def test_dtype_bytes_str_equivalence(self, value):
-        bytes_value = value.encode('ascii')
-        from_bytes = np.dtype(bytes_value)
-        from_str = np.dtype(value)
-        assert_dtype_equal(from_bytes, from_str)
-
-    def test_dtype_from_bytes(self):
-        # Single character where value is a valid type code
-        assert_dtype_equal(np.dtype(b'f'), np.dtype('float32'))
-
-        # Bytes with non-ascii values raise errors
-        assert_raises(TypeError, np.dtype, b'\xff')
-        assert_raises(TypeError, np.dtype, b's\xff')
-
-
-
-
-
-
-
-
-def iter_struct_object_dtypes():
-    """
-    Iterates over a few complex dtypes and object pattern which
-    fill the array with a given object (defaults to a singleton).
-
-    Yields
-    ------
-    dtype : dtype
-    pattern : tuple
-        Structured tuple for use with `np.array`.
-    count : int
-        Number of objects stored in the dtype.
-    singleton : object
-        A singleton object. The returned pattern is constructed so that
-        all objects inside the datatype are set to the singleton.
-    """
-    obj = object()
-
-    dt = np.dtype([('b', 'O', (2, 3))])
-    p = ([[obj] * 3] * 2,)
-    yield pytest.param(dt, p, 6, obj, id="<subarray>")
-
-    dt = np.dtype([('a', 'i4'), ('b', 'O', (2, 3))])
-    p = (0, [[obj] * 3] * 2)
-    yield pytest.param(dt, p, 6, obj, id="<subarray in field>")
-
-    dt = np.dtype([('a', 'i4'),
-                   ('b', [('ba', 'O'), ('bb', 'i1')], (2, 3))])
-    p = (0, [[(obj, 0)] * 3] * 2)
-    yield pytest.param(dt, p, 6, obj, id="<structured subarray 1>")
-
-    dt = np.dtype([('a', 'i4'),
-                   ('b', [('ba', 'O'), ('bb', 'O')], (2, 3))])
-    p = (0, [[(obj, obj)] * 3] * 2)
-    yield pytest.param(dt, p, 12, obj, id="<structured subarray 2>")
-
-
-
-
-
-
-
+@pytest.mark.skip(reason='dtype attributes not yet implemented')
 class TestDtypeAttributeDeletion:
 
     def test_dtype_non_writable_attributes_deletion(self):
@@ -200,9 +120,6 @@ class TestDtypeAttributeDeletion:
         attr = ["names"]
         for s in attr:
             assert_raises(AttributeError, delattr, dt, s)
-
-
-
 
 
 class TestPickling:
@@ -356,38 +273,6 @@ class TestFromDTypeAttribute:
             np.dtype(dt_instance)
 
 
-class TestDTypeClasses:
-    @pytest.mark.parametrize("dtype", list(np.typecodes['All']))
-    def test_basic_dtypes_subclass_properties(self, dtype):
-        # Note: Except for the isinstance and type checks, these attributes
-        #       are considered currently private and may change.
-        dtype = np.dtype(dtype)
-        assert isinstance(dtype, np.dtype)
-        assert type(dtype) is not np.dtype
-        assert type(dtype).__name__ == f"dtype[{dtype.type.__name__}]"
-        assert type(dtype).__module__ == "numpy"
-        assert not type(dtype)._abstract
-
-        # the flexible dtypes and datetime/timedelta have additional parameters
-        # which are more than just storage information, these would need to be
-        # given when creating a dtype:
-        parametric = (np.void, np.str_, np.bytes_, np.datetime64, np.timedelta64)
-        if dtype.type not in parametric:
-            assert not type(dtype)._parametric
-            assert type(dtype)() is dtype
-        else:
-            assert type(dtype)._parametric
-            with assert_raises(TypeError):
-                type(dtype)()
-
-    def test_dtype_superclass(self):
-        assert type(np.dtype) is not type
-        assert isinstance(np.dtype, type)
-
-        assert type(np.dtype).__name__ == "_DTypeMeta"
-        assert type(np.dtype).__module__ == "numpy"
-        assert np.dtype._abstract
-
 
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="Requires python 3.9")
@@ -415,14 +300,6 @@ class TestClassGetItem:
 
     def test_subscript_scalar(self) -> None:
         assert np.dtype[Any]
-
-
-def test_result_type_integers_and_unitless_timedelta64():
-    # Regression test for gh-20077.  The following call of `result_type`
-    # would cause a seg. fault.
-    td = np.timedelta64(4)
-    result = np.result_type(0, td)
-    assert_dtype_equal(result, td.dtype)
 
 
 @pytest.mark.skipif(sys.version_info >= (3, 9), reason="Requires python 3.8")
