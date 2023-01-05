@@ -110,6 +110,16 @@ class ndarray:
     def __gt__(self, other):
         return asarray(self._tensor > asarray(other).get())
 
+    def __lt__(self, other):
+        return asarray(self._tensor < asarray(other).get())
+
+    def __ge__(self, other):
+        return asarray(self._tensor >= asarray(other).get())
+
+    def __le__(self, other):
+        return asarray(self._tensor <= asarray(other).get())
+
+
     def __bool__(self):
         try:
             return bool(self._tensor)
