@@ -18,7 +18,24 @@ class generic(abc.ABC):
         from . import _ndarray
 
         torch_dtype = _dtypes.torch_dtype_from(self.name)
-        tensor = torch.as_tensor(value, dtype=torch_dtype)
+
+        if isinstance(value, str) and value in ['inf', 'nan']:
+            value = {'inf': torch.inf, 'nan': torch.nan}[value]
+
+        if isinstance(value, _ndarray.ndarray):
+            tensor = value.get()
+        else:
+            tensor = torch.as_tensor(value, dtype=torch_dtype)
+        #
+        # With numpy:
+        # >>> a = np.ones(3)
+        # >>> np.float64(a) is a        # True
+        # >>> np.float64(a[0]) is a[0]  # False
+        #
+        # A reasonable assumption is that the second case is more common,
+        # and here we follow the second approach and create a new object
+        # *for all inputs*. 
+        #
         return _ndarray.ndarray._from_tensor_and_base(tensor, None)
 
 
@@ -111,6 +128,20 @@ class bool_(generic):
 # name aliases : FIXME (OS, bitness)
 intp = int64
 int_ = int64
+intc = int32
+
+byte = int8
+short = int16
+longlong = int64    # XXX: is this correct?
+
+ubyte = uint8
+
+half = float16
+single = float32
+double = float64
+
+csingle = complex64
+cdouble = complex128
 
 
 _typemap ={
@@ -128,10 +159,23 @@ _typemap ={
 }
 
 
+# Replicate this -- yet another --- NumPy-defined way of grouping scalar types,
+# cf tests/core/test_scalar_methods.py
+sctypes = {
+ 'int': [int8, int16, int32, int64],
+ 'uint': [uint8,],
+ 'float': [float16, float32, float64],
+ 'complex': [complex64, complex128],
+ 'others': [bool],
+}
+
+
 __all__ = list(_typemap.keys())
 __all__.remove('bool')
 
-__all__ += ['bool_', 'intp', 'int_']
+__all__ += ['bool_', 'intp', 'int_', 'intc', 'byte', 'short', 'longlong', 'ubyte', 'half', 'single', 'double',
+'csingle', 'cdouble']
+__all__ += ['sctypes']
 __all__ += ['generic', 'number',
-            'signedinteger', 'unsignedinteger',
+            'integer', 'signedinteger', 'unsignedinteger',
             'inexact', 'floating', 'complexfloating']

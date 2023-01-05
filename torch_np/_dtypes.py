@@ -51,7 +51,10 @@ class dtype:
         if isinstance(other, dtype):
             return self._name == other.name
         else:
-            other_instance = dtype(other)
+            try:
+                other_instance = dtype(other)
+            except TypeError:
+                return False
             return self._name == other_instance.name
 
     def __repr__(self):
@@ -114,6 +117,10 @@ _typecodes_from_dtype_dict = {typecode_chars_dict[key]: key
 typecodes = {'All': 'efdFDBbhil?',
         'AllFloat': 'efdFD',
         'AllInteger': 'Bbhil',
+        'Integer': 'bhil',
+        'UnsignedInteger': 'B',
+        'Float': 'efd',
+        'Complex': 'FD',
 }
 
 
