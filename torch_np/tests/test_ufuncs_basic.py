@@ -10,10 +10,8 @@ by
 import pytest
 from pytest import raises as assert_raises
 
-#import numpy as np
 import torch_np as np
-
-assert_equal = np.testing.assert_equal
+from torch_np.testing import assert_equal
 
 
 parametrize_unary_ufuncs = pytest.mark.parametrize('ufunc', [np.sin])
