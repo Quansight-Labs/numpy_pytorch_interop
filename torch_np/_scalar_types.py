@@ -18,6 +18,10 @@ class generic(abc.ABC):
         from . import _ndarray
 
         torch_dtype = _dtypes.torch_dtype_from(self.name)
+
+        if isinstance(value, str) and value in ['inf', 'nan']:
+            value = {'inf': torch.inf, 'nan': torch.nan}[value]
+
         if isinstance(value, _ndarray.ndarray):
             tensor = value.get()
         else:
@@ -155,11 +159,23 @@ _typemap ={
 }
 
 
+# Replicate this -- yet another --- NumPy-defined way of grouping scalar types,
+# cf tests/core/test_scalar_methods.py
+sctypes = {
+ 'int': [int8, int16, int32, int64],
+ 'uint': [uint8,],
+ 'float': [float16, float32, float64],
+ 'complex': [complex64, complex128],
+ 'others': [bool],
+}
+
+
 __all__ = list(_typemap.keys())
 __all__.remove('bool')
 
 __all__ += ['bool_', 'intp', 'int_', 'intc', 'byte', 'short', 'longlong', 'ubyte', 'half', 'single', 'double',
 'csingle', 'cdouble']
+__all__ += ['sctypes']
 __all__ += ['generic', 'number',
-            'signedinteger', 'unsignedinteger',
+            'integer', 'signedinteger', 'unsignedinteger',
             'inexact', 'floating', 'complexfloating']

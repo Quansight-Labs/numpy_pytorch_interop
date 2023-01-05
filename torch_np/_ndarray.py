@@ -131,6 +131,15 @@ class ndarray:
     def __float__(self):
         return float(self._tensor)
 
+    # XXX : are single-element ndarrays scalars?
+    def is_integer(self):
+        if self.shape == ():
+            if _dtypes.is_integer(self.dtype):
+                return True
+            return self._tensor.item().is_integer()
+        else:
+            return False
+
 
     ### sequence ###
     def __len__(self):
