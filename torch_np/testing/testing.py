@@ -1,6 +1,6 @@
 import torch
 
-from ._ndarray import asarray, asarray_replacer
+from .._ndarray import asarray_replacer, asarray
 import torch_np as np
 
 @asarray_replacer("two")

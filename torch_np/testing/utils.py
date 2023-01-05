@@ -13,70 +13,42 @@ from functools import partial, wraps
 import shutil
 import contextlib
 from tempfile import mkdtemp, mkstemp
-from unittest.case import SkipTest
 from warnings import WarningMessage
 import pprint
 
-import numpy as np
-from numpy.core import(
-     intp, float32, empty, arange, array_repr, ndarray, isnat, array)
-import numpy.linalg.lapack_lite
+import torch_np as np
+from torch_np import(
+     intp, float32, empty, arange, ndarray, array)
+from torch_np import asarray as asanyarray
 
 from io import StringIO
+
+from pytest import raises as assert_raises
+
 
 __all__ = [
         'assert_equal', 'assert_almost_equal', 'assert_approx_equal',
         'assert_array_equal', 'assert_array_less', 'assert_string_equal',
         'assert_array_almost_equal', 'assert_raises', 'build_err_msg',
-        'decorate_methods', 'jiffies', 'memusage', 'print_assert_equal',
-        'raises', 'rundocs', 'runstring', 'verbose', 'measure',
+        'decorate_methods',  'print_assert_equal',
+         'verbose', 'measure',
         'assert_', 'assert_array_almost_equal_nulp', 'assert_raises_regex',
         'assert_array_max_ulp', 'assert_warns', 'assert_no_warnings',
         'assert_allclose', 'IgnoreException', 'clear_and_catch_warnings',
-        'SkipTest', 'KnownFailureException', 'temppath', 'tempdir', 'IS_PYPY',
+        'temppath', 'tempdir', 'IS_PYPY',
         'HAS_REFCOUNT', "IS_WASM", 'suppress_warnings', 'assert_array_compare',
-        'assert_no_gc_cycles', 'break_cycles', 'HAS_LAPACK64', 'IS_PYSTON',
-        '_OLD_PROMOTION'
+        'assert_no_gc_cycles', 'break_cycles', 'IS_PYSTON',
         ]
 
 
-class KnownFailureException(Exception):
-    '''Raise this exception to mark a test as a known failing test.'''
-    pass
-
-
-KnownFailureTest = KnownFailureException  # backwards compat
 verbose = 0
 
 IS_WASM = platform.machine() in ["wasm32", "wasm64"]
 IS_PYPY = sys.implementation.name == 'pypy'
 IS_PYSTON = hasattr(sys, "pyston_version_info")
 HAS_REFCOUNT = getattr(sys, 'getrefcount', None) is not None and not IS_PYSTON
-HAS_LAPACK64 = numpy.linalg.lapack_lite._ilp64
-
-_OLD_PROMOTION = lambda: np._get_promotion_state() == 'legacy'
 
 
-def import_nose():
-    """ Import nose only when needed.
-    """
-    nose_is_good = True
-    minimum_nose_version = (1, 0, 0)
-    try:
-        import nose
-    except ImportError:
-        nose_is_good = False
-    else:
-        if nose.__versioninfo__ < minimum_nose_version:
-            nose_is_good = False
-
-    if not nose_is_good:
-        msg = ('Need nose >= %d.%d.%d for tests - see '
-               'https://nose.readthedocs.io' %
-               minimum_nose_version)
-        raise ImportError(msg)
-
-    return nose
 
 
 def assert_(val, msg=''):
@@ -100,152 +72,16 @@ def assert_(val, msg=''):
 
 
 def gisnan(x):
-    """like isnan, but always raise an error if type not supported instead of
-    returning a TypeError object.
-
-    Notes
-    -----
-    isnan and other ufunc sometimes return a NotImplementedType object instead
-    of raising any exception. This function is a wrapper to make sure an
-    exception is always raised.
-
-    This should be removed once this problem is solved at the Ufunc level."""
-    from numpy.core import isnan
-    st = isnan(x)
-    if isinstance(st, type(NotImplemented)):
-        raise TypeError("isnan not supported for this type")
-    return st
+    return np.isnan(x)
 
 
 def gisfinite(x):
-    """like isfinite, but always raise an error if type not supported instead
-    of returning a TypeError object.
-
-    Notes
-    -----
-    isfinite and other ufunc sometimes return a NotImplementedType object
-    instead of raising any exception. This function is a wrapper to make sure
-    an exception is always raised.
-
-    This should be removed once this problem is solved at the Ufunc level."""
-    from numpy.core import isfinite, errstate
-    with errstate(invalid='ignore'):
-        st = isfinite(x)
-        if isinstance(st, type(NotImplemented)):
-            raise TypeError("isfinite not supported for this type")
-    return st
+    return np.isfinite(x)
 
 
 def gisinf(x):
-    """like isinf, but always raise an error if type not supported instead of
-    returning a TypeError object.
+    return np.isinf(x)
 
-    Notes
-    -----
-    isinf and other ufunc sometimes return a NotImplementedType object instead
-    of raising any exception. This function is a wrapper to make sure an
-    exception is always raised.
-
-    This should be removed once this problem is solved at the Ufunc level."""
-    from numpy.core import isinf, errstate
-    with errstate(invalid='ignore'):
-        st = isinf(x)
-        if isinstance(st, type(NotImplemented)):
-            raise TypeError("isinf not supported for this type")
-    return st
-
-
-if os.name == 'nt':
-    # Code "stolen" from enthought/debug/memusage.py
-    def GetPerformanceAttributes(object, counter, instance=None,
-                                 inum=-1, format=None, machine=None):
-        # NOTE: Many counters require 2 samples to give accurate results,
-        # including "% Processor Time" (as by definition, at any instant, a
-        # thread's CPU usage is either 0 or 100).  To read counters like this,
-        # you should copy this function, but keep the counter open, and call
-        # CollectQueryData() each time you need to know.
-        # See http://msdn.microsoft.com/library/en-us/dnperfmo/html/perfmonpt2.asp (dead link)
-        # My older explanation for this was that the "AddCounter" process
-        # forced the CPU to 100%, but the above makes more sense :)
-        import win32pdh
-        if format is None:
-            format = win32pdh.PDH_FMT_LONG
-        path = win32pdh.MakeCounterPath( (machine, object, instance, None,
-                                          inum, counter))
-        hq = win32pdh.OpenQuery()
-        try:
-            hc = win32pdh.AddCounter(hq, path)
-            try:
-                win32pdh.CollectQueryData(hq)
-                type, val = win32pdh.GetFormattedCounterValue(hc, format)
-                return val
-            finally:
-                win32pdh.RemoveCounter(hc)
-        finally:
-            win32pdh.CloseQuery(hq)
-
-    def memusage(processName="python", instance=0):
-        # from win32pdhutil, part of the win32all package
-        import win32pdh
-        return GetPerformanceAttributes("Process", "Virtual Bytes",
-                                        processName, instance,
-                                        win32pdh.PDH_FMT_LONG, None)
-elif sys.platform[:5] == 'linux':
-
-    def memusage(_proc_pid_stat=f'/proc/{os.getpid()}/stat'):
-        """
-        Return virtual memory size in bytes of the running python.
-
-        """
-        try:
-            with open(_proc_pid_stat, 'r') as f:
-                l = f.readline().split(' ')
-            return int(l[22])
-        except Exception:
-            return
-else:
-    def memusage():
-        """
-        Return memory usage of running python. [Not implemented]
-
-        """
-        raise NotImplementedError
-
-
-if sys.platform[:5] == 'linux':
-    def jiffies(_proc_pid_stat=f'/proc/{os.getpid()}/stat', _load_time=[]):
-        """
-        Return number of jiffies elapsed.
-
-        Return number of jiffies (1/100ths of a second) that this
-        process has been scheduled in user mode. See man 5 proc.
-
-        """
-        import time
-        if not _load_time:
-            _load_time.append(time.time())
-        try:
-            with open(_proc_pid_stat, 'r') as f:
-                l = f.readline().split(' ')
-            return int(l[13])
-        except Exception:
-            return int(100*(time.time()-_load_time[0]))
-else:
-    # os.getpid is not in all platforms available.
-    # Using time is safe but inaccurate, especially when process
-    # was suspended or sleeping.
-    def jiffies(_load_time=[]):
-        """
-        Return number of jiffies elapsed.
-
-        Return number of jiffies (1/100ths of a second) that this
-        process has been scheduled in user mode. See man 5 proc.
-
-        """
-        import time
-        if not _load_time:
-            _load_time.append(time.time())
-        return int(100*(time.time()-_load_time[0]))
 
 
 def build_err_msg(arrays, err_msg, header='Items are not equal:',
@@ -261,7 +97,8 @@ def build_err_msg(arrays, err_msg, header='Items are not equal:',
 
             if isinstance(a, ndarray):
                 # precision argument is only needed if the objects are ndarrays
-                r_func = partial(array_repr, precision=precision)
+                # r_func = partial(array_repr, precision=precision)
+                r_func = a.get().__repr__     # XXX
             else:
                 r_func = repr
 
@@ -343,8 +180,8 @@ def assert_equal(actual, desired, err_msg='', verbose=True):
             assert_equal(actual[k], desired[k], f'item={k!r}\n{err_msg}',
                          verbose)
         return
-    from numpy.core import ndarray, isscalar, signbit
-    from numpy.lib import iscomplexobj, real, imag
+    from torch_np import ndarray, isscalar, signbit
+    from torch_np import iscomplexobj, real, imag
     if isinstance(actual, ndarray) or isinstance(desired, ndarray):
         return assert_array_equal(actual, desired, err_msg, verbose)
     msg = build_err_msg([actual, desired], err_msg, verbose=verbose)
@@ -380,22 +217,6 @@ def assert_equal(actual, desired, err_msg='', verbose=True):
     if isscalar(desired) != isscalar(actual):
         raise AssertionError(msg)
 
-    try:
-        isdesnat = isnat(desired)
-        isactnat = isnat(actual)
-        dtypes_match = (np.asarray(desired).dtype.type ==
-                        np.asarray(actual).dtype.type)
-        if isdesnat and isactnat:
-            # If both are NaT (and have the same dtype -- datetime or
-            # timedelta) they are considered equal.
-            if dtypes_match:
-                return
-            else:
-                raise AssertionError(msg)
-
-    except (TypeError, ValueError, NotImplementedError):
-        pass
-
     # Inf/nan/negative zero handling
     try:
         isdesnan = gisnan(desired)
@@ -406,15 +227,6 @@ def assert_equal(actual, desired, err_msg='', verbose=True):
         # handle signed zero specially for floats
         array_actual = np.asarray(actual)
         array_desired = np.asarray(desired)
-        if (array_actual.dtype.char in 'Mm' or
-                array_desired.dtype.char in 'Mm'):
-            # version 1.18
-            # until this version, gisnan failed for datetime64 and timedelta64.
-            # Now it succeeds but comparison to scalar with a different type
-            # emits a DeprecationWarning.
-            # Avoid that by skipping the next check
-            raise NotImplementedError('cannot compare to a scalar '
-                                      'with a different type')
 
         if desired == 0 and actual == 0:
             if not signbit(desired) == signbit(actual):
@@ -477,8 +289,8 @@ def print_assert_equal(test_string, actual, desired):
         raise AssertionError(msg.getvalue())
 
 
-@np._no_nep50_warning()
-def assert_almost_equal(actual,desired,decimal=7,err_msg='',verbose=True):
+
+def assert_almost_equal(actual, desired, decimal=7, err_msg='', verbose=True):
     """
     Raises an AssertionError if two items are not equal up to desired
     precision.
@@ -548,8 +360,8 @@ def assert_almost_equal(actual,desired,decimal=7,err_msg='',verbose=True):
 
     """
     __tracebackhide__ = True  # Hide traceback for py.test
-    from numpy.core import ndarray
-    from numpy.lib import iscomplexobj, real, imag
+    from torch_np import ndarray
+    from torch_np import iscomplexobj, real, imag
 
     # Handle complex numbers: separate into real/imag to handle
     # nan/inf/negative zero correctly
@@ -604,7 +416,7 @@ def assert_almost_equal(actual,desired,decimal=7,err_msg='',verbose=True):
         raise AssertionError(_build_err_msg())
 
 
-@np._no_nep50_warning()
+
 def assert_approx_equal(actual,desired,significant=7,err_msg='',verbose=True):
     """
     Raises an AssertionError if two items are not equal up to significant
@@ -704,24 +516,20 @@ def assert_approx_equal(actual,desired,significant=7,err_msg='',verbose=True):
         raise AssertionError(msg)
 
 
-@np._no_nep50_warning()
 def assert_array_compare(comparison, x, y, err_msg='', verbose=True, header='',
                          precision=6, equal_nan=True, equal_inf=True,
                          *, strict=False):
     __tracebackhide__ = True  # Hide traceback for py.test
-    from numpy.core import array, array2string, isnan, inf, bool_, errstate, all, max, object_
+    from torch_np import asarray, array, isnan, inf, all, max, bool_
 
-    x = np.asanyarray(x)
-    y = np.asanyarray(y)
+    x = asarray(x)
+    y = asarray(y)
+
+    def array2string(a):
+        return str(a)
 
     # original array for output formatting
     ox, oy = x, y
-
-    def isnumber(x):
-        return x.dtype.char in '?bhilqpBHILQPefdgFDG'
-
-    def istime(x):
-        return x.dtype.char in "Mm"
 
     def func_assert_same_pos(x, y, func=isnan, hasval='nan'):
         """Handling nan/inf.
@@ -745,7 +553,7 @@ def assert_array_compare(comparison, x, y, err_msg='', verbose=True, header='',
         #     not implement np.all(), so favor using the .all() method
         # We are not committed to supporting such subclasses, but it's nice to
         # support them if possible.
-        if bool_(x_id == y_id).all() != True:
+        if (x_id == y_id).all() != True:
             msg = build_err_msg([x, y],
                                 err_msg + '\nx and y %s location mismatch:'
                                 % (hasval), verbose=verbose, header=header,
@@ -778,22 +586,17 @@ def assert_array_compare(comparison, x, y, err_msg='', verbose=True, header='',
             raise AssertionError(msg)
 
         flagged = bool_(False)
-        if isnumber(x) and isnumber(y):
-            if equal_nan:
-                flagged = func_assert_same_pos(x, y, func=isnan, hasval='nan')
 
-            if equal_inf:
-                flagged |= func_assert_same_pos(x, y,
-                                                func=lambda xy: xy == +inf,
-                                                hasval='+inf')
-                flagged |= func_assert_same_pos(x, y,
-                                                func=lambda xy: xy == -inf,
-                                                hasval='-inf')
+        if equal_nan:
+            flagged = func_assert_same_pos(x, y, func=isnan, hasval='nan')
 
-        elif istime(x) and istime(y):
-            # If one is datetime64 and the other timedelta64 there is no point
-            if equal_nan and x.dtype.type == y.dtype.type:
-                flagged = func_assert_same_pos(x, y, func=isnat, hasval="NaT")
+        if equal_inf:
+            flagged |= func_assert_same_pos(x, y,
+                                            func=lambda xy: xy == +inf,
+                                            hasval='+inf')
+            flagged |= func_assert_same_pos(x, y,
+                                            func=lambda xy: xy == -inf,
+                                            hasval='-inf')
 
         if flagged.ndim > 0:
             x, y = x[~flagged], y[~flagged]
@@ -817,7 +620,7 @@ def assert_array_compare(comparison, x, y, err_msg='', verbose=True, header='',
         # results, for which val.ravel().all() returns np.ma.masked,
         # do not trigger a failure (np.ma.masked != True evaluates as
         # np.ma.masked, which is falsy).
-        if cond != True:
+        if not cond:
             n_mismatch = reduced.size - reduced.sum(dtype=intp)
             n_elements = flagged.size if flagged.ndim != 0 else reduced.size
             percent_mismatch = 100 * n_mismatch / n_elements
@@ -825,35 +628,35 @@ def assert_array_compare(comparison, x, y, err_msg='', verbose=True, header='',
                 'Mismatched elements: {} / {} ({:.3g}%)'.format(
                     n_mismatch, n_elements, percent_mismatch)]
 
-            with errstate(all='ignore'):
-                # ignore errors for non-numeric types
-                with contextlib.suppress(TypeError):
-                    error = abs(x - y)
-                    if np.issubdtype(x.dtype, np.unsignedinteger):
-                        error2 = abs(y - x)
-                        np.minimum(error, error2, out=error)
-                    max_abs_error = max(error)
-                    if getattr(error, 'dtype', object_) == object_:
-                        remarks.append('Max absolute difference: '
-                                        + str(max_abs_error))
-                    else:
-                        remarks.append('Max absolute difference: '
-                                        + array2string(max_abs_error))
+##            with errstate(all='ignore'):
+            # ignore errors for non-numeric types
+            with contextlib.suppress(TypeError):
+                error = abs(x - y)
+                if np.issubdtype(x.dtype, np.unsignedinteger):
+                    error2 = abs(y - x)
+                    np.minimum(error, error2, out=error)
+                max_abs_error = max(error)
+                if getattr(error, 'dtype', object_) == object_:
+                    remarks.append('Max absolute difference: '
+                                    + str(max_abs_error))
+                else:
+                    remarks.append('Max absolute difference: '
+                                    + array2string(max_abs_error))
 
-                    # note: this definition of relative error matches that one
-                    # used by assert_allclose (found in np.isclose)
-                    # Filter values where the divisor would be zero
-                    nonzero = bool_(y != 0)
-                    if all(~nonzero):
-                        max_rel_error = array(inf)
-                    else:
-                        max_rel_error = max(error[nonzero] / abs(y[nonzero]))
-                    if getattr(error, 'dtype', object_) == object_:
-                        remarks.append('Max relative difference: '
-                                        + str(max_rel_error))
-                    else:
-                        remarks.append('Max relative difference: '
-                                        + array2string(max_rel_error))
+                # note: this definition of relative error matches that one
+                # used by assert_allclose (found in np.isclose)
+                # Filter values where the divisor would be zero
+                nonzero = bool_(y != 0)
+                if all(~nonzero):
+                    max_rel_error = array(inf)
+                else:
+                    max_rel_error = max(error[nonzero] / abs(y[nonzero]))
+                if getattr(error, 'dtype', object_) == object_:
+                    remarks.append('Max relative difference: '
+                                    + str(max_rel_error))
+                else:
+                    remarks.append('Max relative difference: '
+                                    + array2string(max_rel_error))
 
             err_msg += '\n' + '\n'.join(remarks)
             msg = build_err_msg([ox, oy], err_msg,
@@ -985,7 +788,6 @@ def assert_array_equal(x, y, err_msg='', verbose=True, *, strict=False):
                          strict=strict)
 
 
-@np._no_nep50_warning()
 def assert_array_almost_equal(x, y, decimal=6, err_msg='', verbose=True):
     """
     Raises an AssertionError if two objects are not equal up to desired
@@ -1086,7 +888,7 @@ def assert_array_almost_equal(x, y, decimal=6, err_msg='', verbose=True):
         # make sure y is an inexact type to avoid abs(MIN_INT); will cause
         # casting of x later.
         dtype = result_type(y, 1.)
-        y = np.asanyarray(y, dtype)
+        y = asanyarray(y, dtype)
         z = abs(x - y)
 
         if not issubdtype(z.dtype, number):
@@ -1182,9 +984,6 @@ def assert_array_less(x, y, err_msg='', verbose=True):
                          equal_inf=False)
 
 
-def runstring(astr, dict):
-    exec(astr, dict)
-
 
 def assert_string_equal(actual, desired):
     """
@@ -1257,92 +1056,8 @@ def assert_string_equal(actual, desired):
         raise AssertionError(msg)
 
 
-def rundocs(filename=None, raise_on_error=True):
-    """
-    Run doctests found in the given file.
-
-    By default `rundocs` raises an AssertionError on failure.
-
-    Parameters
-    ----------
-    filename : str
-        The path to the file for which the doctests are run.
-    raise_on_error : bool
-        Whether to raise an AssertionError when a doctest fails. Default is
-        True.
-
-    Notes
-    -----
-    The doctests can be run by the user/developer by adding the ``doctests``
-    argument to the ``test()`` call. For example, to run all tests (including
-    doctests) for `numpy.lib`:
-
-    >>> np.lib.test(doctests=True)  # doctest: +SKIP
-    """
-    from numpy.distutils.misc_util import exec_mod_from_location
-    import doctest
-    if filename is None:
-        f = sys._getframe(1)
-        filename = f.f_globals['__file__']
-    name = os.path.splitext(os.path.basename(filename))[0]
-    m = exec_mod_from_location(name, filename)
-
-    tests = doctest.DocTestFinder().find(m)
-    runner = doctest.DocTestRunner(verbose=False)
-
-    msg = []
-    if raise_on_error:
-        out = lambda s: msg.append(s)
-    else:
-        out = None
-
-    for test in tests:
-        runner.run(test, out=out)
-
-    if runner.failures > 0 and raise_on_error:
-        raise AssertionError("Some doctests failed:\n%s" % "\n".join(msg))
 
 
-def raises(*args):
-    """Decorator to check for raised exceptions.
-
-    The decorated test function must raise one of the passed exceptions to
-    pass.  If you want to test many assertions about exceptions in a single
-    test, you may want to use `assert_raises` instead.
-
-    .. warning::
-       This decorator is nose specific, do not use it if you are using a
-       different test framework.
-
-    Parameters
-    ----------
-    args : exceptions
-        The test passes if any of the passed exceptions is raised.
-
-    Raises
-    ------
-    AssertionError
-
-    Examples
-    --------
-
-    Usage::
-
-        @raises(TypeError, ValueError)
-        def test_raises_type_error():
-            raise TypeError("This test passes")
-
-        @raises(Exception)
-        def test_that_fails_by_passing():
-            pass
-
-    """
-    nose = import_nose()
-    return nose.tools.raises(*args)
-
-#
-# assert_raises and assert_raises_regex are taken from unittest.
-#
 import unittest
 
 
@@ -1352,33 +1067,6 @@ class _Dummy(unittest.TestCase):
 
 _d = _Dummy('nop')
 
-def assert_raises(*args, **kwargs):
-    """
-    assert_raises(exception_class, callable, *args, **kwargs)
-    assert_raises(exception_class)
-
-    Fail unless an exception of class exception_class is thrown
-    by callable when invoked with arguments args and keyword
-    arguments kwargs. If a different type of exception is
-    thrown, it will not be caught, and the test case will be
-    deemed to have suffered an error, exactly as for an
-    unexpected exception.
-
-    Alternatively, `assert_raises` can be used as a context manager:
-
-    >>> from numpy.testing import assert_raises
-    >>> with assert_raises(ZeroDivisionError):
-    ...     1 / 0
-
-    is equivalent to
-
-    >>> def div(x, y):
-    ...     return x / y
-    >>> assert_raises(ZeroDivisionError, div, 1, 0)
-
-    """
-    __tracebackhide__ = True  # Hide traceback for py.test
-    return _d.assertRaises(*args,**kwargs)
 
 
 def assert_raises_regex(exception_class, expected_regexp, *args, **kwargs):
@@ -1449,50 +1137,6 @@ def decorate_methods(cls, decorator, testmatch=None):
     return
 
 
-def measure(code_str, times=1, label=None):
-    """
-    Return elapsed time for executing code in the namespace of the caller.
-
-    The supplied code string is compiled with the Python builtin ``compile``.
-    The precision of the timing is 10 milli-seconds. If the code will execute
-    fast on this timescale, it can be executed many times to get reasonable
-    timing accuracy.
-
-    Parameters
-    ----------
-    code_str : str
-        The code to be timed.
-    times : int, optional
-        The number of times the code is executed. Default is 1. The code is
-        only compiled once.
-    label : str, optional
-        A label to identify `code_str` with. This is passed into ``compile``
-        as the second argument (for run-time error messages).
-
-    Returns
-    -------
-    elapsed : float
-        Total elapsed time in seconds for executing `code_str` `times` times.
-
-    Examples
-    --------
-    >>> times = 10
-    >>> etime = np.testing.measure('for i in range(1000): np.sqrt(i**2)', times=times)
-    >>> print("Time for a single execution : ", etime / times, "s")  # doctest: +SKIP
-    Time for a single execution :  0.005 s
-
-    """
-    frame = sys._getframe(1)
-    locs, globs = frame.f_locals, frame.f_globals
-
-    code = compile(code_str, f'Test name: {label} ', 'exec')
-    i = 0
-    elapsed = jiffies()
-    while i < times:
-        i += 1
-        exec(code, globs, locs)
-    elapsed = jiffies() - elapsed
-    return 0.01*elapsed
 
 
 def _assert_valid_refcount(op):
@@ -1585,7 +1229,7 @@ def assert_allclose(actual, desired, rtol=1e-7, atol=0, equal_nan=True,
         return np.core.numeric.isclose(x, y, rtol=rtol, atol=atol,
                                        equal_nan=equal_nan)
 
-    actual, desired = np.asanyarray(actual), np.asanyarray(desired)
+    actual, desired = asanyarray(actual), asanyarray(desired)
     header = f'Not equal to tolerance rtol={rtol:g}, atol={atol:g}'
     assert_array_compare(compare, actual, desired, err_msg=str(err_msg),
                          verbose=verbose, header=header, equal_nan=equal_nan)
