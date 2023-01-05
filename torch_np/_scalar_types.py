@@ -45,31 +45,27 @@ class number(generic):
     pass
 
 
-class integer(generic):
+class integer(number):
     pass
 
 
-class inexact(generic):
+class inexact(number):
     pass
 
 
-class signedinteger(generic):
+class signedinteger(integer):
     pass
 
 
-class unsignedinteger(generic):
+class unsignedinteger(integer):
     pass
 
 
-class inexact(generic):
+class floating(inexact):
     pass
 
 
-class floating(generic):
-    pass
-
-
-class complexfloating(generic):
+class complexfloating(inexact):
     pass
 
 

@@ -8,7 +8,8 @@ import torch_np as np
 from torch_np.testing import assert_, assert_equal
 
 
-
+@pytest.mark.xfail(reason="We do not disctinguish between scalar and array types."
+                          " Thus, scalars can upcast arrays.")
 class TestCommonType:
     def test_scalar_loses1(self):
         res = np.find_common_type(['f4', 'f4', 'i2'], ['f8'])
@@ -66,9 +67,7 @@ class TestIsSubDType:
         # this. These tests are directly taken from gh-9505
         assert not np.issubdtype(np.float32, 'float64')
         assert not np.issubdtype(np.float32, 'f8')
-        assert not np.issubdtype(np.int32, str)
         assert not np.issubdtype(np.int32, 'int64')
-        assert not np.issubdtype(np.str_, 'void')
         # for the following the correct spellings are
         # np.integer, np.floating, or np.complexfloating respectively:
         assert not np.issubdtype(np.int8, int)  # np.int8 is never np.int_
@@ -81,9 +80,7 @@ class TestIsSubDType:
         # in the case of int, float, complex:
         assert np.issubdtype(np.float64, 'float64')
         assert np.issubdtype(np.float64, 'f8')
-        assert np.issubdtype(np.str_, str)
         assert np.issubdtype(np.int64, 'int64')
-        assert np.issubdtype(np.void, 'void')
         assert np.issubdtype(np.int8, np.integer)
         assert np.issubdtype(np.float32, np.floating)
         assert np.issubdtype(np.complex64, np.complexfloating)
@@ -91,94 +88,14 @@ class TestIsSubDType:
         assert np.issubdtype(np.float32, "f")
 
 
-class TestSctypeDict:
-    def test_longdouble(self):
-        assert_(np.sctypeDict['f8'] is not np.longdouble)
-        assert_(np.sctypeDict['c16'] is not np.clongdouble)
-
-    def test_ulong(self):
-        # Test that 'ulong' behaves like 'long'. np.sctypeDict['long'] is an
-        # alias for np.int_, but np.long is not supported for historical
-        # reasons (gh-21063)
-        assert_(np.sctypeDict['ulong'] is np.uint)
-        with pytest.warns(FutureWarning):
-            # We will probably allow this in the future:
-            assert not hasattr(np, 'ulong')
-
+@pytest.mark.xfail(reason="We do not have (or need) np.core.numerictypes."
+                          " Our type aliases are in _dtypes.py.")
 class TestBitName:
     def test_abstract(self):
         assert_raises(ValueError, np.core.numerictypes.bitname, np.floating)
 
 
-class TestMaximumSctype:
-
-    # note that parametrizing with sctype['int'] and similar would skip types
-    # with the same size (gh-11923)
-
-    @pytest.mark.parametrize('t', [np.byte, np.short, np.intc, np.int_, np.longlong])
-    def test_int(self, t):
-        assert_equal(np.maximum_sctype(t), np.sctypes['int'][-1])
-
-    @pytest.mark.parametrize('t', [np.ubyte])
-    def test_uint(self, t):
-        assert_equal(np.maximum_sctype(t), np.sctypes['uint'][-1])
-
-    @pytest.mark.parametrize('t', [np.half, np.single, np.double])
-    def test_float(self, t):
-        assert_equal(np.maximum_sctype(t), np.sctypes['float'][-1])
-
-    @pytest.mark.parametrize('t', [np.csingle, np.cdouble])
-    def test_complex(self, t):
-        assert_equal(np.maximum_sctype(t), np.sctypes['complex'][-1])
-
-    @pytest.mark.parametrize('t', [np.bool_,])
-    def test_other(self, t):
-        assert_equal(np.maximum_sctype(t), t)
-
-
-class Test_sctype2char:
-    # This function is old enough that we're really just documenting the quirks
-    # at this point.
-
-    def test_scalar_type(self):
-        assert_equal(np.sctype2char(np.double), 'd')
-        assert_equal(np.sctype2char(np.int_), 'l')
-        assert_equal(np.sctype2char(np.unicode_), 'U')
-        assert_equal(np.sctype2char(np.bytes_), 'S')
-
-    def test_other_type(self):
-        assert_equal(np.sctype2char(float), 'd')
-        assert_equal(np.sctype2char(list), 'O')
-        assert_equal(np.sctype2char(np.ndarray), 'O')
-
-    def test_third_party_scalar_type(self):
-        from numpy.core._rational_tests import rational
-        assert_raises(KeyError, np.sctype2char, rational)
-        assert_raises(KeyError, np.sctype2char, rational(1))
-
-    def test_array_instance(self):
-        assert_equal(np.sctype2char(np.array([1.0, 2.0])), 'd')
-
-    def test_abstract_type(self):
-        assert_raises(KeyError, np.sctype2char, np.floating)
-
-    def test_non_type(self):
-        assert_raises(ValueError, np.sctype2char, 1)
-
-@pytest.mark.parametrize("rep, expected", [
-    (np.int32, True),
-    (list, False),
-    (1.1, False),
-    (str, True),
-    (np.dtype(np.float64), True),
-    ])
-def test_issctype(rep, expected):
-    # ensure proper identification of scalar
-    # data-types by issctype()
-    actual = np.issctype(rep)
-    assert_equal(actual, expected)
-
-
+@pytest.mark.skip(reason="Docstrings for scalar types, not yet.")
 @pytest.mark.skipif(sys.flags.optimize > 1,
                     reason="no docstrings present to inspect when PYTHONOPTIMIZE/Py_OptimizeFlag > 1")
 class TestDocStrings:
@@ -193,7 +110,7 @@ class TestScalarTypeNames:
     # gh-9799
 
     numeric_types = [
-        np.byte, np.short, np.intc, np.int_, np.longlong,
+        np.byte, np.short, np.intc, np.int_, #, np.longlong, NB: torch does not properly have longlong
         np.ubyte,
         np.half, np.single, np.double,
         np.csingle, np.cdouble,

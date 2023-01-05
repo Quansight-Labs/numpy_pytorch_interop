@@ -91,7 +91,12 @@ dt_aliases_dict = {
 python_types_dict = {
     int: 'int64',
     float: 'float64',
-    builtins.bool: 'bool'
+    complex: 'complex128',
+    builtins.bool: 'bool',
+    # also allow stringified names of python types
+    int.__name__ : 'int64',
+    float.__name__ : 'float64',
+    complex.__name__: 'complex128',
 }
 
 
