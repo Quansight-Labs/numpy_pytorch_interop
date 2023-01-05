@@ -339,7 +339,7 @@ def asarray(a, dtype=None, order=None, *, like=None):
         raise NotImplementedError
 
     if isinstance(a, ndarray):
-        if dtype != a.dtype:
+        if dtype is not None and dtype != a.dtype:
             a = a.astype(dtype)
         return a
 
