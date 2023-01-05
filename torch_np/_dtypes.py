@@ -117,7 +117,10 @@ _typecodes_from_dtype_dict = {typecode_chars_dict[key]: key
 typecodes = {'All': 'efdFDBbhil?',
         'AllFloat': 'efdFD',
         'AllInteger': 'Bbhil',
+        'Integer': 'bhil',
+        'UnsignedInteger': 'B',
         'Float': 'efd',
+        'Complex': 'FD',
 }
 
 
