@@ -31,7 +31,7 @@ class B1(np.float64, HasNew):
     pass
 
 
-@pytest.mark.xfail(reason='scalar repr: numpy plain to make more explicit')
+@pytest.mark.skip(reason='scalar repr: numpy plans to make it more explicit')
 class TestInherit:
     def test_init(self):
         x = B(1.0)

@@ -110,6 +110,16 @@ class ndarray:
     def __gt__(self, other):
         return asarray(self._tensor > asarray(other).get())
 
+    def __lt__(self, other):
+        return asarray(self._tensor < asarray(other).get())
+
+    def __ge__(self, other):
+        return asarray(self._tensor >= asarray(other).get())
+
+    def __le__(self, other):
+        return asarray(self._tensor <= asarray(other).get())
+
+
     def __bool__(self):
         try:
             return bool(self._tensor)
@@ -130,6 +140,15 @@ class ndarray:
 
     def __float__(self):
         return float(self._tensor)
+
+    # XXX : are single-element ndarrays scalars?
+    def is_integer(self):
+        if self.shape == ():
+            if _dtypes.is_integer(self.dtype):
+                return True
+            return self._tensor.item().is_integer()
+        else:
+            return False
 
 
     ### sequence ###
@@ -161,6 +180,15 @@ class ndarray:
     def __truediv__(self, other):
         other_tensor = asarray(other).get()
         return asarray(self._tensor.__truediv__(other_tensor))
+
+    def __or__(self, other):
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__or__(other_tensor))
+
+    def __ior__(self, other):
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__ior__(other_tensor))
+
 
     def __invert__(self):
         return asarray(self._tensor.__invert__())
@@ -307,7 +335,8 @@ class ndarray:
 
     ### indexing ###
     def __getitem__(self, *args, **kwds):
-        return ndarray._from_tensor_and_base(self._tensor.__getitem__(*args, **kwds), self)
+        t_args = _helpers.to_tensors(*args)
+        return ndarray._from_tensor_and_base(self._tensor.__getitem__(*t_args, **kwds), self)
 
     def __setitem__(self, index, value):
         value = asarray(value).get()
@@ -320,6 +349,8 @@ def asarray(a, dtype=None, order=None, *, like=None):
         raise NotImplementedError
 
     if isinstance(a, ndarray):
+        if dtype is not None and dtype != a.dtype:
+            a = a.astype(dtype)
         return a
 
     if isinstance(a, (list, tuple)):
@@ -356,6 +387,10 @@ def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
 
     if isinstance(object, ndarray):
         result = object._tensor
+
+        if dtype != object.dtype:
+            torch_dtype = _dtypes.torch_dtype_from(dtype)
+            result = result.to(torch_dtype)
     else:
         torch_dtype = _dtypes.torch_dtype_from(dtype)
         result = torch.as_tensor(object, dtype=torch_dtype)

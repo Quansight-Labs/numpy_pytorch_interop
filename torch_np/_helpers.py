@@ -125,3 +125,9 @@ def allow_only_single_axis(axis):
     if len(axis) != 1:
         raise NotImplementedError("does not handle tuple axis")
     return axis[0]
+
+
+def to_tensors(*inputs):
+    """Convert all ndarrays from `inputs` to tensors."""
+    return tuple([value.get() if isinstance(value, ndarray) else value
+            for value in inputs])
