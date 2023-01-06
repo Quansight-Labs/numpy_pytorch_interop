@@ -81,6 +81,18 @@ class ndarray:
     def T(self):
         return self.transpose()
 
+    @property
+    def real(self):
+        return asarray(self._tensor.real)
+
+    @property
+    def imag(self):
+        try:
+            return asarray(self._tensor.imag)
+        except RuntimeError:
+            zeros = torch.zeros_like(self._tensor)
+            return ndarray._from_tensor_and_base(zeros, None)
+
     # ctors
     def astype(self, dtype):
         newt = ndarray()
@@ -102,6 +114,13 @@ class ndarray:
 
     ### comparisons ###
     def __eq__(self, other):
+        try:
+            t_other = asarray(other).get
+        except RuntimeError:
+            # Failed to convert other to array: definitely not equal.
+            # TODO: generalize, delegate to ufuncs
+            falsy = torch.full(self.shape, fill_value=False, dtype=bool)
+            return asarray(falsy)
         return asarray(self._tensor == asarray(other).get())
 
     def __neq__(self, other):
@@ -118,7 +137,6 @@ class ndarray:
 
     def __le__(self, other):
         return asarray(self._tensor <= asarray(other).get())
-
 
     def __bool__(self):
         try:
@@ -167,7 +185,10 @@ class ndarray:
 
     def __sub__(self, other):
         other_tensor = asarray(other).get()
-        return asarray(self._tensor.__sub__(other_tensor))
+        try:
+            return asarray(self._tensor.__sub__(other_tensor))
+        except RuntimeError as e:
+            raise TypeError(e.args)
 
     def __mul__(self, other):
         other_tensor = asarray(other).get()
@@ -177,9 +198,29 @@ class ndarray:
         other_tensor = asarray(other).get()
         return asarray(self._tensor.__rmul__(other_tensor))
 
+    def __floordiv__(self, other):
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__floordiv__(other_tensor))
+
+    def __ifloordiv__(self, other):
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__ifloordiv__(other_tensor))
+
     def __truediv__(self, other):
         other_tensor = asarray(other).get()
         return asarray(self._tensor.__truediv__(other_tensor))
+
+    def __itruediv__(self, other):
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__itruediv__(other_tensor))
+
+    def __mod__(self, other):
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__mod__(other_tensor))
+
+    def __imod__(self, other):
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__imod__(other_tensor))
 
     def __or__(self, other):
         other_tensor = asarray(other).get()
@@ -189,9 +230,21 @@ class ndarray:
         other_tensor = asarray(other).get()
         return asarray(self._tensor.__ior__(other_tensor))
 
-
     def __invert__(self):
         return asarray(self._tensor.__invert__())
+
+    def __abs__(self):
+        return asarray(self._tensor.__abs__())
+
+    def __neg__(self):
+        try:
+            return asarray(self._tensor.__neg__())
+        except RuntimeError as e:
+            raise TypeError(e.args)
+
+    def __pow__(self, exponent):
+        exponent_tensor = asarray(exponent).get()
+        return asarray(self._tensor.__pow__(exponent_tensor))
 
     ### methods to match namespace functions
 

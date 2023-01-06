@@ -67,6 +67,7 @@ class dtype:
 
     __str__ = __repr__
 
+    @property
     def itemsize(self):
         elem = self.type(1)
         return elem.get().element_size()
