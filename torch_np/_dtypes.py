@@ -17,9 +17,11 @@ __all__ = ['dtype_from_torch', 'dtype', 'typecodes', 'issubdtype']
 # Define analogs of numpy dtypes supported by pytorch.
 
 class dtype:
-    def __init__(self, name):
+    def __init__(self, name, /):
         if isinstance(name, dtype):
             _name = name.name
+        elif hasattr(name, 'dtype'):
+            _name = name.dtype.name
         elif name in python_types_dict:
             _name = python_types_dict[name]
         elif name in dt_names:

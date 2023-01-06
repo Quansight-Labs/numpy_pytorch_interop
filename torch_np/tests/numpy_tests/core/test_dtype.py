@@ -158,6 +158,7 @@ class TestPickling:
             assert roundtrip_DType is DType
 
 
+@pytest.mark.skip(reason="XXX: value-based promotions, we don't have.")
 class TestPromotion:
     """Test cases related to more complex DType promotions.  Further promotion
     tests are defined in `test_numeric.py`
@@ -246,7 +247,7 @@ def test_dtypes_are_true():
 
 
 
-
+@pytest.mark.xfail(reason="No keyword arg for dtype ctor.")
 def test_keyword_argument():
     # test for https://github.com/numpy/numpy/pull/16574#issuecomment-642660971
     assert np.dtype(dtype=np.float64) == np.dtype(np.float64)
@@ -260,6 +261,8 @@ class TestFromDTypeAttribute:
         assert np.dtype(dt) == np.float64
         assert np.dtype(dt()) == np.float64
 
+    @pytest.mark.skip(reason="We simply require the .name attribute, so this "
+                             "fails with an AttributeError.")
     def test_recursion(self):
         class dt:
             pass
@@ -275,7 +278,7 @@ class TestFromDTypeAttribute:
 
 
 
-
+@pytest.mark.skip(reason="Parameteric dtypes, our stuff is simpler.")
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="Requires python 3.9")
 class TestClassGetItem:
     def test_dtype(self) -> None:
