@@ -7,7 +7,8 @@ from ._unary_ufuncs import *
 from ._binary_ufuncs import *
 from ._ndarray import can_cast, result_type, newaxis
 from ._util import AxisError
-
+from ._getlimits import iinfo, finfo
+from ._getlimits import errstate
 
 inf = float('inf')
 nan = float('nan')

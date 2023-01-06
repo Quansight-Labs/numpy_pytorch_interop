@@ -2,43 +2,49 @@
 
 """
 import warnings
-import numpy as np
-from numpy.core import finfo, iinfo
-from numpy import half, single, double, longdouble
-from numpy.testing import assert_equal, assert_, assert_raises
-from numpy.core.getlimits import _discovered_machar, _float_ma
+
+import pytest
+from pytest import raises as assert_raises
+
+import torch_np as np
+from torch_np import finfo, iinfo
+from torch_np import half, single, double
+from torch_np.testing import assert_equal, assert_
+#from numpy.core.getlimits import _discovered_machar, _float_ma
 
 ##################################################
 
+@pytest.mark.skip(reason='torch.finfo is not a singleton. Why demanding it is?')
 class TestPythonFloat:
     def test_singleton(self):
         ftype = finfo(float)
         ftype2 = finfo(float)
         assert_equal(id(ftype), id(ftype2))
 
+
+@pytest.mark.skip(reason='torch.finfo is not a singleton. Why demanding it is?')
 class TestHalf:
     def test_singleton(self):
         ftype = finfo(half)
         ftype2 = finfo(half)
         assert_equal(id(ftype), id(ftype2))
 
+
+@pytest.mark.skip(reason='torch.finfo is not a singleton. Why demanding it is?')
 class TestSingle:
     def test_singleton(self):
         ftype = finfo(single)
         ftype2 = finfo(single)
         assert_equal(id(ftype), id(ftype2))
 
+
+@pytest.mark.skip(reason='torch.finfo is not a singleton. Why demanding it is?')
 class TestDouble:
     def test_singleton(self):
         ftype = finfo(double)
         ftype2 = finfo(double)
         assert_equal(id(ftype), id(ftype2))
 
-class TestLongdouble:
-    def test_singleton(self):
-        ftype = finfo(longdouble)
-        ftype2 = finfo(longdouble)
-        assert_equal(id(ftype), id(ftype2))
 
 class TestFinfo:
     def test_basic(self):
@@ -46,25 +52,34 @@ class TestFinfo:
                        [np.float16, np.float32, np.float64, np.complex64,
                         np.complex128]))
         for dt1, dt2 in dts:
-            for attr in ('bits', 'eps', 'epsneg', 'iexp', 'machep',
-                         'max', 'maxexp', 'min', 'minexp', 'negep', 'nexp',
-                         'nmant', 'precision', 'resolution', 'tiny',
-                         'smallest_normal', 'smallest_subnormal'):
+            for attr in ('bits', 'eps',
+                         'max', 'min',
+                         'resolution', 'tiny',
+                         'smallest_normal',):
                 assert_equal(getattr(finfo(dt1), attr),
                              getattr(finfo(dt2), attr), attr)
-        assert_raises(ValueError, finfo, 'i4')
+        with assert_raises((TypeError, ValueError)):
+            finfo('i4')
+
+    @pytest.mark.xfail(reason="These attributes are not implemented yet.")
+    def test_basic_missing(self):
+        dt = np.float32
+        for attr in ['epsneg', 'iexp',  'machep', 'maxexp', 'minexp', 'negep',
+                     'nexp', 'nmant', 'precision', 'smallest_subnormal']:
+            getattr(finfo(dt), attr)
 
 class TestIinfo:
     def test_basic(self):
         dts = list(zip(['i1', 'i2', 'i4', 'i8',
                    'u1', 'u2', 'u4', 'u8'],
                   [np.int8, np.int16, np.int32, np.int64,
-                   np.uint8, np.uint16, np.uint32, np.uint64]))
+                   np.uint8,]))
         for dt1, dt2 in dts:
             for attr in ('bits', 'min', 'max'):
                 assert_equal(getattr(iinfo(dt1), attr),
                              getattr(iinfo(dt2), attr), attr)
-        assert_raises(ValueError, iinfo, 'f4')
+        with assert_raises((TypeError, ValueError)):
+            iinfo('f4')
 
     def test_unsigned_max(self):
         types = np.sctypes['uint']
@@ -73,22 +88,25 @@ class TestIinfo:
                 max_calculated = T(0) - T(1)
             assert_equal(iinfo(T).max, max_calculated)
 
+
 class TestRepr:
     def test_iinfo_repr(self):
         expected = "iinfo(min=-32768, max=32767, dtype=int16)"
         assert_equal(repr(np.iinfo(np.int16)), expected)
 
     def test_finfo_repr(self):
-        expected = "finfo(resolution=1e-06, min=-3.4028235e+38," + \
-                   " max=3.4028235e+38, dtype=float32)"
-        assert_equal(repr(np.finfo(np.float32)), expected)
+        repr_f32 = repr(np.finfo(np.float32))
+        assert "finfo(resolution=1e-06, min=-3.40282e+38," in repr_f32
+        assert "dtype=float32" in repr_f32
 
 
+@pytest.mark.skip(reason="Instantiate {i,f}info from dtypes.")
 def test_instances():
     iinfo(10)
     finfo(3.0)
 
 
+@pytest.mark.skip(reason='MachAr no implemented (does it need to be)?')
 def assert_ma_equal(discovered, ma_like):
     # Check MachAr-like objects same as calculated MachAr instances
     for key, value in discovered.__dict__.items():
@@ -98,6 +116,7 @@ def assert_ma_equal(discovered, ma_like):
             assert_equal(value.dtype, getattr(ma_like, key).dtype)
 
 
+@pytest.mark.skip(reason='MachAr no implemented (does it need to)?')
 def test_known_types():
     # Test we are correctly compiling parameters for known types
     for ftype, ma_like in ((np.float16, _float_ma[16]),
@@ -116,6 +135,7 @@ def test_known_types():
         assert_ma_equal(ld_ma, _float_ma[128])
 
 
+@pytest.mark.skip(reason='MachAr no implemented (does it need to be)?')
 def test_subnormal_warning():
     """Test that the subnormal is zero warning is not being raised."""
     with np.errstate(all='ignore'):
@@ -138,6 +158,7 @@ def test_subnormal_warning():
             assert len(w) == 0
 
 
+@pytest.mark.xfail(reason="None of nmant, minexp, maxexp is implemented.")
 def test_plausible_finfo():
     # Assert that finfo returns reasonable results for all types
     for ftype in np.sctypes['float'] + np.sctypes['complex']:

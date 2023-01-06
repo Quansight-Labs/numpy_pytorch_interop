@@ -90,6 +90,7 @@ dt_names = ['float16', 'float32', 'float64',
 
 
 dt_aliases_dict = {
+    'u1' : 'uint8',
     'i1' : 'int8',
     'i2' : 'int16',
     'i4' : 'int32',
