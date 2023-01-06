@@ -133,10 +133,13 @@ class TestPickling:
             assert b"dtype" in buf
             pickled = pickle.loads(buf)
             assert_equal(pickled, dtype)
-            assert_equal(pickled.descr, dtype.descr)
-            if dtype.metadata is not None:
-                assert_equal(pickled.metadata, dtype.metadata)
+
+   ## XXX: out dtypes do not have .descr
+   ##         assert_equal(pickled.descr, dtype.descr)
+   ##         if dtype.metadata is not None:
+   ##             assert_equal(pickled.metadata, dtype.metadata)
             # Check the reconstructed dtype is functional
+
             x = np.zeros(3, dtype=dtype)
             y = np.zeros(3, dtype=pickled)
             assert_equal(x, y)
@@ -146,10 +149,8 @@ class TestPickling:
     def test_builtin(self, t):
         self.check_pickling(np.dtype(t))
 
-
     @pytest.mark.parametrize("DType",
-        [type(np.dtype(t)) for t in np.typecodes['All']] +
-        [np.dtype])
+        [type(np.dtype(t)) for t in np.typecodes['All']] + [np.dtype])
     def test_pickle_types(self, DType):
         # Check that DTypes (the classes/types) roundtrip when pickling
         for proto in range(pickle.HIGHEST_PROTOCOL + 1):

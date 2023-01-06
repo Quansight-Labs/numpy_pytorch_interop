@@ -69,6 +69,12 @@ class dtype:
         elem = self.type(1)
         return elem.get().element_size()
 
+    def __getstate__(self):
+        return self._name
+
+    def __setstate__(self, value):
+        self._name = value
+
 
 
 dt_names = ['float16', 'float32', 'float64',
