@@ -191,7 +191,6 @@ class TestPower:
         # 1 ** -1 possible special case
         base = [np.array(1, dt)[()] for dt in 'bhilB']
         for i1, i2 in itertools.product(base, exp):
-            pass
             if i1.dtype != np.uint64:
                 assert_raises(ValueError, operator.pow, i1, i2)
             else:
@@ -435,15 +434,18 @@ class TestComplexDivision:
 
 class TestConversion:
     def test_int_from_long(self):
+        # NB: this test assumes that the default fp type is float64
         l = [1e6, 1e12, 1e18, -1e6, -1e12, -1e18]
         li = [10**6, 10**12, 10**18, -10**6, -10**12, -10**18]
         for T in [None, np.float64, np.int64]:
             a = np.array(l, dtype=T)
             assert_equal([int(_m) for _m in a], li)
 
+
     @pytest.mark.xfail(reason="pytorch does not emit this warning.")
     def test_iinfo_long_values_1(self):
         for code in 'bBh':
+
             with pytest.warns(DeprecationWarning):
                 res = np.array(np.iinfo(code).max + 1, dtype=code)
             tgt = np.iinfo(code).min

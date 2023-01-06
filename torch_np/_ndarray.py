@@ -159,6 +159,9 @@ class ndarray:
     def __float__(self):
         return float(self._tensor)
 
+    def __int__(self):
+        return int(self._tensor)
+
     # XXX : are single-element ndarrays scalars?
     def is_integer(self):
         if self.shape == ():
@@ -354,7 +357,7 @@ class ndarray:
 
         if dtype is None:
             dtype = self.dtype
-        if not _dtypes.is_floating(dtype):
+        if _dtypes.is_integer(dtype):
             dtype = _dtypes.default_float_type()
         torch_dtype = _dtypes.torch_dtype_from(dtype)
 
@@ -374,7 +377,7 @@ class ndarray:
 
         if dtype is None:
             dtype = self.dtype
-        if not _dtypes.is_floating(dtype):
+        if _dtypes.is_integer(dtype):
             dtype = _dtypes.default_float_type()
         torch_dtype = _dtypes.torch_dtype_from(dtype)
 
@@ -396,36 +399,8 @@ class ndarray:
         return self._tensor.__setitem__(index, value)
 
 
-def asarray(a, dtype=None, order=None, *, like=None):
-    _util.subok_not_ok(like)
-    if order is not None:
-        raise NotImplementedError
-
-    if isinstance(a, ndarray):
-        if dtype is not None and dtype != a.dtype:
-            a = a.astype(dtype)
-        return a
-
-    if isinstance(a, (list, tuple)):
-        # handle lists of ndarrays, [1, [2, 3], ndarray(4)] etc
-        a1 = []
-        for elem in a:
-            if isinstance(elem, ndarray):
-                a1.append(elem.get().tolist())
-            else:
-                a1.append(elem)
-    else:
-        a1 = a
-
-    torch_dtype = _dtypes.torch_dtype_from(dtype)
-
-    # This and array(...) are the only places which talk to ndarray directly.
-    # The rest goes through asarray (preferred) or array.
-    out = ndarray()
-    tt = torch.as_tensor(a1, dtype=torch_dtype)
-    out._tensor = tt
-    return out
-
+# This is the ideally the only place which talks to ndarray directly.
+# The rest goes through asarray (preferred) or array.
 
 def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
           like=None):
@@ -433,30 +408,71 @@ def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
     if order != 'K':
         raise NotImplementedError
 
-    if isinstance(object, (list, tuple)):
-        obj = asarray(object)
-        return array(obj, dtype, copy=copy, order=order, subok=subok,
-                     ndmin=ndmin, like=like)
-
+    # a happy path
     if isinstance(object, ndarray):
-        result = object._tensor
+        if copy is False and dtype is None and ndmin <= object.ndim:
+            return object
 
-        if dtype != object.dtype:
-            torch_dtype = _dtypes.torch_dtype_from(dtype)
-            result = result.to(torch_dtype)
+    # lists of ndarrays: [1, [2, 3], ndarray(4)] convert to lists of lists
+    if isinstance(object, (list, tuple)):   
+        a1 = []
+        for elem in object:
+            if isinstance(elem, ndarray):
+                a1.append(elem.get().tolist())
+            else:
+                a1.append(elem)
+        object = a1
+
+    # get the tensor from "object"
+    if isinstance(object, ndarray):
+        tensor = object._tensor
+        base = object
+    elif isinstance(object, torch.Tensor):
+        tensor = object
+        base = None
     else:
+        tensor = torch.as_tensor(object)
+        base = None
+
+        # At this point, `tensor.dtype` is the pytorch default. Our default may
+        # differ, so need to typecast. However, we cannot just do `tensor.to`,
+        # because if our desired dtype is wider then pytorch's, `tensor`
+        # may have lost precision:
+
+        # int(torch.as_tensor(1e12)) - 1e12 equals -4096 (try it!)
+
+        # Therefore, we treat `tensor.dtype` as a hint, and convert the
+        # original object *again*, this time with an explicit dtype.
+        dtyp = _dtypes.dtype_from_torch(tensor.dtype)
+        default = _dtypes.get_default_dtype_for(dtyp)
+        torch_dtype = _dtypes.torch_dtype_from(default)
+
+        tensor = torch.as_tensor(object, dtype=torch_dtype)
+
+    # type cast if requested
+    if dtype is not None:
         torch_dtype = _dtypes.torch_dtype_from(dtype)
-        result = torch.as_tensor(object, dtype=torch_dtype)
+        tensor = tensor.to(torch_dtype)
+        base = None
 
-    if copy:
-        result = result.clone()    
-
-    ndim_extra = ndmin - result.ndim
+    # adjust ndim if needed
+    ndim_extra = ndmin - tensor.ndim
     if ndim_extra > 0:
-        result = result.reshape((1,)*ndim_extra + result.shape)
-    out = ndarray()
-    out._tensor = result
-    return out
+        tensor = tensor.view((1,)*ndim_extra + tensor.shape)
+        base = None
+
+    # copy if requested
+    if copy:
+        tensor = tensor.clone()
+        base = None
+
+    return ndarray._from_tensor_and_base(tensor, base)
+
+
+def asarray(a, dtype=None, order=None, *, like=None):
+    if order is None:
+        order = 'K'
+    return array(a, dtype=dtype, order=order, like=like, copy=False, ndmin=0)
 
 
 
