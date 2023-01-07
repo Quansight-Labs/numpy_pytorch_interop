@@ -106,6 +106,9 @@ class ndarray:
         tensor = self._tensor.clone()   # XXX: clone or detach?
         return ndarray._from_tensor_and_base(tensor, None)
 
+    def tolist(self):
+        return self._tensor.tolist()
+
     ###  niceties ###
     def __str__(self):
         return str(self._tensor).replace("tensor", "array_w").replace("dtype=torch.", "dtype=")
@@ -179,12 +182,21 @@ class ndarray:
     ### arithmetic ###
 
     def __add__(self, other):
+        print("__add__", other)
         other_tensor = asarray(other).get()
         return asarray(self._tensor.__add__(other_tensor))
 
     def __iadd__(self, other):
+        print("__iadd__", other)
         other_tensor = asarray(other).get()
         return asarray(self._tensor.__iadd__(other_tensor))
+
+    def __radd__(self, other):
+        print("__radd__", other)
+        other_tensor = asarray(other).get()
+        return asarray(self._tensor.__radd__(other_tensor))
+
+
 
     def __sub__(self, other):
         other_tensor = asarray(other).get()
@@ -513,8 +525,17 @@ def can_cast(from_, to, casting='safe'):
 
 
 def result_type(*arrays_and_dtypes):
-    dtypes = [elem if isinstance(elem, _dtypes.dtype) else asarray(elem).dtype
-              for elem in arrays_and_dtypes]
+    dtypes = []
+
+    from ._dtypes import issubclass_
+
+    for entry in arrays_and_dtypes:
+        if issubclass_(entry, _dtypes._scalar_types.generic):
+            dtypes.append(_dtypes.dtype(entry))
+        elif isinstance(entry, _dtypes.dtype):
+            dtypes.append(entry)
+        else:
+            dtypes.append(asarray(entry).dtype)
 
     dtyp = dtypes[0]
     if len(dtypes) == 1:

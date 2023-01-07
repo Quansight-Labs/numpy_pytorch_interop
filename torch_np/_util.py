@@ -23,6 +23,10 @@ class AxisError(ValueError, IndexError):
     pass
 
 
+class UFuncTypeError(TypeError, RuntimeError):
+    pass
+
+
 # a replica of the version in ./numpy/numpy/core/src/multiarray/common.h
 def normalize_axis_index(ax, ndim, argname=None):
     if ax < -ndim or ax >= ndim:
