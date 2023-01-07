@@ -7,11 +7,16 @@ The goal is to validate on numpy, and tests should work when replacing
 by 
 >>> import torch_np as np
 """
+import operator
+
 import pytest
 from pytest import raises as assert_raises
 
 import torch_np as np
 from torch_np.testing import assert_equal
+
+#import numpy as np
+#from numpy.testing import assert_equal
 
 
 parametrize_unary_ufuncs = pytest.mark.parametrize('ufunc', [np.sin])
@@ -98,6 +103,11 @@ class TestBinaryUfuncs:
         x, y = xy[0][0], xy[1][0]
         float(ufunc(x, y))
 
+    @parametrize_binary_ufuncs
+    def test_vector_vs_scalar(self, ufunc):
+        x, y = self.get_xy(ufunc)
+        assert_equal(ufunc(x, y), [ufunc(a, b) for a, b in zip(x, y)])
+
     @parametrize_casting
     @parametrize_binary_ufuncs
     @pytest.mark.parametrize('out_dtype', ['float64', 'complex128', 'float32'])
@@ -130,4 +140,139 @@ class TestBinaryUfuncs:
 
         assert_equal(res_out, res_bcast)
         assert res_out is out
+
+
+
+ufunc_op_iop_numeric = [
+    (np.add, operator.__add__, operator.__iadd__),
+ #   (np.multiply, operator.__mul__, operator.__imul__)
+]
+dtypes_numeric = [np.int32, np.float32, np.float64, np.complex128]
+
+
+
+class TestNdarrayDunderVsUfunc:
+    """Test ndarray dunders which delegate to ufuncs, vs ufuncs."""
+
+    @pytest.mark.parametrize("ufunc, op, iop", ufunc_op_iop_numeric)
+    def test_basic(self, ufunc, op, iop):
+        """basic op/rop/iop, no dtypes, no broadcasting"""
+
+        # __add__
+        a = np.array([1, 2, 3])
+        assert_equal(op(a, 1), ufunc(a, 1))
+        assert_equal(op(a, a.tolist()), ufunc(a, a.tolist()))
+        assert_equal(op(a, a), ufunc(a, a))
+
+        # __radd__
+        a = np.array([1, 2, 3])
+        assert_equal(op(1, a), ufunc(a, 1))
+        assert_equal(op(a.tolist(), a), ufunc(a, a.tolist()))
+
+        # __iadd__
+        a0 = np.array([1, 2, 3])
+        a = a0.copy()
+        iop(a, 2)     # modifies a in-place
+        assert_equal(a, op(a0, 2))
+
+        a0 = np.array([1, 2, 3])
+        a = a0.copy()
+        iop(a, a)
+        assert_equal(a, op(a0, a0))
+
+    @pytest.mark.parametrize("ufunc, op, iop", ufunc_op_iop_numeric)
+    @pytest.mark.parametrize("other_dtype", dtypes_numeric)
+    def test_other_scalar(self, ufunc, op, iop, other_dtype):
+        """Test op/iop/rop when the other argument is a scalar of a different dtype."""
+        a = np.array([1, 2, 3])
+        b = other_dtype(3)
+
+        # __op__
+        result = op(a, b)
+        assert_equal(result, ufunc(a, b))
+        assert result.dtype == np.result_type(a, b)
+
+        # __rop__
+        result = op(b, a)
+        assert_equal(result, ufunc(a, b))
+        assert result.dtype == np.result_type(a, b)
+
+        # __iop__ : casts the result to self.dtype, raises if cannot
+        can_cast = np.can_cast(np.result_type(a.dtype, other_dtype),
+                               a.dtype,
+                               casting="same_kind")
+        if can_cast:
+            a0 = a.copy()
+            result = iop(a, b)
+            assert_equal(result, ufunc(a0, b))
+            assert result.dtype == np.result_type(a0, b)
+        else:
+            with assert_raises((TypeError, RuntimeError)):    # XXX np.UFuncTypeError
+                iop(a, b)
+
+
+    @pytest.mark.parametrize("ufunc, op, iop", ufunc_op_iop_numeric)
+    @pytest.mark.parametrize("other_dtype", dtypes_numeric)
+    def test_other_array(self, ufunc, op, iop, other_dtype):
+        """Test op/iop/rop when the other argument is an array of a different dtype."""
+        # __op__
+        a = np.array([1, 2, 3])
+        b = np.array([5, 6, 7], dtype=other_dtype)
+        result = op(a, b)
+        assert_equal(result, ufunc(a, b))
+        assert result.dtype == np.result_type(a, b)
+
+        # __rop__(other array)
+        result = op(b, a)
+        assert_equal(result, ufunc(a, b))
+        assert result.dtype == np.result_type(a, b)
+
+        # __iop__
+        can_cast = np.can_cast(np.result_type(a.dtype, other_dtype),
+                               a.dtype,
+                               casting="same_kind")
+        if can_cast:
+            a0 = a.copy()
+            result = iop(a, b)
+            assert_equal(result, ufunc(a0, b))
+            assert result.dtype == np.result_type(a0, b)
+        else:
+            with assert_raises((TypeError, RuntimeError)):    # XXX np.UFuncTypeError
+                iop(a, b)
+
+
+    @pytest.mark.parametrize("ufunc, op, iop", ufunc_op_iop_numeric)
+    def test_other_array_bcast(self, ufunc, op, iop):
+        """Test op/rop/iop with broadcasting """
+        # __op__
+        a = np.array([1, 2, 3])
+        result_op = op(a, a[:, None])
+        result_ufunc = ufunc(a, a[:, None])
+        assert result_op.shape == result_ufunc.shape
+        assert result_op.dtype == result_ufunc.dtype
+        assert_equal(result_op, result_ufunc)
+
+        # __rop__
+        a = np.array([1, 2, 3])
+        result_op = op(a[:, None], a)
+        result_ufunc = ufunc(a[:, None], a)
+        assert result_op.shape == result_ufunc.shape
+        assert result_op.dtype == result_ufunc.dtype
+        assert_equal(result_op, result_ufunc)
+
+        # __iop__ : in-place ops (`self += other` etc) do not broadcast self
+        b = a[:, None].copy()
+        with assert_raises((ValueError, RuntimeError)):    # XXX ValueError in numpy
+            iop(a, b)
+
+        # however, `self += other` broadcasts other
+        aa = np.broadcast_to(a, (3, 3)).copy()
+        aa0 = aa.copy()
+
+        result = iop(aa, a)
+        result_ufunc = ufunc(aa0, a)
+
+        assert result.shape == result_ufunc.shape
+        assert result.dtype == result_ufunc.dtype
+        assert_equal(result, result_ufunc)
 

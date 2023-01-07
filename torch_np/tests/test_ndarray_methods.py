@@ -549,4 +549,3 @@ class TestAmin:
         arr = np.asarray(a)
         assert_equal(np.amin(arr), arr.min())
 
-
