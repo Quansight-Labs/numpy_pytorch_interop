@@ -20,20 +20,20 @@ def test_arctan2():
 
 
 def test_bitwise_and():
-    assert_allclose(np.bitwise_and(0.5, 0.6),
-                               bitwise_and(0.5, 0.6), atol=1e-7, check_dtype=False)
+    assert_allclose(np.bitwise_and(5, 6),
+                               bitwise_and(5, 6), atol=1e-7, check_dtype=False)
 
 
 
 def test_bitwise_or():
-    assert_allclose(np.bitwise_or(0.5, 0.6),
-                               bitwise_or(0.5, 0.6), atol=1e-7, check_dtype=False)
+    assert_allclose(np.bitwise_or(5, 6),
+                               bitwise_or(5, 6), atol=1e-7, check_dtype=False)
 
 
 
 def test_bitwise_xor():
-    assert_allclose(np.bitwise_xor(0.5, 0.6),
-                               bitwise_xor(0.5, 0.6), atol=1e-7, check_dtype=False)
+    assert_allclose(np.bitwise_xor(5, 6),
+                               bitwise_xor(5, 6), atol=1e-7, check_dtype=False)
 
 
 
@@ -86,8 +86,8 @@ def test_fmod():
 
 
 def test_gcd():
-    assert_allclose(np.gcd(0.5, 0.6),
-                               gcd(0.5, 0.6), atol=1e-7, check_dtype=False)
+    assert_allclose(np.gcd(5, 6),
+                               gcd(5, 6), atol=1e-7, check_dtype=False)
 
 
 
@@ -116,20 +116,20 @@ def test_hypot():
 
 
 def test_lcm():
-    assert_allclose(np.lcm(0.5, 0.6),
-                               lcm(0.5, 0.6), atol=1e-7, check_dtype=False)
+    assert_allclose(np.lcm(5, 6),
+                               lcm(5, 6), atol=1e-7, check_dtype=False)
 
 
 
 def test_ldexp():
-    assert_allclose(np.ldexp(0.5, 0.6),
-                               ldexp(0.5, 0.6), atol=1e-7, check_dtype=False)
+    assert_allclose(np.ldexp(0.5, 6),
+                               ldexp(0.5, 6), atol=1e-7, check_dtype=False)
 
 
 
 def test_left_shift():
-    assert_allclose(np.left_shift(0.5, 0.6),
-                               left_shift(0.5, 0.6), atol=1e-7, check_dtype=False)
+    assert_allclose(np.left_shift(5, 6),
+                               left_shift(5, 6), atol=1e-7, check_dtype=False)
 
 
 
@@ -176,8 +176,8 @@ def test_logical_xor():
 
 
 def test_matmul():
-    assert_allclose(np.matmul(0.5, 0.6),
-                               matmul(0.5, 0.6), atol=1e-7, check_dtype=False)
+    assert_allclose(np.matmul([0.5], [0.6]),
+                               matmul([0.5], [0.6]), atol=1e-7, check_dtype=False)
 
 
 
@@ -230,8 +230,8 @@ def test_remainder():
 
 
 def test_right_shift():
-    assert_allclose(np.right_shift(0.5, 0.6),
-                               right_shift(0.5, 0.6), atol=1e-7, check_dtype=False)
+    assert_allclose(np.right_shift(5, 6),
+                               right_shift(5, 6), atol=1e-7, check_dtype=False)
 
 
 
