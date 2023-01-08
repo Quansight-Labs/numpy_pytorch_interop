@@ -89,7 +89,15 @@ class TestUnaryUfuncs:
 
 
 
-parametrize_binary_ufuncs = pytest.mark.parametrize('ufunc', [np.add]) #, np.logaddexp, np.hypot])
+ufunc_op_iop_numeric = [
+    (np.add, operator.__add__, operator.__iadd__),
+    (np.subtract, operator.__sub__, operator.__isub__),
+    (np.multiply, operator.__mul__, operator.__imul__)
+]
+
+ufuncs_with_dunders = [ufunc for ufunc, _, _ in ufunc_op_iop_numeric]
+
+parametrize_binary_ufuncs = pytest.mark.parametrize('ufunc', ufuncs_with_dunders) #, np.logaddexp, np.hypot])
 
 class TestBinaryUfuncs:
 
@@ -142,13 +150,7 @@ class TestBinaryUfuncs:
         assert res_out is out
 
 
-
-ufunc_op_iop_numeric = [
-    (np.add, operator.__add__, operator.__iadd__),
- #   (np.multiply, operator.__mul__, operator.__imul__)
-]
 dtypes_numeric = [np.int32, np.float32, np.float64, np.complex128]
-
 
 
 class TestNdarrayDunderVsUfunc:
@@ -194,7 +196,7 @@ class TestNdarrayDunderVsUfunc:
 
         # __rop__
         result = op(b, a)
-        assert_equal(result, ufunc(a, b))
+        assert_equal(result, ufunc(b, a))
         assert result.dtype == np.result_type(a, b)
 
         # __iop__ : casts the result to self.dtype, raises if cannot
@@ -224,7 +226,7 @@ class TestNdarrayDunderVsUfunc:
 
         # __rop__(other array)
         result = op(b, a)
-        assert_equal(result, ufunc(a, b))
+        assert_equal(result, ufunc(b, a))
         assert result.dtype == np.result_type(a, b)
 
         # __iop__

@@ -5,6 +5,7 @@ import torch
 from . import _util
 from . import _helpers
 from . import _dtypes
+from . import _ufunc_impl
 
 NoValue = None
 newaxis = None
@@ -181,37 +182,39 @@ class ndarray:
 
     ### arithmetic ###
 
+    # add
     def __add__(self, other):
-        print("__add__", other)
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__add__(other_tensor))
-
-    def __iadd__(self, other):
-        print("__iadd__", other)
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__iadd__(other_tensor))
+        return _ufunc_impl.add(self, asarray(other))
 
     def __radd__(self, other):
-        print("__radd__", other)
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__radd__(other_tensor))
+        return _ufunc_impl.add(self, asarray(other))
+
+    def __iadd__(self, other):
+        return _ufunc_impl.add(self, asarray(other), out=self)
 
 
-
+    # sub
     def __sub__(self, other):
-        other_tensor = asarray(other).get()
-        try:
-            return asarray(self._tensor.__sub__(other_tensor))
-        except RuntimeError as e:
-            raise TypeError(e.args)
+        return _ufunc_impl.subtract(self, asarray(other))
 
+    def __rsub__(self, other):
+        return _ufunc_impl.subtract(self, asarray(other))
+
+    def __isub__(self, other):
+        return _ufunc_impl.subtract(self, asarray(other), out=self)
+
+
+    # mul
     def __mul__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__mul__(other_tensor))
+        return _ufunc_impl.multiply(self, asarray(other))
 
     def __rmul__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__rmul__(other_tensor))
+        return _ufunc_impl.multiply(self, asarray(other))
+
+    def __imul__(self, other):
+        return _ufunc_impl.multiply(self, asarray(other), out=self)
+
+
 
     def __floordiv__(self, other):
         other_tensor = asarray(other).get()
