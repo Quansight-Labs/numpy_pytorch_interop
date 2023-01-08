@@ -92,12 +92,48 @@ class TestUnaryUfuncs:
 ufunc_op_iop_numeric = [
     (np.add, operator.__add__, operator.__iadd__),
     (np.subtract, operator.__sub__, operator.__isub__),
-    (np.multiply, operator.__mul__, operator.__imul__)
+    (np.multiply, operator.__mul__, operator.__imul__),
+# divide
+# true_divide?
+# remainder vs fmod?
+# pow vs power vs float_power
 ]
 
 ufuncs_with_dunders = [ufunc for ufunc, _, _ in ufunc_op_iop_numeric]
 
-parametrize_binary_ufuncs = pytest.mark.parametrize('ufunc', ufuncs_with_dunders) #, np.logaddexp, np.hypot])
+numeric_binary_ufuncs = [np.float_power, np.power, 
+# these are not implemented for complex inputs
+#        np.hypot, np.arctan2, np.copysign,
+#        np.floor_divide, np.fmax, np.fmin, np.fmod,
+#        np.heaviside, np.logaddexp, np.logaddexp2, np.maximum, np.minimum,
+]
+
+parametrize_binary_ufuncs = pytest.mark.parametrize(
+        'ufunc', ufuncs_with_dunders + numeric_binary_ufuncs)
+
+
+# TODO: these snowflakes need special handling
+"""
+ 'bitwise_and',
+ 'bitwise_or',
+ 'bitwise_xor',
+ 'equal',
+ 'lcm',
+ 'ldexp',
+ 'left_shift',
+ 'less',
+ 'less_equal',
+ 'gcd',
+ 'greater',
+ 'greater_equal',
+ 'logical_and',
+ 'logical_or',
+ 'logical_xor',
+ 'matmul',
+ 'not_equal',
+"""
+
+
 
 class TestBinaryUfuncs:
 
