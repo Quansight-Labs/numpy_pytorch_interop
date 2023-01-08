@@ -93,23 +93,28 @@ ufunc_op_iop_numeric = [
     (np.add, operator.__add__, operator.__iadd__),
     (np.subtract, operator.__sub__, operator.__isub__),
     (np.multiply, operator.__mul__, operator.__imul__),
-# divide
-# true_divide?
+    (np.divide, operator.__truediv__, operator.__itruediv__),
+    (np.floor_divide, operator.__floordiv__, operator.__ifloordiv__),
+    (np.float_power, operator.__pow__, operator.__ipow__),
+ ##   (np.remainder, operator.__mod__, operator.__imod__),   # does not handle complex
+
+
 # remainder vs fmod?
 # pow vs power vs float_power
 ]
 
 ufuncs_with_dunders = [ufunc for ufunc, _, _ in ufunc_op_iop_numeric]
+numeric_binary_ufuncs = [np.float_power, np.power,]
 
-numeric_binary_ufuncs = [np.float_power, np.power, 
 # these are not implemented for complex inputs
-#        np.hypot, np.arctan2, np.copysign,
-#        np.floor_divide, np.fmax, np.fmin, np.fmod,
-#        np.heaviside, np.logaddexp, np.logaddexp2, np.maximum, np.minimum,
+no_complex = [np.floor_divide, np.hypot, np.arctan2, np.copysign, np.fmax,
+        np.fmin, np.fmod, np.heaviside, np.logaddexp, np.logaddexp2,
+        np.maximum, np.minimum,
 ]
 
 parametrize_binary_ufuncs = pytest.mark.parametrize(
-        'ufunc', ufuncs_with_dunders + numeric_binary_ufuncs)
+        'ufunc', ufuncs_with_dunders + numeric_binary_ufuncs + no_complex)
+
 
 
 # TODO: these snowflakes need special handling
@@ -158,6 +163,9 @@ class TestBinaryUfuncs:
     def test_xy_and_out_casting(self, ufunc, casting, out_dtype):
         x, y = self.get_xy(ufunc)
         out = np.empty_like(x, dtype=out_dtype)
+
+        if ufunc in no_complex and np.issubdtype(out_dtype, np.complexfloating):
+            pytest.skip(f'{ufunc} does not accept complex.')
 
         can_cast_x = np.can_cast(x, out_dtype, casting=casting)
         can_cast_y = np.can_cast(y, out_dtype, casting=casting)
@@ -208,12 +216,13 @@ class TestNdarrayDunderVsUfunc:
         assert_equal(op(a.tolist(), a), ufunc(a, a.tolist()))
 
         # __iadd__
-        a0 = np.array([1, 2, 3])
+        a0 = np.array([2, 4, 6])
         a = a0.copy()
+
         iop(a, 2)     # modifies a in-place
         assert_equal(a, op(a0, 2))
 
-        a0 = np.array([1, 2, 3])
+        a0 = np.array([2, 4, 6])
         a = a0.copy()
         iop(a, a)
         assert_equal(a, op(a0, a0))
@@ -224,6 +233,9 @@ class TestNdarrayDunderVsUfunc:
         """Test op/iop/rop when the other argument is a scalar of a different dtype."""
         a = np.array([1, 2, 3])
         b = other_dtype(3)
+
+        if ufunc in no_complex and issubclass(other_dtype, np.complexfloating):
+            pytest.skip(f'{ufunc} does not accept complex.')
 
         # __op__
         result = op(a, b)
@@ -253,9 +265,13 @@ class TestNdarrayDunderVsUfunc:
     @pytest.mark.parametrize("other_dtype", dtypes_numeric)
     def test_other_array(self, ufunc, op, iop, other_dtype):
         """Test op/iop/rop when the other argument is an array of a different dtype."""
-        # __op__
         a = np.array([1, 2, 3])
         b = np.array([5, 6, 7], dtype=other_dtype)
+
+        if ufunc in no_complex and issubclass(other_dtype, np.complexfloating):
+            pytest.skip(f'{ufunc} does not accept complex.')
+
+        # __op__
         result = op(a, b)
         assert_equal(result, ufunc(a, b))
         assert result.dtype == np.result_type(a, b)
