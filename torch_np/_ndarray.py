@@ -498,22 +498,12 @@ class asarray_replacer:
         self._dispatch = dispatch
 
     def __call__(self, func):
-
         if self._dispatch == 'one':
             @functools.wraps(func)
             def wrapped(x, *args, **kwds):
                 x_tensor = asarray(x).get()
                 return asarray(func(x_tensor, *args, **kwds))
             return wrapped
-
-        elif self._dispatch == 'two':
-            @functools.wraps(func)
-            def wrapped(x, y, *args, **kwds):
-                x_tensor = asarray(x).get()
-                y_tensor = asarray(y).get()
-                return asarray(func(x_tensor, y_tensor, *args, **kwds))
-            return wrapped
-
         else:
             raise ValueError
 
