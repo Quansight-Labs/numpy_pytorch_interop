@@ -1,4 +1,6 @@
-from dump_namespace import grab_namespace, get_signature
+from collections import defaultdict
+from warnings import warn
+from .dump_namespace import grab_namespace, get_signature
 
 import numpy as np
 
@@ -138,7 +140,7 @@ with open("test_unary_ufuncs.py", "w") as f:
 
 
 
-test_header = header + """\
+test_header = """\
 import numpy as np
 import torch
 
@@ -168,14 +170,15 @@ def {np_name}(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
 test_template = """
 
 def test_{np_name}():
-    assert_allclose(np.{np_name}(0.5, 0.6),
-                               {np_name}(0.5, 0.6), atol=1e-7, check_dtype=False)
+    assert_allclose(np.{np_name}({args}),
+                               np.{np_name}({args}), atol=1e-7, check_dtype=False)
 
 """
 
 
 
 skip = {np.divmod,    # two outputs
+        np.matmul,    # array inputs
 }
 
 
