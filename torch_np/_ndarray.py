@@ -119,28 +119,31 @@ class ndarray:
     ### comparisons ###
     def __eq__(self, other):
         try:
-            t_other = asarray(other).get
+            return _ufunc_impl.equal(self, asarray(other))
         except RuntimeError:
             # Failed to convert other to array: definitely not equal.
-            # TODO: generalize, delegate to ufuncs
             falsy = torch.full(self.shape, fill_value=False, dtype=bool)
             return asarray(falsy)
-        return asarray(self._tensor == asarray(other).get())
 
     def __neq__(self, other):
-        return asarray(self._tensor != asarray(other).get())
+        try:
+            return _ufunc_impl.not_equal(self, asarray(other))
+        except RuntimeError:
+            # Failed to convert other to array: definitely not equal.
+            falsy = torch.full(self.shape, fill_value=True, dtype=bool)
+            return asarray(falsy)
 
     def __gt__(self, other):
-        return asarray(self._tensor > asarray(other).get())
+        return _ufunc_impl.greater(self, asarray(other))
 
     def __lt__(self, other):
-        return asarray(self._tensor < asarray(other).get())
+        return _ufunc_impl.less(self, asarray(other))
 
     def __ge__(self, other):
-        return asarray(self._tensor >= asarray(other).get())
+        return _ufunc_impl.greater_equal(self, asarray(other))
 
     def __le__(self, other):
-        return asarray(self._tensor <= asarray(other).get())
+        return _ufunc_impl.less_equal(self, asarray(other))
 
     def __bool__(self):
         try:
@@ -270,6 +273,7 @@ class ndarray:
     def __iand__(self, other):
         return _ufunc_impl.bitwise_and(self, asarray(other), out=self)
 
+
     # or, self | other
     def __or__(self, other):
         return _ufunc_impl.bitwise_or(self, asarray(other))
@@ -279,6 +283,7 @@ class ndarray:
 
     def __ior__(self, other):
         return _ufunc_impl.bitwise_or(self, asarray(other), out=self)
+
 
     # xor, self ^ other
     def __xor__(self, other):
@@ -303,7 +308,6 @@ class ndarray:
 
     def __neg__(self):
         return _ufunc_impl.negative(self)
-
 
 
     ### methods to match namespace functions
