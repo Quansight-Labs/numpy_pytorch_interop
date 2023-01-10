@@ -247,6 +247,7 @@ class ndarray:
     def __ipow__(self, exponent):
         return _ufunc_impl.float_power(self, asarray(exponent), out=self)
 
+
     # remainder, self % other
     def __mod__(self, other):
         return _ufunc_impl.remainder(self, asarray(other))
@@ -270,17 +271,19 @@ class ndarray:
         other_tensor = asarray(other).get()
         return asarray(self._tensor.__ior__(other_tensor))
 
+
+    # unary ops
     def __invert__(self):
-        return asarray(self._tensor.__invert__())
+        return _ufunc_impl.invert(self)
 
     def __abs__(self):
-        return asarray(self._tensor.__abs__())
+        return _ufunc_impl.absolute(self)
+
+    def __pos__(self):
+        return _ufunc_impl.positive(self)
 
     def __neg__(self):
-        try:
-            return asarray(self._tensor.__neg__())
-        except RuntimeError as e:
-            raise TypeError(e.args)
+        return _ufunc_impl.negative(self)
 
 
 

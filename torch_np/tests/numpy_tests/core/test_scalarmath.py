@@ -619,7 +619,8 @@ class TestMultiply:
 class TestNegative:
     def test_exceptions(self):
         a = np.ones((), dtype=np.bool_)[()]
-        assert_raises(TypeError, operator.neg, a)
+        # XXX: TypeError from numpy, RuntimeError from torch
+        assert_raises((TypeError, RuntimeError), operator.neg, a)
 
     def test_result(self):
             types = np.typecodes['AllInteger'] + np.typecodes['AllFloat']
