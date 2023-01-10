@@ -138,6 +138,8 @@ tan = deco_unary_ufunc(torch.tan)
 tanh = deco_unary_ufunc(torch.tanh)
 trunc = deco_unary_ufunc(torch.trunc)
 
+invert = deco_unary_ufunc(torch.bitwise_not)
+
 # special cases: torch does not export these names
 def _cbrt(x):
     return torch.pow(x, 1/3)

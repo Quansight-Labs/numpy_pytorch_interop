@@ -62,10 +62,14 @@ tan = deco_unary_ufunc_from_impl(_ufunc_impl.tan)
 tanh = deco_unary_ufunc_from_impl(_ufunc_impl.tanh)
 trunc = deco_unary_ufunc_from_impl(_ufunc_impl.trunc)
 
+invert = deco_unary_ufunc_from_impl(_ufunc_impl.invert)
+
+
 cbrt = deco_unary_ufunc_from_impl(_ufunc_impl.cbrt)
 positive = deco_unary_ufunc_from_impl(_ufunc_impl.positive)
 
 # numpy has these aliases while torch does not
 abs = absolute
 conj = conjugate
+bitwise_not = invert
 
