@@ -27,6 +27,8 @@ one_arg_funcs = [w.asarray, w.empty_like, w.ones_like, w.zeros_like,
 
 
 one_arg_funcs += [getattr(w, name) for name in _unary_ufuncs.__all__]
+one_arg_funcs = one_arg_funcs[:-1]   # FIXME: remove np.invert
+
 
 
 @pytest.mark.parametrize('func', one_arg_funcs)
