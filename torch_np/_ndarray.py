@@ -416,12 +416,7 @@ class ndarray:
         if where is not None:
             raise NotImplementedError
 
-        if dtype is None:
-            dtype = self.dtype
-        if _dtypes.is_integer(dtype):
-            dtype = _dtypes.default_float_type()
-        torch_dtype = _dtypes.torch_dtype_from(dtype)
-
+        torch_dtype = _helpers.float_or_default(dtype, self.dtype)
         if axis is None:
             result = self._tensor.mean(dtype=torch_dtype)
         else:
@@ -436,16 +431,54 @@ class ndarray:
         if initial is not None or where is not None:
             raise NotImplementedError
 
-        if dtype is None:
-            dtype = self.dtype
-        if _dtypes.is_integer(dtype):
-            dtype = _dtypes.default_float_type()
-        torch_dtype = _dtypes.torch_dtype_from(dtype)
-
+        torch_dtype = _helpers.float_or_default(dtype, self.dtype)
         if axis is None:
             result = self._tensor.sum(dtype=torch_dtype)
         else:
             result = self._tensor.sum(dtype=torch_dtype, dim=axis)
+
+        return result
+
+    @axis_out_keepdims_wrapper
+    def prod(self, axis=None, dtype=None, out=None, keepdims=NoValue,
+            initial=NoValue, where=NoValue):
+        if initial is not None or where is not None:
+            raise NotImplementedError
+
+        axis = _helpers.allow_only_single_axis(axis)
+
+        torch_dtype = _helpers.float_or_default(dtype, self.dtype)
+        if axis is None:
+            result = self._tensor.prod(dtype=torch_dtype)
+        else:
+            result = self._tensor.prod(dtype=torch_dtype, dim=axis)
+
+        return result
+
+
+    @axis_out_keepdims_wrapper
+    def std(self, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *,
+            where=NoValue):
+        if where is not None:
+            raise NotImplementedError
+
+        torch_dtype = _helpers.float_or_default(dtype, self.dtype)
+        tensor = self._tensor.to(torch_dtype)   # XXX: needed?
+
+        result = tensor.std(dim=axis, correction=ddof)
+
+        return result
+
+    @axis_out_keepdims_wrapper
+    def var(self, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *,
+            where=NoValue):
+        if where is not None:
+            raise NotImplementedError
+
+        torch_dtype = _helpers.float_or_default(dtype, self.dtype)
+        tensor = self._tensor.to(torch_dtype)   # XXX: needed?
+
+        result = tensor.var(dim=axis, correction=ddof)
 
         return result
 

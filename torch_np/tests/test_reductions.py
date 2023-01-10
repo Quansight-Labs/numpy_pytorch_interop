@@ -593,3 +593,24 @@ class TestSumGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
         self.allowed_axes =  [0, 1, 2, -1, -2,
                               (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
 
+
+class TestProdGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
+    def setup_method(self):
+        self.func = np.prod
+        self.allowed_axes =  [0, 1, 2, -1, -2,]
+#                              (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
+
+
+class TestStdGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
+    def setup_method(self):
+        self.func = np.std
+        self.allowed_axes =  [0, 1, 2, -1, -2,
+                              (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
+
+
+class TestVarGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
+    def setup_method(self):
+        self.func = np.var
+        self.allowed_axes =  [0, 1, 2, -1, -2,
+                              (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
+
