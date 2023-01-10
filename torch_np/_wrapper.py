@@ -307,20 +307,6 @@ def identity(n, dtype=None, *, like=None):
 ###### misc/unordered
 
 
-#YYY: pattern: initial=...
-@asarray_replacer()
-def prod(a, axis=None, dtype=None, out=None, keepdims=NoValue,
-         initial=NoValue, where=NoValue):
-    if initial is not None or where is not None:
-        raise NotImplementedError
-    if axis is None:
-        if keepdims is not None:
-            raise NotImplementedError
-        return torch.prod(a, dtype=dtype)
-    elif _util.is_sequence(axis):
-        raise NotImplementedError
-    return torch.prod(a, dim=axis, dtype=dtype, keepdim=bool(keepdims), out=out)
-
 
 
 @asarray_replacer()
@@ -639,11 +625,31 @@ def mean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue)
     return arr.mean(axis=axis, dtype=dtype, out=out, keepdims=keepdims, where=where)
 
 
+#YYY: pattern: initial=...
+
 def sum(a, axis=None, dtype=None, out=None, keepdims=NoValue,
         initial=NoValue, where=NoValue):
     arr = asarray(a)
     return arr.sum(axis=axis, dtype=dtype, out=out, keepdims=keepdims,
                    initial=initial, where=where)
+
+
+def prod(a, axis=None, dtype=None, out=None, keepdims=NoValue,
+         initial=NoValue, where=NoValue):
+    arr = asarray(a)
+    return arr.prod(axis=axis, dtype=dtype, out=out, keepdims=keepdims,
+                   initial=initial, where=where)
+
+
+#YYY: pattern : ddof
+
+def std(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
+    arr = asarray(a)
+    return arr.std(axis=axis, dtype=dtype, out=out, ddof=ddof, keepdims=keepdims, where=where)
+
+def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
+    arr = asarray(a)
+    return arr.var(axis=axis, dtype=dtype, out=out, ddof=ddof, keepdims=keepdims, where=where)
 
 
 @asarray_replacer()
@@ -661,30 +667,6 @@ def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoVal
     if out is not None:
         out.copy_(result)
     return result
-
-
-# YYY: pattern : std, var
-@asarray_replacer()
-def std(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
-    if where is not None:
-        raise NotImplementedError
-    if dtype is not None:
-        raise NotImplementedError 
-    if not torch.is_floating_point(a):
-        a = a * 1.0
-    return torch.std(a, axis, correction=ddof, keepdim=bool(keepdims), out=out)
-
-
-@asarray_replacer()
-def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
-    if where is not None:
-        raise NotImplementedError
-    if dtype is not None:
-        raise NotImplementedError 
-    if not torch.is_floating_point(a):
-        a = a * 1.0
-    return torch.var(a, axis, correction=ddof, keepdim=bool(keepdims), out=out)
-
 
 
 @asarray_replacer()
