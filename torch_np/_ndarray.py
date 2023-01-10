@@ -259,17 +259,36 @@ class ndarray:
         return _ufunc_impl.remainder(self, asarray(other), out=self)
 
 
+    # bitwise ops
+    # and, self & other
+    def __and__(self, other):
+        return _ufunc_impl.bitwise_and(self, asarray(other))
 
+    def __rand__(self, other):
+        return _ufunc_impl.bitwise_and(self, asarray(other))
 
-    # FIXME ops and binops below
+    def __iand__(self, other):
+        return _ufunc_impl.bitwise_and(self, asarray(other), out=self)
 
+    # or, self | other
     def __or__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__or__(other_tensor))
+        return _ufunc_impl.bitwise_or(self, asarray(other))
+
+    def __ror__(self, other):
+        return _ufunc_impl.bitwise_or(self, asarray(other))
 
     def __ior__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__ior__(other_tensor))
+        return _ufunc_impl.bitwise_or(self, asarray(other), out=self)
+
+    # xor, self ^ other
+    def __xor__(self, other):
+        return _ufunc_impl.bitwise_xor(self, asarray(other))
+
+    def __rxor__(self, other):
+        return _ufunc_impl.bitwise_xor(self, asarray(other))
+
+    def __ixor__(self, other):
+        return _ufunc_impl.bitwise_xor(self, asarray(other), out=self)
 
 
     # unary ops
