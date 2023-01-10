@@ -757,6 +757,11 @@ def isscalar(a):
         return False
 
 
+def isclose(a, b, rtol=1.e-5, atol=1.e-8, equal_nan=False):
+    a = asarray(a).get()
+    b = asarray(a).get()
+    return asarray(torch.isclose(a, b, rtol=rtol, atol=atol, equal_nan=equal_nan))
+
 ###### mapping from numpy API objects to wrappers from this module ######
 
 # All is in the mapping dict in _mapping.py

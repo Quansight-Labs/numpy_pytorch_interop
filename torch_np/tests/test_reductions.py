@@ -2,7 +2,8 @@ import pytest
 from pytest import raises as assert_raises
 
 import torch_np as np
-from torch_np.testing import assert_equal, assert_array_equal, assert_allclose
+from torch_np.testing import (assert_equal, assert_array_equal, assert_allclose,
+                              assert_almost_equal)
 
 import torch_np._util as _util
 
@@ -321,12 +322,10 @@ class TestSum:
     def test_sum_stability(self):
         a = np.ones(500, dtype=np.float32)
         zero = np.zeros(1, dtype='float32')[0]
-        assert_allclose((a / 10.).sum() - a.size / 10., zero, atol=1.5e-4,
-                         check_dtype=False)
+        assert_allclose((a / 10.).sum() - a.size / 10., zero, atol=1.5e-4)
 
         a = np.ones(500, dtype=np.float64)
-        assert_allclose((a / 10.).sum() - a.size / 10., 0., atol=1.5e-13,
-                        check_dtype=False)
+        assert_allclose((a / 10.).sum() - a.size / 10., 0., atol=1.5e-13)
 
     def test_sum_boolean(self):
         a = (np.arange(7) % 2 == 0)
@@ -338,8 +337,8 @@ class TestSum:
         assert res_float.dtype == 'float64'
 
 
-    @pytest.mark.xfail(reason="dtype(value) needs implementing")
-    def test_sum_dtypes(self):
+    @pytest.mark.xfail(reason="sum: does not warn on overflow")
+    def test_sum_dtypes_warnings(self):
         for dt in (int, np.float16, np.float32, np.float64):
             for v in (0, 1, 2, 7, 8, 9, 15, 16, 19, 127,
                       128, 1024, 1235):
@@ -357,48 +356,54 @@ class TestSum:
                     assert_almost_equal(np.sum(d), tgt)
                     assert_equal(len(w), 2 * overflow)
 
-                    assert_almost_equal(np.sum(d[::-1]), tgt)
+                    assert_almost_equal(np.sum(np.flip(d)), tgt)
                     assert_equal(len(w), 3 * overflow)
 
+    def test_sum_dtypes_2(self):
+        for dt in (int, np.float16, np.float32, np.float64):
             d = np.ones(500, dtype=dt)
             assert_almost_equal(np.sum(d[::2]), 250.)
             assert_almost_equal(np.sum(d[1::2]), 250.)
             assert_almost_equal(np.sum(d[::3]), 167.)
             assert_almost_equal(np.sum(d[1::3]), 167.)
-            assert_almost_equal(np.sum(d[::-2]), 250.)
-            assert_almost_equal(np.sum(d[-1::-2]), 250.)
-            assert_almost_equal(np.sum(d[::-3]), 167.)
-            assert_almost_equal(np.sum(d[-1::-3]), 167.)
+            assert_almost_equal(np.sum(np.flip(d)[::2]), 250.)
+
+            assert_almost_equal(np.sum(np.flip(d)[1::2]), 250.)
+
+            assert_almost_equal(np.sum(np.flip(d)[::3]), 167.)
+            assert_almost_equal(np.sum(np.flip(d)[1::3]), 167.)
+
             # sum with first reduction entry != 0
             d = np.ones((1,), dtype=dt)
             d += d
             assert_almost_equal(d, 2.)
 
-    @pytest.mark.xfail(reason="dtype(value) needs implementing")
-    def test_sum_complex(self):
-        for dt in (np.complex64, np.complex128):
-            for v in (0, 1, 2, 7, 8, 9, 15, 16, 19, 127,
-                      128, 1024, 1235):
-                tgt = dt(v * (v + 1) / 2) - dt((v * (v + 1) / 2) * 1j)
-                d = np.empty(v, dtype=dt)
-                d.real = np.arange(1, v + 1)
-                d.imag = -np.arange(1, v + 1)
-                assert_allclose(np.sum(d), tgt, atol=1.5e-5)
-                assert_allcllose(np.sum(d[::-1]), tgt, atol=1.5e-7)
+    @pytest.mark.parametrize("dt", [np.complex64, np.complex128])
+    def test_sum_complex_1(self, dt):
+        for v in (0, 1, 2, 7, 8, 9, 15, 16, 19, 127,
+                  128, 1024, 1235):
+            tgt = dt(v * (v + 1) / 2) - dt((v * (v + 1) / 2) * 1j)
+            d = np.empty(v, dtype=dt)
+            d.real = np.arange(1, v + 1)
+            d.imag = -np.arange(1, v + 1)
+            assert_allclose(np.sum(d), tgt, atol=1.5e-5)
+            assert_allclose(np.sum(np.flip(d)), tgt, atol=1.5e-7)
 
-            d = np.ones(500, dtype=dt) + 1j
-            assert_allclose(np.sum(d[::2]), 250. + 250j, atol=1.5e-7)
-            assert_allclose(np.sum(d[1::2]), 250. + 250j, atol=1.5e-7)
-            assert_allclose(np.sum(d[::3]), 167. + 167j, atol=1.5e-7)
-            assert_allclose(np.sum(d[1::3]), 167. + 167j, atol=1.5e-7)
-            assert_allclose(np.sum(d[::-2]), 250. + 250j, atol=1.5e-7)
-            assert_allclose(np.sum(d[-1::-2]), 250. + 250j, atol=1.5e-7)
-            assert_allclose(np.sum(d[::-3]), 167. + 167j, atol=1.5e-7)
-            assert_allclose(np.sum(d[-1::-3]), 167. + 167j, atol=1.5e-7)
-            # sum with first reduction entry != 0
-            d = np.ones((1,), dtype=dt) + 1j
-            d += d
-            assert_allclose(d, 2. + 2j, atol=1.5e-7)
+    @pytest.mark.parametrize("dt", [np.complex64, np.complex128])
+    def test_sum_complex_2(self, dt):
+        d = np.ones(500, dtype=dt) + 1j
+        assert_allclose(np.sum(d[::2]), 250. + 250j, atol=1.5e-7)
+        assert_allclose(np.sum(d[1::2]), 250. + 250j, atol=1.5e-7)
+        assert_allclose(np.sum(d[::3]), 167. + 167j, atol=1.5e-7)
+        assert_allclose(np.sum(d[1::3]), 167. + 167j, atol=1.5e-7)
+        assert_allclose(np.sum(np.flip(d)[::2]), 250. + 250j, atol=1.5e-7)
+        assert_allclose(np.sum(np.flip(d)[1::2]), 250. + 250j, atol=1.5e-7)
+        assert_allclose(np.sum(np.flip(d)[::3]), 167. + 167j, atol=1.5e-7)
+        assert_allclose(np.sum(np.flip(d)[1::3]), 167. + 167j, atol=1.5e-7)
+        # sum with first reduction entry != 0
+        d = np.ones((1,), dtype=dt) + 1j
+        d += d
+        assert_allclose(d, 2. + 2j, atol=1.5e-7)
 
     @pytest.mark.xfail(reason='initial=... need implementing')
     def test_sum_initial(self):

@@ -1169,7 +1169,7 @@ def _assert_valid_refcount(op):
 
 
 def assert_allclose(actual, desired, rtol=1e-7, atol=0, equal_nan=True,
-                    err_msg='', verbose=True):
+                    err_msg='', verbose=True, check_dtype=False):
     """
     Raises an AssertionError if two objects are not equal up to desired
     tolerance.
@@ -1226,14 +1226,17 @@ def assert_allclose(actual, desired, rtol=1e-7, atol=0, equal_nan=True,
 
     """
     __tracebackhide__ = True  # Hide traceback for py.test
-    import numpy as np
 
     def compare(x, y):
-        return np.core.numeric.isclose(x, y, rtol=rtol, atol=atol,
+        return np.isclose(x, y, rtol=rtol, atol=atol,
                                        equal_nan=equal_nan)
 
     actual, desired = asanyarray(actual), asanyarray(desired)
     header = f'Not equal to tolerance rtol={rtol:g}, atol={atol:g}'
+
+    if check_dtype:
+        assert actual.dtype == desired.dtype
+
     assert_array_compare(compare, actual, desired, err_msg=str(err_msg),
                          verbose=verbose, header=header, equal_nan=equal_nan)
 
