@@ -416,7 +416,7 @@ class ndarray:
         if where is not None:
             raise NotImplementedError
 
-        torch_dtype = _helpers.float_or_default(dtype, self.dtype)
+        torch_dtype = _helpers.float_or_default(dtype, self.dtype, enforce_float=True)
         if axis is None:
             result = self._tensor.mean(dtype=torch_dtype)
         else:
@@ -462,7 +462,7 @@ class ndarray:
         if where is not None:
             raise NotImplementedError
 
-        torch_dtype = _helpers.float_or_default(dtype, self.dtype)
+        torch_dtype = _helpers.float_or_default(dtype, self.dtype, enforce_float=True)
         tensor = self._tensor.to(torch_dtype)   # XXX: needed?
 
         result = tensor.std(dim=axis, correction=ddof)
@@ -475,7 +475,7 @@ class ndarray:
         if where is not None:
             raise NotImplementedError
 
-        torch_dtype = _helpers.float_or_default(dtype, self.dtype)
+        torch_dtype = _helpers.float_or_default(dtype, self.dtype, enforce_float=True)
         tensor = self._tensor.to(torch_dtype)   # XXX: needed?
 
         result = tensor.var(dim=axis, correction=ddof)
