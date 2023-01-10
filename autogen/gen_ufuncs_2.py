@@ -85,16 +85,28 @@ _all_list = []
 main_text = header
 test_text = test_header
 
+_impl_list = []
+_ufunc_list = []
+
 for ufunc in dct['ufunc']:
     if ufunc in skip:
         continue
 
     if ufunc.nin == 1:
-        # print(get_signature(ufunc))
+#        print(get_signature(ufunc))
 
         torch_name = torch_names.get(ufunc)
         if torch_name is None:
             torch_name = ufunc.__name__
+
+#        print(ufunc.__name__, ' -- ', torch_name)   
+
+        _impl_stanza = "{np_name} = deco_unary_ufunc(torch.{torch_name})"
+        _impl_stanza = _impl_stanza.format(np_name=ufunc.__name__,
+                                     torch_name=torch_name,)
+        _impl_list.append(_impl_stanza)        
+
+        continue
 
         torch_stanza = stanzas.get(ufunc)
         if torch_stanza is None:
@@ -109,6 +121,11 @@ for ufunc in dct['ufunc']:
 
         _all_list.append(ufunc.__name__)
 
+
+print("\n".join(_impl_list))
+print("\n\n-----\n\n")
+
+'''
 main_text += "\n\n__all__ = %s" % _all_list
 
 
@@ -117,7 +134,7 @@ with open("_unary_ufuncs.py", "w") as f:
 
 with open("test_unary_ufuncs.py", "w") as f:
     f.write(test_text)
-
+'''
 
 ###### BINARY UFUNCS ###################################
 
@@ -163,6 +180,7 @@ test_text = test_header
 _impl_list = []
 _ufunc_list = []
 
+
 for ufunc in dct['ufunc']:
 
     if ufunc in skip:
@@ -189,4 +207,7 @@ print("\n".join(_impl_list))
 
 print("\n\n")
 print("\n".join(_ufunc_list))
+
+
+
 

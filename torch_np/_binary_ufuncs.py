@@ -24,7 +24,8 @@ from . import _ufunc_impl
 # files, doing it would currently create import cycles.
 #
 
-
+# TODO: deduplicate with _unary_ufuncs/deco_unary_ufunc_from_impl,
+# _ndarray/asarray_replacer, and _wrapper/concatenate et al
 def deco_ufunc_from_impl(impl_func):
     @functools.wraps(impl_func)
     def wrapped(x1, x2, *args, **kwds):
@@ -75,3 +76,4 @@ remainder = deco_ufunc_from_impl(_ufunc_impl.remainder)
 right_shift = deco_ufunc_from_impl(_ufunc_impl.right_shift)
 subtract = deco_ufunc_from_impl(_ufunc_impl.subtract)
 divide = deco_ufunc_from_impl(_ufunc_impl.divide)
+
