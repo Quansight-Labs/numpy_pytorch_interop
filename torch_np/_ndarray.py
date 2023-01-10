@@ -86,6 +86,10 @@ class ndarray:
     def real(self):
         return asarray(self._tensor.real)
 
+    @real.setter
+    def real(self, value):
+        self._tensor.real = asarray(value).get()
+
     @property
     def imag(self):
         try:
@@ -93,6 +97,10 @@ class ndarray:
         except RuntimeError:
             zeros = torch.zeros_like(self._tensor)
             return ndarray._from_tensor_and_base(zeros, None)
+
+    @imag.setter
+    def imag(self, value):
+        self._tensor.imag = asarray(value).get()
 
     # ctors
     def astype(self, dtype):
