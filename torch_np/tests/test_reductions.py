@@ -328,6 +328,16 @@ class TestSum:
         assert_allclose((a / 10.).sum() - a.size / 10., 0., atol=1.5e-13,
                         check_dtype=False)
 
+    def test_sum_boolean(self):
+        a = (np.arange(7) % 2 == 0)
+        res = a.sum()
+        assert_equal(res, 4)
+
+        res_float = a.sum(dtype=np.float64)
+        assert_allclose(res_float, 4.0, atol=1e-15)
+        assert res_float.dtype == 'float64'
+
+
     @pytest.mark.xfail(reason="dtype(value) needs implementing")
     def test_sum_dtypes(self):
         for dt in (int, np.float16, np.float32, np.float64):
