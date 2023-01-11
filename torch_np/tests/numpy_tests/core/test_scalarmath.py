@@ -261,7 +261,11 @@ class TestModulus:
 
     def test_modulus_basic(self):
         dt = np.typecodes['AllInteger'] + np.typecodes['Float']
-        for op in [floordiv_and_mod,]:   # TODO: divmod is not implemented
+        for op in [floordiv_and_mod, divmod]:
+
+            if op == divmod:
+                pytest.xfail(reason="__divmod__ not implemented")
+
             for dt1, dt2 in itertools.product(dt, dt):
                 for sg1, sg2 in itertools.product(_signs(dt1), _signs(dt2)):
                     fmt = 'op: %s, dt1: %s, dt2: %s, sg1: %s, sg2: %s'
@@ -306,7 +310,11 @@ class TestModulus:
     def test_float_modulus_roundoff(self):
         # gh-6127
         dt = np.typecodes['Float']
-        for op in [floordiv_and_mod]:  # TODO divmod is not implemented
+        for op in [floordiv_and_mod, divmod]:
+
+            if op == divmod:
+                pytest.xfail(reason="__divmod__ not implemented")
+
             for dt1, dt2 in itertools.product(dt, dt):
                 for sg1, sg2 in itertools.product((+1, -1), (+1, -1)):
                     fmt = 'op: %s, dt1: %s, dt2: %s, sg1: %s, sg2: %s'
@@ -360,7 +368,7 @@ class TestModulus:
 
 class TestComplexDivision:
 
-    @pytest.mark.xfail(reason='With pytorch, 1/(0+0j) is nan + nan*j, not inf + nan*j')
+    @pytest.mark.skip(reason='With pytorch, 1/(0+0j) is nan + nan*j, not inf + nan*j')
     def test_zero_division(self):
         with np.errstate(all="ignore"):
             for t in [np.complex64, np.complex128]:
@@ -440,7 +448,6 @@ class TestConversion:
         for T in [None, np.float64, np.int64]:
             a = np.array(l, dtype=T)
             assert_equal([int(_m) for _m in a], li)
-
 
     @pytest.mark.xfail(reason="pytorch does not emit this warning.")
     def test_iinfo_long_values_1(self):
@@ -681,7 +688,7 @@ class TestAbs:
         self._test_abs_func(np.abs, dtype)
 
 
-@pytest.mark.skip(reason='TODO: implement bit shifts')
+@pytest.mark.xfail(reason='TODO: implement bit shifts')
 class TestBitShifts:
 
     @pytest.mark.parametrize('type_code', np.typecodes['AllInteger'])
