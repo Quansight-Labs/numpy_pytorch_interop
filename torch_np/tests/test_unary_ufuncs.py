@@ -27,8 +27,8 @@ def test_arccos():
 
 
 def test_arccosh():
-    assert_allclose(np.arccosh(0.5),
-                    arccosh(0.5), atol=1e-14, check_dtype=False)
+    assert_allclose(np.arccosh(1.5),
+                    arccosh(1.5), atol=1e-14, check_dtype=False)
 
 
 

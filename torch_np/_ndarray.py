@@ -5,6 +5,7 @@ import torch
 from . import _util
 from . import _helpers
 from . import _dtypes
+from . import _ufunc_impl
 
 NoValue = None
 newaxis = None
@@ -106,6 +107,9 @@ class ndarray:
         tensor = self._tensor.clone()   # XXX: clone or detach?
         return ndarray._from_tensor_and_base(tensor, None)
 
+    def tolist(self):
+        return self._tensor.tolist()
+
     ###  niceties ###
     def __str__(self):
         return str(self._tensor).replace("tensor", "array_w").replace("dtype=torch.", "dtype=")
@@ -115,28 +119,31 @@ class ndarray:
     ### comparisons ###
     def __eq__(self, other):
         try:
-            t_other = asarray(other).get
+            return _ufunc_impl.equal(self, asarray(other))
         except RuntimeError:
             # Failed to convert other to array: definitely not equal.
-            # TODO: generalize, delegate to ufuncs
             falsy = torch.full(self.shape, fill_value=False, dtype=bool)
             return asarray(falsy)
-        return asarray(self._tensor == asarray(other).get())
 
     def __neq__(self, other):
-        return asarray(self._tensor != asarray(other).get())
+        try:
+            return _ufunc_impl.not_equal(self, asarray(other))
+        except RuntimeError:
+            # Failed to convert other to array: definitely not equal.
+            falsy = torch.full(self.shape, fill_value=True, dtype=bool)
+            return asarray(falsy)
 
     def __gt__(self, other):
-        return asarray(self._tensor > asarray(other).get())
+        return _ufunc_impl.greater(self, asarray(other))
 
     def __lt__(self, other):
-        return asarray(self._tensor < asarray(other).get())
+        return _ufunc_impl.less(self, asarray(other))
 
     def __ge__(self, other):
-        return asarray(self._tensor >= asarray(other).get())
+        return _ufunc_impl.greater_equal(self, asarray(other))
 
     def __le__(self, other):
-        return asarray(self._tensor <= asarray(other).get())
+        return _ufunc_impl.less_equal(self, asarray(other))
 
     def __bool__(self):
         try:
@@ -178,76 +185,130 @@ class ndarray:
 
     ### arithmetic ###
 
+    # add, self + other
     def __add__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__add__(other_tensor))
+        return _ufunc_impl.add(self, asarray(other))
+
+    def __radd__(self, other):
+        return _ufunc_impl.add(self, asarray(other))
 
     def __iadd__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__iadd__(other_tensor))
+        return _ufunc_impl.add(self, asarray(other), out=self)
 
+
+    # sub, self - other
     def __sub__(self, other):
-        other_tensor = asarray(other).get()
-        try:
-            return asarray(self._tensor.__sub__(other_tensor))
-        except RuntimeError as e:
-            raise TypeError(e.args)
+        return _ufunc_impl.subtract(self, asarray(other))
 
+    def __rsub__(self, other):
+        return _ufunc_impl.subtract(self, asarray(other))
+
+    def __isub__(self, other):
+        return _ufunc_impl.subtract(self, asarray(other), out=self)
+
+
+    # mul, self * other
     def __mul__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__mul__(other_tensor))
+        return _ufunc_impl.multiply(self, asarray(other))
 
     def __rmul__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__rmul__(other_tensor))
+        return _ufunc_impl.multiply(self, asarray(other))
 
-    def __floordiv__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__floordiv__(other_tensor))
+    def __imul__(self, other):
+        return _ufunc_impl.multiply(self, asarray(other), out=self)
 
-    def __ifloordiv__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__ifloordiv__(other_tensor))
 
+    # div, self / other
     def __truediv__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__truediv__(other_tensor))
+        return _ufunc_impl.divide(self, asarray(other))
+
+    def __rtruediv__(self, other):
+        return _ufunc_impl.divide(self, asarray(other))
 
     def __itruediv__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__itruediv__(other_tensor))
+        return _ufunc_impl.divide(self, asarray(other), out=self)
 
+
+    # floordiv, self // other
+    def __floordiv__(self, other):
+        return _ufunc_impl.floor_divide(self, asarray(other))
+
+    def __rfloordiv__(self, other):
+        return _ufunc_impl.floor_divide(self, asarray(other))
+
+    def __ifloordiv__(self, other):
+        return _ufunc_impl.floor_divide(self, asarray(other), out=self)
+
+
+    # power, self**exponent
+    def __pow__(self, exponent):
+        return _ufunc_impl.float_power(self, asarray(exponent))
+
+    def __rpow__(self, exponent):
+        return _ufunc_impl.float_power(self, asarray(exponent))
+
+    def __ipow__(self, exponent):
+        return _ufunc_impl.float_power(self, asarray(exponent), out=self)
+
+
+    # remainder, self % other
     def __mod__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__mod__(other_tensor))
+        return _ufunc_impl.remainder(self, asarray(other))
+
+    def __rmod__(self, other):
+        return _ufunc_impl.remainder(self, asarray(other))
 
     def __imod__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__imod__(other_tensor))
+        return _ufunc_impl.remainder(self, asarray(other), out=self)
 
+
+    # bitwise ops
+    # and, self & other
+    def __and__(self, other):
+        return _ufunc_impl.bitwise_and(self, asarray(other))
+
+    def __rand__(self, other):
+        return _ufunc_impl.bitwise_and(self, asarray(other))
+
+    def __iand__(self, other):
+        return _ufunc_impl.bitwise_and(self, asarray(other), out=self)
+
+
+    # or, self | other
     def __or__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__or__(other_tensor))
+        return _ufunc_impl.bitwise_or(self, asarray(other))
+
+    def __ror__(self, other):
+        return _ufunc_impl.bitwise_or(self, asarray(other))
 
     def __ior__(self, other):
-        other_tensor = asarray(other).get()
-        return asarray(self._tensor.__ior__(other_tensor))
+        return _ufunc_impl.bitwise_or(self, asarray(other), out=self)
 
+
+    # xor, self ^ other
+    def __xor__(self, other):
+        return _ufunc_impl.bitwise_xor(self, asarray(other))
+
+    def __rxor__(self, other):
+        return _ufunc_impl.bitwise_xor(self, asarray(other))
+
+    def __ixor__(self, other):
+        return _ufunc_impl.bitwise_xor(self, asarray(other), out=self)
+
+
+    # unary ops
     def __invert__(self):
-        return asarray(self._tensor.__invert__())
+        return _ufunc_impl.invert(self)
 
     def __abs__(self):
-        return asarray(self._tensor.__abs__())
+        return _ufunc_impl.absolute(self)
+
+    def __pos__(self):
+        return _ufunc_impl.positive(self)
 
     def __neg__(self):
-        try:
-            return asarray(self._tensor.__neg__())
-        except RuntimeError as e:
-            raise TypeError(e.args)
+        return _ufunc_impl.negative(self)
 
-    def __pow__(self, exponent):
-        exponent_tensor = asarray(exponent).get()
-        return asarray(self._tensor.__pow__(exponent_tensor))
 
     ### methods to match namespace functions
 
@@ -483,22 +544,12 @@ class asarray_replacer:
         self._dispatch = dispatch
 
     def __call__(self, func):
-
         if self._dispatch == 'one':
             @functools.wraps(func)
             def wrapped(x, *args, **kwds):
                 x_tensor = asarray(x).get()
                 return asarray(func(x_tensor, *args, **kwds))
             return wrapped
-
-        elif self._dispatch == 'two':
-            @functools.wraps(func)
-            def wrapped(x, y, *args, **kwds):
-                x_tensor = asarray(x).get()
-                y_tensor = asarray(y).get()
-                return asarray(func(x_tensor, y_tensor, *args, **kwds))
-            return wrapped
-
         else:
             raise ValueError
 
@@ -513,8 +564,17 @@ def can_cast(from_, to, casting='safe'):
 
 
 def result_type(*arrays_and_dtypes):
-    dtypes = [elem if isinstance(elem, _dtypes.dtype) else asarray(elem).dtype
-              for elem in arrays_and_dtypes]
+    dtypes = []
+
+    from ._dtypes import issubclass_
+
+    for entry in arrays_and_dtypes:
+        if issubclass_(entry, _dtypes._scalar_types.generic):
+            dtypes.append(_dtypes.dtype(entry))
+        elif isinstance(entry, _dtypes.dtype):
+            dtypes.append(entry)
+        else:
+            dtypes.append(asarray(entry).dtype)
 
     dtyp = dtypes[0]
     if len(dtypes) == 1:

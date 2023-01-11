@@ -1,8 +1,5 @@
-__pycache__/*
-autogen/__pycache__
-torch_np/__pycache__/*
-torch_np/tests/__pycache__/*
-torch_np/tests/numpy_tests/core/__pycache__/*
-torch_np/testing/__pycache__/*
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
 .coverage
 
