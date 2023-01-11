@@ -869,9 +869,9 @@ def assert_array_almost_equal(x, y, decimal=6, err_msg='', verbose=True):
 
     """
     __tracebackhide__ = True  # Hide traceback for py.test
-    from numpy.core import number, float_, result_type, array
-    from numpy.core.numerictypes import issubdtype
-    from numpy.core.fromnumeric import any as npany
+    from torch_np import number, float_, result_type, array
+    from torch_np import issubdtype
+    from torch_np import any as npany
 
     def compare(x, y):
         try:

@@ -67,6 +67,7 @@ class dtype:
 
     __str__ = __repr__
 
+    @property
     def itemsize(self):
         elem = self.type(1)
         return elem.get().element_size()
@@ -193,6 +194,8 @@ def torch_dtype_from(dtyp):
         raise TypeError
 
 
+# ### Defaults and dtype discovery
+
 def default_int_type():
     return dtype('int64')
 
@@ -201,14 +204,33 @@ def default_float_type():
     return dtype('float64')
 
 
+def default_complex_type():
+    return dtype('complex128')
+
+
 def is_floating(dtyp):
     dtyp = dtype(dtyp)
-    return dtyp.typecode in typecodes['AllFloat']
+    return issubclass(dtyp.type, _scalar_types.floating)
+
 
 def is_integer(dtyp):
     dtyp = dtype(dtyp)
-    return dtyp.typecode in typecodes['AllInteger']
+    return issubclass(dtyp.type, _scalar_types.integer)
 
+
+def get_default_dtype_for(dtyp):
+    typ = dtype(dtyp).type
+    if issubclass(typ, _scalar_types.integer):
+        result = default_int_type()
+    elif issubclass(typ, _scalar_types.floating):
+        result = default_float_type()
+    elif issubclass(typ, _scalar_types.complexfloating):
+        result = default_complex_type()
+    elif issubclass(typ, _scalar_types.bool_):
+        result = dtype('bool')
+    else:
+        raise TypeError("dtype %s not understood." % dtyp)
+    return result
 
 
 def issubclass_(arg, klass):

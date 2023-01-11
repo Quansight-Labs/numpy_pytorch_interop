@@ -248,16 +248,19 @@ class TestMean:
         rmat = np.arange(20, dtype=float).reshape((4, 5))
         cmat = rmat + 1j*rmat
 
-        for mat in [rmat, cmat]:
-            for axis in [0, 1]:
-                tgt = mat.sum(axis=axis)
-                res = np.mean(mat, axis=axis) * mat.shape[axis]
-                assert_allclose(res, tgt)
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter('error')
+            for mat in [rmat, cmat]:
+                for axis in [0, 1]:
+                    tgt = mat.sum(axis=axis)
+                    res = np.mean(mat, axis=axis) * mat.shape[axis]
+                    assert_allclose(res, tgt)
 
-            for axis in [None]:
-                tgt = mat.sum(axis=axis)
-                res = np.mean(mat, axis=axis) * mat.size
-                assert_allclose(res, tgt)
+                for axis in [None]:
+                    tgt = mat.sum(axis=axis)
+                    res = np.mean(mat, axis=axis) * mat.size
+                    assert_allclose(res, tgt)
 
     @pytest.mark.xfail(reason="see pytorch/gh-91597")
     def test_mean_float16(self):

@@ -25,7 +25,12 @@ class generic(abc.ABC):
         if isinstance(value, _ndarray.ndarray):
             tensor = value.get()
         else:
-            tensor = torch.as_tensor(value, dtype=torch_dtype)
+            try:
+                tensor = torch.as_tensor(value, dtype=torch_dtype)
+            except RuntimeError as e:
+                if "Overflow" in str(e):
+                    raise OverflowError(e.args)
+                raise e
         #
         # With numpy:
         # >>> a = np.ones(3)
@@ -135,6 +140,7 @@ ubyte = uint8
 half = float16
 single = float32
 double = float64
+float_ = float64
 
 csingle = complex64
 cdouble = complex128
@@ -169,8 +175,8 @@ sctypes = {
 __all__ = list(_typemap.keys())
 __all__.remove('bool')
 
-__all__ += ['bool_', 'intp', 'int_', 'intc', 'byte', 'short', 'longlong', 'ubyte', 'half', 'single', 'double',
-'csingle', 'cdouble']
+__all__ += ['bool_', 'intp', 'int_', 'intc', 'byte', 'short', 'longlong',
+            'ubyte', 'half', 'single', 'double', 'csingle', 'cdouble', 'float_']
 __all__ += ['sctypes']
 __all__ += ['generic', 'number',
             'integer', 'signedinteger', 'unsignedinteger',

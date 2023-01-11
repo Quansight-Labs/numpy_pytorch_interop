@@ -510,6 +510,11 @@ def argwhere(a):
     return asarray(torch.argwhere(tensor))
 
 
+def abs(a):
+    # FIXME: should go the other way, together with other ufuncs
+    arr = asarray(a)
+    return a.__abs__()
+
 from ._ndarray import axis_out_keepdims_wrapper
 
 @axis_out_keepdims_wrapper
@@ -702,18 +707,14 @@ def angle(z, deg=False):
     return result
 
 
-@asarray_replacer()
 def real(a):
-    return torch.real(a)
+    arr = asarray(a)
+    return arr.real
 
 
-@asarray_replacer()
 def imag(a):
-    # torch.imag raises on real-valued inputs
-    if torch.is_complex(a):
-        return torch.imag(a) 
-    else:
-        return torch.zeros_like(a)
+    arr = asarray(a)
+    return arr.imag
 
 
 @asarray_replacer()
