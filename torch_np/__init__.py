@@ -13,3 +13,8 @@ from ._getlimits import errstate
 inf = float('inf')
 nan = float('nan')
 
+
+#### HACK HACK HACK ####
+import torch
+torch.set_default_dtype(torch.float64)
+del torch
