@@ -456,12 +456,8 @@ class ndarray:
         axis = _helpers.allow_only_single_axis(axis)
 
         torch_dtype = _helpers.float_or_default(dtype, self.dtype)
-        if axis is None:
-            result = self._tensor.prod(dtype=torch_dtype)
-        else:
-            result = self._tensor.prod(dtype=torch_dtype, dim=axis)
-
-        return result
+kwargs = {"dim": axis} if axis is not None else {}
+return self._tensor.prod(dtype=torch_dtype, **kwargs)
 
 
     @axis_out_keepdims_wrapper
