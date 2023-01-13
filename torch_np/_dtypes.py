@@ -18,7 +18,9 @@ __all__ = ['dtype_from_torch', 'dtype', 'typecodes', 'issubdtype']
 
 class dtype:
     def __init__(self, name, /):
-        if isinstance(name, dtype):
+        if issubclass_(name, _scalar_types.generic):
+            _name = name.name
+        elif isinstance(name, dtype):
             _name = name.name
         elif hasattr(name, 'dtype'):
             _name = name.dtype.name
@@ -30,9 +32,6 @@ class dtype:
             _name = typecode_chars_dict[name]
         elif name in dt_aliases_dict:
             _name = dt_aliases_dict[name]
-       # the check must come last, so that 'name' is not a string
-        elif issubclass(name, _scalar_types.generic):
-            _name = name.name
         else:
             raise TypeError(f"data type '{name}' not understood")
         self._name = _name

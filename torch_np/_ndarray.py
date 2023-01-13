@@ -176,10 +176,6 @@ class ndarray:
         mesg = "only integer scalar arrays can be converted to a scalar index"
         raise TypeError(mesg)
 
-    # HACK : otherwise cannot check array.dtype in _dtypes.dict
-    def __hash__(self):
-        return id(self)
-
     def __float__(self):
         return float(self._tensor)
 
