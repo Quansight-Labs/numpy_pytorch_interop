@@ -1,4 +1,16 @@
+"""Assorted utilities, which do not need anything other then torch and stdlib.
+
+In particular, things here cannot import from _ndarray.py, cannot use the
+name `ndarray`. Depending on a duck-typed "array" argument is allowed though.
+The following methods are expected to exist:
+
+- `arr.get()` to return a torch.Tensor
+- `arr.ravel()` -- is only used by `axis_none_ravel`
+"""
+
 import operator
+
+import torch
 
 
 # https://github.com/numpy/numpy/blob/v1.23.0/numpy/distutils/misc_util.py#L497-L504
@@ -88,6 +100,14 @@ def normalize_axis_tuple(axis, ndim, argname=None, allow_duplicate=False):
     return axis
 
 
+def allow_only_single_axis(axis):
+    if axis is None:
+        return axis
+    if len(axis) != 1:
+        raise NotImplementedError("does not handle tuple axis")
+    return axis[0]
+
+
 def expand_shape(arr_shape, axis):
     # taken from numpy 1.23.x, expand_dims function
     if type(axis) not in (list, tuple):
@@ -98,3 +118,22 @@ def expand_shape(arr_shape, axis):
     shape = [1 if ax in axis else next(shape_it) for ax in range(out_ndim)]
     return shape
 
+
+def apply_keepdims(tensor, axis, ndim):
+    if axis is None:
+        # tensor was a scalar
+        tensor = torch.full((1,)*ndim, fill_value=tensor)
+    else:
+        shape = expand_shape(tensor.shape, axis)
+        tensor = tensor.reshape(shape)
+    return tensor
+
+
+def axis_none_ravel(*arrays, axis=None):
+    """Ravel the arrays if axis is none."""
+    # XXX: is only used at `concatenate`. Inline unless reused more widely
+    if axis is None:
+        arrays = tuple(ar.ravel() for ar in arrays)
+        return arrays, 0
+    else:
+        return arrays, axis

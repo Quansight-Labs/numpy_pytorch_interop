@@ -31,7 +31,7 @@ def axis_out_keepdims_wrapper(func):
         result = func(arr, axis=axis, *args, **kwds)
 
         if keepdims:
-            result = _helpers.apply_keepdims(result, axis, arr.ndim)
+            result = _util.apply_keepdims(result, axis, arr.ndim)
         return _helpers.result_or_out(result, out)
 
     return wrapped
@@ -331,13 +331,13 @@ class ndarray:
 
     @axis_out_keepdims_wrapper
     def argmax(self, axis=None, out=None, *, keepdims=NoValue):
-        axis = _helpers.allow_only_single_axis(axis)
+        axis = _util.allow_only_single_axis(axis)
         tensor = torch.argmax(self._tensor, axis)
         return tensor
 
     @axis_out_keepdims_wrapper
     def argmin(self, axis=None, out=None, *, keepdims=NoValue):
-        axis = _helpers.allow_only_single_axis(axis)
+        axis = _util.allow_only_single_axis(axis)
         tensor = torch.argmin(self._tensor, axis)
         return tensor
 
@@ -374,7 +374,7 @@ class ndarray:
         if where is not None:
             raise NotImplementedError
 
-        axis = _helpers.allow_only_single_axis(axis)
+        axis = _util.allow_only_single_axis(axis)
 
         if axis is None:
             result = self._tensor.any()
@@ -388,7 +388,7 @@ class ndarray:
         if where is not None:
             raise NotImplementedError
 
-        axis = _helpers.allow_only_single_axis(axis)
+        axis = _util.allow_only_single_axis(axis)
 
         if axis is None:
             result = self._tensor.all()
@@ -453,7 +453,7 @@ class ndarray:
         if initial is not None or where is not None:
             raise NotImplementedError
 
-        axis = _helpers.allow_only_single_axis(axis)
+        axis = _util.allow_only_single_axis(axis)
 
         torch_dtype = _helpers.float_or_default(dtype, self.dtype)
         if axis is None:

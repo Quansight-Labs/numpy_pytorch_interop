@@ -341,7 +341,7 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     arrays = tuple(asarray(ar) for ar in ar_tuple)
 
     # np.concatenate ravels if axis=None
-    arrays, axis = _helpers.axis_none_ravel(*arrays, axis=axis)
+    arrays, axis = _util.axis_none_ravel(*arrays, axis=axis)
 
     # figure out the type of the inputs and outputs
     if out is None and dtype is None:

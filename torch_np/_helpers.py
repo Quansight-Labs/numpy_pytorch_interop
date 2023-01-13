@@ -75,16 +75,6 @@ def cast_dont_broadcast(arrays, out_dtype, casting):
     return tuple(tensors)
 
 
-
-def axis_none_ravel(*arrays, axis=None):
-    """Ravel the arrays if axis is none."""
-    if axis is None:
-        arrays = tuple(ar.ravel() for ar in arrays)
-        return arrays, 0
-    else:
-        return arrays, axis
-
-
 def result_or_out(result_tensor, out_array=None):
     """A helper for returns with out= argument."""
     if out_array is not None:
@@ -97,16 +87,6 @@ def result_or_out(result_tensor, out_array=None):
         return asarray(result_tensor)
 
 
-def apply_keepdims(tensor, axis, ndim):
-    if axis is None:
-        # tensor was a scalar
-        tensor = torch.full((1,)*ndim, fill_value=tensor)
-    else:
-        shape = _util.expand_shape(tensor.shape, axis)
-        tensor = tensor.reshape(shape)
-    return tensor
-
-
 def standardize_axis_arg(axis, ndim):
     """Return axis as either None or a tuple of normalized axes."""
     if isinstance(axis, ndarray):
@@ -117,14 +97,6 @@ def standardize_axis_arg(axis, ndim):
             axis = (axis,)
         axis = _util.normalize_axis_tuple(axis, ndim)
     return axis
-
-
-def allow_only_single_axis(axis):
-    if axis is None:
-        return axis
-    if len(axis) != 1:
-        raise NotImplementedError("does not handle tuple axis")
-    return axis[0]
 
 
 def to_tensors(*inputs):
