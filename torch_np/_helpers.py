@@ -87,18 +87,6 @@ def result_or_out(result_tensor, out_array=None):
         return asarray(result_tensor)
 
 
-def standardize_axis_arg(axis, ndim):
-    """Return axis as either None or a tuple of normalized axes."""
-    if isinstance(axis, ndarray):
-        axis = operator.index(axis)
-
-    if axis is not None:
-        if not isinstance(axis, (list, tuple)):
-            axis = (axis,)
-        axis = _util.normalize_axis_tuple(axis, ndim)
-    return axis
-
-
 def to_tensors(*inputs):
     """Convert all ndarrays from `inputs` to tensors."""
     return tuple([value.get() if isinstance(value, ndarray) else value

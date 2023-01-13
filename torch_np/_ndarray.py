@@ -1,4 +1,5 @@
 import functools
+import operator
 
 import torch
 
@@ -21,7 +22,15 @@ def axis_out_keepdims_wrapper(func):
     @functools.wraps(func)
     def wrapped(a, axis=None, out=None, keepdims=NoValue, *args, **kwds):
         arr = asarray(a)
-        axis = _helpers.standardize_axis_arg(axis, arr.ndim)
+
+        # standardize the axis argument
+        if isinstance(axis, ndarray):
+            axis = operator.index(axis)
+
+        if axis is not None:
+            if not isinstance(axis, (list, tuple)):
+                axis = (axis,)
+            axis = _util.normalize_axis_tuple(axis, arr.ndim)
 
         if axis == ():
             newshape = _util.expand_shape(arr.shape, axis=0)
