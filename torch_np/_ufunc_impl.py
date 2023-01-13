@@ -16,7 +16,9 @@ def deco_binary_ufunc(torch_func):
         if order != 'K' or not where:
             raise NotImplementedError
 
-        # XXX: dtype=... parameter is silently ignored
+        # XXX: dtype=... parameter
+        if dtype is not None:
+            raise NotImplementedError
 
         arrays = (x1, x2)
         tensors = _helpers.cast_and_broadcast(arrays, out, casting)
@@ -36,7 +38,9 @@ def deco_unary_ufunc(torch_func):
         if order != 'K' or not where:
             raise NotImplementedError
 
-        # XXX: dtype=... parameter is silently ignored
+        # XXX: dtype=... parameter
+        if dtype is not None:
+            raise NotImplementedError
 
         arrays = (x1, )
         tensors  = _helpers.cast_and_broadcast(arrays, out, casting)
