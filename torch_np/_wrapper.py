@@ -193,8 +193,9 @@ def arange(start=None, stop=None, step=1, dtype=None, *, like=None):
     if dtype is None:
         dtype = _dtypes.default_int_type()
         dtype = result_type(start, stop, step, dtype)
-
     torch_dtype = _dtypes.torch_dtype_from(dtype)
+    start, stop, step = _helpers.to_tensors(start, stop, step)
+
     try:
         return asarray(torch.arange(start, stop, step, dtype=torch_dtype))
     except RuntimeError:
@@ -764,6 +765,13 @@ def i0(x):
     return torch.special.i0(x)
 
 
+def isscalar(a):
+    # XXX: this is a stub
+    try:
+        arr = asarray(a)
+        return arr.size == 1
+    except Exception:
+        return False
 
 
 ###### mapping from numpy API objects to wrappers from this module ######

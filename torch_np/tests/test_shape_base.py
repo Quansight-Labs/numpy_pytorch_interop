@@ -464,7 +464,7 @@ def test_stack():
 
     # 0d input
     for input_ in [(1, 2, 3),
-###                   [np.int32(1), np.int32(2), np.int32(3)],    # XXX: numpy scalars?
+                   [np.int32(1), np.int32(2), np.int32(3)],
                    [np.array(1), np.array(2), np.array(3)]]:
         assert_array_equal(stack(input_), [1, 2, 3])
     # 1d input examples
