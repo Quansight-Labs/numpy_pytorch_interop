@@ -112,7 +112,7 @@ class ndarray:
     def copy(self, order='C'):
         if order != 'C':
             raise NotImplementedError
-        tensor = self._tensor.clone()   # XXX: clone or detach?
+        tensor = self._tensor.clone()
         return ndarray._from_tensor_and_base(tensor, None)
 
     def tolist(self):
@@ -471,7 +471,7 @@ class ndarray:
             raise NotImplementedError
 
         torch_dtype = _helpers.float_or_default(dtype, self.dtype, enforce_float=True)
-        tensor = self._tensor.to(torch_dtype)   # XXX: needed?
+        tensor = self._tensor.to(torch_dtype)
 
         result = tensor.std(dim=axis, correction=ddof)
 
@@ -484,7 +484,7 @@ class ndarray:
             raise NotImplementedError
 
         torch_dtype = _helpers.float_or_default(dtype, self.dtype, enforce_float=True)
-        tensor = self._tensor.to(torch_dtype)   # XXX: needed?
+        tensor = self._tensor.to(torch_dtype)
 
         result = tensor.var(dim=axis, correction=ddof)
 
