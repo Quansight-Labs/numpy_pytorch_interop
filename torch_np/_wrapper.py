@@ -217,7 +217,7 @@ def empty_like(prototype, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    torch_dtype = None if dtype is None else _dtypes.torch_dtype_from(dtype)
     result = torch.empty_like(prototype, dtype=torch_dtype)
     if shape is not None:
         result = result.reshape(shape)
@@ -239,7 +239,7 @@ def full_like(a, fill_value, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    torch_dtype = None if dtype is None else _dtypes.torch_dtype_from(dtype)
     result = torch.full_like(a, fill_value, dtype=torch_dtype)
     if shape is not None:
         result = result.reshape(shape)
@@ -259,7 +259,7 @@ def ones_like(a, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    torch_dtype = None if dtype is None else _dtypes.torch_dtype_from(dtype)
     result = torch.ones_like(a, dtype=torch_dtype)
     if shape is not None:
         result = result.reshape(shape)
@@ -280,7 +280,7 @@ def zeros_like(a, dtype=None, order='K', subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != 'K':
         raise NotImplementedError
-    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    torch_dtype = None if dtype is None else _dtypes.torch_dtype_from(dtype)
     result = torch.zeros_like(a, dtype=torch_dtype)
     if shape is not None:
         result = result.reshape(shape)
