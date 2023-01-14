@@ -128,18 +128,15 @@ def is_integer(dtyp):
 
 
 def get_default_dtype_for(dtyp):
-    typ = dtype(dtyp).type
-    if issubclass(typ, _scalar_types.integer):
-        result = default_int_type()
-    elif issubclass(typ, _scalar_types.floating):
-        result = default_float_type()
-    elif issubclass(typ, _scalar_types.complexfloating):
-        result = default_complex_type()
-    elif issubclass(typ, _scalar_types.bool_):
-        result = dtype('bool')
-    else:
-        raise TypeError("dtype %s not understood." % dtyp)
-    return result
+    sctype = dtype(dtyp).type
+    return _scalar_types.get_default_type_for(sctype)
+
+
+def float_or_default(dtyp, self_dtype, enforce_float=False):
+    """dtype helper for reductions: DTypes in, torch_dtype out"""
+    dtyp = self_dtype if dtyp is None else dtype(dtyp)    
+    sctype = _scalar_types.float_or_default(dtyp.type, enforce_float)
+    return sctype.torch_dtype
 
 
 def issubclass_(arg, klass):

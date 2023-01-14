@@ -235,6 +235,30 @@ default_complex_type = complex128
 ##########################
 
 
+def get_default_type_for(sctype):
+    """Default scalar type given sctype category."""
+    if issubclass(sctype, integer):
+        result = default_int_type
+    elif issubclass(sctype, floating):
+        result = default_float_type
+    elif issubclass(sctype, complexfloating):
+        result = default_complex_type
+    elif issubclass(sctype, bool_):
+        result = bool_
+    else:
+        raise RuntimeError("cannot be here with sctype= %s" % sctype)
+    return result
+
+
+def float_or_default(sctype, enforce_float=False):
+    """bool -> int; int -> float"""
+    if issubclass(sctype, bool_):
+        sctype = default_int_type
+    if enforce_float and issubclass(sctype, integer):
+        sctype = default_float_type
+    return sctype
+
+
 __all__ = list(_names.keys())
 __all__ += ['intp', 'int_', 'intc', 'byte', 'short', 'longlong',
             'ubyte', 'half', 'single', 'double', 'csingle', 'cdouble', 'float_']

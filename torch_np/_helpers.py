@@ -92,15 +92,3 @@ def to_tensors(*inputs):
     return tuple([value.get() if isinstance(value, ndarray) else value
             for value in inputs])
 
-
-def float_or_default(dtype, self_dtype, enforce_float=False):
-    """dtype helper for reductions."""
-    if dtype is None:
-        dtype = self_dtype
-    if dtype == _dtypes.dtype('bool'):
-        dtype = _dtypes.default_int_type()
-    if enforce_float:
-        if _dtypes.is_integer(dtype):
-            dtype = _dtypes.default_float_type()
-    torch_dtype = _dtypes.torch_dtype_from(dtype)
-    return torch_dtype

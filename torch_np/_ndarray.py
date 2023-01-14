@@ -429,7 +429,7 @@ class ndarray:
         if where is not None:
             raise NotImplementedError
 
-        torch_dtype = _helpers.float_or_default(dtype, self.dtype, enforce_float=True)
+        torch_dtype = _dtypes.float_or_default(dtype, self.dtype, enforce_float=True)
         if axis is None:
             result = self._tensor.mean(dtype=torch_dtype)
         else:
@@ -444,7 +444,7 @@ class ndarray:
         if initial is not None or where is not None:
             raise NotImplementedError
 
-        torch_dtype = _helpers.float_or_default(dtype, self.dtype)
+        torch_dtype = _dtypes.float_or_default(dtype, self.dtype)
         if axis is None:
             result = self._tensor.sum(dtype=torch_dtype)
         else:
@@ -460,7 +460,7 @@ class ndarray:
 
         axis = _util.allow_only_single_axis(axis)
 
-        torch_dtype = _helpers.float_or_default(dtype, self.dtype)
+        torch_dtype = _dtypes.float_or_default(dtype, self.dtype)
         if axis is None:
             result = self._tensor.prod(dtype=torch_dtype)
         else:
@@ -475,7 +475,7 @@ class ndarray:
         if where is not None:
             raise NotImplementedError
 
-        torch_dtype = _helpers.float_or_default(dtype, self.dtype, enforce_float=True)
+        torch_dtype = _dtypes.float_or_default(dtype, self.dtype, enforce_float=True)
         tensor = self._tensor.to(torch_dtype)
 
         result = tensor.std(dim=axis, correction=ddof)
@@ -488,7 +488,7 @@ class ndarray:
         if where is not None:
             raise NotImplementedError
 
-        torch_dtype = _helpers.float_or_default(dtype, self.dtype, enforce_float=True)
+        torch_dtype = _dtypes.float_or_default(dtype, self.dtype, enforce_float=True)
         tensor = self._tensor.to(torch_dtype)
 
         result = tensor.var(dim=axis, correction=ddof)
@@ -551,7 +551,7 @@ def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
         # Therefore, we treat `tensor.dtype` as a hint, and convert the
         # original object *again*, this time with an explicit dtype.
         default = _dtypes.get_default_dtype_for(tensor)
-        torch_dtype = _dtypes.dtype(default).torch_dtype
+        torch_dtype = default.torch_dtype
 
         tensor = torch.as_tensor(object, dtype=torch_dtype)
 
