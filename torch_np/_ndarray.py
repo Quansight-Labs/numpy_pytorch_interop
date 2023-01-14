@@ -550,8 +550,7 @@ def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
 
         # Therefore, we treat `tensor.dtype` as a hint, and convert the
         # original object *again*, this time with an explicit dtype.
-        dtyp = _dtypes.dtype(tensor.dtype)
-        default = _dtypes.get_default_dtype_for(dtyp)
+        default = _dtypes.get_default_dtype_for(tensor)
         torch_dtype = _dtypes.dtype(default).torch_dtype
 
         tensor = torch.as_tensor(object, dtype=torch_dtype)

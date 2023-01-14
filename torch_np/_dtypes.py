@@ -19,7 +19,7 @@ __all__ = ['dtype', 'DType', 'typecodes', 'issubdtype']
 
 def dtype(arg):
     if arg is None:
-        arg = _scalar_types.default_torch_dtype
+        arg = _scalar_types.default_scalar_type
     return DType(arg)
 
 
@@ -32,7 +32,7 @@ class DType:
         # a pytorch object?
         if isinstance(arg, torch.dtype):
             sctype = _scalar_types._torch_dtypes[arg]
-        elif isinstance(dtype, torch.Tensor):
+        elif isinstance(arg, torch.Tensor):
             sctype = _scalar_types._torch_dtypes[arg.dtype]
         # a scalar type?
         elif issubclass_(arg, _scalar_types.generic):
@@ -106,15 +106,15 @@ typecodes = {'All': 'efdFDBbhil?',
 # ### Defaults and dtype discovery
 
 def default_int_type():
-    return dtype('int64')
+    return dtype(_scalar_types.default_int_type)
 
 
 def default_float_type():
-    return dtype('float64')
+    return dtype(_scalar_types.default_float_type)
 
 
 def default_complex_type():
-    return dtype('complex128')
+    return dtype(_scalar_types.default_complex_type)
 
 
 def is_floating(dtyp):

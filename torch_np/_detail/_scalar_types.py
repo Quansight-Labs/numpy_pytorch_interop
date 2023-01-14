@@ -228,7 +228,10 @@ def sctype_from_torch_dtype(torch_dtype):
 
 
 #### default : mimic NumPy
-default_torch_dtype = torch.float64
+default_scalar_type = float64
+default_int_type = int64
+default_float_type = float64
+default_complex_type = complex128
 ##########################
 
 
