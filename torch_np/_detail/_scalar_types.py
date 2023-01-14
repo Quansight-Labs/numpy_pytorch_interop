@@ -14,7 +14,7 @@ class generic(abc.ABC):
         #
         # Yes, a call to np.float32(4) produces a zero-dim array.
         #
-        from . import _ndarray
+        from .. import _ndarray
 
         if isinstance(value, str) and value in ['inf', 'nan']:
             value = {'inf': torch.inf, 'nan': torch.nan}[value]

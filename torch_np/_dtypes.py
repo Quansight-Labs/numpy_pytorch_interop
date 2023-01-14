@@ -8,7 +8,7 @@
 import builtins
 import torch
 
-from . import _scalar_types
+from ._detail import _scalar_types
 
 
 __all__ = ['dtype', 'DType', 'typecodes', 'issubdtype']
