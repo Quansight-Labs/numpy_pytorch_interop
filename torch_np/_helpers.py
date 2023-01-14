@@ -63,7 +63,7 @@ def cast_dont_broadcast(arrays, out_dtype, casting):
     for arr in arrays:
         if not can_cast(arr.dtype, out_dtype, casting=casting):
             raise TypeError(f"Cannot cast array data from {arr.dtype} to"
-                             " {out_dtype} according to the rule '{casting}'")
+                            f" {out_dtype} according to the rule '{casting}'")
         tensor = arr.get()
 
         # cast arr if needed

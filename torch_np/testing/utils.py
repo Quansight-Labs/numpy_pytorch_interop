@@ -186,7 +186,7 @@ def assert_equal(actual, desired, err_msg='', verbose=True):
         return assert_array_equal(actual, desired, err_msg, verbose)
     msg = build_err_msg([actual, desired], err_msg, verbose=verbose)
 
-    if isinstance(actual, np.dtype) and isinstance(desired, np.dtype):
+    if isinstance(actual, np.DType) and isinstance(desired, np.DType):
         return actual == desired
 
     # Handle complex numbers: separate into real/imag to handle

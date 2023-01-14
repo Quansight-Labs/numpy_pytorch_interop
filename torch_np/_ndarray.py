@@ -77,7 +77,7 @@ class ndarray:
 
     @property
     def dtype(self):
-        return _dtypes.dtype_from_torch(self._tensor.dtype)
+        return _dtypes.dtype(self._tensor.dtype)
 
     @property
     def strides(self):
@@ -550,9 +550,9 @@ def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
 
         # Therefore, we treat `tensor.dtype` as a hint, and convert the
         # original object *again*, this time with an explicit dtype.
-        dtyp = _dtypes.dtype_from_torch(tensor.dtype)
+        dtyp = _dtypes.dtype(tensor.dtype)
         default = _dtypes.get_default_dtype_for(dtyp)
-        torch_dtype = _dtypes.torch_dtype_from(default)
+        torch_dtype = _dtypes.dtype(default).torch_dtype
 
         tensor = torch.as_tensor(object, dtype=torch_dtype)
 
@@ -617,7 +617,7 @@ def result_type(*arrays_and_dtypes):
     for entry in arrays_and_dtypes:
         if issubclass_(entry, _dtypes._scalar_types.generic):
             dtypes.append(_dtypes.dtype(entry))
-        elif isinstance(entry, _dtypes.dtype):
+        elif isinstance(entry, _dtypes.DType):
             dtypes.append(entry)
         else:
             dtypes.append(asarray(entry).dtype)
