@@ -259,6 +259,17 @@ def float_or_default(sctype, enforce_float=False):
     return sctype
 
 
+from . import _casting_dicts as _cd
+
+def _can_cast_sctypes(from_sctype, to_sctype, casting):
+    return _can_cast_impl(from_sctype.torch_dtype, to_sctype.torch_dtype, casting)
+
+
+def _can_cast_impl(from_torch_dtype, to_torch_dtype, casting):
+    return _cd._can_cast_dict[casting][from_torch_dtype][to_torch_dtype]
+
+
+
 __all__ = list(_names.keys())
 __all__ += ['intp', 'int_', 'intc', 'byte', 'short', 'longlong',
             'ubyte', 'half', 'single', 'double', 'csingle', 'cdouble', 'float_']
@@ -266,3 +277,8 @@ __all__ += ['sctypes']
 __all__ += ['generic', 'number',
             'integer', 'signedinteger', 'unsignedinteger',
             'inexact', 'floating', 'complexfloating']
+
+
+
+
+

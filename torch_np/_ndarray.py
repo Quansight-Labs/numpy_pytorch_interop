@@ -601,13 +601,15 @@ class asarray_replacer:
 ###### dtype routines
 
 def can_cast(from_, to, casting='safe'):
+    # XXX: merge with _dtypes.can_cast. The Q is who converts from ndarray, if needed.
     from_dtype = from_.dtype if isinstance(from_, ndarray) else _dtypes.dtype(from_)
     to_dtype = to.dtype if isinstance(to, ndarray) else _dtypes.dtype(to)
 
-    return _dtypes._can_cast_dict[casting][from_dtype.name][to_dtype.name]
+    return _dtypes.can_cast(from_dtype, to_dtype, casting)
 
 
 def result_type(*arrays_and_dtypes):
+    # XXX: clean up
     dtypes = []
 
     from ._dtypes import issubclass_
@@ -625,7 +627,7 @@ def result_type(*arrays_and_dtypes):
         return dtyp
 
     for curr in dtypes[1:]:
-        name = _dtypes._result_type_dict[dtyp.name][curr.name]
+        name = _dtypes._result_type_dict[dtyp.type.torch_dtype][curr.type.torch_dtype]
         dtyp = _dtypes.dtype(name)
 
     return dtyp
