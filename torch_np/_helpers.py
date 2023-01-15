@@ -55,26 +55,6 @@ def cast_and_broadcast(arrays, out, casting):
 
 
 
-def cast_dont_broadcast(arrays, out_dtype, casting):
-    """Dtype-cast arrays to dtype.
-    """
-    # check if we can dtype-cast all arguments
-    tensors = []
-    for arr in arrays:
-        if not can_cast(arr.dtype, out_dtype, casting=casting):
-            raise TypeError(f"Cannot cast array data from {arr.dtype} to"
-                            f" {out_dtype} according to the rule '{casting}'")
-        tensor = arr.get()
-
-        # cast arr if needed
-        if arr.dtype != out_dtype:
-            tensor = tensor.to(_dtypes.torch_dtype_from(out_dtype))
-
-        tensors.append(tensor)
-
-    return tuple(tensors)
-
-
 def result_or_out(result_tensor, out_array=None):
     """A helper for returns with out= argument."""
     if out_array is not None:
@@ -87,8 +67,15 @@ def result_or_out(result_tensor, out_array=None):
         return asarray(result_tensor)
 
 
-def to_tensors(*inputs):
-    """Convert all ndarrays from `inputs` to tensors."""
+def to_tensors_lax(*inputs):
+    """Convert all ndarrays from `inputs` to tensors. (other things are intact)
+    """
     return tuple([value.get() if isinstance(value, ndarray) else value
             for value in inputs])
+
+
+def to_tensors(*inputs):
+    """Convert all array_likes from `inputs` to tensors.
+    """
+    return tuple(asarray(value).get() for value in inputs)
 

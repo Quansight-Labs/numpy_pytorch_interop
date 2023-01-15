@@ -194,7 +194,7 @@ def arange(start=None, stop=None, step=1, dtype=None, *, like=None):
         dtype = _dtypes.default_int_type()
         dtype = result_type(start, stop, step, dtype)
     torch_dtype = _dtypes.torch_dtype_from(dtype)
-    start, stop, step = _helpers.to_tensors(start, stop, step)
+    start, stop, step = _helpers.to_tensors_lax(start, stop, step)
 
     try:
         return asarray(torch.arange(start, stop, step, dtype=torch_dtype))
@@ -326,32 +326,32 @@ def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
 
 
 def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
-    if out is not None:
-        if dtype is not None:
-            # mimic numpy
-            raise TypeError("concatenate() only takes `out` or `dtype` as an "
-                            "argument, but both were provided.")
-        if not isinstance(out, ndarray):
-            raise ValueError("'out' must be an array")
     if ar_tuple == ():
         # XXX: RuntimeError in torch, ValueError in numpy
         raise ValueError("need at least one array to concatenate")
 
-    # make sure inputs are arrays
-    arrays = tuple(asarray(ar) for ar in ar_tuple)
+    tensors = _helpers.to_tensors(*ar_tuple)
 
     # np.concatenate ravels if axis=None
-    arrays, axis = _util.axis_none_ravel(*arrays, axis=axis)
+    tensors, axis = _util.axis_none_ravel(*tensors, axis=axis)
+
+    if out is not None:
+        if not isinstance(out, ndarray):
+            raise ValueError("'out' must be an array")
+
+        if dtype is not None:
+            # mimic numpy
+            raise TypeError("concatenate() only takes `out` or `dtype` as an "
+                            "argument, but both were provided.")
 
     # figure out the type of the inputs and outputs
     if out is None and dtype is None:
         out_dtype = None
-        tensors = tuple(ar.get() for ar in arrays)
     else:
-        out_dtype = _dtypes.dtype(dtype) if dtype is not None else out.dtype
+        out_dtype = out.dtype if dtype is None else _dtypes.dtype(dtype)
 
         # cast input arrays if necessary; do not broadcast them agains `out`
-        tensors = _helpers.cast_dont_broadcast(arrays, out_dtype, casting)
+        tensors = _util.cast_dont_broadcast(tensors, out_dtype, casting)
 
     try:
         result = torch.cat(tensors, axis)

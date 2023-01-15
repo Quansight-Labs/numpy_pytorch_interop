@@ -498,7 +498,7 @@ class ndarray:
 
     ### indexing ###
     def __getitem__(self, *args, **kwds):
-        t_args = _helpers.to_tensors(*args)
+        t_args = _helpers.to_tensors_lax(*args)
         return ndarray._from_tensor_and_base(self._tensor.__getitem__(*t_args, **kwds), self)
 
     def __setitem__(self, index, value):

@@ -12,6 +12,7 @@ import operator
 
 import torch
 
+from . import _scalar_types
 
 # https://github.com/numpy/numpy/blob/v1.23.0/numpy/distutils/misc_util.py#L497-L504
 def is_sequence(seq):
@@ -137,3 +138,38 @@ def axis_none_ravel(*tensors, axis=None):
         return tensors, 0
     else:
         return tensors, axis
+
+
+def cast_dont_broadcast(tensors, target_dtype, casting):
+    """Dtype-cast tensors to target_dtype.
+
+    Parameters
+    ----------
+    tensors : iterable
+	tuple or list of torch.Tensors to typecast
+    target_dtype : DType object
+        The array dtype to cast all tensors to
+    casting : str
+        The casting mode, see `np.can_cast`
+
+    Returns
+    -------
+    a tuple of torch.Tensors with dtype being the PyTorch counterpart
+    of the `target_dtype`
+    """
+    # check if we can dtype-cast all arguments
+    cast_tensors = []
+    target_dtype_t = target_dtype.type.torch_dtype
+    can_cast = _scalar_types._can_cast_impl
+
+    for tensor in tensors:
+        if not can_cast(tensor.dtype, target_dtype_t, casting=casting):
+            raise TypeError(f"Cannot cast array data from {tensor.dtype} to"
+                            f" {target_dtype} according to the rule '{casting}'")
+
+        # cast if needed
+        if tensor.dtype != target_dtype_t:
+            tensor = tensor.to(target_dtype_t)
+        cast_tensors.append(tensor)
+
+    return tuple(cast_tensors)
