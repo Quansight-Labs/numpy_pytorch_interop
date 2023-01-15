@@ -3,7 +3,7 @@ import operator
 
 import torch
 
-from . import _util
+from ._detail import _util
 from . import _helpers
 from . import _dtypes
 from . import _ufunc_impl
@@ -579,7 +579,6 @@ def asarray(a, dtype=None, order=None, *, like=None):
     if order is None:
         order = 'K'
     return array(a, dtype=dtype, order=order, like=like, copy=False, ndmin=0)
-
 
 
 class asarray_replacer:

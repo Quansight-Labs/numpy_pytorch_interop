@@ -7,7 +7,7 @@ pytorch tensors.
 
 import torch
 
-from . import _util
+from ._detail import _util
 from . import _dtypes
 from . import _helpers
 from ._ndarray import ndarray, asarray, array, asarray_replacer, newaxis

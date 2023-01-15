@@ -5,7 +5,7 @@ import torch_np as np
 from torch_np.testing import (assert_equal, assert_array_equal, assert_allclose,
                               assert_almost_equal)
 
-import torch_np._util as _util
+import torch_np._detail._util as _util
 
 class TestNonzeroAndCountNonzero:
 

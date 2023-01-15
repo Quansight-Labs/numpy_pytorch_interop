@@ -129,11 +129,11 @@ def apply_keepdims(tensor, axis, ndim):
     return tensor
 
 
-def axis_none_ravel(*arrays, axis=None):
+def axis_none_ravel(*tensors, axis=None):
     """Ravel the arrays if axis is none."""
     # XXX: is only used at `concatenate`. Inline unless reused more widely
     if axis is None:
-        arrays = tuple(ar.ravel() for ar in arrays)
-        return arrays, 0
+        tensors = tuple(ar.ravel() for ar in tensors)
+        return tensors, 0
     else:
-        return arrays, axis
+        return tensors, axis

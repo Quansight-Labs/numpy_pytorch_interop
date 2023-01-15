@@ -3,7 +3,7 @@ import operator
 import torch
 from . import _dtypes
 from ._ndarray import can_cast, ndarray, asarray
-from . import _util
+from ._detail import _util
 
 def cast_and_broadcast(arrays, out, casting):
     """Cast dtypes of arrays to out.dtype and broadcast if needed.

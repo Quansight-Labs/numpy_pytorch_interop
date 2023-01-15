@@ -1,8 +1,6 @@
 import functools
 import torch
 
-from . import _util
-
 from ._ndarray import asarray
 from . import _dtypes
 from . import _helpers

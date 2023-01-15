@@ -1,6 +1,6 @@
 import torch
 
-from . import _util
+from ._detail import _util
 from . import _helpers
 
 def deco_binary_ufunc(torch_func):
