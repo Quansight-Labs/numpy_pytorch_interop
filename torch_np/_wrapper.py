@@ -7,12 +7,16 @@ pytorch tensors.
 
 import torch
 
-from . import _util
-from . import _dtypes
-from . import _helpers
-from ._ndarray import ndarray, asarray, array, asarray_replacer, newaxis
-from ._ndarray import can_cast, result_type
-
+from . import _dtypes, _helpers, _util
+from ._ndarray import (
+    array,
+    asarray,
+    asarray_replacer,
+    can_cast,
+    ndarray,
+    newaxis,
+    result_type,
+)
 
 # Things to decide on (punt for now)
 #

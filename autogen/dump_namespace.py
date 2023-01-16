@@ -1,5 +1,5 @@
-from collections import defaultdict
 import inspect
+from collections import defaultdict
 
 import numpy as np
 

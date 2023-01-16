@@ -1,23 +1,22 @@
+import numpy as _np
 import pytest
 from pytest import raises as assert_raises
 
-import numpy as _np
-
 import torch_np as np
 from torch_np import (
-    concatenate,
     array,
     atleast_1d,
     atleast_2d,
     atleast_3d,
-    vstack,
-    hstack,
-    dstack,
     column_stack,
-    stack,
+    concatenate,
+    dstack,
     expand_dims,
+    hstack,
+    stack,
+    vstack,
 )
-from torch_np.testing import assert_equal, assert_array_equal
+from torch_np.testing import assert_array_equal, assert_equal
 
 
 class TestAtleast1d:

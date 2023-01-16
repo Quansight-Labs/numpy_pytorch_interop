@@ -2,10 +2,7 @@ import functools
 
 import torch
 
-from . import _util
-from . import _helpers
-from . import _dtypes
-from . import _ufunc_impl
+from . import _dtypes, _helpers, _ufunc_impl, _util
 
 NoValue = None
 newaxis = None

@@ -1,9 +1,9 @@
 import operator
 
 import torch
-from . import _dtypes
-from ._ndarray import can_cast, ndarray, asarray
-from . import _util
+
+from . import _dtypes, _util
+from ._ndarray import asarray, can_cast, ndarray
 
 
 def cast_and_broadcast(arrays, out, casting):

@@ -3,7 +3,6 @@
 # The default is autopopulated, apply manual tweaks on the result, if needed.
 
 import numpy as np
-
 import wrapper
 
 _all = set(name for name in dir(wrapper) if not name.startswith("_"))

@@ -1,7 +1,7 @@
 import functools
-import pytest
 
 import numpy as np
+import pytest
 import torch
 
 import torch_np as w

@@ -6,10 +6,10 @@
 #       3. convert from python types: np.ones(3, dtype=float) etc
 
 import builtins
+
 import torch
 
 from . import _scalar_types
-
 
 __all__ = ["dtype_from_torch", "dtype", "typecodes", "issubdtype"]
 

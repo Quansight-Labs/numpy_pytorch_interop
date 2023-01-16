@@ -2,28 +2,27 @@
 Utility function to facilitate testing.
 
 """
-import os
-import sys
-import platform
-import re
+import contextlib
 import gc
 import operator
-import warnings
-from functools import partial, wraps
+import os
+import platform
+import pprint
+import re
 import shutil
-import contextlib
+import sys
+import warnings
+from functools import wraps
+from io import StringIO
 from tempfile import mkdtemp, mkstemp
 from warnings import WarningMessage
-import pprint
-
-import torch_np as np
-from torch_np import intp, float32, empty, arange, ndarray, array
-from torch_np import asarray as asanyarray
-
-from io import StringIO
 
 from pytest import raises as assert_raises
 
+import torch_np as np
+from torch_np import arange, array
+from torch_np import asarray as asanyarray
+from torch_np import empty, float32, intp, ndarray
 
 __all__ = [
     "assert_equal",
@@ -201,8 +200,7 @@ def assert_equal(actual, desired, err_msg="", verbose=True):
         for k in range(len(desired)):
             assert_equal(actual[k], desired[k], f"item={k!r}\n{err_msg}", verbose)
         return
-    from torch_np import ndarray, isscalar, signbit
-    from torch_np import iscomplexobj, real, imag
+    from torch_np import imag, iscomplexobj, isscalar, ndarray, real, signbit
 
     if isinstance(actual, ndarray) or isinstance(desired, ndarray):
         return assert_array_equal(actual, desired, err_msg, verbose)
@@ -384,8 +382,7 @@ def assert_almost_equal(actual, desired, decimal=7, err_msg="", verbose=True):
 
     """
     __tracebackhide__ = True  # Hide traceback for py.test
-    from torch_np import ndarray
-    from torch_np import iscomplexobj, real, imag
+    from torch_np import imag, iscomplexobj, ndarray, real
 
     # Handle complex numbers: separate into real/imag to handle
     # nan/inf/negative zero correctly
@@ -555,7 +552,7 @@ def assert_array_compare(
     strict=False,
 ):
     __tracebackhide__ = True  # Hide traceback for py.test
-    from torch_np import asarray, array, isnan, inf, all, max, bool_
+    from torch_np import all, array, asarray, bool_, inf, isnan, max
 
     x = asarray(x)
     y = asarray(y)
@@ -928,9 +925,8 @@ def assert_array_almost_equal(x, y, decimal=6, err_msg="", verbose=True):
 
     """
     __tracebackhide__ = True  # Hide traceback for py.test
-    from torch_np import number, float_, result_type, array
-    from torch_np import issubdtype
     from torch_np import any as npany
+    from torch_np import array, float_, issubdtype, number, result_type
 
     def compare(x, y):
         try:
@@ -1217,6 +1213,7 @@ def _assert_valid_refcount(op):
         return True
 
     import gc
+
     import numpy as np
 
     b = np.arange(100 * 100).reshape(100, 100)
@@ -1758,7 +1755,6 @@ def _gen_alignment_data(dtype=float32, type="binary", max_size=24):
 
 class IgnoreException(Exception):
     "Ignoring this exception due to disabled feature"
-    pass
 
 
 @contextlib.contextmanager

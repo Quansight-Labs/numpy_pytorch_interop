@@ -2,6 +2,7 @@
 """
 
 import abc
+
 import torch
 
 
@@ -15,8 +16,7 @@ class generic(abc.ABC):
         #
         # Yes, a call to np.float32(4) produces a zero-dim array.
         #
-        from . import _dtypes
-        from . import _ndarray
+        from . import _dtypes, _ndarray
 
         torch_dtype = _dtypes.torch_dtype_from(self.name)
 

@@ -1,6 +1,5 @@
-from dump_namespace import grab_namespace, get_signature
-
 import numpy as np
+from dump_namespace import get_signature, grab_namespace
 
 namespace = np
 
