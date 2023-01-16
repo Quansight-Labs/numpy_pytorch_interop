@@ -82,9 +82,9 @@ def normalize_axis_tuple(axis, ndim, argname=None, allow_duplicate=False):
     axis = tuple([normalize_axis_index(ax, ndim, argname) for ax in axis])
     if not allow_duplicate and len(set(axis)) != len(axis):
         if argname:
-            raise ValueError('repeated axis in `{}` argument'.format(argname))
+            raise ValueError("repeated axis in `{}` argument".format(argname))
         else:
-            raise ValueError('repeated axis')
+            raise ValueError("repeated axis")
     return axis
 
 
@@ -97,4 +97,3 @@ def expand_shape(arr_shape, axis):
     shape_it = iter(arr_shape)
     shape = [1 if ax in axis else next(shape_it) for ax in range(out_ndim)]
     return shape
-

@@ -7,12 +7,22 @@ import _util
 from _ndarray import asarray_replacer
 
 
-
 @asarray_replacer("two")
-def add(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def add(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -23,12 +33,22 @@ def add(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def arctan2(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def arctan2(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -39,12 +59,22 @@ def arctan2(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def bitwise_and(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def bitwise_and(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -55,12 +85,22 @@ def bitwise_and(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
     return result
 
 
-
 @asarray_replacer("two")
-def bitwise_or(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def bitwise_or(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -71,12 +111,22 @@ def bitwise_or(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
     return result
 
 
-
 @asarray_replacer("two")
-def bitwise_xor(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def bitwise_xor(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -87,12 +137,22 @@ def bitwise_xor(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
     return result
 
 
-
 @asarray_replacer("two")
-def copysign(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def copysign(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -103,12 +163,22 @@ def copysign(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def divide(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -119,12 +189,22 @@ def divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def equal(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -135,12 +215,22 @@ def equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def float_power(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def float_power(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -151,12 +241,22 @@ def float_power(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
     return result
 
 
-
 @asarray_replacer("two")
-def floor_divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def floor_divide(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -167,12 +267,22 @@ def floor_divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order=
     return result
 
 
-
 @asarray_replacer("two")
-def fmax(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def fmax(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -183,12 +293,22 @@ def fmax(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def fmin(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def fmin(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -199,12 +319,22 @@ def fmin(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def fmod(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def fmod(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -215,12 +345,22 @@ def fmod(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def gcd(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def gcd(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -231,12 +371,22 @@ def gcd(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def greater(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def greater(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -247,12 +397,22 @@ def greater(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def greater_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def greater_equal(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -263,12 +423,22 @@ def greater_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order
     return result
 
 
-
 @asarray_replacer("two")
-def heaviside(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def heaviside(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -279,12 +449,22 @@ def heaviside(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
     return result
 
 
-
 @asarray_replacer("two")
-def hypot(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def hypot(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -295,12 +475,22 @@ def hypot(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def lcm(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def lcm(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -311,12 +501,22 @@ def lcm(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def ldexp(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def ldexp(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -327,12 +527,22 @@ def ldexp(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def left_shift(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def left_shift(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -343,12 +553,22 @@ def left_shift(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
     return result
 
 
-
 @asarray_replacer("two")
-def less(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def less(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -359,12 +579,22 @@ def less(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def less_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def less_equal(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -375,12 +605,22 @@ def less_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
     return result
 
 
-
 @asarray_replacer("two")
-def logaddexp(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def logaddexp(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -391,12 +631,22 @@ def logaddexp(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
     return result
 
 
-
 @asarray_replacer("two")
-def logaddexp2(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def logaddexp2(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -407,12 +657,22 @@ def logaddexp2(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
     return result
 
 
-
 @asarray_replacer("two")
-def logical_and(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def logical_and(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -423,12 +683,22 @@ def logical_and(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
     return result
 
 
-
 @asarray_replacer("two")
-def logical_or(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def logical_or(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -439,12 +709,22 @@ def logical_or(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K
     return result
 
 
-
 @asarray_replacer("two")
-def logical_xor(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def logical_xor(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -455,12 +735,22 @@ def logical_xor(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
     return result
 
 
-
 @asarray_replacer("two")
-def matmul(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def matmul(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -471,12 +761,22 @@ def matmul(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def maximum(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def maximum(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -487,12 +787,22 @@ def maximum(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def minimum(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def minimum(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -503,12 +813,22 @@ def minimum(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def remainder(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def remainder(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -519,12 +839,22 @@ def remainder(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
     return result
 
 
-
 @asarray_replacer("two")
-def multiply(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def multiply(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -535,12 +865,22 @@ def multiply(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def nextafter(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def nextafter(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -551,12 +891,22 @@ def nextafter(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
     return result
 
 
-
 @asarray_replacer("two")
-def not_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def not_equal(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -567,12 +917,22 @@ def not_equal(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
     return result
 
 
-
 @asarray_replacer("two")
-def power(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def power(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -583,12 +943,22 @@ def power(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def remainder(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def remainder(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -599,12 +969,22 @@ def remainder(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K'
     return result
 
 
-
 @asarray_replacer("two")
-def right_shift(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def right_shift(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -615,12 +995,22 @@ def right_shift(x1, x2, /, out=None, *, where=True, casting='same_kind', order='
     return result
 
 
-
 @asarray_replacer("two")
-def subtract(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def subtract(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -631,12 +1021,22 @@ def subtract(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     return result
 
 
-
 @asarray_replacer("two")
-def divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
-            dtype=None, subok=False, **kwds):
+def divide(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok=False,
+    **kwds,
+):
     _util.subok_not_ok(subok=subok)
-    if order != 'K' or casting != 'same_kind' or not where:
+    if order != "K" or casting != "same_kind" or not where:
         raise NotImplementedError
     if out is not None:
         # XXX: dtypes, casting
@@ -645,4 +1045,3 @@ def divide(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K',
     if dtype is not None:
         result = result.to(dtype)
     return result
-

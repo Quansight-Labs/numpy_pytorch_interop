@@ -39,6 +39,7 @@ def axis_out_keepdims_wrapper(func):
 
 ##################### ndarray class ###########################
 
+
 class ndarray:
     def __init__(self):
         self._tensor = torch.Tensor()
@@ -72,7 +73,7 @@ class ndarray:
 
     @property
     def strides(self):
-        return self._tensor.stride()   # XXX: byte strides
+        return self._tensor.stride()  # XXX: byte strides
 
     @property
     def base(self):
@@ -109,8 +110,8 @@ class ndarray:
         newt._tensor = self._tensor.to(torch_dtype)
         return newt
 
-    def copy(self, order='C'):
-        if order != 'C':
+    def copy(self, order="C"):
+        if order != "C":
             raise NotImplementedError
         tensor = self._tensor.clone()
         return ndarray._from_tensor_and_base(tensor, None)
@@ -120,7 +121,11 @@ class ndarray:
 
     ###  niceties ###
     def __str__(self):
-        return str(self._tensor).replace("tensor", "array_w").replace("dtype=torch.", "dtype=")
+        return (
+            str(self._tensor)
+            .replace("tensor", "array_w")
+            .replace("dtype=torch.", "dtype=")
+        )
 
     __repr__ = __str__
 
@@ -157,8 +162,10 @@ class ndarray:
         try:
             return bool(self._tensor)
         except RuntimeError:
-            raise ValueError("The truth value of an array with more than one "
-                             "element is ambiguous. Use a.any() or a.all()")
+            raise ValueError(
+                "The truth value of an array with more than one "
+                "element is ambiguous. Use a.any() or a.all()"
+            )
 
     def __index__(self):
         if self.size == 1:
@@ -186,7 +193,6 @@ class ndarray:
         else:
             return False
 
-
     ### sequence ###
     def __len__(self):
         return self._tensor.shape[0]
@@ -203,7 +209,6 @@ class ndarray:
     def __iadd__(self, other):
         return _ufunc_impl.add(self, asarray(other), out=self)
 
-
     # sub, self - other
     def __sub__(self, other):
         return _ufunc_impl.subtract(self, asarray(other))
@@ -213,7 +218,6 @@ class ndarray:
 
     def __isub__(self, other):
         return _ufunc_impl.subtract(self, asarray(other), out=self)
-
 
     # mul, self * other
     def __mul__(self, other):
@@ -225,7 +229,6 @@ class ndarray:
     def __imul__(self, other):
         return _ufunc_impl.multiply(self, asarray(other), out=self)
 
-
     # div, self / other
     def __truediv__(self, other):
         return _ufunc_impl.divide(self, asarray(other))
@@ -235,7 +238,6 @@ class ndarray:
 
     def __itruediv__(self, other):
         return _ufunc_impl.divide(self, asarray(other), out=self)
-
 
     # floordiv, self // other
     def __floordiv__(self, other):
@@ -247,7 +249,6 @@ class ndarray:
     def __ifloordiv__(self, other):
         return _ufunc_impl.floor_divide(self, asarray(other), out=self)
 
-
     # power, self**exponent
     def __pow__(self, exponent):
         return _ufunc_impl.float_power(self, asarray(exponent))
@@ -258,7 +259,6 @@ class ndarray:
     def __ipow__(self, exponent):
         return _ufunc_impl.float_power(self, asarray(exponent), out=self)
 
-
     # remainder, self % other
     def __mod__(self, other):
         return _ufunc_impl.remainder(self, asarray(other))
@@ -268,7 +268,6 @@ class ndarray:
 
     def __imod__(self, other):
         return _ufunc_impl.remainder(self, asarray(other), out=self)
-
 
     # bitwise ops
     # and, self & other
@@ -281,7 +280,6 @@ class ndarray:
     def __iand__(self, other):
         return _ufunc_impl.bitwise_and(self, asarray(other), out=self)
 
-
     # or, self | other
     def __or__(self, other):
         return _ufunc_impl.bitwise_or(self, asarray(other))
@@ -292,7 +290,6 @@ class ndarray:
     def __ior__(self, other):
         return _ufunc_impl.bitwise_or(self, asarray(other), out=self)
 
-
     # xor, self ^ other
     def __xor__(self, other):
         return _ufunc_impl.bitwise_xor(self, asarray(other))
@@ -302,7 +299,6 @@ class ndarray:
 
     def __ixor__(self, other):
         return _ufunc_impl.bitwise_xor(self, asarray(other), out=self)
-
 
     # unary ops
     def __invert__(self):
@@ -316,7 +312,6 @@ class ndarray:
 
     def __neg__(self):
         return _ufunc_impl.negative(self)
-
 
     ### methods to match namespace functions
 
@@ -341,10 +336,10 @@ class ndarray:
         tensor = torch.argmin(self._tensor, axis)
         return tensor
 
-    def reshape(self, *shape, order='C'):
+    def reshape(self, *shape, order="C"):
         newshape = shape[0] if len(shape) == 1 else shape
         # if sh = (1, 2, 3), numpy allows both .reshape(sh) and .reshape(*sh)
-        if order != 'C':
+        if order != "C":
             raise NotImplementedError
         tensor = self._tensor.reshape(newshape)
         return ndarray._from_tensor_and_base(tensor, self)
@@ -360,8 +355,8 @@ class ndarray:
             raise ValueError("axes don't match array")
         return ndarray._from_tensor_and_base(tensor, self)
 
-    def ravel(self, order='C'):
-        if order != 'C':
+    def ravel(self, order="C"):
+        if order != "C":
             raise NotImplementedError
         return ndarray._from_tensor_and_base(self._tensor.ravel(), self)
 
@@ -382,7 +377,6 @@ class ndarray:
             result = self._tensor.any(axis)
         return result
 
-
     @axis_out_keepdims_wrapper
     def all(self, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
         if where is not None:
@@ -396,10 +390,10 @@ class ndarray:
             result = self._tensor.all(axis)
         return result
 
-
     @axis_out_keepdims_wrapper
-    def max(self, axis=None, out=None, keepdims=NoValue, initial=NoValue,
-             where=NoValue):
+    def max(
+        self, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue
+    ):
         if where is not None:
             raise NotImplementedError
         if initial is not None:
@@ -409,8 +403,9 @@ class ndarray:
         return result
 
     @axis_out_keepdims_wrapper
-    def min(self, axis=None, out=None, keepdims=NoValue, initial=NoValue,
-             where=NoValue):
+    def min(
+        self, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue
+    ):
         if where is not None:
             raise NotImplementedError
         if initial is not None:
@@ -432,10 +427,16 @@ class ndarray:
 
         return result
 
-
     @axis_out_keepdims_wrapper
-    def sum(self, axis=None, dtype=None, out=None, keepdims=NoValue,
-            initial=NoValue, where=NoValue):
+    def sum(
+        self,
+        axis=None,
+        dtype=None,
+        out=None,
+        keepdims=NoValue,
+        initial=NoValue,
+        where=NoValue,
+    ):
         if initial is not None or where is not None:
             raise NotImplementedError
 
@@ -448,8 +449,15 @@ class ndarray:
         return result
 
     @axis_out_keepdims_wrapper
-    def prod(self, axis=None, dtype=None, out=None, keepdims=NoValue,
-            initial=NoValue, where=NoValue):
+    def prod(
+        self,
+        axis=None,
+        dtype=None,
+        out=None,
+        keepdims=NoValue,
+        initial=NoValue,
+        where=NoValue,
+    ):
         if initial is not None or where is not None:
             raise NotImplementedError
 
@@ -463,10 +471,17 @@ class ndarray:
 
         return result
 
-
     @axis_out_keepdims_wrapper
-    def std(self, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *,
-            where=NoValue):
+    def std(
+        self,
+        axis=None,
+        dtype=None,
+        out=None,
+        ddof=0,
+        keepdims=NoValue,
+        *,
+        where=NoValue
+    ):
         if where is not None:
             raise NotImplementedError
 
@@ -478,8 +493,16 @@ class ndarray:
         return result
 
     @axis_out_keepdims_wrapper
-    def var(self, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *,
-            where=NoValue):
+    def var(
+        self,
+        axis=None,
+        dtype=None,
+        out=None,
+        ddof=0,
+        keepdims=NoValue,
+        *,
+        where=NoValue
+    ):
         if where is not None:
             raise NotImplementedError
 
@@ -490,11 +513,12 @@ class ndarray:
 
         return result
 
-
     ### indexing ###
     def __getitem__(self, *args, **kwds):
         t_args = _helpers.to_tensors(*args)
-        return ndarray._from_tensor_and_base(self._tensor.__getitem__(*t_args, **kwds), self)
+        return ndarray._from_tensor_and_base(
+            self._tensor.__getitem__(*t_args, **kwds), self
+        )
 
     def __setitem__(self, index, value):
         value = asarray(value).get()
@@ -504,10 +528,10 @@ class ndarray:
 # This is the ideally the only place which talks to ndarray directly.
 # The rest goes through asarray (preferred) or array.
 
-def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
-          like=None):
+
+def array(object, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=None):
     _util.subok_not_ok(like, subok)
-    if order != 'K':
+    if order != "K":
         raise NotImplementedError
 
     # a happy path
@@ -516,7 +540,7 @@ def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
             return object
 
     # lists of ndarrays: [1, [2, 3], ndarray(4)] convert to lists of lists
-    if isinstance(object, (list, tuple)):   
+    if isinstance(object, (list, tuple)):
         a1 = []
         for elem in object:
             if isinstance(elem, ndarray):
@@ -560,7 +584,7 @@ def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
     # adjust ndim if needed
     ndim_extra = ndmin - tensor.ndim
     if ndim_extra > 0:
-        tensor = tensor.view((1,)*ndim_extra + tensor.shape)
+        tensor = tensor.view((1,) * ndim_extra + tensor.shape)
         base = None
 
     # copy if requested
@@ -573,23 +597,24 @@ def array(object, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
 
 def asarray(a, dtype=None, order=None, *, like=None):
     if order is None:
-        order = 'K'
+        order = "K"
     return array(a, dtype=dtype, order=order, like=like, copy=False, ndmin=0)
 
 
-
 class asarray_replacer:
-    def __init__(self, dispatch='one'):
-        if dispatch not in ['one', 'two']:
+    def __init__(self, dispatch="one"):
+        if dispatch not in ["one", "two"]:
             raise ValueError("ararray_replacer: unknown dispatch %s" % dispatch)
         self._dispatch = dispatch
 
     def __call__(self, func):
-        if self._dispatch == 'one':
+        if self._dispatch == "one":
+
             @functools.wraps(func)
             def wrapped(x, *args, **kwds):
                 x_tensor = asarray(x).get()
                 return asarray(func(x_tensor, *args, **kwds))
+
             return wrapped
         else:
             raise ValueError
@@ -597,7 +622,8 @@ class asarray_replacer:
 
 ###### dtype routines
 
-def can_cast(from_, to, casting='safe'):
+
+def can_cast(from_, to, casting="safe"):
     from_dtype = from_.dtype if isinstance(from_, ndarray) else _dtypes.dtype(from_)
     to_dtype = to.dtype if isinstance(to, ndarray) else _dtypes.dtype(to)
 
@@ -626,5 +652,3 @@ def result_type(*arrays_and_dtypes):
         dtyp = _dtypes.dtype(name)
 
     return dtyp
-
-

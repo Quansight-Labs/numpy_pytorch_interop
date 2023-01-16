@@ -32,6 +32,7 @@ def deco_ufunc_from_impl(impl_func):
         x1_array = asarray(x1)
         x2_array = asarray(x2)
         return impl_func(x1_array, x2_array, *args, **kwds)
+
     return wrapped
 
 
@@ -76,4 +77,3 @@ remainder = deco_ufunc_from_impl(_ufunc_impl.remainder)
 right_shift = deco_ufunc_from_impl(_ufunc_impl.right_shift)
 subtract = deco_ufunc_from_impl(_ufunc_impl.subtract)
 divide = deco_ufunc_from_impl(_ufunc_impl.divide)
-

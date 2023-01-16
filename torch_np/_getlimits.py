@@ -1,6 +1,7 @@
 import torch
 from . import _dtypes
 
+
 def finfo(dtyp):
     torch_dtype = _dtypes.torch_dtype_from(dtyp)
     return torch.finfo(torch_dtype)

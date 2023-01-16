@@ -5,6 +5,7 @@ from . import _dtypes
 from ._ndarray import can_cast, ndarray, asarray
 from . import _util
 
+
 def cast_and_broadcast(arrays, out, casting):
     """Cast dtypes of arrays to out.dtype and broadcast if needed.
 
@@ -37,8 +38,10 @@ def cast_and_broadcast(arrays, out, casting):
         for arr in arrays:
             # check dtypes of x and out
             if not can_cast(arr.dtype, out.dtype, casting=casting):
-                raise TypeError(f"Cannot cast array data from {arr.dtype} to"
-                                 " {out_dtype} according to the rule '{casting}'")
+                raise TypeError(
+                    f"Cannot cast array data from {arr.dtype} to"
+                    " {out_dtype} according to the rule '{casting}'"
+                )
             tensor = arr.get()
 
             # `out` broadcasts `arr`
@@ -54,16 +57,16 @@ def cast_and_broadcast(arrays, out, casting):
     return tuple(tensors)
 
 
-
 def cast_dont_broadcast(arrays, out_dtype, casting):
-    """Dtype-cast arrays to dtype.
-    """
+    """Dtype-cast arrays to dtype."""
     # check if we can dtype-cast all arguments
     tensors = []
     for arr in arrays:
         if not can_cast(arr.dtype, out_dtype, casting=casting):
-            raise TypeError(f"Cannot cast array data from {arr.dtype} to"
-                             " {out_dtype} according to the rule '{casting}'")
+            raise TypeError(
+                f"Cannot cast array data from {arr.dtype} to"
+                " {out_dtype} according to the rule '{casting}'"
+            )
         tensor = arr.get()
 
         # cast arr if needed
@@ -73,7 +76,6 @@ def cast_dont_broadcast(arrays, out_dtype, casting):
         tensors.append(tensor)
 
     return tuple(tensors)
-
 
 
 def axis_none_ravel(*arrays, axis=None):
@@ -100,7 +102,7 @@ def result_or_out(result_tensor, out_array=None):
 def apply_keepdims(tensor, axis, ndim):
     if axis is None:
         # tensor was a scalar
-        tensor = torch.full((1,)*ndim, fill_value=tensor)
+        tensor = torch.full((1,) * ndim, fill_value=tensor)
     else:
         shape = _util.expand_shape(tensor.shape, axis)
         tensor = tensor.reshape(shape)
@@ -129,15 +131,16 @@ def allow_only_single_axis(axis):
 
 def to_tensors(*inputs):
     """Convert all ndarrays from `inputs` to tensors."""
-    return tuple([value.get() if isinstance(value, ndarray) else value
-            for value in inputs])
+    return tuple(
+        [value.get() if isinstance(value, ndarray) else value for value in inputs]
+    )
 
 
 def float_or_default(dtype, self_dtype, enforce_float=False):
     """dtype helper for reductions."""
     if dtype is None:
         dtype = self_dtype
-    if dtype == _dtypes.dtype('bool'):
+    if dtype == _dtypes.dtype("bool"):
         dtype = _dtypes.default_int_type()
     if enforce_float:
         if _dtypes.is_integer(dtype):

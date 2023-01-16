@@ -9,8 +9,54 @@ from . import _helpers
 
 from . import _ufunc_impl
 
-__all__ = ['abs', 'absolute', 'arccos', 'arccosh', 'arcsin', 'arcsinh', 'arctan', 'arctanh', 'asarray', 'cbrt', 'ceil', 'conj', 'conjugate', 'cos', 'cosh', 'deg2rad', 'degrees', 'exp', 'exp2', 'expm1', 'fabs', 'floor', 'isfinite', 'isinf', 'isnan', 'log', 'log10', 'log1p', 'log2', 'logical_not', 'negative', 'positive', 'rad2deg', 'radians', 'reciprocal', 'rint', 'sign', 'signbit', 'sin', 'sinh', 'sqrt', 'square', 'tan', 'tanh', 'trunc', 'invert']
-
+__all__ = [
+    "abs",
+    "absolute",
+    "arccos",
+    "arccosh",
+    "arcsin",
+    "arcsinh",
+    "arctan",
+    "arctanh",
+    "asarray",
+    "cbrt",
+    "ceil",
+    "conj",
+    "conjugate",
+    "cos",
+    "cosh",
+    "deg2rad",
+    "degrees",
+    "exp",
+    "exp2",
+    "expm1",
+    "fabs",
+    "floor",
+    "isfinite",
+    "isinf",
+    "isnan",
+    "log",
+    "log10",
+    "log1p",
+    "log2",
+    "logical_not",
+    "negative",
+    "positive",
+    "rad2deg",
+    "radians",
+    "reciprocal",
+    "rint",
+    "sign",
+    "signbit",
+    "sin",
+    "sinh",
+    "sqrt",
+    "square",
+    "tan",
+    "tanh",
+    "trunc",
+    "invert",
+]
 
 
 def deco_unary_ufunc_from_impl(impl_func):
@@ -18,6 +64,7 @@ def deco_unary_ufunc_from_impl(impl_func):
     def wrapped(x1, *args, **kwds):
         x1_array = asarray(x1)
         return impl_func(x1_array, *args, **kwds)
+
     return wrapped
 
 
@@ -72,4 +119,3 @@ positive = deco_unary_ufunc_from_impl(_ufunc_impl.positive)
 abs = absolute
 conj = conjugate
 bitwise_not = invert
-
