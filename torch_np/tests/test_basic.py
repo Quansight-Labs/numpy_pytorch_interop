@@ -45,7 +45,7 @@ one_arg_funcs = [
 ]
 
 
-one_arg_funcs += [getattr(w, name) for name in _unary_ufuncs.__all__]
+one_arg_funcs += [getattr(_unary_ufuncs, name) for name in _unary_ufuncs.__all__]
 one_arg_funcs = one_arg_funcs[:-1]  # FIXME: remove np.invert
 
 
