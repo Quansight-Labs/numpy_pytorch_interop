@@ -349,6 +349,7 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
         out_dtype = None
     else:
         out_dtype = out.dtype if dtype is None else _dtypes.dtype(dtype)
+        out_dtype = out_dtype.type.torch_dtype
 
         # cast input arrays if necessary; do not broadcast them agains `out`
         tensors = _util.cast_dont_broadcast(tensors, out_dtype, casting)

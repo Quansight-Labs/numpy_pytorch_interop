@@ -146,8 +146,8 @@ def cast_dont_broadcast(tensors, target_dtype, casting):
     Parameters
     ----------
     tensors : iterable
-	tuple or list of torch.Tensors to typecast
-    target_dtype : DType object
+	    tuple or list of torch.Tensors to typecast
+    target_dtype : torch dtype object, optional
         The array dtype to cast all tensors to
     casting : str
         The casting mode, see `np.can_cast`
@@ -159,17 +159,57 @@ def cast_dont_broadcast(tensors, target_dtype, casting):
     """
     # check if we can dtype-cast all arguments
     cast_tensors = []
-    target_dtype_t = target_dtype.type.torch_dtype
     can_cast = _scalar_types._can_cast_impl
 
     for tensor in tensors:
-        if not can_cast(tensor.dtype, target_dtype_t, casting=casting):
+        if not can_cast(tensor.dtype, target_dtype, casting=casting):
             raise TypeError(f"Cannot cast array data from {tensor.dtype} to"
                             f" {target_dtype} according to the rule '{casting}'")
 
         # cast if needed
-        if tensor.dtype != target_dtype_t:
-            tensor = tensor.to(target_dtype_t)
+        if tensor.dtype != target_dtype:
+            tensor = tensor.to(target_dtype)
         cast_tensors.append(tensor)
 
     return tuple(cast_tensors)
+
+
+def cast_and_broadcast(tensors, target_dtype, target_shape, casting):
+    """
+    Parameters
+    ----------
+    tensors : iterable
+	    tuple or list of torch.Tensors to typecast
+    target_dtype : a torch.dtype object
+        The torch dtype to cast all tensors to
+    target_shape : tuple
+        The tensor shape to broadcast all `tensors` to
+    casting : str
+        The casting mode, see `np.can_cast`
+
+    Returns
+    -------
+    a tuple of torch.Tensors with dtype being the PyTorch counterpart
+    of the `target_dtype` and `target_shape`
+    """
+    can_cast = _scalar_types._can_cast_impl
+
+    processed_tensors = []
+    for tensor in tensors:
+        # check dtypes of x and out
+        if not can_cast(tensor.dtype, target_dtype, casting=casting):
+            raise TypeError(f"Cannot cast array data from {tensor.dtype} to"
+                            f" {target_dtype} according to the rule '{casting}'")
+
+        # cast arr if needed
+        if tensor.dtype != target_dtype:
+            tensor = tensor.to(target_dtype)
+
+        # `out` broadcasts `tensor`
+        if tensor.shape != target_shape:
+            tensor = torch.broadcast_to(tensor, target_shape)
+
+        processed_tensors.append(tensor)
+
+    return tuple(processed_tensors)
+

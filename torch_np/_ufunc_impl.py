@@ -20,8 +20,8 @@ def deco_binary_ufunc(torch_func):
         if dtype is not None:
             raise NotImplementedError
 
-        arrays = (x1, x2)
-        tensors = _helpers.cast_and_broadcast(arrays, out, casting)
+        tensors = (x1.get(), x2.get())
+        tensors = _helpers.cast_and_broadcast(tensors, out, casting)
 
         result = torch_func(*tensors)
 
@@ -42,8 +42,8 @@ def deco_unary_ufunc(torch_func):
         if dtype is not None:
             raise NotImplementedError
 
-        arrays = (x1, )
-        tensors  = _helpers.cast_and_broadcast(arrays, out, casting)
+        tensors = (x1.get(), )
+        tensors  = _helpers.cast_and_broadcast(tensors, out, casting)
 
         result = torch_func(*tensors)
 

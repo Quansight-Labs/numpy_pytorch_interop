@@ -2,10 +2,12 @@ import operator
 
 import torch
 from . import _dtypes
-from ._ndarray import can_cast, ndarray, asarray
+from ._ndarray import ndarray, asarray
+
 from ._detail import _util
 
-def cast_and_broadcast(arrays, out, casting):
+
+def cast_and_broadcast(tensors, out, casting):
     """Cast dtypes of arrays to out.dtype and broadcast if needed.
 
     Parameters
@@ -28,28 +30,12 @@ def cast_and_broadcast(arrays, out, casting):
 
     """
     if out is None:
-        return tuple(arr.get() for arr in arrays)
+        return tensors
     else:
         if not isinstance(out, ndarray):
             raise TypeError("Return arrays must be of ArrayType")
 
-        tensors = []
-        for arr in arrays:
-            # check dtypes of x and out
-            if not can_cast(arr.dtype, out.dtype, casting=casting):
-                raise TypeError(f"Cannot cast array data from {arr.dtype} to"
-                                 " {out_dtype} according to the rule '{casting}'")
-            tensor = arr.get()
-
-            # `out` broadcasts `arr`
-            if arr.shape != out.shape:
-                tensor = torch.broadcast_to(tensor, out.shape)
-
-            # cast arr if needed
-            if arr.dtype != out.dtype:
-                tensor = tensor.to(_dtypes.torch_dtype_from(out.dtype))
-
-            tensors.append(tensor)
+        tensors = _util.cast_and_broadcast(tensors, out.dtype.type.torch_dtype, out.shape, casting)
 
     return tuple(tensors)
 
