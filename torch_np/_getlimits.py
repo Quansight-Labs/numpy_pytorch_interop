@@ -1,5 +1,7 @@
 import torch
+
 from . import _dtypes
+
 
 def finfo(dtyp):
     torch_dtype = _dtypes.torch_dtype_from(dtyp)
@@ -12,6 +14,7 @@ def iinfo(dtyp):
 
 
 import contextlib
+
 
 # FIXME: this is only a stub
 @contextlib.contextmanager

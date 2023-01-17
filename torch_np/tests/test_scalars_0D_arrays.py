@@ -12,14 +12,15 @@ import torch_np as np
 from torch_np.testing import assert_equal
 
 
-@pytest.mark.parametrize('value',
-        [np.int64(42), np.array(42), np.asarray(42), np.asarray(np.int64(42))])
+@pytest.mark.parametrize(
+    "value", [np.int64(42), np.array(42), np.asarray(42), np.asarray(np.int64(42))]
+)
 class TestArrayScalars:
     def test_array_scalar_basic(self, value):
         assert value.ndim == 0
         assert value.shape == ()
         assert value.size == 1
-        assert value.dtype == np.dtype('int64')
+        assert value.dtype == np.dtype("int64")
 
     def test_conversion_to_int(self, value):
         py_scalar = int(value)
@@ -37,13 +38,13 @@ class TestArrayScalars:
         product = value * lst
         assert isinstance(product, np.ndarray)
         assert product.shape == (3,)
-        assert_equal(product, [42, 42*2, 42*3])
+        assert_equal(product, [42, 42 * 2, 42 * 3])
 
         # repeat with right-mulitply
         product = lst * value
         assert isinstance(product, np.ndarray)
         assert product.shape == (3,)
-        assert_equal(product, [42, 42*2, 42*3])
+        assert_equal(product, [42, 42 * 2, 42 * 3])
 
 
 def test_scalar_comparisons():
@@ -64,17 +65,38 @@ class TestIsScalar:
     #
     # This differs from NumPy which also requires that shape == ().
     #
-    scalars = [42, int(42.), np.float32(42), np.array(42), [42], [[42]],
-               np.array([42]), np.array([[42]])]
+    scalars = [
+        42,
+        int(42.0),
+        np.float32(42),
+        np.array(42),
+        [42],
+        [[42]],
+        np.array([42]),
+        np.array([[42]]),
+    ]
 
     import math
-    not_scalars = [int, np.float32, 's', 'string', (), [], math.sin, np,
-                   np.transpose, [1, 2], np.asarray([1, 2]), np.float32([1, 2])]
 
-    @pytest.mark.parametrize('value', scalars)
+    not_scalars = [
+        int,
+        np.float32,
+        "s",
+        "string",
+        (),
+        [],
+        math.sin,
+        np,
+        np.transpose,
+        [1, 2],
+        np.asarray([1, 2]),
+        np.float32([1, 2]),
+    ]
+
+    @pytest.mark.parametrize("value", scalars)
     def test_is_scalar(self, value):
         assert np.isscalar(value)
 
-    @pytest.mark.parametrize('value', not_scalars)
+    @pytest.mark.parametrize("value", not_scalars)
     def test_is_not_scalar(self, value):
         assert not np.isscalar(value)

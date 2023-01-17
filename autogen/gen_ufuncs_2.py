@@ -1,6 +1,5 @@
-from dump_namespace import grab_namespace, get_signature
-
 import numpy as np
+from dump_namespace import get_signature, grab_namespace
 
 namespace = np
 
@@ -8,35 +7,37 @@ dct = grab_namespace(namespace)
 
 
 # SKIP these (need special handling)
-skip = {np.frexp, np.modf,    # non-standard unary ufunc signatures
-        np.isnat,
-        np.invert,      # bitwise NOT operator
-        np.spacing,     # niche, does not have a direct equivalent
+skip = {
+    np.frexp,
+    np.modf,  # non-standard unary ufunc signatures
+    np.isnat,
+    np.invert,  # bitwise NOT operator
+    np.spacing,  # niche, does not have a direct equivalent
 }
 
 # np functions where torch names differ
-torch_names = {np.radians : "deg2rad",
-               np.degrees : "rad2deg",
-               np.conjugate : "conj_physical",
-               np.fabs : "absolute",       # FIXME: np.fabs raises form complex
-               np.rint : "round",
-               np.left_shift: "bitwise_left_shift",
-               np.right_shift: "bitwise_right_shift",
+torch_names = {
+    np.radians: "deg2rad",
+    np.degrees: "rad2deg",
+    np.conjugate: "conj_physical",
+    np.fabs: "absolute",  # FIXME: np.fabs raises form complex
+    np.rint: "round",
+    np.left_shift: "bitwise_left_shift",
+    np.right_shift: "bitwise_right_shift",
 }
 
 
 # np functions which do not have a torch equivalent
 default_stanza = "torch.{torch_name}(x, out=out)"
 
-stanzas = {np.cbrt : "torch.pow(x, 1/3, out=out)",
-
-           # XXX what on earth is np.positive
-           np.positive: "+x",
-
-           # these three do not have an out arg
-           np.isinf: "torch.isinf(x)",
-           np.isnan: "torch.isnan(x)",
-           np.isfinite: "torch.isfinite(x)",
+stanzas = {
+    np.cbrt: "torch.pow(x, 1/3, out=out)",
+    # XXX what on earth is np.positive
+    np.positive: "+x",
+    # these three do not have an out arg
+    np.isinf: "torch.isinf(x)",
+    np.isnan: "torch.isnan(x)",
+    np.isfinite: "torch.isfinite(x)",
 }
 
 
@@ -59,13 +60,16 @@ from _ndarray import asarray_replacer
 
 """
 
-test_header = header + """\
+test_header = (
+    header
+    + """\
 import numpy as np
 import torch
 
 from _unary_ufuncs import *
 from testing import assert_allclose
 """
+)
 
 
 template = """ """
@@ -88,23 +92,25 @@ test_text = test_header
 _impl_list = []
 _ufunc_list = []
 
-for ufunc in dct['ufunc']:
+for ufunc in dct["ufunc"]:
     if ufunc in skip:
         continue
 
     if ufunc.nin == 1:
-#        print(get_signature(ufunc))
+        #        print(get_signature(ufunc))
 
         torch_name = torch_names.get(ufunc)
         if torch_name is None:
             torch_name = ufunc.__name__
 
-#        print(ufunc.__name__, ' -- ', torch_name)   
+        #        print(ufunc.__name__, ' -- ', torch_name)
 
         _impl_stanza = "{np_name} = deco_unary_ufunc(torch.{torch_name})"
-        _impl_stanza = _impl_stanza.format(np_name=ufunc.__name__,
-                                     torch_name=torch_name,)
-        _impl_list.append(_impl_stanza)        
+        _impl_stanza = _impl_stanza.format(
+            np_name=ufunc.__name__,
+            torch_name=torch_name,
+        )
+        _impl_list.append(_impl_stanza)
 
         continue
 
@@ -112,11 +118,11 @@ for ufunc in dct['ufunc']:
         if torch_stanza is None:
             torch_stanza = default_stanza.format(torch_name=torch_name)
 
-        out_stanza= add_out_stanza if ufunc in needs_out else ""
+        out_stanza = add_out_stanza if ufunc in needs_out else ""
 
-        main_text += template.format(np_name=ufunc.__name__,
-                                     torch_stanza=torch_stanza,
-                                     out_stanza=out_stanza)
+        main_text += template.format(
+            np_name=ufunc.__name__, torch_stanza=torch_stanza, out_stanza=out_stanza
+        )
         test_text += test_template.format(np_name=ufunc.__name__)
 
         _all_list.append(ufunc.__name__)
@@ -125,7 +131,7 @@ for ufunc in dct['ufunc']:
 print("\n".join(_impl_list))
 print("\n\n-----\n\n")
 
-'''
+"""
 main_text += "\n\n__all__ = %s" % _all_list
 
 
@@ -134,19 +140,21 @@ with open("_unary_ufuncs.py", "w") as f:
 
 with open("test_unary_ufuncs.py", "w") as f:
     f.write(test_text)
-'''
+"""
 
 ###### BINARY UFUNCS ###################################
 
 
-
-test_header = header + """\
+test_header = (
+    header
+    + """\
 import numpy as np
 import torch
 
 from _binary_ufuncs import *
 from testing import assert_allclose
 """
+)
 
 
 template = """
@@ -163,13 +171,14 @@ def test_{np_name}():
 """
 
 
-
-skip = {np.divmod,    # two outputs
+skip = {
+    np.divmod,  # two outputs
 }
 
 
-torch_names = {np.power: "pow",
-               np.equal: "eq",
+torch_names = {
+    np.power: "pow",
+    np.equal: "eq",
 }
 
 
@@ -181,21 +190,23 @@ _impl_list = []
 _ufunc_list = []
 
 
-for ufunc in dct['ufunc']:
+for ufunc in dct["ufunc"]:
 
     if ufunc in skip:
         continue
 
     if ufunc.nin == 2:
- ##       print(get_signature(ufunc))
+        ##       print(get_signature(ufunc))
 
         torch_name = torch_names.get(ufunc)
         if torch_name is None:
             torch_name = ufunc.__name__
 
         _impl_stanza = "{np_name} = deco_binary_ufunc(torch.{torch_name})"
-        _impl_stanza = _impl_stanza.format(np_name=ufunc.__name__,
-                                     torch_name=torch_name,)
+        _impl_stanza = _impl_stanza.format(
+            np_name=ufunc.__name__,
+            torch_name=torch_name,
+        )
         _impl_list.append(_impl_stanza)
 
         _ufunc_stanza = "{np_name} = deco_ufunc_from_impl(_ufunc_impl.{np_name})"
@@ -207,7 +218,3 @@ print("\n".join(_impl_list))
 
 print("\n\n")
 print("\n".join(_ufunc_list))
-
-
-
-
