@@ -4,9 +4,12 @@ import operator
 import torch
 
 from ._detail import _util
+from ._detail import _reductions
 from . import _helpers
 from . import _dtypes
 from . import _ufunc_impl
+
+from . import _decorators
 
 NoValue = None
 newaxis = None
@@ -21,7 +24,7 @@ def axis_out_keepdims_wrapper(func):
     # XXX: move this out of _ndarray.py (circular imports)
     @functools.wraps(func)
     def wrapped(a, axis=None, out=None, keepdims=NoValue, *args, **kwds):
-        arr = asarray(a)
+        tensor = asarray(a).get()
 
         # standardize the axis argument
         if isinstance(axis, ndarray):
@@ -30,17 +33,17 @@ def axis_out_keepdims_wrapper(func):
         if axis is not None:
             if not isinstance(axis, (list, tuple)):
                 axis = (axis,)
-            axis = _util.normalize_axis_tuple(axis, arr.ndim)
+            axis = _util.normalize_axis_tuple(axis, tensor.ndim)
 
         if axis == ():
-            newshape = _util.expand_shape(arr.shape, axis=0)
-            arr = arr.reshape(newshape)
+            newshape = _util.expand_shape(tensor.shape, axis=0)
+            tensor = tensor.reshape(newshape)
             axis = (0,)
 
-        result = func(arr, axis=axis, *args, **kwds)
+        result = func(tensor, axis=axis, *args, **kwds)
 
         if keepdims:
-            result = _util.apply_keepdims(result, axis, arr.ndim)
+            result = _util.apply_keepdims(result, axis, tensor.ndim)
         return _helpers.result_or_out(result, out)
 
     return wrapped
@@ -337,13 +340,13 @@ class ndarray:
     @axis_out_keepdims_wrapper
     def argmax(self, axis=None, out=None, *, keepdims=NoValue):
         axis = _util.allow_only_single_axis(axis)
-        tensor = torch.argmax(self._tensor, axis)
+        tensor = torch.argmax(self, axis)
         return tensor
 
     @axis_out_keepdims_wrapper
     def argmin(self, axis=None, out=None, *, keepdims=NoValue):
         axis = _util.allow_only_single_axis(axis)
-        tensor = torch.argmin(self._tensor, axis)
+        tensor = torch.argmin(self, axis)
         return tensor
 
     def reshape(self, *shape, order='C'):
@@ -374,126 +377,17 @@ class ndarray:
         tensor = self._tensor
         return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
 
-    @axis_out_keepdims_wrapper
-    def any(self, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-        if where is not None:
-            raise NotImplementedError
 
-        axis = _util.allow_only_single_axis(axis)
+    any = axis_out_keepdims_wrapper(_reductions.any)
+    all = axis_out_keepdims_wrapper(_reductions.all)
+    max = axis_out_keepdims_wrapper(_reductions.max)
+    min = axis_out_keepdims_wrapper(_reductions.min)
 
-        if axis is None:
-            result = self._tensor.any()
-        else:
-            result = self._tensor.any(axis)
-        return result
-
-
-    @axis_out_keepdims_wrapper
-    def all(self, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-        if where is not None:
-            raise NotImplementedError
-
-        axis = _util.allow_only_single_axis(axis)
-
-        if axis is None:
-            result = self._tensor.all()
-        else:
-            result = self._tensor.all(axis)
-        return result
-
-
-    @axis_out_keepdims_wrapper
-    def max(self, axis=None, out=None, keepdims=NoValue, initial=NoValue,
-             where=NoValue):
-        if where is not None:
-            raise NotImplementedError
-        if initial is not None:
-            raise NotImplementedError
-
-        result = self._tensor.amax(axis)
-        return result
-
-    @axis_out_keepdims_wrapper
-    def min(self, axis=None, out=None, keepdims=NoValue, initial=NoValue,
-             where=NoValue):
-        if where is not None:
-            raise NotImplementedError
-        if initial is not None:
-            raise NotImplementedError
-
-        result = self._tensor.amin(axis)
-        return result
-
-    @axis_out_keepdims_wrapper
-    def mean(self, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
-        if where is not None:
-            raise NotImplementedError
-
-        torch_dtype = _dtypes.float_or_default(dtype, self.dtype, enforce_float=True)
-        if axis is None:
-            result = self._tensor.mean(dtype=torch_dtype)
-        else:
-            result = self._tensor.mean(dtype=torch_dtype, dim=axis)
-
-        return result
-
-
-    @axis_out_keepdims_wrapper
-    def sum(self, axis=None, dtype=None, out=None, keepdims=NoValue,
-            initial=NoValue, where=NoValue):
-        if initial is not None or where is not None:
-            raise NotImplementedError
-
-        torch_dtype = _dtypes.float_or_default(dtype, self.dtype)
-        if axis is None:
-            result = self._tensor.sum(dtype=torch_dtype)
-        else:
-            result = self._tensor.sum(dtype=torch_dtype, dim=axis)
-
-        return result
-
-    @axis_out_keepdims_wrapper
-    def prod(self, axis=None, dtype=None, out=None, keepdims=NoValue,
-            initial=NoValue, where=NoValue):
-        if initial is not None or where is not None:
-            raise NotImplementedError
-
-        axis = _util.allow_only_single_axis(axis)
-
-        torch_dtype = _dtypes.float_or_default(dtype, self.dtype)
-        if axis is None:
-            result = self._tensor.prod(dtype=torch_dtype)
-        else:
-            result = self._tensor.prod(dtype=torch_dtype, dim=axis)
-
-        return result
-
-
-    @axis_out_keepdims_wrapper
-    def std(self, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *,
-            where=NoValue):
-        if where is not None:
-            raise NotImplementedError
-
-        torch_dtype = _dtypes.float_or_default(dtype, self.dtype, enforce_float=True)
-        tensor = self._tensor.to(torch_dtype)
-
-        result = tensor.std(dim=axis, correction=ddof)
-
-        return result
-
-    @axis_out_keepdims_wrapper
-    def var(self, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *,
-            where=NoValue):
-        if where is not None:
-            raise NotImplementedError
-
-        torch_dtype = _dtypes.float_or_default(dtype, self.dtype, enforce_float=True)
-        tensor = self._tensor.to(torch_dtype)
-
-        result = tensor.var(dim=axis, correction=ddof)
-
-        return result
+    sum = axis_out_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.sum))
+    prod = axis_out_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.prod))
+    mean = axis_out_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.mean))
+    var = axis_out_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.var))
+    std = axis_out_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.std))
 
 
     ### indexing ###

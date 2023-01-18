@@ -132,13 +132,6 @@ def get_default_dtype_for(dtyp):
     return _scalar_types.get_default_type_for(sctype)
 
 
-def float_or_default(dtyp, self_dtype, enforce_float=False):
-    """dtype helper for reductions: DTypes in, torch_dtype out"""
-    dtyp = self_dtype if dtyp is None else dtype(dtyp)    
-    sctype = _scalar_types.float_or_default(dtyp.type, enforce_float)
-    return sctype.torch_dtype
-
-
 def issubclass_(arg, klass):
     try:
         return issubclass(arg, klass)

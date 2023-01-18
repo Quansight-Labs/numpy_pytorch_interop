@@ -8,10 +8,14 @@ pytorch tensors.
 import torch
 
 from ._detail import _util
+from ._detail import _reductions
+
 from . import _dtypes
 from . import _helpers
 from ._ndarray import ndarray, asarray, array, asarray_replacer, newaxis
 from ._ndarray import can_cast, result_type
+
+
 
 
 # Things to decide on (punt for now)
@@ -502,16 +506,9 @@ def abs(a):
     arr = asarray(a)
     return a.__abs__()
 
-from ._ndarray import axis_out_keepdims_wrapper
 
-@axis_out_keepdims_wrapper
-def count_nonzero(a, axis=None, *, keepdims=False):
-    # XXX: this all should probably be generalized to a sum(a != 0, dtype=bool)
-    try:
-        tensor = a.get().count_nonzero(axis)
-    except RuntimeError:
-        raise ValueError
-    return tensor
+from ._ndarray import axis_out_keepdims_wrapper
+count_nonzero = axis_out_keepdims_wrapper(_reductions.count_nonzero)
 
 
 @asarray_replacer()
