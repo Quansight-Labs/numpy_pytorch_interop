@@ -25,7 +25,7 @@ def _atleast_float(dtype, other_dtype):
     return dtype
 
 
-def count_nonzero(a, axis=None, *, keepdims=False):
+def count_nonzero(a, axis=None):
     # XXX: this all should probably be generalized to a sum(a != 0, dtype=bool)
     try:
         return a.count_nonzero(axis)
@@ -34,7 +34,7 @@ def count_nonzero(a, axis=None, *, keepdims=False):
     return tensor
 
 
-def any(tensor, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
+def any(tensor, axis=None, *, where=NoValue):
     if where is not None:
         raise NotImplementedError
 
@@ -47,7 +47,7 @@ def any(tensor, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
     return result
 
 
-def all(tensor, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
+def all(tensor, axis=None, *, where=NoValue):
     if where is not None:
         raise NotImplementedError
 
@@ -60,7 +60,7 @@ def all(tensor, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
     return result
 
 
-def max(tensor, axis=None, out=None, keepdims=NoValue, initial=NoValue,
+def max(tensor, axis=None, initial=NoValue,
          where=NoValue):
     if where is not None:
         raise NotImplementedError
@@ -71,8 +71,7 @@ def max(tensor, axis=None, out=None, keepdims=NoValue, initial=NoValue,
     return result
 
 
-def min(tensor, axis=None, out=None, keepdims=NoValue, initial=NoValue,
-         where=NoValue):
+def min(tensor, axis=None, initial=NoValue, where=NoValue):
     if where is not None:
         raise NotImplementedError
     if initial is not None:
@@ -82,8 +81,7 @@ def min(tensor, axis=None, out=None, keepdims=NoValue, initial=NoValue,
     return result
 
 
-def sum(tensor, axis=None, dtype=None, out=None, keepdims=NoValue,
-        initial=NoValue, where=NoValue):
+def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     if initial is not None or where is not None:
         raise NotImplementedError
 
@@ -100,8 +98,7 @@ def sum(tensor, axis=None, dtype=None, out=None, keepdims=NoValue,
     return result
 
 
-def prod(tensor, axis=None, dtype=None, out=None, keepdims=NoValue,
-        initial=NoValue, where=NoValue):
+def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     if initial is not None or where is not None:
         raise NotImplementedError
 
@@ -118,7 +115,7 @@ def prod(tensor, axis=None, dtype=None, out=None, keepdims=NoValue,
     return result
 
 
-def mean(tensor, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
+def mean(tensor, axis=None, dtype=None, *, where=NoValue):
     if where is not None:
         raise NotImplementedError
 
@@ -132,8 +129,7 @@ def mean(tensor, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoV
     return result
 
 
-def std(tensor, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *,
-        where=NoValue):
+def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
     if where is not None:
         raise NotImplementedError
 
@@ -145,8 +141,7 @@ def std(tensor, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *,
     return result
 
 
-def var(tensor, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *,
-        where=NoValue):
+def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
     if where is not None:
         raise NotImplementedError
 

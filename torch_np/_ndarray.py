@@ -20,8 +20,15 @@ def axis_out_keepdims_wrapper(func):
 
     This decorator implements the generic handling of axis, out and keepdims
     arguments for reduction functions.
+
+    Note that we peel off `out=...` and `keepdims=...` args (torch functions never
+    see them). The `axis` argument we normalize and pass through to pytorch functions.
+
     """
     # XXX: move this out of _ndarray.py (circular imports)
+    #
+    # TODO: 1. get rid of _helpers.result_or_out
+    #       2. sort out function signatures: how they flow through all decorators etc
     @functools.wraps(func)
     def wrapped(a, axis=None, out=None, keepdims=NoValue, *args, **kwds):
         tensor = asarray(a).get()
