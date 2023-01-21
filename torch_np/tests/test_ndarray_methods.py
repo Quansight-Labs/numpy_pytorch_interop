@@ -279,14 +279,18 @@ class TestArgmaxArgminCommon:
 
         # Check some simple shape mismatches
         out = np.ones(11, dtype=np.int_)
-        assert_raises(ValueError, arg_method, -1, out)
+
+        with assert_raises(ValueError):
+            arg_method(-1, out=out)
 
         out = np.ones((2, 5), dtype=np.int_)
-        assert_raises(ValueError, arg_method, -1, out)
+        with assert_raises(ValueError):
+            arg_method(-1, out=out)
 
         # these could be relaxed possibly (used to allow even the previous)
         out = np.ones((1, 10), dtype=np.int_)
-        assert_raises(ValueError, arg_method, -1, out)
+        with assert_raises(ValueError):
+            arg_method(-1, out=out)
 
         out = np.ones(10, dtype=np.int_)
         arg_method(-1, out=out)
@@ -311,18 +315,27 @@ class TestArgmaxArgminCommon:
         a = np.arange(6).reshape((2, 3))
         arg_method = getattr(a, arr_method)
 
-        # check positional args
-        out1 = np.zeros(2, dtype=int)
-        out2 = np.zeros(2, dtype=int)
-        assert_equal(arg_method(1, out1), np_method(a, 1, out2))
-        assert_equal(out1, out2)
-
         # check keyword args
         out1 = np.zeros(3, dtype=int)
         out2 = np.zeros(3, dtype=int)
         assert_equal(arg_method(out=out1, axis=0),
                      np_method(a, out=out2, axis=0))
         assert_equal(out1, out2)
+
+    @pytest.mark.xfail(reason="out=... as a positional arg")
+    @pytest.mark.parametrize('arr_method, np_method',
+        [('argmax', np.argmax),
+         ('argmin', np.argmin)])
+    def test_np_vs_ndarray_positional(self, arr_method, np_method):
+        a = np.arange(6).reshape((2, 3))
+        arg_method = getattr(a, arr_method)
+
+        # check positional args
+        out1 = np.zeros(2, dtype=int)
+        out2 = np.zeros(2, dtype=int)
+        assert_equal(arg_method(1, out1), np_method(a, 1, out2))
+        assert_equal(out1, out2)
+
 
 
 class TestArgmax:

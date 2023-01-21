@@ -45,7 +45,7 @@ def result_or_out(result_tensor, out_array=None):
     """A helper for returns with out= argument."""
     if out_array is not None:
         if result_tensor.shape != out_array.shape:
-            raise ValueError
+            raise ValueError("Bad size of the out array.")
         out_tensor = out_array.get()
         out_tensor.copy_(result_tensor)
         return out_array

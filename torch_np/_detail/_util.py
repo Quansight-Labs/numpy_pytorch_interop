@@ -213,3 +213,23 @@ def cast_and_broadcast(tensors, target_dtype, target_shape, casting):
 
     return tuple(processed_tensors)
 
+
+def axis_keepdims(func, tensor, axis, keepdims, *args, **kwds):
+    """Generically handle axis and keepdims arguments in reductions."""
+    if axis is not None:
+        if not isinstance(axis, (list, tuple)):
+            axis = (axis,)
+        axis = normalize_axis_tuple(axis, tensor.ndim)
+
+    if axis == ():
+        newshape = expand_shape(tensor.shape, axis=0)
+        tensor = tensor.reshape(newshape)
+        axis = (0,)
+
+    result = func(tensor, axis=axis, *args, **kwds)
+
+    if keepdims:
+        result = apply_keepdims(result, axis, tensor.ndim)
+
+    return result
+

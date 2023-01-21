@@ -3,6 +3,7 @@ import functools
 import torch
 
 from . import _dtypes
+from . import _helpers
 
 def dtype_to_torch(func):
 ##    @functools.wraps  # XXX: why
@@ -15,3 +16,13 @@ def dtype_to_torch(func):
 
         return func(*args, dtype=torch_dtype, **kwds)
     return wrapped
+
+
+def handle_out_arg(func):
+
+    def wrapped(*args, out=None, **kwds):
+        result_tensor = func(*args, **kwds)
+        return _helpers.result_or_out(result_tensor, out)
+
+    return wrapped
+

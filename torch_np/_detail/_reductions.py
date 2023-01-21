@@ -34,6 +34,17 @@ def count_nonzero(a, axis=None):
     return tensor
 
 
+def argmax(tensor, axis=None, out=None, *, keepdims=NoValue):
+    axis = _util.allow_only_single_axis(axis)
+    tensor = torch.argmax(tensor, axis)
+    return tensor
+
+def argmin(tensor, axis=None, out=None, *, keepdims=NoValue):
+    axis = _util.allow_only_single_axis(axis)
+    tensor = torch.argmin(tensor, axis)
+    return tensor
+
+
 def any(tensor, axis=None, *, where=NoValue):
     if where is not None:
         raise NotImplementedError

@@ -15,7 +15,7 @@ NoValue = None
 newaxis = None
 
 
-def axis_out_keepdims_wrapper(func):
+def axis_keepdims_wrapper(func):
     """`func` accepts an array-like as a 1st arg, returns a tensor.
 
     This decorator implements the generic handling of axis, out and keepdims
@@ -37,21 +37,8 @@ def axis_out_keepdims_wrapper(func):
         if isinstance(axis, ndarray):
             axis = operator.index(axis)
 
-        if axis is not None:
-            if not isinstance(axis, (list, tuple)):
-                axis = (axis,)
-            axis = _util.normalize_axis_tuple(axis, tensor.ndim)
-
-        if axis == ():
-            newshape = _util.expand_shape(tensor.shape, axis=0)
-            tensor = tensor.reshape(newshape)
-            axis = (0,)
-
-        result = func(tensor, axis=axis, *args, **kwds)
-
-        if keepdims:
-            result = _util.apply_keepdims(result, axis, tensor.ndim)
-        return _helpers.result_or_out(result, out)
+        result = _util.axis_keepdims(func, tensor, axis, keepdims, *args, **kwds)
+        return result
 
     return wrapped
 
@@ -344,17 +331,6 @@ class ndarray:
             tensor = self._tensor.squeeze(axis)
         return ndarray._from_tensor_and_base(tensor, self)
 
-    @axis_out_keepdims_wrapper
-    def argmax(self, axis=None, out=None, *, keepdims=NoValue):
-        axis = _util.allow_only_single_axis(axis)
-        tensor = torch.argmax(self, axis)
-        return tensor
-
-    @axis_out_keepdims_wrapper
-    def argmin(self, axis=None, out=None, *, keepdims=NoValue):
-        axis = _util.allow_only_single_axis(axis)
-        tensor = torch.argmin(self, axis)
-        return tensor
 
     def reshape(self, *shape, order='C'):
         newshape = shape[0] if len(shape) == 1 else shape
@@ -384,17 +360,19 @@ class ndarray:
         tensor = self._tensor
         return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
 
+    argmin = _decorators.handle_out_arg(axis_keepdims_wrapper(_reductions.argmin))
+    argmax = _decorators.handle_out_arg(axis_keepdims_wrapper(_reductions.argmax))
 
-    any = axis_out_keepdims_wrapper(_reductions.any)
-    all = axis_out_keepdims_wrapper(_reductions.all)
-    max = axis_out_keepdims_wrapper(_reductions.max)
-    min = axis_out_keepdims_wrapper(_reductions.min)
+    any = _decorators.handle_out_arg(axis_keepdims_wrapper(_reductions.any))
+    all = _decorators.handle_out_arg(axis_keepdims_wrapper(_reductions.all))
+    max = _decorators.handle_out_arg(axis_keepdims_wrapper(_reductions.max))
+    min = _decorators.handle_out_arg(axis_keepdims_wrapper(_reductions.min))
 
-    sum = axis_out_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.sum))
-    prod = axis_out_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.prod))
-    mean = axis_out_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.mean))
-    var = axis_out_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.var))
-    std = axis_out_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.std))
+    sum = _decorators.handle_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.sum)))
+    prod = _decorators.handle_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.prod)))
+    mean = _decorators.handle_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.mean)))
+    var = _decorators.handle_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.var)))
+    std = _decorators.handle_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.std)))
 
 
     ### indexing ###
