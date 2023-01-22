@@ -233,3 +233,62 @@ def axis_keepdims(func, tensor, axis, keepdims, *args, **kwds):
 
     return result
 
+
+def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
+    """The core logic of the array(...) function.
+
+    Parameters
+    ----------
+    obj : tensor_like
+        The thing to coerce
+    dtype : torch.dtype object or None
+        Coerce to this torch dtype
+    copy : bool
+        Copy or not
+
+    Returns
+    -------
+    tensor : torch.Tensor
+        a tensor object with requested dtype, ndim and copy semantics.
+
+    Notes
+    -----
+    This is almost a "tensor_like" coersion function. Does not handle wrapper
+    ndarrays (those should be handled in the ndarray-aware layer prior to
+    invoking this function).
+    """
+    if isinstance(obj, torch.Tensor):
+        tensor = obj
+        base = None
+    else:
+        tensor = torch.as_tensor(obj)
+        base = None
+
+        # At this point, `tensor.dtype` is the pytorch default. Our default may
+        # differ, so need to typecast. However, we cannot just do `tensor.to`,
+        # because if our desired dtype is wider then pytorch's, `tensor`
+        # may have lost precision:
+
+        # int(torch.as_tensor(1e12)) - 1e12 equals -4096 (try it!)
+
+        # Therefore, we treat `tensor.dtype` as a hint, and convert the
+        # original object *again*, this time with an explicit dtype.
+        sctype = _scalar_types.get_default_type_for(_scalar_types.sctype_from_torch_dtype(tensor.dtype))
+        torch_dtype = sctype.torch_dtype
+
+        tensor = torch.as_tensor(obj, dtype=torch_dtype)
+
+    # type cast if requested
+    if dtype is not None:
+        tensor = tensor.to(dtype)
+
+    # adjust ndim if needed
+    ndim_extra = ndmin - tensor.ndim
+    if ndim_extra > 0:
+        tensor = tensor.view((1,)*ndim_extra + tensor.shape)
+
+    # copy if requested
+    if copy:
+        tensor = tensor.clone()
+
+    return tensor
