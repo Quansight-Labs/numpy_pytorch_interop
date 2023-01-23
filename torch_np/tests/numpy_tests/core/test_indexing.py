@@ -86,11 +86,18 @@ class TestIndexing:
         # should still get the DeprecationWarning if step = 0.
         assert_raises(TypeError, lambda: a[::0.0])
 
+    @pytest.mark.xfail(reason="torch allows slicing with non-0d array components")
     def test_index_no_array_to_index(self):
         # No non-scalar arrays.
         a = np.array([[[1]]])
 
         assert_raises(TypeError, lambda: a[a:a:a])
+        # Conversely, using scalars doesn't raise in NumPy, e.g.
+        #
+        #     >>> i = np.int64(1)
+        #     >>> a[i:i:i]
+        #     array([], shape=(0, 1, 1), dtype=int64)
+        #
 
     def test_none_index(self):
         # `None` index adds newaxis
