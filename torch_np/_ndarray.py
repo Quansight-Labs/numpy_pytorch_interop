@@ -106,31 +106,24 @@ class ndarray:
     ### comparisons ###
     def __eq__(self, other):
         try:
-            return _binary_ufuncs.equal(self, asarray(other))
-        except RuntimeError:
+            return _binary_ufuncs.equal(self, other)
+        except (RuntimeError, TypeError):
             # Failed to convert other to array: definitely not equal.
             falsy = torch.full(self.shape, fill_value=False, dtype=bool)
             return asarray(falsy)
 
     def __neq__(self, other):
         try:
-            return _binary_ufuncs.not_equal(self, asarray(other))
-        except RuntimeError:
+            return _binary_ufuncs.not_equal(self, other)
+        except (RuntimeError, TypeError):
             # Failed to convert other to array: definitely not equal.
             falsy = torch.full(self.shape, fill_value=True, dtype=bool)
             return asarray(falsy)
 
-    def __gt__(self, other):
-        return _binary_ufuncs.greater(self, asarray(other))
-
-    def __lt__(self, other):
-        return _binary_ufuncs.less(self, asarray(other))
-
-    def __ge__(self, other):
-        return _binary_ufuncs.greater_equal(self, asarray(other))
-
-    def __le__(self, other):
-        return _binary_ufuncs.less_equal(self, asarray(other))
+    __gt__ = _binary_ufuncs.greater
+    __lt__ = _binary_ufuncs.less
+    __ge__ = _binary_ufuncs.greater_equal
+    __le__ = _binary_ufuncs.less_equal
 
     def __bool__(self):
         try:
