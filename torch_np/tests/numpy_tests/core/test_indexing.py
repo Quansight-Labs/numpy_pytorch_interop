@@ -114,6 +114,7 @@ class TestIndexing:
         pytest.xfail("torch_np does not have scalars")
         assert_(isinstance(a[()], np.int_))
 
+    @pytest.mark.xfail(reason="torch does not have an equivalent to np.void")
     def test_void_scalar_empty_tuple(self):
         s = np.zeros((), dtype='V4')
         assert_equal(s[()].dtype, s.dtype)
