@@ -1,9 +1,13 @@
 import functools
+import operator
 
 import torch
 
 from . import _dtypes
 from . import _helpers
+from ._detail import _util
+
+NoValue = None
 
 
 def dtype_to_torch(func):
@@ -75,4 +79,34 @@ def deco_ufunc_from_impl(impl_func):
         x1_tensor = asarray(x1).get()
         x2_tensor = asarray(x2).get()
         return impl_func((x1_tensor, x2_tensor), *args, **kwds)
+    return wrapped
+
+
+
+def axis_keepdims_wrapper(func):
+    """`func` accepts an array-like as a 1st arg, returns a tensor.
+
+    This decorator implements the generic handling of axis, out and keepdims
+    arguments for reduction functions.
+
+    Note that we peel off `out=...` and `keepdims=...` args (torch functions never
+    see them). The `axis` argument we normalize and pass through to pytorch functions.
+
+    """
+    # XXX: move this out of _ndarray.py (circular imports)
+    #
+    # TODO: 1. get rid of _helpers.result_or_out
+    #       2. sort out function signatures: how they flow through all decorators etc
+    @functools.wraps(func)
+    def wrapped(a, axis=None, out=None, keepdims=NoValue, *args, **kwds):
+        from ._ndarray import ndarray, asarray
+        tensor = asarray(a).get()
+
+        # standardize the axis argument
+        if isinstance(axis, ndarray):
+            axis = operator.index(axis)
+
+        result = _util.axis_keepdims(func, tensor, axis, keepdims, *args, **kwds)
+        return result
+
     return wrapped

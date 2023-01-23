@@ -1,5 +1,4 @@
 import functools
-import operator
 
 import torch
 
@@ -10,38 +9,11 @@ from . import _dtypes
 from . import _unary_ufuncs
 from . import _binary_ufuncs
 
-from . import _decorators
+from ._decorators import emulate_out_arg, axis_keepdims_wrapper, dtype_to_torch
 
-NoValue = None
+from ._decorators import NoValue
+
 newaxis = None
-
-
-def axis_keepdims_wrapper(func):
-    """`func` accepts an array-like as a 1st arg, returns a tensor.
-
-    This decorator implements the generic handling of axis, out and keepdims
-    arguments for reduction functions.
-
-    Note that we peel off `out=...` and `keepdims=...` args (torch functions never
-    see them). The `axis` argument we normalize and pass through to pytorch functions.
-
-    """
-    # XXX: move this out of _ndarray.py (circular imports)
-    #
-    # TODO: 1. get rid of _helpers.result_or_out
-    #       2. sort out function signatures: how they flow through all decorators etc
-    @functools.wraps(func)
-    def wrapped(a, axis=None, out=None, keepdims=NoValue, *args, **kwds):
-        tensor = asarray(a).get()
-
-        # standardize the axis argument
-        if isinstance(axis, ndarray):
-            axis = operator.index(axis)
-
-        result = _util.axis_keepdims(func, tensor, axis, keepdims, *args, **kwds)
-        return result
-
-    return wrapped
 
 
 ##################### ndarray class ###########################
@@ -313,19 +285,19 @@ class ndarray:
         tensor = self._tensor
         return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
 
-    argmin = _decorators.emulate_out_arg(axis_keepdims_wrapper(_reductions.argmin))
-    argmax = _decorators.emulate_out_arg(axis_keepdims_wrapper(_reductions.argmax))
+    argmin = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmin))
+    argmax = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmax))
 
-    any = _decorators.emulate_out_arg(axis_keepdims_wrapper(_reductions.any))
-    all = _decorators.emulate_out_arg(axis_keepdims_wrapper(_reductions.all))
-    max = _decorators.emulate_out_arg(axis_keepdims_wrapper(_reductions.max))
-    min = _decorators.emulate_out_arg(axis_keepdims_wrapper(_reductions.min))
+    any = emulate_out_arg(axis_keepdims_wrapper(_reductions.any))
+    all = emulate_out_arg(axis_keepdims_wrapper(_reductions.all))
+    max = emulate_out_arg(axis_keepdims_wrapper(_reductions.max))
+    min = emulate_out_arg(axis_keepdims_wrapper(_reductions.min))
 
-    sum = _decorators.emulate_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.sum)))
-    prod = _decorators.emulate_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.prod)))
-    mean = _decorators.emulate_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.mean)))
-    var = _decorators.emulate_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.var)))
-    std = _decorators.emulate_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.std)))
+    sum = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.sum)))
+    prod = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.prod)))
+    mean = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.mean)))
+    var = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.var)))
+    std = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.std)))
 
 
     ### indexing ###
