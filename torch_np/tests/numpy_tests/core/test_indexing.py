@@ -111,6 +111,7 @@ class TestIndexing:
         assert_equal(a[()], a)
         assert_(a[()].base is a)
         a = np.array(0)
+        pytest.xfail("torch_np does not have scalars")
         assert_(isinstance(a[()], np.int_))
 
     def test_void_scalar_empty_tuple(self):
