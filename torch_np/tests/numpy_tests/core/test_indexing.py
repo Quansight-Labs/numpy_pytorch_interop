@@ -39,8 +39,21 @@ class TestIndexing:
         assert_raises(IndexError, lambda: a[0, 0, -1.4])
         assert_raises(IndexError, lambda: a[-1.4, 0, 0])
         assert_raises(IndexError, lambda: a[0, -1.4, 0])
-        assert_raises(IndexError, lambda: a[0.0:, 0.0])
-        assert_raises(IndexError, lambda: a[0.0:, 0.0,:])
+        # Note torch validates index arguments "depth-first", so will prioritise
+        # raising TypeError, e.g.
+        #
+        #     >>> a = np.array([[[5]]])
+        #     >>> a[0.0:, 0.0]
+        #     IndexError: only integers, slices (`:`), ellipsis (`...`),
+        #     numpy.newaxis #     (`None`) and integer or boolean arrays are
+        #     valid indices
+        #     >>> t = torch.as_tensor([[[5]]])  # identical to a
+        #     >>> t[0.0:, 0.0]
+        #     TypeError: slice indices must be integers or None or have an
+        #     __index__ method
+        #
+        assert_raises(TypeError, lambda: a[0.0:, 0.0])
+        assert_raises(TypeError, lambda: a[0.0:, 0.0,:])
 
     def test_slicing_no_floats(self):
         a = np.array([[5]])
