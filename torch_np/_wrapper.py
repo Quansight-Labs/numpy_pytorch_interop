@@ -501,12 +501,6 @@ def argwhere(a):
     return asarray(torch.argwhere(tensor))
 
 
-def abs(a):
-    # FIXME: should go the other way, together with other ufuncs
-    arr = asarray(a)
-    return a.__abs__()
-
-
 from ._ndarray import axis_keepdims_wrapper
 from ._decorators import emulate_out_arg
 count_nonzero = emulate_out_arg(axis_keepdims_wrapper(_reductions.count_nonzero))
@@ -576,9 +570,6 @@ def tri(N, M=None, k=0, dtype=float, *, like=None):
     return asarray(tensor)
 
 ###### reductions
-
-# YYY: pattern : argmax, argmin
-
 def argmax(a, axis=None, out=None, *, keepdims=NoValue):
     arr = asarray(a)
     return arr.argmax(axis=axis, out=out, keepdims=keepdims)
@@ -617,8 +608,6 @@ def any(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
     return arr.any(axis=axis, out=out, keepdims=keepdims, where=where)
 
 
-# YYY: pattern: dtype kwarg, None not accepted
-
 def mean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
     arr = asarray(a)
     return arr.mean(axis=axis, dtype=dtype, out=out, keepdims=keepdims, where=where)
@@ -645,6 +634,7 @@ def prod(a, axis=None, dtype=None, out=None, keepdims=NoValue,
 def std(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
     arr = asarray(a)
     return arr.std(axis=axis, dtype=dtype, out=out, ddof=ddof, keepdims=keepdims, where=where)
+
 
 def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
     arr = asarray(a)
@@ -757,8 +747,11 @@ def isscalar(a):
 
 
 def isclose(a, b, rtol=1.e-5, atol=1.e-8, equal_nan=False):
-    a = asarray(a).get()
-    b = asarray(a).get()
+    a, b = _helpers.to_tensors(a, b)
+    dtype = result_type(a, b)
+    torch_dtype = dtype.type.torch_dtype
+    a = a.to(torch_dtype)
+    b = b.to(torch_dtype)
     return asarray(torch.isclose(a, b, rtol=rtol, atol=atol, equal_nan=equal_nan))
 
 ###### mapping from numpy API objects to wrappers from this module ######
