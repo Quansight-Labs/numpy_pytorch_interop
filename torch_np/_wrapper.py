@@ -508,8 +508,8 @@ def abs(a):
 
 
 from ._ndarray import axis_keepdims_wrapper
-from ._decorators import handle_out_arg
-count_nonzero = handle_out_arg(axis_keepdims_wrapper(_reductions.count_nonzero))
+from ._decorators import emulate_out_arg
+count_nonzero = emulate_out_arg(axis_keepdims_wrapper(_reductions.count_nonzero))
 
 
 @asarray_replacer()

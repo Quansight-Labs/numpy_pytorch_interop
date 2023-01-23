@@ -7,7 +7,8 @@ from ._detail import _util
 from ._detail import _reductions
 from . import _helpers
 from . import _dtypes
-from . import _ufunc_impl
+from . import _unary_ufuncs
+from . import _binary_ufuncs
 
 from . import _decorators
 
@@ -133,7 +134,7 @@ class ndarray:
     ### comparisons ###
     def __eq__(self, other):
         try:
-            return _ufunc_impl.equal(self, asarray(other))
+            return _binary_ufuncs.equal(self, asarray(other))
         except RuntimeError:
             # Failed to convert other to array: definitely not equal.
             falsy = torch.full(self.shape, fill_value=False, dtype=bool)
@@ -141,23 +142,23 @@ class ndarray:
 
     def __neq__(self, other):
         try:
-            return _ufunc_impl.not_equal(self, asarray(other))
+            return _binary_ufuncs.not_equal(self, asarray(other))
         except RuntimeError:
             # Failed to convert other to array: definitely not equal.
             falsy = torch.full(self.shape, fill_value=True, dtype=bool)
             return asarray(falsy)
 
     def __gt__(self, other):
-        return _ufunc_impl.greater(self, asarray(other))
+        return _binary_ufuncs.greater(self, asarray(other))
 
     def __lt__(self, other):
-        return _ufunc_impl.less(self, asarray(other))
+        return _binary_ufuncs.less(self, asarray(other))
 
     def __ge__(self, other):
-        return _ufunc_impl.greater_equal(self, asarray(other))
+        return _binary_ufuncs.greater_equal(self, asarray(other))
 
     def __le__(self, other):
-        return _ufunc_impl.less_equal(self, asarray(other))
+        return _binary_ufuncs.less_equal(self, asarray(other))
 
     def __bool__(self):
         try:
@@ -197,127 +198,127 @@ class ndarray:
 
     # add, self + other
     def __add__(self, other):
-        return _ufunc_impl.add(self, asarray(other))
+        return _binary_ufuncs.add(self, asarray(other))
 
     def __radd__(self, other):
-        return _ufunc_impl.add(self, asarray(other))
+        return _binary_ufuncs.add(self, asarray(other))
 
     def __iadd__(self, other):
-        return _ufunc_impl.add(self, asarray(other), out=self)
+        return _binary_ufuncs.add(self, asarray(other), out=self)
 
 
     # sub, self - other
     def __sub__(self, other):
-        return _ufunc_impl.subtract(self, asarray(other))
+        return _binary_ufuncs.subtract(self, asarray(other))
 
     def __rsub__(self, other):
-        return _ufunc_impl.subtract(self, asarray(other))
+        return _binary_ufuncs.subtract(self, asarray(other))
 
     def __isub__(self, other):
-        return _ufunc_impl.subtract(self, asarray(other), out=self)
+        return _binary_ufuncs.subtract(self, asarray(other), out=self)
 
 
     # mul, self * other
     def __mul__(self, other):
-        return _ufunc_impl.multiply(self, asarray(other))
+        return _binary_ufuncs.multiply(self, asarray(other))
 
     def __rmul__(self, other):
-        return _ufunc_impl.multiply(self, asarray(other))
+        return _binary_ufuncs.multiply(self, asarray(other))
 
     def __imul__(self, other):
-        return _ufunc_impl.multiply(self, asarray(other), out=self)
+        return _binary_ufuncs.multiply(self, asarray(other), out=self)
 
 
     # div, self / other
     def __truediv__(self, other):
-        return _ufunc_impl.divide(self, asarray(other))
+        return _binary_ufuncs.divide(self, asarray(other))
 
     def __rtruediv__(self, other):
-        return _ufunc_impl.divide(self, asarray(other))
+        return _binary_ufuncs.divide(self, asarray(other))
 
     def __itruediv__(self, other):
-        return _ufunc_impl.divide(self, asarray(other), out=self)
+        return _binary_ufuncs.divide(self, asarray(other), out=self)
 
 
     # floordiv, self // other
     def __floordiv__(self, other):
-        return _ufunc_impl.floor_divide(self, asarray(other))
+        return _binary_ufuncs.floor_divide(self, asarray(other))
 
     def __rfloordiv__(self, other):
-        return _ufunc_impl.floor_divide(self, asarray(other))
+        return _binary_ufuncs.floor_divide(self, asarray(other))
 
     def __ifloordiv__(self, other):
-        return _ufunc_impl.floor_divide(self, asarray(other), out=self)
+        return _binary_ufuncs.floor_divide(self, asarray(other), out=self)
 
 
     # power, self**exponent
     def __pow__(self, exponent):
-        return _ufunc_impl.float_power(self, asarray(exponent))
+        return _binary_ufuncs.float_power(self, asarray(exponent))
 
     def __rpow__(self, exponent):
-        return _ufunc_impl.float_power(self, asarray(exponent))
+        return _binary_ufuncs.float_power(self, asarray(exponent))
 
     def __ipow__(self, exponent):
-        return _ufunc_impl.float_power(self, asarray(exponent), out=self)
+        return _binary_ufuncs.float_power(self, asarray(exponent), out=self)
 
 
     # remainder, self % other
     def __mod__(self, other):
-        return _ufunc_impl.remainder(self, asarray(other))
+        return _binary_ufuncs.remainder(self, asarray(other))
 
     def __rmod__(self, other):
-        return _ufunc_impl.remainder(self, asarray(other))
+        return _binary_ufuncs.remainder(self, asarray(other))
 
     def __imod__(self, other):
-        return _ufunc_impl.remainder(self, asarray(other), out=self)
+        return _binary_ufuncs.remainder(self, asarray(other), out=self)
 
 
     # bitwise ops
     # and, self & other
     def __and__(self, other):
-        return _ufunc_impl.bitwise_and(self, asarray(other))
+        return _binary_ufuncs.bitwise_and(self, asarray(other))
 
     def __rand__(self, other):
-        return _ufunc_impl.bitwise_and(self, asarray(other))
+        return _binary_ufuncs.bitwise_and(self, asarray(other))
 
     def __iand__(self, other):
-        return _ufunc_impl.bitwise_and(self, asarray(other), out=self)
+        return _binary_ufuncs.bitwise_and(self, asarray(other), out=self)
 
 
     # or, self | other
     def __or__(self, other):
-        return _ufunc_impl.bitwise_or(self, asarray(other))
+        return _binary_ufuncs.bitwise_or(self, asarray(other))
 
     def __ror__(self, other):
-        return _ufunc_impl.bitwise_or(self, asarray(other))
+        return _binary_ufuncs.bitwise_or(self, asarray(other))
 
     def __ior__(self, other):
-        return _ufunc_impl.bitwise_or(self, asarray(other), out=self)
+        return _binary_ufuncs.bitwise_or(self, asarray(other), out=self)
 
 
     # xor, self ^ other
     def __xor__(self, other):
-        return _ufunc_impl.bitwise_xor(self, asarray(other))
+        return _binary_ufuncs.bitwise_xor(self, asarray(other))
 
     def __rxor__(self, other):
-        return _ufunc_impl.bitwise_xor(self, asarray(other))
+        return _binary_ufuncs.bitwise_xor(self, asarray(other))
 
     def __ixor__(self, other):
-        return _ufunc_impl.bitwise_xor(self, asarray(other), out=self)
+        return _binary_ufuncs.bitwise_xor(self, asarray(other), out=self)
 
 
     # unary ops
     def __invert__(self):
-        return _ufunc_impl.invert(self)
+        return _unary_ufuncs.invert(self)
 
     def __abs__(self):
-        return _ufunc_impl.absolute(self)
+        return _unary_ufuncs.absolute(self)
 
     def __pos__(self):
-        return _ufunc_impl.positive(self)
+        return _unary_ufuncs.positive(self)
 
     def __neg__(self):
-        return _ufunc_impl.negative(self)
+        return _unary_ufuncs.negative(self)
 
 
     ### methods to match namespace functions
@@ -360,19 +361,19 @@ class ndarray:
         tensor = self._tensor
         return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
 
-    argmin = _decorators.handle_out_arg(axis_keepdims_wrapper(_reductions.argmin))
-    argmax = _decorators.handle_out_arg(axis_keepdims_wrapper(_reductions.argmax))
+    argmin = _decorators.emulate_out_arg(axis_keepdims_wrapper(_reductions.argmin))
+    argmax = _decorators.emulate_out_arg(axis_keepdims_wrapper(_reductions.argmax))
 
-    any = _decorators.handle_out_arg(axis_keepdims_wrapper(_reductions.any))
-    all = _decorators.handle_out_arg(axis_keepdims_wrapper(_reductions.all))
-    max = _decorators.handle_out_arg(axis_keepdims_wrapper(_reductions.max))
-    min = _decorators.handle_out_arg(axis_keepdims_wrapper(_reductions.min))
+    any = _decorators.emulate_out_arg(axis_keepdims_wrapper(_reductions.any))
+    all = _decorators.emulate_out_arg(axis_keepdims_wrapper(_reductions.all))
+    max = _decorators.emulate_out_arg(axis_keepdims_wrapper(_reductions.max))
+    min = _decorators.emulate_out_arg(axis_keepdims_wrapper(_reductions.min))
 
-    sum = _decorators.handle_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.sum)))
-    prod = _decorators.handle_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.prod)))
-    mean = _decorators.handle_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.mean)))
-    var = _decorators.handle_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.var)))
-    std = _decorators.handle_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.std)))
+    sum = _decorators.emulate_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.sum)))
+    prod = _decorators.emulate_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.prod)))
+    mean = _decorators.emulate_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.mean)))
+    var = _decorators.emulate_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.var)))
+    std = _decorators.emulate_out_arg(axis_keepdims_wrapper(_decorators.dtype_to_torch(_reductions.std)))
 
 
     ### indexing ###

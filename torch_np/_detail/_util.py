@@ -1,11 +1,4 @@
 """Assorted utilities, which do not need anything other then torch and stdlib.
-
-In particular, things here cannot import from _ndarray.py, cannot use the
-name `ndarray`. Depending on a duck-typed "array" argument is allowed though.
-The following methods are expected to exist:
-
-- `arr.get()` to return a torch.Tensor
-- `arr.ravel()` -- is only used by `axis_none_ravel`
 """
 
 import operator
@@ -174,12 +167,12 @@ def cast_dont_broadcast(tensors, target_dtype, casting):
     return tuple(cast_tensors)
 
 
-def cast_and_broadcast(tensors, target_dtype, target_shape, casting):
+def cast_and_broadcast(tensors, out_param, casting):
     """
     Parameters
     ----------
     tensors : iterable
-	    tuple or list of torch.Tensors to typecast
+	tuple or list of torch.Tensors to broadcast/typecast
     target_dtype : a torch.dtype object
         The torch dtype to cast all tensors to
     target_shape : tuple
@@ -192,6 +185,11 @@ def cast_and_broadcast(tensors, target_dtype, target_shape, casting):
     a tuple of torch.Tensors with dtype being the PyTorch counterpart
     of the `target_dtype` and `target_shape`
     """
+    if out_param is None:
+        return tensors
+
+    target_dtype, target_shape = out_param
+
     can_cast = _scalar_types._can_cast_impl
 
     processed_tensors = []
