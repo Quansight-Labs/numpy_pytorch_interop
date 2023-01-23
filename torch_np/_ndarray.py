@@ -197,129 +197,81 @@ class ndarray:
     ### arithmetic ###
 
     # add, self + other
-    def __add__(self, other):
-        return _binary_ufuncs.add(self, asarray(other))
-
-    def __radd__(self, other):
-        return _binary_ufuncs.add(self, asarray(other))
+    __add__ = __radd__ = _binary_ufuncs.add
 
     def __iadd__(self, other):
-        return _binary_ufuncs.add(self, asarray(other), out=self)
+        return _binary_ufuncs.add(self, other, out=self)
 
 
     # sub, self - other
-    def __sub__(self, other):
-        return _binary_ufuncs.subtract(self, asarray(other))
-
-    def __rsub__(self, other):
-        return _binary_ufuncs.subtract(self, asarray(other))
+    __sub__ = __rsub__ = _binary_ufuncs.subtract
 
     def __isub__(self, other):
-        return _binary_ufuncs.subtract(self, asarray(other), out=self)
+        return _binary_ufuncs.subtract(self, other, out=self)
 
 
     # mul, self * other
-    def __mul__(self, other):
-        return _binary_ufuncs.multiply(self, asarray(other))
-
-    def __rmul__(self, other):
-        return _binary_ufuncs.multiply(self, asarray(other))
+    __mul__ = __rmul__ = _binary_ufuncs.multiply
 
     def __imul__(self, other):
-        return _binary_ufuncs.multiply(self, asarray(other), out=self)
+        return _binary_ufuncs.multiply(self, other, out=self)
 
 
     # div, self / other
-    def __truediv__(self, other):
-        return _binary_ufuncs.divide(self, asarray(other))
-
-    def __rtruediv__(self, other):
-        return _binary_ufuncs.divide(self, asarray(other))
+    __truediv__ = __rtruediv__ = _binary_ufuncs.divide
 
     def __itruediv__(self, other):
-        return _binary_ufuncs.divide(self, asarray(other), out=self)
+        return _binary_ufuncs.divide(self, other, out=self)
 
 
     # floordiv, self // other
-    def __floordiv__(self, other):
-        return _binary_ufuncs.floor_divide(self, asarray(other))
-
-    def __rfloordiv__(self, other):
-        return _binary_ufuncs.floor_divide(self, asarray(other))
+    __floordiv__ = __rfloordiv__ = _binary_ufuncs.floor_divide
 
     def __ifloordiv__(self, other):
-        return _binary_ufuncs.floor_divide(self, asarray(other), out=self)
+        return _binary_ufuncs.floor_divide(self, other, out=self)
 
 
     # power, self**exponent
-    def __pow__(self, exponent):
-        return _binary_ufuncs.float_power(self, asarray(exponent))
-
-    def __rpow__(self, exponent):
-        return _binary_ufuncs.float_power(self, asarray(exponent))
+    __pow__ = __rpow__ = _binary_ufuncs.float_power
 
     def __ipow__(self, exponent):
-        return _binary_ufuncs.float_power(self, asarray(exponent), out=self)
+        return _binary_ufuncs.float_power(self, exponent, out=self)
 
 
     # remainder, self % other
-    def __mod__(self, other):
-        return _binary_ufuncs.remainder(self, asarray(other))
-
-    def __rmod__(self, other):
-        return _binary_ufuncs.remainder(self, asarray(other))
+    __mod__ = __rmod__ = _binary_ufuncs.remainder
 
     def __imod__(self, other):
-        return _binary_ufuncs.remainder(self, asarray(other), out=self)
+        return _binary_ufuncs.remainder(self, other, out=self)
 
 
     # bitwise ops
     # and, self & other
-    def __and__(self, other):
-        return _binary_ufuncs.bitwise_and(self, asarray(other))
-
-    def __rand__(self, other):
-        return _binary_ufuncs.bitwise_and(self, asarray(other))
+    __and__ = __rand__ = _binary_ufuncs.bitwise_and
 
     def __iand__(self, other):
-        return _binary_ufuncs.bitwise_and(self, asarray(other), out=self)
+        return _binary_ufuncs.bitwise_and(self, other, out=self)
 
 
     # or, self | other
-    def __or__(self, other):
-        return _binary_ufuncs.bitwise_or(self, asarray(other))
-
-    def __ror__(self, other):
-        return _binary_ufuncs.bitwise_or(self, asarray(other))
+    __or__ = __ror__ = _binary_ufuncs.bitwise_or
 
     def __ior__(self, other):
-        return _binary_ufuncs.bitwise_or(self, asarray(other), out=self)
+        return _binary_ufuncs.bitwise_or(self, other, out=self)
 
 
     # xor, self ^ other
-    def __xor__(self, other):
-        return _binary_ufuncs.bitwise_xor(self, asarray(other))
-
-    def __rxor__(self, other):
-        return _binary_ufuncs.bitwise_xor(self, asarray(other))
+    __xor__ = __rxor__ = _binary_ufuncs.bitwise_xor
 
     def __ixor__(self, other):
-        return _binary_ufuncs.bitwise_xor(self, asarray(other), out=self)
+        return _binary_ufuncs.bitwise_xor(self, other, out=self)
 
 
     # unary ops
-    def __invert__(self):
-        return _unary_ufuncs.invert(self)
-
-    def __abs__(self):
-        return _unary_ufuncs.absolute(self)
-
-    def __pos__(self):
-        return _unary_ufuncs.positive(self)
-
-    def __neg__(self):
-        return _unary_ufuncs.negative(self)
-
+    __invert__ = _unary_ufuncs.invert
+    __abs__ = _unary_ufuncs.absolute
+    __pos__ = _unary_ufuncs.positive
+    __neg__ = _unary_ufuncs.negative
 
     ### methods to match namespace functions
 
