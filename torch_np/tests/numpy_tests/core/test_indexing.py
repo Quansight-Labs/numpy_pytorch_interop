@@ -40,7 +40,7 @@ class TestIndexing:
         assert_raises(IndexError, lambda: a[-1.4, 0, 0])
         assert_raises(IndexError, lambda: a[0, -1.4, 0])
         # Note torch validates index arguments "depth-first", so will prioritise
-        # raising TypeError, e.g.
+        # raising TypeError over IndexError, e.g.
         #
         #     >>> a = np.array([[[5]]])
         #     >>> a[0.0:, 0.0]
@@ -52,8 +52,8 @@ class TestIndexing:
         #     TypeError: slice indices must be integers or None or have an
         #     __index__ method
         #
-        assert_raises(TypeError, lambda: a[0.0:, 0.0])
-        assert_raises(TypeError, lambda: a[0.0:, 0.0,:])
+        assert_raises((IndexError, TypeError), lambda: a[0.0:, 0.0])
+        assert_raises((IndexError, TypeError), lambda: a[0.0:, 0.0,:])
 
     def test_slicing_no_floats(self):
         a = np.array([[5]])
@@ -199,7 +199,8 @@ class TestIndexing:
         # Index out of bounds produces IndexError
         assert_raises(IndexError, a.__getitem__, 1 << 30)
         # Index overflow produces IndexError
-        assert_raises(IndexError, a.__getitem__, 1 << 64)
+        # Note torch raises RuntimeError here
+        assert_raises((IndexError, RuntimeError), a.__getitem__, 1 << 64)
 
     def test_single_bool_index(self):
         # Single boolean index
