@@ -121,11 +121,19 @@ class TestIndexing:
         assert_equal(s[()], s)
         assert_equal(type(s[...]), np.ndarray)
 
+    @pytest.mark.xfail(
+        reason=(
+            "torch does not support integer indexing int tensors with uints - "
+            "you can't integer index int tensors with anything but a int64 "
+            "tensor, and uint8 tensor indexes are treated as boolean masks "
+            "(deprecated behaviour). "
+        )
+    )
     def test_same_kind_index_casting(self):
         # Indexes should be cast with same-kind and not safe, even if that
         # is somewhat unsafe. So test various different code paths.
         index = np.arange(5)
-        u_index = index.astype(np.uintp)
+        u_index = index.astype(np.uintp)  # i.e. cast to default uint indexing dtype
         arr = np.arange(10)
 
         assert_array_equal(arr[index], arr[u_index])
