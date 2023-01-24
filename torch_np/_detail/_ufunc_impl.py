@@ -3,11 +3,12 @@ import torch
 from . import _util
 
 def deco_ufunc(torch_func):
-    """Common infra for binary ufuncs: receive arrays, sort out type casting,
-       broadcasting, out array handling etc, and delegate to the
-       pytorch function for actual work, then wrap the results into an array.
+    """Common infra for binary ufuncs: receive tensors, sort out type casting,
+       broadcasting,  and delegate to the pytorch function for actual work.
 
-       x1, x2 are arrays! array_like -> array conversion is the caller responsibility.
+
+       Converting array-likes into arrays, unwrapping them into tensors etc
+       is the caller responsibility.
     """
     def wrapped(tensors, /, out_shape_dtype=None , *, where=True,
                 casting='same_kind', order='K', dtype=None, subok=False, **kwds):
@@ -23,8 +24,6 @@ def deco_ufunc(torch_func):
 
         result = torch_func(*tensors)
         return result
-
-#        return _helpers.result_or_out(result, out)
     return wrapped
 
 
