@@ -1,10 +1,13 @@
 import itertools
 
 import pytest
-from pytest import raises as assert_raises
 
 # import numpy as np
+import torch
+from pytest import raises as assert_raises
+
 import torch_np as np
+from torch_np._ndarray import ndarray
 from torch_np.testing import assert_equal
 
 

@@ -381,11 +381,9 @@ class ndarray:
     )
 
     ### indexing ###
-    def __getitem__(self, *args, **kwds):
-        t_args = _helpers.ndarrays_to_tensors(*args)
-        return ndarray._from_tensor_and_base(
-            self._tensor.__getitem__(*t_args, **kwds), self
-        )
+    def __getitem__(self, index):
+        t_index = _helpers.ndarrays_to_tensors(index)
+        return ndarray._from_tensor_and_base(self._tensor.__getitem__(t_index), self)
 
     def __setitem__(self, index, value):
         value = asarray(value).get()
