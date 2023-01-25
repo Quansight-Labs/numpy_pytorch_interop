@@ -124,9 +124,7 @@ class TestIndexing:
     @pytest.mark.xfail(
         reason=(
             "torch does not support integer indexing int tensors with uints - "
-            "you can't integer index int tensors with anything but a int64 "
-            "tensor, and uint8 tensor indexes are treated as boolean masks "
-            "(deprecated behaviour). "
+            "uint8 tensor indexes are treated as boolean masks (deprecated)"
         )
     )
     def test_same_kind_index_casting(self):
