@@ -12,16 +12,20 @@ NoValue = None
 
 
 def _atleast_float(dtype, other_dtype):
-    """Cast bools and ints and floats to a default float; complex to default complex.
+    """Return a dtype that is real or complex floating-point.
+
+    For inputs that are boolean or integer dtypes, this returns the default
+    float dtype; inputs that are complex get converted to the default complex
+    dtype; real floating-point dtypes (`float*`) get passed through unchanged
     """
     if dtype is None:
         dtype = other_dtype
     if not dtype.is_floating_point:
         if dtype.is_complex:
-            sctype = _scalar_types.default_complex_type
+            pass  # pass through complex as is
         else:
             sctype = _scalar_types.default_float_type
-        dtype = sctype.torch_dtype
+            dtype = sctype.torch_dtype
     return dtype
 
 
@@ -71,11 +75,8 @@ def all(tensor, axis=None, *, where=NoValue):
     return result
 
 
-def max(tensor, axis=None, initial=NoValue,
-         where=NoValue):
-    if where is not None:
-        raise NotImplementedError
-    if initial is not None:
+def max(tensor, axis=None, initial=NoValue, where=NoValue):
+    if initial is not None or where is not None:
         raise NotImplementedError
 
     result = tensor.amax(axis)
@@ -83,9 +84,7 @@ def max(tensor, axis=None, initial=NoValue,
 
 
 def min(tensor, axis=None, initial=NoValue, where=NoValue):
-    if where is not None:
-        raise NotImplementedError
-    if initial is not None:
+    if initial is not None or where is not None:
         raise NotImplementedError
 
     result = tensor.amin(axis)

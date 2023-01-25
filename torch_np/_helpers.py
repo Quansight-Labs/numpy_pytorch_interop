@@ -53,7 +53,7 @@ def result_or_out(result_tensor, out_array=None):
         return asarray(result_tensor)
 
 
-def to_tensors_lax(*inputs):
+def ndarrays_to_tensors(*inputs):
     """Convert all ndarrays from `inputs` to tensors. (other things are intact)
     """
     return tuple([value.get() if isinstance(value, ndarray) else value

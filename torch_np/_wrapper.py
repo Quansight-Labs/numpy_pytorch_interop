@@ -198,7 +198,7 @@ def arange(start=None, stop=None, step=1, dtype=None, *, like=None):
         dtype = _dtypes.default_int_type()
         dtype = result_type(start, stop, step, dtype)
     torch_dtype = _dtypes.torch_dtype_from(dtype)
-    start, stop, step = _helpers.to_tensors_lax(start, stop, step)
+    start, stop, step = _helpers.ndarrays_to_tensors(start, stop, step)
 
     try:
         return asarray(torch.arange(start, stop, step, dtype=torch_dtype))
