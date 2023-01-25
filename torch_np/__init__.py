@@ -7,6 +7,8 @@ from ._getlimits import errstate, finfo, iinfo
 from ._ndarray import can_cast, newaxis, result_type
 from ._unary_ufuncs import *
 
+from . import random
+
 # from . import testing
 
 
