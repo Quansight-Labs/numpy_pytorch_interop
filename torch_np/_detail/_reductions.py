@@ -20,12 +20,9 @@ def _atleast_float(dtype, other_dtype):
     """
     if dtype is None:
         dtype = other_dtype
-    if not dtype.is_floating_point:
-        if dtype.is_complex:
-            pass  # pass through complex as is
-        else:
-            sctype = _scalar_types.default_float_type
-            dtype = sctype.torch_dtype
+    if not (dtype.is_floating_point or dtype.is_complex):
+        sctype = _scalar_types.default_float_type
+        dtype = sctype.torch_dtype
     return dtype
 
 
@@ -38,19 +35,19 @@ def count_nonzero(a, axis=None):
     return tensor
 
 
-def argmax(tensor, axis=None, out=None, *, keepdims=NoValue):
+def argmax(tensor, axis=None):
     axis = _util.allow_only_single_axis(axis)
     tensor = torch.argmax(tensor, axis)
     return tensor
 
-def argmin(tensor, axis=None, out=None, *, keepdims=NoValue):
+def argmin(tensor, axis=None):
     axis = _util.allow_only_single_axis(axis)
     tensor = torch.argmin(tensor, axis)
     return tensor
 
 
 def any(tensor, axis=None, *, where=NoValue):
-    if where is not None:
+    if where is not NoValue:
         raise NotImplementedError
 
     axis = _util.allow_only_single_axis(axis)
@@ -63,7 +60,7 @@ def any(tensor, axis=None, *, where=NoValue):
 
 
 def all(tensor, axis=None, *, where=NoValue):
-    if where is not None:
+    if where is not NoValue:
         raise NotImplementedError
 
     axis = _util.allow_only_single_axis(axis)
@@ -76,7 +73,7 @@ def all(tensor, axis=None, *, where=NoValue):
 
 
 def max(tensor, axis=None, initial=NoValue, where=NoValue):
-    if initial is not None or where is not None:
+    if initial is not NoValue or where is not NoValue:
         raise NotImplementedError
 
     result = tensor.amax(axis)
@@ -84,7 +81,7 @@ def max(tensor, axis=None, initial=NoValue, where=NoValue):
 
 
 def min(tensor, axis=None, initial=NoValue, where=NoValue):
-    if initial is not None or where is not None:
+    if initial is not NoValue or where is not NoValue:
         raise NotImplementedError
 
     result = tensor.amin(axis)
@@ -92,7 +89,7 @@ def min(tensor, axis=None, initial=NoValue, where=NoValue):
 
 
 def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
-    if initial is not None or where is not None:
+    if initial is not NoValue or where is not NoValue:
         raise NotImplementedError
 
     assert dtype is None or isinstance(dtype, torch.dtype)
@@ -109,7 +106,7 @@ def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
 
 
 def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
-    if initial is not None or where is not None:
+    if initial is not NoValue or where is not NoValue:
         raise NotImplementedError
 
     axis = _util.allow_only_single_axis(axis)
@@ -126,7 +123,7 @@ def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
 
 
 def mean(tensor, axis=None, dtype=None, *, where=NoValue):
-    if where is not None:
+    if where is not NoValue:
         raise NotImplementedError
 
     dtype = _atleast_float(dtype, tensor.dtype)
@@ -140,24 +137,26 @@ def mean(tensor, axis=None, dtype=None, *, where=NoValue):
 
 
 def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
-    if where is not None:
+    if where is not NoValue:
         raise NotImplementedError
 
     dtype = _atleast_float(dtype, tensor.dtype)
 
-    tensor = tensor.to(dtype)
+    if dtype is not None:
+        tensor = tensor.to(dtype)
     result = tensor.std(dim=axis, correction=ddof)
 
     return result
 
 
 def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
-    if where is not None:
+    if where is not NoValue:
         raise NotImplementedError
 
     dtype = _atleast_float(dtype, tensor.dtype)
 
-    tensor = tensor.to(dtype)
+    if dtype is not None:
+        tensor = tensor.to(dtype)
     result = tensor.var(dim=axis, correction=ddof)
 
     return result

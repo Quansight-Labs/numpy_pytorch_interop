@@ -40,10 +40,11 @@ def cast_and_broadcast(tensors, out, casting):
     return tuple(tensors)
 
 
-
 def result_or_out(result_tensor, out_array=None):
     """A helper for returns with out= argument."""
     if out_array is not None:
+        if not isinstance(out_array, ndarray):
+            raise TypeError("Return arrays must be of ArrayType")
         if result_tensor.shape != out_array.shape:
             raise ValueError("Bad size of the out array.")
         out_tensor = out_array.get()

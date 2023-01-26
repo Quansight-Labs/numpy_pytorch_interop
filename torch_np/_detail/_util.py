@@ -54,8 +54,6 @@ def normalize_axis_tuple(axis, ndim, argname=None, allow_duplicate=False):
     By default, this forbids axes from being specified multiple times.
     Used internally by multi-axis-checking logic.
 
-    .. versionadded:: 1.13.0
-
     Parameters
     ----------
     axis : int, iterable of int
@@ -73,17 +71,6 @@ def normalize_axis_tuple(axis, ndim, argname=None, allow_duplicate=False):
     -------
     normalized_axes : tuple of int
         The normalized axis index, such that `0 <= normalized_axis < ndim`
-
-    Raises
-    ------
-    AxisError
-        If any axis provided is out of range
-    ValueError
-        If an axis is repeated
-
-    See also
-    --------
-    normalize_axis_index : normalizing a single scalar axis
     """
     # Optimization to speed-up the most common cases.
     if type(axis) not in (tuple, list):

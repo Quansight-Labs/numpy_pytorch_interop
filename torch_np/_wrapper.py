@@ -643,7 +643,7 @@ def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=N
 
 @asarray_replacer()
 def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
-    if where is not None:
+    if where is not NoValue:
         raise NotImplementedError
     if dtype is None:
         dtype = a.dtype
