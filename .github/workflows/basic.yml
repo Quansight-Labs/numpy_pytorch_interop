@@ -41,7 +41,7 @@ jobs:
           conda config --add channels conda-forge
           conda config --set channel_priority strict
           conda info
-          conda install python==3.9 pytorch==1.13.0 pytest numpy -y
+          conda install python==3.9 pytorch==1.13.0 pytest numpy hypothesis -y
           conda list
           conda config --show-sources
       #    conda config --show
