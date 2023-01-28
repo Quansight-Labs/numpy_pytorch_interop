@@ -10,6 +10,9 @@ from ._unary_ufuncs import *
 
 # from . import testing
 
+alltrue = all
+sometrue = any
 
-inf = float("inf")
-nan = float("nan")
+inf = float('inf')
+nan = float('nan')
+

@@ -226,7 +226,6 @@ class TestFlip:
         assert_equal(np.flip(a, axis=(1, 2)), c)
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestAny:
 
     def test_basic(self):
@@ -244,7 +243,6 @@ class TestAny:
         assert_array_equal(np.sometrue(y1, axis=1), [0, 1, 1])
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestAll:
 
     def test_basic(self):
@@ -617,7 +615,6 @@ class TestInsert:
             np.insert([0, 1, 2], [idx], [3, 4])
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestAmax:
 
     def test_basic(self):
@@ -630,7 +627,6 @@ class TestAmax:
         assert_equal(np.amax(b, axis=1), [9.0, 10.0, 8.0])
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestAmin:
 
     def test_basic(self):
@@ -683,7 +679,6 @@ class TestCumsum:
             assert_array_equal(np.cumsum(a2, axis=1), tgt)
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestProd:
 
     def test_basic(self):
