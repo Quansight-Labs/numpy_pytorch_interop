@@ -161,3 +161,51 @@ def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
 
     return result
 
+
+# ###### nan-aware functions ######
+def nanmin(tensor, axis=None, initial=NoValue, where=NoValue):
+    if initial is not NoValue or where is not NoValue:
+        raise NotImplementedError
+
+    result = tensor.nanmin(axis)
+    return result
+
+
+def nanmax(tensor, axis=None, initial=NoValue, where=NoValue):
+    if initial is not NoValue or where is not NoValue:
+        raise NotImplementedError
+
+    result = tensor.nanmax(axis)
+    return result
+
+
+def nanmean(tensor, axis=None, dtype=None, *, where=NoValue):
+    if where is not NoValue:
+        raise NotImplementedError
+
+    if dtype is None:
+        if not (tensor.dtype.is_floating_point or tensor.dtype.is_complex):
+            tensor = tensor.to(torch.float64)
+    else:
+        # the logic from
+        # https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/nanfunctions.py#L1039
+        if not (dtype.is_floating_point or dtype.is_complex):
+            if tensor.dtype.is_floating_point or tensor.dtype.is_complex:
+                raise TypeError("If a is inexact, then dtype must be inexact")
+
+    try:
+        if tensor.dtype.is_complex:
+            result = (tensor.real.nanmean(dtype=dtype, dim=axis) +
+                      tensor.imag.nanmean(dtype=dtype, dim=axis) *1j)
+        else:
+            result = tensor.nanmean(dtype=dtype, dim=axis)
+    except RuntimeError:
+         # "nansum_cpu" not implemented for 'ComplexFloat'
+        if tensor.dtype.is_complex:
+            result = (tensor.real.nanmean(dim=axis).to(dtype) +
+                      tensor.imag.nanmean(dim=axis).to(dtype) *1j)
+        else:
+            result = tensor.nanmean(dim=axis).to(dtype)
+
+    return result
+

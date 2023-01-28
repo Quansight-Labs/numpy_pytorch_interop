@@ -471,8 +471,7 @@ def nanmax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoVa
 def nanmedian(a, axis=None, out=None, overwrite_input=False, keepdims=NoValue):
     raise NotImplementedError
 
-def nanmin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    raise NotImplementedError
+
 
 def nanpercentile(a, q, axis=None, out=None, overwrite_input=False, method='linear', keepdims=NoValue, *, interpolation=None):
     raise NotImplementedError

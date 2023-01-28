@@ -298,7 +298,8 @@ def eye(N, M=None, k=0, dtype=float, order='C', *, like=None):
         raise NotImplementedError
     if M is None:
         M = N
-    z = torch.zeros(N, M, dtype=dtype)
+    torch_dtype = None if dtype is None else _dtypes.torch_dtype_from(dtype)
+    z = torch.zeros(N, M, dtype=torch_dtype)
     z.diagonal(k).fill_(1)
     return asarray(z)
 
@@ -641,6 +642,97 @@ def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=N
     return arr.var(axis=axis, dtype=dtype, out=out, ddof=ddof, keepdims=keepdims, where=where)
 
 
+from ._decorators import emulate_out_arg, axis_keepdims_wrapper, dtype_to_torch
+
+@emulate_out_arg
+@axis_keepdims_wrapper
+def nanmin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
+    arr = asarray(a)
+    return _reductions.nanmin(a, axis=axis, initial=initial, where=where)
+
+
+@emulate_out_arg
+@axis_keepdims_wrapper
+def nanmax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
+    arr = asarray(a)
+    # see https://github.com/pytorch/pytorch/issues/61474
+    return _reductions.nanmax(a, axis=axis, initial=initial, where=where)
+
+@emulate_out_arg
+@axis_keepdims_wrapper
+def nanmin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
+    arr = asarray(a)
+    # see https://github.com/pytorch/pytorch/issues/61474
+    return _reductions.nanmin(a, axis=axis, initial=initial, where=where)
+
+
+@emulate_out_arg
+@axis_keepdims_wrapper
+@dtype_to_torch
+def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
+    return _reductions.nanmean(a, axis=axis, dtype=dtype, where=where)
+
+
+@emulate_out_arg
+@axis_keepdims_wrapper
+@dtype_to_torch
+def nanvar(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
+    arr = asarray(a)
+    # see https://github.com/pytorch/pytorch/issues/61474
+    raise NotImplementedError
+    return _reductions.nanmean(axis=axis, dtype=dtype, out=out, keepdims=keepdims, where=where)
+
+
+@emulate_out_arg
+@axis_keepdims_wrapper
+@dtype_to_torch
+def nanstd(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
+    arr = asarray(a)
+    # see https://github.com/pytorch/pytorch/issues/61474
+    raise NotImplementedError
+    return _reductions.nanmean(axis=axis, dtype=dtype, out=out, keepdims=keepdims, where=where)
+
+
+def nanargmin():
+    raise NotImplementedError
+
+def nanargmax():
+    raise NotImplementedError
+
+def nansum():
+    raise NotImplementedError
+def nanprod():
+    raise NotImplementedError
+def nancumsum():
+    raise NotImplementedError
+def nancumprod():
+    raise NotImplementedError
+
+def nanmedian():
+    raise NotImplementedError
+
+
+def nanquantile():
+    raise NotImplementedError
+def nanpercentile():
+    raise NotImplementedError
+
+def cumsum():
+    raise NotImplementedError
+def cumprod():
+    raise NotImplementedError
+def median():
+    raise NotImplementedError
+def percentile():
+    raise NotImplementedError
+def quantile():
+    raise NotImplementedError
+
+
+
+
+#emulate_out_arg(axis_keepdims_wrapper(_reductions.min))
+'''
 @asarray_replacer()
 def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
     if where is not NoValue:
@@ -656,7 +748,7 @@ def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoVal
     if out is not None:
         out.copy_(result)
     return result
-
+'''
 
 @asarray_replacer()
 def argsort(a, axis=-1, kind=None, order=None):

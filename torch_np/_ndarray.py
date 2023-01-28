@@ -81,6 +81,9 @@ class ndarray:
     def imag(self, value):
         self._tensor.imag = asarray(value).get()
 
+    def setflags(self, write):
+        raise NotImplementedError
+
     # ctors
     def astype(self, dtype):
         newt = ndarray()

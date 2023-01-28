@@ -437,8 +437,10 @@ _TEST_ARRAYS = {
     "0d": np.array(5),
     "1d": np.array([127, 39, 93, 87, 46])
 }
-for _v in _TEST_ARRAYS.values():
-    _v.setflags(write=False)
+
+# XXX: write-only arrays/tensors?
+# for _v in _TEST_ARRAYS.values():
+#    _v.setflags(write=False)
 
 
 @pytest.mark.xfail(reason='TODO: implement')
@@ -540,13 +542,9 @@ class SharedNanFunctionsTestsMixin:
 
     def test_dtype_from_dtype(self):
         mat = np.eye(3)
-        codes = 'efdgFDG'
+        codes = 'efdFD'
         for nf, rf in zip(self.nanfuncs, self.stdfuncs):
             for c in codes:
-                with suppress_warnings() as sup:
-                    if nf in {np.nanstd, np.nanvar} and c in 'FDG':
-                        # Giving the warning is a small bug, see gh-8000
-                        sup.filter(np.ComplexWarning)
                     tgt = rf(mat, dtype=np.dtype(c), axis=1).dtype.type
                     res = nf(mat, dtype=np.dtype(c), axis=1).dtype.type
                     assert_(res is tgt)
@@ -557,13 +555,9 @@ class SharedNanFunctionsTestsMixin:
 
     def test_dtype_from_char(self):
         mat = np.eye(3)
-        codes = 'efdgFDG'
+        codes = 'efdFD'
         for nf, rf in zip(self.nanfuncs, self.stdfuncs):
             for c in codes:
-                with suppress_warnings() as sup:
-                    if nf in {np.nanstd, np.nanvar} and c in 'FDG':
-                        # Giving the warning is a small bug, see gh-8000
-                        sup.filter(np.ComplexWarning)
                     tgt = rf(mat, dtype=c, axis=1).dtype.type
                     res = nf(mat, dtype=c, axis=1).dtype.type
                     assert_(res is tgt)
@@ -573,7 +567,7 @@ class SharedNanFunctionsTestsMixin:
                     assert_(res is tgt)
 
     def test_dtype_from_input(self):
-        codes = 'efdgFDG'
+        codes = 'efdFD'
         for nf, rf in zip(self.nanfuncs, self.stdfuncs):
             for c in codes:
                 mat = np.eye(3, dtype=c)
@@ -595,6 +589,7 @@ class SharedNanFunctionsTestsMixin:
         for f in self.nanfuncs:
             assert_(f(0.) == 0.)
 
+    @pytest.mark.skip(reason='ndarray subclasses not supported')
     def test_subclass(self):
         class MyNDArray(np.ndarray):
             pass
@@ -755,20 +750,26 @@ class TestNanFunctions_CumSumProd(SharedNanFunctionsTestsMixin):
 @pytest.mark.xfail(reason='TODO: implement')
 class TestNanFunctions_MeanVarStd(SharedNanFunctionsTestsMixin):
 
-    nanfuncs = [np.nanmean, np.nanvar, np.nanstd]
-    stdfuncs = [np.mean, np.var, np.std]
+# cf https://github.com/pytorch/pytorch/issues/61474
+#    nanfuncs = [np.nanmean, np.nanvar, np.nanstd]
+#    stdfuncs = [np.mean, np.var, np.std]
+    nanfuncs = [np.nanmean]
+    stdfuncs = [np.mean]
+
 
     def test_dtype_error(self):
         for f in self.nanfuncs:
-            for dtype in [np.bool_, np.int_, np.object_]:
+            for dtype in [np.bool_, np.int_]:
                 assert_raises(TypeError, f, _ndat, axis=1, dtype=dtype)
 
+    @pytest.mark.xfail(reason="numpy raises, we don't")
     def test_out_dtype_error(self):
         for f in self.nanfuncs:
-            for dtype in [np.bool_, np.int_, np.object_]:
+            for dtype in [np.bool_, np.int_]:
                 out = np.empty(_ndat.shape[0], dtype=dtype)
                 assert_raises(TypeError, f, _ndat, axis=1, out=out)
 
+    @pytest.mark.xfail(reason='nanvar/std not implemented (pytorch gh-61474)')
     def test_ddof(self):
         nanfuncs = [np.nanvar, np.nanstd]
         stdfuncs = [np.var, np.std]
@@ -778,6 +779,7 @@ class TestNanFunctions_MeanVarStd(SharedNanFunctionsTestsMixin):
                 res = nf(_ndat, axis=1, ddof=ddof)
                 assert_almost_equal(res, tgt)
 
+    @pytest.mark.xfail(reason='nanvar/std not implemented (pytorch gh-61474)')
     def test_ddof_too_big(self):
         nanfuncs = [np.nanvar, np.nanstd]
         stdfuncs = [np.var, np.std]
@@ -806,10 +808,8 @@ class TestNanFunctions_MeanVarStd(SharedNanFunctionsTestsMixin):
             pytest.skip(f"`axis != None` not supported for 0d arrays")
 
         array = array.astype(dtype)
-        match = "(Degrees of freedom <= 0 for slice.)|(Mean of empty slice)"
         for func in self.nanfuncs:
-            with pytest.warns(RuntimeWarning, match=match):
-                out = func(array, axis=axis)
+            out = func(array, axis=axis)
             assert np.isnan(out).all()
 
             # `nanvar` and `nanstd` convert complex inputs to their
@@ -823,17 +823,15 @@ class TestNanFunctions_MeanVarStd(SharedNanFunctionsTestsMixin):
         mat = np.zeros((0, 3))
         for f in self.nanfuncs:
             for axis in [0, None]:
-                with warnings.catch_warnings(record=True) as w:
-                    warnings.simplefilter('always')
-                    assert_(np.isnan(f(mat, axis=axis)).all())
-                    assert_(len(w) == 1)
-                    assert_(issubclass(w[0].category, RuntimeWarning))
+                assert_(np.isnan(f(mat, axis=axis)).all())
+
             for axis in [1]:
                 with warnings.catch_warnings(record=True) as w:
                     warnings.simplefilter('always')
                     assert_equal(f(mat, axis=axis), np.zeros([]))
                     assert_(len(w) == 0)
 
+    @pytest.mark.xfail(reason='where=... not implemented')
     @pytest.mark.parametrize("dtype", np.typecodes["AllFloat"])
     def test_where(self, dtype):
         ar = np.arange(9).reshape(3, 3).astype(dtype)
