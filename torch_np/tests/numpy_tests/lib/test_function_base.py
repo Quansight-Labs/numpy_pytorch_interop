@@ -10,22 +10,28 @@ from hypothesis.extra.numpy import arrays
 import hypothesis.strategies as st
 
 
-import numpy as np
-from numpy import ma
-from numpy.testing import (
-    assert_, assert_equal, assert_array_equal, assert_almost_equal,
-    assert_array_almost_equal, assert_raises, assert_allclose, IS_PYPY,
-    assert_warns, assert_raises_regex, suppress_warnings, HAS_REFCOUNT, IS_WASM
+import torch_np as np
+# from numpy import ma
+from torch_np.testing import (assert_, assert_equal, assert_array_equal, assert_almost_equal,
+    assert_array_almost_equal, assert_allclose, # IS_PYPY,
+    assert_warns, assert_raises_regex, suppress_warnings, # HAS_REFCOUNT, IS_WASM
     )
-import numpy.lib.function_base as nfb
+from pytest import raises as assert_raises
+
+HAS_REFCOUNT = True
+IS_WASM = False
+IS_PYPY = False
+
+import numpy.lib.function_base as nfb   # FIXME: remove
 from numpy.random import rand
+
 from numpy.lib import (
     add_newdoc_ufunc, angle, average, bartlett, blackman, corrcoef, cov,
     delete, diff, digitize, extract, flipud, gradient, hamming, hanning,
     i0, insert, interp, kaiser, meshgrid, msort, piecewise, place, rot90,
     select, setxor1d, sinc, trapz, trim_zeros, unwrap, unique, vectorize
     )
-from numpy.core.numeric import normalize_axis_tuple
+from torch_np._util import normalize_axis_tuple
 
 
 def get_mat(n):
@@ -644,8 +650,8 @@ class TestCumsum:
     def test_basic(self):
         ba = [1, 2, 10, 11, 6, 5, 4]
         ba2 = [[1, 2, 3, 4], [5, 6, 7, 9], [10, 3, 4, 5]]
-        for ctype in [np.int8, np.uint8, np.int16, np.uint16, np.int32,
-                      np.uint32, np.float32, np.float64, np.complex64,
+        for ctype in [np.int8, np.uint8, np.int16, np.int32,
+                      np.float32, np.float64, np.complex64,
                       np.complex128]:
             a = np.array(ba, ctype)
             a2 = np.array(ba2, ctype)
@@ -667,7 +673,7 @@ class TestProd:
     def test_basic(self):
         ba = [1, 2, 10, 11, 6, 5, 4]
         ba2 = [[1, 2, 3, 4], [5, 6, 7, 9], [10, 3, 4, 5]]
-        for ctype in [np.int16, np.uint16, np.int32, np.uint32,
+        for ctype in [np.int16, np.int32,
                       np.float32, np.float64, np.complex64, np.complex128]:
             a = np.array(ba, ctype)
             a2 = np.array(ba2, ctype)
@@ -687,7 +693,7 @@ class TestCumprod:
     def test_basic(self):
         ba = [1, 2, 10, 11, 6, 5, 4]
         ba2 = [[1, 2, 3, 4], [5, 6, 7, 9], [10, 3, 4, 5]]
-        for ctype in [np.int16, np.uint16, np.int32, np.uint32,
+        for ctype in [np.int16, np.int32,
                       np.float32, np.float64, np.complex64, np.complex128]:
             a = np.array(ba, ctype)
             a2 = np.array(ba2, ctype)
@@ -1183,8 +1189,7 @@ class TestGradient:
         assert_raises(ValueError, gradient, np.arange(1), edge_order=2)
         assert_raises(ValueError, gradient, np.arange(2), edge_order=2)
 
-    @pytest.mark.parametrize('f_dtype', [np.uint8, np.uint16,
-                                         np.uint32, np.uint64])
+    @pytest.mark.parametrize('f_dtype', [np.uint8, ])
     def test_f_decreasing_unsigned_int(self, f_dtype):
         f = np.array([5, 4, 3, 2, 1], dtype=f_dtype)
         g = gradient(f)
@@ -1199,8 +1204,7 @@ class TestGradient:
         dfdx = gradient(f, x)
         assert_array_equal(dfdx, [(maxint + 1) // 2]*2)
 
-    @pytest.mark.parametrize('x_dtype', [np.uint8, np.uint16,
-                                         np.uint32, np.uint64])
+    @pytest.mark.parametrize('x_dtype', [np.uint8, ])
     def test_x_decreasing_unsigned(self, x_dtype):
         x = np.array([3, 2, 1], dtype=x_dtype)
         f = np.array([0, 2, 4])
@@ -1249,7 +1253,7 @@ class TestTrimZeros:
     a = np.array([0, 0, 1, 0, 2, 3, 4, 0])
     b = a.astype(float)
     c = a.astype(complex)
-    d = a.astype(object)
+#    d = a.astype(object)
 
     def values(self):
         attr_names = ('a', 'b', 'c', 'd')
@@ -1291,9 +1295,9 @@ class TestTrimZeros:
     @pytest.mark.parametrize(
         'arr',
         [np.array([0, 2**62, 0]),
-         np.array([0, 2**63, 0]),
-         np.array([0, 2**64, 0])]
-    )
+#         np.array([0, 2**63, 0]),     # FIXME
+#         np.array([0, 2**64, 0])
+        ])
     def test_overflow(self, arr):
         slc = np.s_[1:2]
         res = trim_zeros(arr)
@@ -1358,6 +1362,7 @@ def _foo2(x, y=1.0, z=0.0):
     return y*math.floor(x) + z
 
 
+@pytest.mark.skip(reason='vectorize not implemented')
 class TestVectorize:
 
     def test_simple(self):
@@ -1596,6 +1601,7 @@ class TestVectorize:
         x = np.arange(5)
         assert_array_equal(f(x), x)
 
+    @pytest.mark.skip(reason='no _parse_gufunc_signature')
     def test_parse_gufunc_signature(self):
         assert_equal(nfb._parse_gufunc_signature('(x)->()'), ([('x',)], [()]))
         assert_equal(nfb._parse_gufunc_signature('(x,y)->()'),
@@ -2238,7 +2244,7 @@ class TestCorrCoef:
         assert_array_almost_equal(c, np.array([[1., -1.], [-1., 1.]]))
         assert_(np.all(np.abs(c) <= 1.0))
 
-    @pytest.mark.parametrize("test_type", [np.half, np.single, np.double, np.longdouble])
+    @pytest.mark.parametrize("test_type", [np.half, np.single, np.double])
     def test_corrcoef_dtype(self, test_type):
         cast_A = self.A.astype(test_type)
         res = corrcoef(cast_A, dtype=test_type)
@@ -2344,7 +2350,7 @@ class TestCov:
                             aweights=self.unit_weights),
                         self.res1)
 
-    @pytest.mark.parametrize("test_type", [np.half, np.single, np.double, np.longdouble])
+    @pytest.mark.parametrize("test_type", [np.half, np.single, np.double])
     def test_cov_dtype(self, test_type):
         cast_x1 = self.x1.astype(test_type)
         res = cov(cast_x1, dtype=test_type)
@@ -3005,8 +3011,7 @@ class TestPercentile:
                       ] + [(np.float16, np.float16),
                            (np.float32, np.float32),
                            (np.float64, np.float64),
-                           (np.longdouble, np.longdouble),
-                           (np.dtype("O"), np.float64)]
+                           ]
 
     @pytest.mark.parametrize(["input_dtype", "expected_dtype"], H_F_TYPE_CODES)
     @pytest.mark.parametrize(["method", "expected"],
@@ -3566,6 +3571,7 @@ class TestQuantile:
         quantile = np.quantile([0., 1., 2., 3.], p0, method=method)
         assert_equal(np.sort(quantile), quantile)
 
+    @pytest.mark.skip(reason='no hypothesis')
     @hypothesis.given(
             arr=arrays(dtype=np.float64,
                        shape=st.integers(min_value=3, max_value=1000),
@@ -3584,6 +3590,7 @@ class TestQuantile:
         assert_equal(np.quantile(a, 0.5), np.nan)
 
 
+@pytest.mark.skip(reason='no hypothesis')
 class TestLerp:
     @hypothesis.given(t0=st.floats(allow_nan=False, allow_infinity=False,
                                    min_value=0, max_value=1),
