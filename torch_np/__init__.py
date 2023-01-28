@@ -14,6 +14,8 @@ inf = float("inf")
 nan = float("nan")
 
 
+alltrue = all
+
 #### HACK HACK HACK ####
 import torch
 

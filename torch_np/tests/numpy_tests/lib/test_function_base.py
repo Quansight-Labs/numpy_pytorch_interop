@@ -23,8 +23,10 @@ IS_WASM = False
 IS_PYPY = False
 
 import numpy.lib.function_base as nfb   # FIXME: remove
-from numpy.random import rand
+from numpy.random import rand    # FIXME: random.rand
 
+
+# FIXME: make from torch_np
 from numpy.lib import (
     add_newdoc_ufunc, angle, average, bartlett, blackman, corrcoef, cov,
     delete, diff, digitize, extract, flipud, gradient, hamming, hanning,
@@ -51,6 +53,7 @@ def _make_complex(real, imag):
     return ret
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestRot90:
     def test_basic(self):
         assert_raises(ValueError, rot90, np.ones(4))
@@ -119,6 +122,7 @@ class TestRot90:
                          rot90(a_rot90_20, k=k-1, axes=(2, 0)))
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestFlip:
 
     def test_axes(self):
@@ -222,6 +226,7 @@ class TestFlip:
         assert_equal(np.flip(a, axis=(1, 2)), c)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestAny:
 
     def test_basic(self):
@@ -239,6 +244,7 @@ class TestAny:
         assert_array_equal(np.sometrue(y1, axis=1), [0, 1, 1])
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestAll:
 
     def test_basic(self):
@@ -257,6 +263,7 @@ class TestAll:
         assert_array_equal(np.alltrue(y1, axis=1), [0, 0, 1])
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestCopy:
 
     def test_basic(self):
@@ -292,6 +299,7 @@ class TestCopy:
         assert_(not ma.isMaskedArray(np.copy(mx)))
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestAverage:
 
     def test_basic(self):
@@ -433,6 +441,8 @@ class TestAverage:
         a = np.array([Fraction(1, 5), Fraction(3, 5)])
         assert_equal(np.average(a), Fraction(2, 5))
 
+
+@pytest.mark.xfail(reason='TODO: implement')
 class TestSelect:
     choices = [np.array([1, 2, 3]),
                np.array([4, 5, 6]),
@@ -495,6 +505,7 @@ class TestSelect:
         select(conditions, choices)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestInsert:
 
     def test_basic(self):
@@ -606,6 +617,7 @@ class TestInsert:
             np.insert([0, 1, 2], [idx], [3, 4])
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestAmax:
 
     def test_basic(self):
@@ -618,6 +630,7 @@ class TestAmax:
         assert_equal(np.amax(b, axis=1), [9.0, 10.0, 8.0])
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestAmin:
 
     def test_basic(self):
@@ -630,6 +643,7 @@ class TestAmin:
         assert_equal(np.amin(b, axis=1), [3.0, 4.0, 2.0])
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestPtp:
 
     def test_basic(self):
@@ -645,6 +659,7 @@ class TestPtp:
         assert_equal(b.ptp(axis=(0,1), keepdims=True), [[8.0]])
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestCumsum:
 
     def test_basic(self):
@@ -668,6 +683,7 @@ class TestCumsum:
             assert_array_equal(np.cumsum(a2, axis=1), tgt)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestProd:
 
     def test_basic(self):
@@ -688,6 +704,7 @@ class TestProd:
                                    np.array([24, 1890, 600], ctype))
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestCumprod:
 
     def test_basic(self):
@@ -715,6 +732,7 @@ class TestCumprod:
                                              [10, 30, 120, 600]], ctype))
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestDiff:
 
     def test_basic(self):
@@ -855,6 +873,7 @@ class TestDiff:
         assert_raises(np.AxisError, diff, x, append=0, axis=3)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestDelete:
 
     def setup_method(self):
@@ -972,6 +991,7 @@ class TestDelete:
             delete(np.ones(2), np.array([0], dtype="m8[ns]"))
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestGradient:
 
     def test_basic(self):
@@ -1222,6 +1242,7 @@ class TestGradient:
         assert_array_equal(dfdx, [0.5, 0.5])
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestAngle:
 
     def test_basic(self):
@@ -1248,6 +1269,7 @@ class TestAngle:
         assert_equal(actual, expected)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestTrimZeros:
 
     a = np.array([0, 0, 1, 0, 2, 3, 4, 0])
@@ -1313,6 +1335,7 @@ class TestTrimZeros:
         assert isinstance(res, list)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestExtins:
 
     def test_basic(self):
@@ -1787,6 +1810,7 @@ class TestVectorize:
         assert_equal(r, m * v)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestLeaks:
     class A:
         iters = 20
@@ -1828,6 +1852,7 @@ class TestLeaks:
             gc.enable()
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestDigitize:
 
     def test_forward(self):
@@ -1913,6 +1938,7 @@ class TestDigitize:
         assert_equal(np.digitize(x, [x + 1, x - 1]), 1)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestUnwrap:
 
     def test_simple(self):
@@ -1940,6 +1966,7 @@ class TestUnwrap:
         assert sm_discont.dtype == wrap_uneven.dtype
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 @pytest.mark.parametrize(
     "dtype", "O" + np.typecodes["AllInteger"] + np.typecodes["Float"]
 )
@@ -2052,6 +2079,7 @@ class TestFilterwindows:
             assert_almost_equal(np.sum(w, axis=0), 10, 15)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestTrapz:
 
     def test_simple(self):
@@ -2114,6 +2142,7 @@ class TestTrapz:
         assert_almost_equal(trapz(y, xm), r)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestSinc:
 
     def test_simple(self):
@@ -2131,6 +2160,7 @@ class TestSinc:
         assert_array_equal(y1, y3)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestUnique:
 
     def test_simple(self):
@@ -2143,6 +2173,7 @@ class TestUnique:
         assert_(np.all(unique(x) == [1 + 1j, 1 + 10j, 5 + 6j, 10]))
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestCheckFinite:
 
     def test_simple(self):
@@ -2160,6 +2191,7 @@ class TestCheckFinite:
         assert_(a.dtype == np.float64)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestCorrCoef:
     A = np.array(
         [[0.15391142, 0.18045767, 0.14197213],
@@ -2251,6 +2283,7 @@ class TestCorrCoef:
         assert test_type == res.dtype
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestCov:
     x1 = np.array([[0, 2], [1, 1], [2, 0]]).T
     res1 = np.array([[1., -1.], [-1., 1.]])
@@ -2357,6 +2390,7 @@ class TestCov:
         assert test_type == res.dtype
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class Test_I0:
 
     def test_simple(self):
@@ -2409,6 +2443,7 @@ class Test_I0:
             res = i0(a)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestKaiser:
 
     def test_simple(self):
@@ -2428,6 +2463,7 @@ class TestKaiser:
         kaiser(3, 4)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestMsort:
 
     def test_simple(self):
@@ -2442,6 +2478,7 @@ class TestMsort:
                           [0.64864341, 0.79115165, 0.96098397]]))
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestMeshgrid:
 
     def test_simple(self):
@@ -2552,6 +2589,7 @@ class TestMeshgrid:
         assert_equal(c, [[[3, 4, 5], [3, 4, 5]]])
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestPiecewise:
 
     def test_simple(self):
@@ -2652,6 +2690,7 @@ class TestPiecewise:
         assert_equal(r, [-1., -1., 0., 0., 1.])
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestBincount:
 
     def test_simple(self):
@@ -2748,6 +2787,7 @@ class TestBincount:
             np.bincount(vals)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestInterp:
 
     def test_exceptions(self):
@@ -2942,6 +2982,7 @@ class TestInterp:
         assert_almost_equal(np.interp(x, xp, fp, period=360), y)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestPercentile:
 
     def test_basic(self):
@@ -3472,6 +3513,7 @@ class TestPercentile:
             np.percentile([1, 2, 3, 4.0], q)
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestQuantile:
     # most of this is already tested by TestPercentile
 
@@ -3641,6 +3683,7 @@ class TestLerp:
         assert nfb._lerp(a, b, t) == 2.6
 
 
+@pytest.mark.xfail(reason='TODO: implement')
 class TestMedian:
 
     def test_basic(self):
@@ -3914,65 +3957,7 @@ class TestMedian:
         assert_equal(result.shape, shape_out)
 
 
-class TestAdd_newdoc_ufunc:
-
-    def test_ufunc_arg(self):
-        assert_raises(TypeError, add_newdoc_ufunc, 2, "blah")
-        assert_raises(ValueError, add_newdoc_ufunc, np.add, "blah")
-
-    def test_string_arg(self):
-        assert_raises(TypeError, add_newdoc_ufunc, np.add, 3)
-
-
-class TestAdd_newdoc:
-
-    @pytest.mark.skipif(sys.flags.optimize == 2, reason="Python running -OO")
-    @pytest.mark.xfail(IS_PYPY, reason="PyPy does not modify tp_doc")
-    def test_add_doc(self):
-        # test that np.add_newdoc did attach a docstring successfully:
-        tgt = "Current flat index into the array."
-        assert_equal(np.core.flatiter.index.__doc__[:len(tgt)], tgt)
-        assert_(len(np.core.ufunc.identity.__doc__) > 300)
-        assert_(len(np.lib.index_tricks.mgrid.__doc__) > 300)
-
-    @pytest.mark.skipif(sys.flags.optimize == 2, reason="Python running -OO")
-    def test_errors_are_ignored(self):
-        prev_doc = np.core.flatiter.index.__doc__
-        # nothing changed, but error ignored, this should probably
-        # give a warning (or even error) in the future.
-        np.add_newdoc("numpy.core", "flatiter", ("index", "bad docstring"))
-        assert prev_doc == np.core.flatiter.index.__doc__
-
-
-class TestAddDocstring():
-    # Test should possibly be moved, but it also fits to be close to
-    # the newdoc tests...
-    @pytest.mark.skipif(sys.flags.optimize == 2, reason="Python running -OO")
-    @pytest.mark.skipif(IS_PYPY, reason="PyPy does not modify tp_doc")
-    def test_add_same_docstring(self):
-        # test for attributes (which are C-level defined)
-        np.add_docstring(np.ndarray.flat, np.ndarray.flat.__doc__)
-        # And typical functions:
-        def func():
-            """docstring"""
-            return
-
-        np.add_docstring(func, func.__doc__)
-
-    @pytest.mark.skipif(sys.flags.optimize == 2, reason="Python running -OO")
-    def test_different_docstring_fails(self):
-        # test for attributes (which are C-level defined)
-        with assert_raises(RuntimeError):
-            np.add_docstring(np.ndarray.flat, "different docstring")
-        # And typical functions:
-        def func():
-            """docstring"""
-            return
-
-        with assert_raises(RuntimeError):
-            np.add_docstring(func, "different docstring")
-
-
+@pytest.mark.xfail(reason='TODO: implement')
 class TestSortComplex:
 
     @pytest.mark.parametrize("type_in, type_out", [
