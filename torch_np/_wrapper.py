@@ -646,6 +646,9 @@ def cumprod(a, axis=None, dtype=None, out=None):
     return arr.cumprod(axis=axis, dtype=dtype, out=out)
 
 
+cumproduct = cumprod
+
+
 def cumsum(a, axis=None, dtype=None, out=None):
     arr = asarray(a)
     return arr.cumsum(axis=axis, dtype=dtype, out=out)
