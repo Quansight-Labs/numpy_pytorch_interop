@@ -288,7 +288,9 @@ class ndarray:
     mean = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.mean)))
     var = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.var)))
     std = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.std)))
-    cumprod = emulate_out_arg(axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumprod))) # no keepdims=...
+
+    cumprod = emulate_out_arg(axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumprod)))
+    cumsum = emulate_out_arg(axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumsum)))
 
     ### indexing ###
     def __getitem__(self, *args, **kwds):

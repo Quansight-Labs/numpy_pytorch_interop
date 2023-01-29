@@ -684,8 +684,12 @@ class _GenericCumSumProdTestMixin:
              self.func(m, axis=(1, 1))
 
 
-
 class TestCumProdGeneric(_GenericCumSumProdTestMixin):
     def setup_method(self):
         self.func = np.cumprod
->>>>>>> ENH: implement cumprod
+
+
+class TestCumSumGeneric(_GenericCumSumProdTestMixin):
+    def setup_method(self):
+        self.func = np.cumsum
+

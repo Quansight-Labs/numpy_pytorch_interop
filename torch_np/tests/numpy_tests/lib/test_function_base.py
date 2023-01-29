@@ -655,7 +655,6 @@ class TestPtp:
         assert_equal(b.ptp(axis=(0,1), keepdims=True), [[8.0]])
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestCumsum:
 
     def test_basic(self):

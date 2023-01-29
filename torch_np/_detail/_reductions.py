@@ -123,17 +123,6 @@ def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     return result
 
 
-def cumprod(tensor, axis=None, dtype=None):
-    if dtype == torch.bool:
-        dtype = _scalar_types.default_int_type.dtype
-    if dtype is None:
-        dtype=tensor.dtype
-
-    result = tensor.cumprod(axis=axis, dtype=dtype)
-
-    return result
-
-
 def mean(tensor, axis=None, dtype=None, *, where=NoValue):
     if where is not NoValue:
         raise NotImplementedError
@@ -172,3 +161,30 @@ def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
     result = tensor.var(dim=axis, correction=ddof)
 
     return result
+
+
+# cumsum / cumprod are almost reductions:
+#   1. no keepdims
+#   2. axis=None ravels (cf concatenate)
+
+def cumprod(tensor, axis=None, dtype=None):
+    if dtype == torch.bool:
+        dtype = _scalar_types.default_int_type.dtype
+    if dtype is None:
+        dtype=tensor.dtype
+
+    result = tensor.cumprod(axis=axis, dtype=dtype)
+
+    return result
+
+
+def cumsum(tensor, axis=None, dtype=None):
+    if dtype == torch.bool:
+        dtype = _scalar_types.default_int_type.dtype
+    if dtype is None:
+        dtype=tensor.dtype
+
+    result = tensor.cumsum(axis=axis, dtype=dtype)
+
+    return result
+

@@ -93,10 +93,7 @@ def axis_keepdims_wrapper(func):
     see them). The `axis` argument we normalize and pass through to pytorch functions.
 
     """
-    # XXX: move this out of _ndarray.py (circular imports)
-    #
-    # TODO: 1. get rid of _helpers.result_or_out
-    #       2. sort out function signatures: how they flow through all decorators etc
+    # TODO: sort out function signatures: how they flow through all decorators etc
     @functools.wraps(func)
     def wrapped(a, axis=None, keepdims=NoValue, *args, **kwds):
         from ._ndarray import asarray, ndarray
