@@ -608,7 +608,6 @@ class TestMeanGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
         self.func = np.mean
         self.allowed_axes = [0, 1, 2, -1, -2, (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
 
-
 class TestSumGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     def setup_method(self):
         self.func = np.sum
@@ -639,4 +638,54 @@ class TestStdGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
 class TestVarGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     def setup_method(self):
         self.func = np.var
-        self.allowed_axes = [0, 1, 2, -1, -2, (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
+        self.allowed_axes =  [0, 1, 2, -1, -2,
+                              (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
+
+torch_np/tests/numpy_tests/lib/test_function_base.pyM
+
+class _GenericCumSumProdTestMixin:
+    """Run a set of generic tests to verify that self.func acts like a
+    reduction operation.
+
+    Specifically, this class checks axis=... and keepdims=... parameters.
+    To check the out=... parameter, see the _GenericHasOutTestMixin class below.
+
+    To use: subclass, define self.func and self.allowed_axes.
+    """
+    def test_bad_axis(self):
+        # Basic check of functionality
+        m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
+
+        assert_raises(TypeError, self.func, m, axis='foo')
+        assert_raises(np.AxisError, self.func, m, axis=3)
+        assert_raises(TypeError, self.func,
+                      m, axis=np.array([[1], [2]]))
+        assert_raises(TypeError, self.func, m, axis=1.5)
+
+        # TODO: add tests with np.int32(3) etc, when implemented
+
+    def test_array_axis(self):
+        a = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
+        assert_equal(self.func(a, axis=np.array(-1)),
+                     self.func(a, axis=-1))
+
+        with assert_raises(TypeError):
+            self.func(a, axis=np.array([1, 2]))
+
+    def test_axis_empty_generic(self):
+        a = np.array([[0, 0, 1], [1, 0, 1]])
+        assert_array_equal(self.func(a, axis=None),
+                           self.func(a.ravel(), axis=0))
+
+    def test_axis_bad_tuple(self):
+        # Basic check of functionality
+        m = np.array([[0, 1, 7, 0, 0], [3, 0, 0, 2, 19]])
+        with assert_raises(TypeError):
+             self.func(m, axis=(1, 1))
+
+
+
+class TestCumProdGeneric(_GenericCumSumProdTestMixin):
+    def setup_method(self):
+        self.func = np.cumprod
+>>>>>>> ENH: implement cumprod

@@ -640,7 +640,14 @@ def prod(
     )
 
 
+<<<<<<< HEAD
 # YYY: pattern : ddof
+=======
+def cumprod(a, axis=None, dtype=None, out=None):
+    arr = asarray(a)
+    return arr.cumprod(axis=axis, dtype=dtype, out=out)
+
+>>>>>>> ENH: implement cumprod
 
 
 def std(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):

@@ -107,7 +107,34 @@ def axis_keepdims_wrapper(func):
         if isinstance(axis, ndarray):
             axis = operator.index(axis)
 
-        result = _util.axis_keepdims(func, tensor, axis, keepdims, *args, **kwds)
+        result = _util.axis_expand_func(func, tensor, axis, *args, **kwds)
+
+        if keepdims:
+            result = _util.apply_keepdims(result, axis, tensor.ndim)
+
+        return result
+
+    return wrapped
+
+
+def axis_none_ravel_wrapper(func):
+    """`func` accepts an array-like as a 1st arg, returns a tensor.
+
+    This decorator implements the generic handling of axis=None acting on a
+    raveled array. One use is cumprod / cumsum. concatenate also uses a
+    similar logic.
+
+    """
+    @functools.wraps(func)
+    def wrapped(a, axis=None, *args, **kwds):
+        from ._ndarray import ndarray, asarray
+        tensor = asarray(a).get()
+
+        # standardize the axis argument
+        if isinstance(axis, ndarray):
+            axis = operator.index(axis)
+
+        result = _util.axis_ravel_func(func, tensor, axis, *args, **kwds)
         return result
 
     return wrapped

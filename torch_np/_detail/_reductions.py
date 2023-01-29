@@ -123,6 +123,17 @@ def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     return result
 
 
+def cumprod(tensor, axis=None, dtype=None):
+    if dtype == torch.bool:
+        dtype = _scalar_types.default_int_type.dtype
+    if dtype is None:
+        dtype=tensor.dtype
+
+    result = tensor.cumprod(axis=axis, dtype=dtype)
+
+    return result
+
+
 def mean(tensor, axis=None, dtype=None, *, where=NoValue):
     if where is not NoValue:
         raise NotImplementedError

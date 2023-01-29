@@ -699,7 +699,6 @@ class TestProd:
                                    np.array([24, 1890, 600], ctype))
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestCumprod:
 
     def test_basic(self):
