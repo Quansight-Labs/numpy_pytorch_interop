@@ -791,21 +791,6 @@ class TestDiff:
             assert_array_equal(out, exp)
             assert_equal(out.dtype, exp.dtype)
 
-    def test_subclass(self):
-        x = ma.array([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]],
-                     mask=[[False, False], [True, False],
-                           [False, True], [True, True], [False, False]])
-        out = diff(x)
-        assert_array_equal(out.data, [[1], [1], [1], [1], [1]])
-        assert_array_equal(out.mask, [[False], [True],
-                                      [True], [True], [False]])
-        assert_(type(out) is type(x))
-
-        out3 = diff(x, n=3)
-        assert_array_equal(out3.data, [[], [], [], [], []])
-        assert_array_equal(out3.mask, [[], [], [], [], []])
-        assert_(type(out3) is type(x))
-
     def test_prepend(self):
         x = np.arange(5) + 1
         assert_array_equal(diff(x, prepend=0), np.ones(5))
@@ -1041,21 +1026,6 @@ class TestGradient:
         assert_array_equal(gradient(x), dx)
         assert_(dx.dtype == np.dtype('timedelta64[D]'))
 
-    def test_masked(self):
-        # Make sure that gradient supports subclasses like masked arrays
-        x = np.ma.array([[1, 1], [3, 4]],
-                        mask=[[False, False], [False, False]])
-        out = gradient(x)[0]
-        assert_equal(type(out), type(x))
-        # And make sure that the output and input don't have aliased mask
-        # arrays
-        assert_(x._mask is not out._mask)
-        # Also check that edge_order=2 doesn't alter the original mask
-        x2 = np.ma.arange(5)
-        x2[2] = np.ma.masked
-        np.gradient(x2, edge_order=2)
-        assert_array_equal(x2.mask, [False, False, True, False, False])
-
     def test_second_order_accurate(self):
         # Testing that the relative numerical error is less that 3% for
         # this example problem. This corresponds to second order
@@ -1243,16 +1213,6 @@ class TestAngle:
         zo = np.array(yo) * 180 / np.pi
         assert_array_almost_equal(y, yo, 11)
         assert_array_almost_equal(z, zo, 11)
-
-    def test_subclass(self):
-        x = np.ma.array([1 + 3j, 1, np.sqrt(2)/2 * (1 + 1j)])
-        x[1] = np.ma.masked
-        expected = np.ma.array([np.arctan(3.0 / 1.0), 0, np.arctan(1.0)])
-        expected[1] = np.ma.masked
-        actual = angle(x)
-        assert_equal(type(actual), type(expected))
-        assert_equal(actual.mask, expected.mask)
-        assert_equal(actual, expected)
 
 
 @pytest.mark.xfail(reason='TODO: implement')
@@ -2110,22 +2070,6 @@ class TestTrapz:
         assert_almost_equal(r, qy)
         r = trapz(q, x=z, axis=2)
         assert_almost_equal(r, qz)
-
-    def test_masked(self):
-        # Testing that masked arrays behave as if the function is 0 where
-        # masked
-        x = np.arange(5)
-        y = x * x
-        mask = x == 2
-        ym = np.ma.array(y, mask=mask)
-        r = 13.0  # sum(0.5 * (0 + 1) * 1.0 + 0.5 * (9 + 16))
-        assert_almost_equal(trapz(ym, x), r)
-
-        xm = np.ma.array(x, mask=mask)
-        assert_almost_equal(trapz(ym, xm), r)
-
-        xm = np.ma.array(x, mask=mask)
-        assert_almost_equal(trapz(y, xm), r)
 
 
 @pytest.mark.xfail(reason='TODO: implement')
