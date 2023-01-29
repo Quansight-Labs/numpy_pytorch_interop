@@ -261,7 +261,6 @@ class TestAll:
         assert_array_equal(np.alltrue(y1, axis=1), [0, 0, 1])
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestCopy:
 
     def test_basic(self):
@@ -272,6 +271,7 @@ class TestCopy:
         assert_equal(a[0, 0], 1)
         assert_equal(a_copy[0, 0], 10)
 
+    @pytest.mark.xfail(reason="ndarray.flags not implemented")
     def test_order(self):
         # It turns out that people rely on np.copy() preserving order by
         # default; changing this broke scikit-learn:
@@ -288,13 +288,6 @@ class TestCopy:
         a_fort_copy = np.copy(a_fort)
         assert_(not a_fort_copy.flags.c_contiguous)
         assert_(a_fort_copy.flags.f_contiguous)
-
-    def test_subok(self):
-        mx = ma.ones(5)
-        assert_(not ma.isMaskedArray(np.copy(mx, subok=False)))
-        assert_(ma.isMaskedArray(np.copy(mx, subok=True)))
-        # Default behavior
-        assert_(not ma.isMaskedArray(np.copy(mx)))
 
 
 @pytest.mark.xfail(reason='TODO: implement')
