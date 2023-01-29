@@ -1,7 +1,6 @@
 import operator
 import warnings
 import sys
-import decimal
 from fractions import Fraction
 import math
 import pytest
@@ -404,15 +403,6 @@ class TestAverage:
         avg, scl = average(y, weights=w2, axis=1, returned=True)
         assert_array_equal(scl, np.array([1., 6.]))
 
-    def test_subclasses(self):
-        class subclass(np.ndarray):
-            pass
-        a = np.array([[1,2],[3,4]]).view(subclass)
-        w = np.array([[1,2],[3,4]]).view(subclass)
-
-        assert_equal(type(np.average(a)), subclass)
-        assert_equal(type(np.average(a, weights=w)), subclass)
-
     def test_upcasting(self):
         typs = [('i4', 'i4', 'f8'), ('i4', 'f4', 'f8'), ('f4', 'i4', 'f8'),
                  ('f4', 'f4', 'f4'), ('f4', 'f8', 'f8')]
@@ -420,12 +410,6 @@ class TestAverage:
             a = np.array([[1,2],[3,4]], dtype=at)
             w = np.array([[1,2],[3,4]], dtype=wt)
             assert_equal(np.average(a, weights=w).dtype, np.dtype(rt))
-
-    def test_object_dtype(self):
-        a = np.array([decimal.Decimal(x) for x in range(10)])
-        w = np.array([decimal.Decimal(1) for _ in range(10)])
-        w /= w.sum()
-        assert_almost_equal(a.mean(0), average(a, weights=w))
 
     def test_average_class_without_dtype(self):
         # see gh-21988
@@ -568,33 +552,10 @@ class TestInsert:
         with pytest.raises(TypeError):
             insert(a, [], 2, axis="nonsense")
 
-    def test_subclass(self):
-        class SubClass(np.ndarray):
-            pass
-        a = np.arange(10).view(SubClass)
-        assert_(isinstance(np.insert(a, 0, [0]), SubClass))
-        assert_(isinstance(np.insert(a, [], []), SubClass))
-        assert_(isinstance(np.insert(a, [0, 1], [1, 2]), SubClass))
-        assert_(isinstance(np.insert(a, slice(1, 2), [1, 2]), SubClass))
-        assert_(isinstance(np.insert(a, slice(1, -2, -1), []), SubClass))
-        # This is an error in the future:
-        a = np.array(1).view(SubClass)
-        assert_(isinstance(np.insert(a, 0, [0]), SubClass))
-
     def test_index_array_copied(self):
         x = np.array([1, 1, 1])
         np.insert([0, 1, 2], x, [3, 4, 5])
         assert_equal(x, np.array([1, 1, 1]))
-
-    def test_structured_array(self):
-        a = np.array([(1, 'a'), (2, 'b'), (3, 'c')],
-                     dtype=[('foo', 'i'), ('bar', 'a1')])
-        val = (4, 'd')
-        b = np.insert(a, 0, val)
-        assert_array_equal(b[0], np.array(val, dtype=b.dtype))
-        val = [(4, 'd')] * 2
-        b = np.insert(a, [0, 2], val)
-        assert_array_equal(b[[0, 3]], np.array(val, dtype=b.dtype))
 
     def test_index_floats(self):
         with pytest.raises(IndexError):
@@ -901,16 +862,6 @@ class TestDelete:
         with pytest.raises(TypeError):
             delete(a, [], axis="nonsense")
 
-    def test_subclass(self):
-        class SubClass(np.ndarray):
-            pass
-        a = self.a.view(SubClass)
-        assert_(isinstance(delete(a, 0), SubClass))
-        assert_(isinstance(delete(a, []), SubClass))
-        assert_(isinstance(delete(a, [0, 1]), SubClass))
-        assert_(isinstance(delete(a, slice(1, 2)), SubClass))
-        assert_(isinstance(delete(a, slice(1, -2)), SubClass))
-
     def test_array_order_preserve(self):
         # See gh-7113
         k = np.arange(10).reshape(2, 5, order='F')
@@ -952,14 +903,6 @@ class TestDelete:
         assert_array_equal(res, x)
         res = delete(x, true_mask, axis=-1)
         assert_array_equal(res, x[:, :0])
-
-        # Object or e.g. timedeltas should *not* be allowed
-        with pytest.raises(IndexError):
-            delete(np.ones(2), np.array([0], dtype=object))
-
-        with pytest.raises(IndexError):
-            # timedeltas are sometimes "integral, but clearly not allowed:
-            delete(np.ones(2), np.array([0], dtype="m8[ns]"))
 
 
 @pytest.mark.xfail(reason='TODO: implement')
@@ -1013,18 +956,6 @@ class TestGradient:
         assert_raises(TypeError, gradient, f_2d, 1, 1, 1)
         assert_raises(TypeError, gradient, f_2d, x, x, axis=1)
         assert_raises(TypeError, gradient, f_2d, 1, 1, axis=1)
-
-    def test_datetime64(self):
-        # Make sure gradient() can handle special types like datetime64
-        x = np.array(
-            ['1910-08-16', '1910-08-11', '1910-08-10', '1910-08-12',
-             '1910-10-12', '1910-12-12', '1912-12-12'],
-            dtype='datetime64[D]')
-        dx = np.array(
-            [-5, -3, 0, 31, 61, 396, 731],
-            dtype='timedelta64[D]')
-        assert_array_equal(gradient(x), dx)
-        assert_(dx.dtype == np.dtype('timedelta64[D]'))
 
     def test_second_order_accurate(self):
         # Testing that the relative numerical error is less that 3% for
@@ -1570,52 +1501,6 @@ class TestVectorize:
         x = np.arange(5)
         assert_array_equal(f(x), x)
 
-    @pytest.mark.skip(reason='no _parse_gufunc_signature')
-    def test_parse_gufunc_signature(self):
-        assert_equal(nfb._parse_gufunc_signature('(x)->()'), ([('x',)], [()]))
-        assert_equal(nfb._parse_gufunc_signature('(x,y)->()'),
-                     ([('x', 'y')], [()]))
-        assert_equal(nfb._parse_gufunc_signature('(x),(y)->()'),
-                     ([('x',), ('y',)], [()]))
-        assert_equal(nfb._parse_gufunc_signature('(x)->(y)'),
-                     ([('x',)], [('y',)]))
-        assert_equal(nfb._parse_gufunc_signature('(x)->(y),()'),
-                     ([('x',)], [('y',), ()]))
-        assert_equal(nfb._parse_gufunc_signature('(),(a,b,c),(d)->(d,e)'),
-                     ([(), ('a', 'b', 'c'), ('d',)], [('d', 'e')]))
-
-        # Tests to check if whitespaces are ignored
-        assert_equal(nfb._parse_gufunc_signature('(x )->()'), ([('x',)], [()]))
-        assert_equal(nfb._parse_gufunc_signature('( x , y )->(  )'),
-                     ([('x', 'y')], [()]))
-        assert_equal(nfb._parse_gufunc_signature('(x),( y) ->()'),
-                     ([('x',), ('y',)], [()]))
-        assert_equal(nfb._parse_gufunc_signature('(  x)-> (y )  '),
-                     ([('x',)], [('y',)]))
-        assert_equal(nfb._parse_gufunc_signature(' (x)->( y),( )'),
-                     ([('x',)], [('y',), ()]))
-        assert_equal(nfb._parse_gufunc_signature(
-                     '(  ), ( a,  b,c )  ,(  d)   ->   (d  ,  e)'),
-                     ([(), ('a', 'b', 'c'), ('d',)], [('d', 'e')]))
-
-        with assert_raises(ValueError):
-            nfb._parse_gufunc_signature('(x)(y)->()')
-        with assert_raises(ValueError):
-            nfb._parse_gufunc_signature('(x),(y)->')
-        with assert_raises(ValueError):
-            nfb._parse_gufunc_signature('((x))->(x)')
-
-    def test_signature_simple(self):
-        def addsubtract(a, b):
-            if a > b:
-                return a - b
-            else:
-                return a + b
-
-        f = vectorize(addsubtract, signature='(),()->()')
-        r = f([0, 3, 6, 9], [1, 3, 5, 7])
-        assert_array_equal(r, [1, 6, 1, 2])
-
     def test_signature_mean_last(self):
         def mean(a):
             return a.mean()
@@ -1754,48 +1639,6 @@ class TestVectorize:
         r = mult(m, v)
         assert_equal(type(r), subclass)
         assert_equal(r, m * v)
-
-
-@pytest.mark.xfail(reason='TODO: implement')
-class TestLeaks:
-    class A:
-        iters = 20
-
-        def bound(self, *args):
-            return 0
-
-        @staticmethod
-        def unbound(*args):
-            return 0
-
-    @pytest.mark.skipif(not HAS_REFCOUNT, reason="Python lacks refcounts")
-    @pytest.mark.parametrize('name, incr', [
-            ('bound', A.iters),
-            ('unbound', 0),
-            ])
-    def test_frompyfunc_leaks(self, name, incr):
-        # exposed in gh-11867 as np.vectorized, but the problem stems from
-        # frompyfunc.
-        # class.attribute = np.frompyfunc(<method>) creates a
-        # reference cycle if <method> is a bound class method. It requires a
-        # gc collection cycle to break the cycle (on CPython 3)
-        import gc
-        A_func = getattr(self.A, name)
-        gc.disable()
-        try:
-            refcount = sys.getrefcount(A_func)
-            for i in range(self.A.iters):
-                a = self.A()
-                a.f = np.frompyfunc(getattr(a, name), 1, 1)
-                out = a.f(np.arange(10))
-            a = None
-            # A.func is part of a reference cycle if incr is non-zero
-            assert_equal(sys.getrefcount(A_func), refcount + incr)
-            for i in range(5):
-                gc.collect()
-            assert_equal(sys.getrefcount(A_func), refcount)
-        finally:
-            gc.enable()
 
 
 @pytest.mark.xfail(reason='TODO: implement')
@@ -3696,31 +3539,6 @@ class TestMedian:
         assert_almost_equal(np.median(x2), 2)
         assert_allclose(np.median(x2, axis=0), x)
 
-    def test_subclass(self):
-        # gh-3846
-        class MySubClass(np.ndarray):
-
-            def __new__(cls, input_array, info=None):
-                obj = np.asarray(input_array).view(cls)
-                obj.info = info
-                return obj
-
-            def mean(self, axis=None, dtype=None, out=None):
-                return -7
-
-        a = MySubClass([1, 2, 3])
-        assert_equal(np.median(a), -7)
-
-    @pytest.mark.parametrize('arr',
-                             ([1., 2., 3.], [1., np.nan, 3.], np.nan, 0.))
-    def test_subclass2(self, arr):
-        """Check that we return subclasses, even if a NaN scalar."""
-        class MySubclass(np.ndarray):
-            pass
-
-        m = np.median(np.array(arr).view(MySubclass))
-        assert isinstance(m, MySubclass)
-
     def test_out(self):
         o = np.zeros((4,))
         d = np.ones((3, 4))
@@ -3803,12 +3621,6 @@ class TestMedian:
             warnings.filterwarnings('always', '', RuntimeWarning)
             assert_equal(np.median(a, axis=2), b)
             assert_(w[0].category is RuntimeWarning)
-
-    def test_object(self):
-        o = np.arange(7.)
-        assert_(type(np.median(o.astype(object))), float)
-        o[2] = np.nan
-        assert_(type(np.median(o.astype(object))), float)
 
     def test_extended_axis(self):
         o = np.random.normal(size=(71, 23))

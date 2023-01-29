@@ -242,14 +242,6 @@ def cross(a, b, axisa=-1, axisb=-1, axisc=-1, axis=None):
     raise NotImplementedError
 
 
-def cumprod(a, axis=None, dtype=None, out=None):
-    raise NotImplementedError
-
-
-def cumproduct(*args, **kwargs):
-    raise NotImplementedError
-
-
 def cumsum(a, axis=None, dtype=None, out=None):
     raise NotImplementedError
 
