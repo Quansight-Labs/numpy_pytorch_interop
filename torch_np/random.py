@@ -10,12 +10,19 @@ from math import sqrt
 import torch
 
 from . import asarray
-from ._detail._scalar_types import default_float_type as _default_float_type
 from ._detail import _util
+from ._detail._scalar_types import default_float_type as _default_float_type
 
 _default_dtype = _default_float_type.torch_dtype
 
 __all__ = ["seed", "random_sample", "sample", "random", "rand", "randn", "normal"]
+
+
+def array_or_scalar(values, py_type=float):
+    if values.numel() == 1:
+        return py_type(values.item())
+    else:
+        return asarray(values)
 
 
 def seed(seed=None):
@@ -25,11 +32,9 @@ def seed(seed=None):
 
 def random_sample(size=None):
     if size is None:
-        values = torch.rand(())
-        return float(values)
-    else:
-        values = torch.rand(size).to(_default_dtype)
-        return asarray(values)
+        size = ()
+    values = torch.empty(size, dtype=_default_dtype).uniform_()
+    return array_or_scalar(values)
 
 
 def rand(*size):
@@ -42,25 +47,21 @@ random = random_sample
 
 def uniform(low=0.0, high=1.0, size=None):
     if size is None:
-        values = torch.rand(())
-        return float(low + (high - low) * values)
-    else:
-        values = torch.rand(size).to(_default_dtype)
-        return asarray(low + (high - low) * values)
+        size = ()
+    values = torch.empty(size, dtype=_default_dtype).uniform_(low, high)
+    return array_or_scalar(values)
 
 
 def randn(*size):
-    if size == ():
-        return float(torch.randn(size))
-    else:
-        values = torch.randn(*size).to(_default_dtypes)
-        return asarray(values)
+    values = torch.randn(size, dtype=_default_dtype)
+    return array_or_scalar(values)
 
 
 def normal(loc=0.0, scale=1.0, size=None):
     if size is None:
         size = ()
-    return loc + scale * randn(*size).to(_default_dtype)
+    values = torch.empty(size, dtype=_default_dtype).normal_(loc, scale)
+    return array_or_scalar(values)
 
 
 def shuffle(x):
@@ -76,9 +77,9 @@ def randint(low, high=None, size=None):
     if not isinstance(size, (tuple, list)):
         size = (size,)
     if high is None:
-        low, high = 0, high
+        low, high = 0, low
     values = torch.randint(low, high, size=size)
-    return asarray(values)
+    return array_or_scalar(values)
 
 
 def choice(a, size=None, replace=True, p=None):
@@ -106,7 +107,7 @@ def choice(a, size=None, replace=True, p=None):
 
     # cf https://github.com/numpy/numpy/blob/main/numpy/random/mtrand.pyx#L973
     atol = sqrt(torch.finfo(torch.float64).eps)
-    if abs(p_tensor.sum() - 1.) > atol:
+    if abs(p_tensor.sum() - 1.0) > atol:
         raise ValueError("probabilities do not sum to 1.")
 
     # actually sample
