@@ -45,7 +45,8 @@ class ndarray:
 
     @property
     def strides(self):
-        return self._tensor.stride()  # XXX: byte strides
+        elsize = self._tensor.element_size()
+        return tuple(stride * elsize for stride in self._tensor.stride())
 
     @property
     def base(self):
