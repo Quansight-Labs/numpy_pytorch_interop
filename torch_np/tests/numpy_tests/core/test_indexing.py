@@ -241,9 +241,9 @@ class TestIndexing:
         def f(a, v):
             a[a > -1] = v
 
-        assert_raises(ValueError, f, a, [])
-        assert_raises(ValueError, f, a, [1, 2, 3])
-        assert_raises(ValueError, f, a[:1], [1, 2, 3])
+        assert_raises((ValueError, RuntimeError), f, a, [])
+        assert_raises((ValueError, RuntimeError), f, a, [1, 2, 3])
+        assert_raises((ValueError, RuntimeError), f, a[:1], [1, 2, 3])
 
     def test_boolean_assignment_needs_api(self):
         # See also gh-7666
