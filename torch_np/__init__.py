@@ -1,4 +1,5 @@
 from ._wrapper import *  # isort: skip  # XXX: currently this prevents circular imports
+from . import random
 from ._binary_ufuncs import *
 from ._detail._scalar_types import *
 from ._detail._util import AxisError, UFuncTypeError
