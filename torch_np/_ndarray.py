@@ -2,36 +2,11 @@ import functools
 
 import torch
 
-from . import _dtypes, _helpers, _ufunc_impl, _util
+from . import _binary_ufuncs, _dtypes, _helpers, _unary_ufuncs
+from ._decorators import NoValue, axis_keepdims_wrapper, dtype_to_torch, emulate_out_arg
+from ._detail import _reductions, _util
 
-NoValue = None
 newaxis = None
-
-
-def axis_out_keepdims_wrapper(func):
-    """`func` accepts an array-like as a 1st arg, returns a tensor.
-
-    This decorator implements the generic handling of axis, out and keepdims
-    arguments for reduction functions.
-    """
-    # XXX: move this out of _ndarray.py (circular imports)
-    @functools.wraps(func)
-    def wrapped(a, axis=None, out=None, keepdims=NoValue, *args, **kwds):
-        arr = asarray(a)
-        axis = _helpers.standardize_axis_arg(axis, arr.ndim)
-
-        if axis == ():
-            newshape = _util.expand_shape(arr.shape, axis=0)
-            arr = arr.reshape(newshape)
-            axis = (0,)
-
-        result = func(arr, axis=axis, *args, **kwds)
-
-        if keepdims:
-            result = _helpers.apply_keepdims(result, axis, arr.ndim)
-        return _helpers.result_or_out(result, out)
-
-    return wrapped
 
 
 ##################### ndarray class ###########################
@@ -66,7 +41,7 @@ class ndarray:
 
     @property
     def dtype(self):
-        return _dtypes.dtype_from_torch(self._tensor.dtype)
+        return _dtypes.dtype(self._tensor.dtype)
 
     @property
     def strides(self):
@@ -129,31 +104,24 @@ class ndarray:
     ### comparisons ###
     def __eq__(self, other):
         try:
-            return _ufunc_impl.equal(self, asarray(other))
-        except RuntimeError:
+            return _binary_ufuncs.equal(self, other)
+        except (RuntimeError, TypeError):
             # Failed to convert other to array: definitely not equal.
             falsy = torch.full(self.shape, fill_value=False, dtype=bool)
             return asarray(falsy)
 
     def __neq__(self, other):
         try:
-            return _ufunc_impl.not_equal(self, asarray(other))
-        except RuntimeError:
+            return _binary_ufuncs.not_equal(self, other)
+        except (RuntimeError, TypeError):
             # Failed to convert other to array: definitely not equal.
             falsy = torch.full(self.shape, fill_value=True, dtype=bool)
             return asarray(falsy)
 
-    def __gt__(self, other):
-        return _ufunc_impl.greater(self, asarray(other))
-
-    def __lt__(self, other):
-        return _ufunc_impl.less(self, asarray(other))
-
-    def __ge__(self, other):
-        return _ufunc_impl.greater_equal(self, asarray(other))
-
-    def __le__(self, other):
-        return _ufunc_impl.less_equal(self, asarray(other))
+    __gt__ = _binary_ufuncs.greater
+    __lt__ = _binary_ufuncs.less
+    __ge__ = _binary_ufuncs.greater_equal
+    __le__ = _binary_ufuncs.less_equal
 
     def __bool__(self):
         try:
@@ -170,10 +138,6 @@ class ndarray:
                 return int(self._tensor.item())
         mesg = "only integer scalar arrays can be converted to a scalar index"
         raise TypeError(mesg)
-
-    # HACK : otherwise cannot check array.dtype in _dtypes.dict
-    def __hash__(self):
-        return id(self)
 
     def __float__(self):
         return float(self._tensor)
@@ -197,118 +161,71 @@ class ndarray:
     ### arithmetic ###
 
     # add, self + other
-    def __add__(self, other):
-        return _ufunc_impl.add(self, asarray(other))
-
-    def __radd__(self, other):
-        return _ufunc_impl.add(self, asarray(other))
+    __add__ = __radd__ = _binary_ufuncs.add
 
     def __iadd__(self, other):
-        return _ufunc_impl.add(self, asarray(other), out=self)
+        return _binary_ufuncs.add(self, other, out=self)
 
     # sub, self - other
-    def __sub__(self, other):
-        return _ufunc_impl.subtract(self, asarray(other))
-
-    def __rsub__(self, other):
-        return _ufunc_impl.subtract(self, asarray(other))
+    __sub__ = __rsub__ = _binary_ufuncs.subtract
 
     def __isub__(self, other):
-        return _ufunc_impl.subtract(self, asarray(other), out=self)
+        return _binary_ufuncs.subtract(self, other, out=self)
 
     # mul, self * other
-    def __mul__(self, other):
-        return _ufunc_impl.multiply(self, asarray(other))
-
-    def __rmul__(self, other):
-        return _ufunc_impl.multiply(self, asarray(other))
+    __mul__ = __rmul__ = _binary_ufuncs.multiply
 
     def __imul__(self, other):
-        return _ufunc_impl.multiply(self, asarray(other), out=self)
+        return _binary_ufuncs.multiply(self, other, out=self)
 
     # div, self / other
-    def __truediv__(self, other):
-        return _ufunc_impl.divide(self, asarray(other))
-
-    def __rtruediv__(self, other):
-        return _ufunc_impl.divide(self, asarray(other))
+    __truediv__ = __rtruediv__ = _binary_ufuncs.divide
 
     def __itruediv__(self, other):
-        return _ufunc_impl.divide(self, asarray(other), out=self)
+        return _binary_ufuncs.divide(self, other, out=self)
 
     # floordiv, self // other
-    def __floordiv__(self, other):
-        return _ufunc_impl.floor_divide(self, asarray(other))
-
-    def __rfloordiv__(self, other):
-        return _ufunc_impl.floor_divide(self, asarray(other))
+    __floordiv__ = __rfloordiv__ = _binary_ufuncs.floor_divide
 
     def __ifloordiv__(self, other):
-        return _ufunc_impl.floor_divide(self, asarray(other), out=self)
+        return _binary_ufuncs.floor_divide(self, other, out=self)
 
     # power, self**exponent
-    def __pow__(self, exponent):
-        return _ufunc_impl.float_power(self, asarray(exponent))
-
-    def __rpow__(self, exponent):
-        return _ufunc_impl.float_power(self, asarray(exponent))
+    __pow__ = __rpow__ = _binary_ufuncs.float_power
 
     def __ipow__(self, exponent):
-        return _ufunc_impl.float_power(self, asarray(exponent), out=self)
+        return _binary_ufuncs.float_power(self, exponent, out=self)
 
     # remainder, self % other
-    def __mod__(self, other):
-        return _ufunc_impl.remainder(self, asarray(other))
-
-    def __rmod__(self, other):
-        return _ufunc_impl.remainder(self, asarray(other))
+    __mod__ = __rmod__ = _binary_ufuncs.remainder
 
     def __imod__(self, other):
-        return _ufunc_impl.remainder(self, asarray(other), out=self)
+        return _binary_ufuncs.remainder(self, other, out=self)
 
     # bitwise ops
     # and, self & other
-    def __and__(self, other):
-        return _ufunc_impl.bitwise_and(self, asarray(other))
-
-    def __rand__(self, other):
-        return _ufunc_impl.bitwise_and(self, asarray(other))
+    __and__ = __rand__ = _binary_ufuncs.bitwise_and
 
     def __iand__(self, other):
-        return _ufunc_impl.bitwise_and(self, asarray(other), out=self)
+        return _binary_ufuncs.bitwise_and(self, other, out=self)
 
     # or, self | other
-    def __or__(self, other):
-        return _ufunc_impl.bitwise_or(self, asarray(other))
-
-    def __ror__(self, other):
-        return _ufunc_impl.bitwise_or(self, asarray(other))
+    __or__ = __ror__ = _binary_ufuncs.bitwise_or
 
     def __ior__(self, other):
-        return _ufunc_impl.bitwise_or(self, asarray(other), out=self)
+        return _binary_ufuncs.bitwise_or(self, other, out=self)
 
     # xor, self ^ other
-    def __xor__(self, other):
-        return _ufunc_impl.bitwise_xor(self, asarray(other))
-
-    def __rxor__(self, other):
-        return _ufunc_impl.bitwise_xor(self, asarray(other))
+    __xor__ = __rxor__ = _binary_ufuncs.bitwise_xor
 
     def __ixor__(self, other):
-        return _ufunc_impl.bitwise_xor(self, asarray(other), out=self)
+        return _binary_ufuncs.bitwise_xor(self, other, out=self)
 
     # unary ops
-    def __invert__(self):
-        return _ufunc_impl.invert(self)
-
-    def __abs__(self):
-        return _ufunc_impl.absolute(self)
-
-    def __pos__(self):
-        return _ufunc_impl.positive(self)
-
-    def __neg__(self):
-        return _ufunc_impl.negative(self)
+    __invert__ = _unary_ufuncs.invert
+    __abs__ = _unary_ufuncs.absolute
+    __pos__ = _unary_ufuncs.positive
+    __neg__ = _unary_ufuncs.negative
 
     ### methods to match namespace functions
 
@@ -320,18 +237,6 @@ class ndarray:
         else:
             tensor = self._tensor.squeeze(axis)
         return ndarray._from_tensor_and_base(tensor, self)
-
-    @axis_out_keepdims_wrapper
-    def argmax(self, axis=None, out=None, *, keepdims=NoValue):
-        axis = _helpers.allow_only_single_axis(axis)
-        tensor = torch.argmax(self._tensor, axis)
-        return tensor
-
-    @axis_out_keepdims_wrapper
-    def argmin(self, axis=None, out=None, *, keepdims=NoValue):
-        axis = _helpers.allow_only_single_axis(axis)
-        tensor = torch.argmin(self._tensor, axis)
-        return tensor
 
     def reshape(self, *shape, order="C"):
         newshape = shape[0] if len(shape) == 1 else shape
@@ -361,158 +266,23 @@ class ndarray:
         tensor = self._tensor
         return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
 
-    @axis_out_keepdims_wrapper
-    def any(self, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-        if where is not None:
-            raise NotImplementedError
+    argmin = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmin))
+    argmax = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmax))
 
-        axis = _helpers.allow_only_single_axis(axis)
+    any = emulate_out_arg(axis_keepdims_wrapper(_reductions.any))
+    all = emulate_out_arg(axis_keepdims_wrapper(_reductions.all))
+    max = emulate_out_arg(axis_keepdims_wrapper(_reductions.max))
+    min = emulate_out_arg(axis_keepdims_wrapper(_reductions.min))
 
-        if axis is None:
-            result = self._tensor.any()
-        else:
-            result = self._tensor.any(axis)
-        return result
-
-    @axis_out_keepdims_wrapper
-    def all(self, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-        if where is not None:
-            raise NotImplementedError
-
-        axis = _helpers.allow_only_single_axis(axis)
-
-        if axis is None:
-            result = self._tensor.all()
-        else:
-            result = self._tensor.all(axis)
-        return result
-
-    @axis_out_keepdims_wrapper
-    def max(
-        self, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue
-    ):
-        if where is not None:
-            raise NotImplementedError
-        if initial is not None:
-            raise NotImplementedError
-
-        result = self._tensor.amax(axis)
-        return result
-
-    @axis_out_keepdims_wrapper
-    def min(
-        self, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue
-    ):
-        if where is not None:
-            raise NotImplementedError
-        if initial is not None:
-            raise NotImplementedError
-
-        result = self._tensor.amin(axis)
-        return result
-
-    @axis_out_keepdims_wrapper
-    def mean(self, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
-        if where is not None:
-            raise NotImplementedError
-
-        torch_dtype = _helpers.float_or_default(dtype, self.dtype, enforce_float=True)
-        if axis is None:
-            result = self._tensor.mean(dtype=torch_dtype)
-        else:
-            result = self._tensor.mean(dtype=torch_dtype, dim=axis)
-
-        return result
-
-    @axis_out_keepdims_wrapper
-    def sum(
-        self,
-        axis=None,
-        dtype=None,
-        out=None,
-        keepdims=NoValue,
-        initial=NoValue,
-        where=NoValue,
-    ):
-        if initial is not None or where is not None:
-            raise NotImplementedError
-
-        torch_dtype = _helpers.float_or_default(dtype, self.dtype)
-        if axis is None:
-            result = self._tensor.sum(dtype=torch_dtype)
-        else:
-            result = self._tensor.sum(dtype=torch_dtype, dim=axis)
-
-        return result
-
-    @axis_out_keepdims_wrapper
-    def prod(
-        self,
-        axis=None,
-        dtype=None,
-        out=None,
-        keepdims=NoValue,
-        initial=NoValue,
-        where=NoValue,
-    ):
-        if initial is not None or where is not None:
-            raise NotImplementedError
-
-        axis = _helpers.allow_only_single_axis(axis)
-
-        torch_dtype = _helpers.float_or_default(dtype, self.dtype)
-        if axis is None:
-            result = self._tensor.prod(dtype=torch_dtype)
-        else:
-            result = self._tensor.prod(dtype=torch_dtype, dim=axis)
-
-        return result
-
-    @axis_out_keepdims_wrapper
-    def std(
-        self,
-        axis=None,
-        dtype=None,
-        out=None,
-        ddof=0,
-        keepdims=NoValue,
-        *,
-        where=NoValue
-    ):
-        if where is not None:
-            raise NotImplementedError
-
-        torch_dtype = _helpers.float_or_default(dtype, self.dtype, enforce_float=True)
-        tensor = self._tensor.to(torch_dtype)
-
-        result = tensor.std(dim=axis, correction=ddof)
-
-        return result
-
-    @axis_out_keepdims_wrapper
-    def var(
-        self,
-        axis=None,
-        dtype=None,
-        out=None,
-        ddof=0,
-        keepdims=NoValue,
-        *,
-        where=NoValue
-    ):
-        if where is not None:
-            raise NotImplementedError
-
-        torch_dtype = _helpers.float_or_default(dtype, self.dtype, enforce_float=True)
-        tensor = self._tensor.to(torch_dtype)
-
-        result = tensor.var(dim=axis, correction=ddof)
-
-        return result
+    sum = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.sum)))
+    prod = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.prod)))
+    mean = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.mean)))
+    var = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.var)))
+    std = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.std)))
 
     ### indexing ###
     def __getitem__(self, *args, **kwds):
-        t_args = _helpers.to_tensors(*args)
+        t_args = _helpers.ndarrays_to_tensors(*args)
         return ndarray._from_tensor_and_base(
             self._tensor.__getitem__(*t_args, **kwds), self
         )
@@ -526,69 +296,39 @@ class ndarray:
 # The rest goes through asarray (preferred) or array.
 
 
-def array(object, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=None):
+def array(obj, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=None):
     _util.subok_not_ok(like, subok)
     if order != "K":
         raise NotImplementedError
 
     # a happy path
-    if isinstance(object, ndarray):
-        if copy is False and dtype is None and ndmin <= object.ndim:
-            return object
+    if isinstance(obj, ndarray):
+        if copy is False and dtype is None and ndmin <= obj.ndim:
+            return obj
 
     # lists of ndarrays: [1, [2, 3], ndarray(4)] convert to lists of lists
-    if isinstance(object, (list, tuple)):
+    if isinstance(obj, (list, tuple)):
         a1 = []
-        for elem in object:
+        for elem in obj:
             if isinstance(elem, ndarray):
                 a1.append(elem.get().tolist())
             else:
                 a1.append(elem)
-        object = a1
+        obj = a1
 
-    # get the tensor from "object"
-    if isinstance(object, ndarray):
-        tensor = object._tensor
-        base = object
-    elif isinstance(object, torch.Tensor):
-        tensor = object
-        base = None
-    else:
-        tensor = torch.as_tensor(object)
-        base = None
+    # is obj an ndarray already?
+    base = None
+    if isinstance(obj, ndarray):
+        obj = obj._tensor
+        base = obj
 
-        # At this point, `tensor.dtype` is the pytorch default. Our default may
-        # differ, so need to typecast. However, we cannot just do `tensor.to`,
-        # because if our desired dtype is wider then pytorch's, `tensor`
-        # may have lost precision:
-
-        # int(torch.as_tensor(1e12)) - 1e12 equals -4096 (try it!)
-
-        # Therefore, we treat `tensor.dtype` as a hint, and convert the
-        # original object *again*, this time with an explicit dtype.
-        dtyp = _dtypes.dtype_from_torch(tensor.dtype)
-        default = _dtypes.get_default_dtype_for(dtyp)
-        torch_dtype = _dtypes.torch_dtype_from(default)
-
-        tensor = torch.as_tensor(object, dtype=torch_dtype)
-
-    # type cast if requested
+    # is a specific dtype requrested?
+    torch_dtype = None
     if dtype is not None:
         torch_dtype = _dtypes.torch_dtype_from(dtype)
-        tensor = tensor.to(torch_dtype)
         base = None
 
-    # adjust ndim if needed
-    ndim_extra = ndmin - tensor.ndim
-    if ndim_extra > 0:
-        tensor = tensor.view((1,) * ndim_extra + tensor.shape)
-        base = None
-
-    # copy if requested
-    if copy:
-        tensor = tensor.clone()
-        base = None
-
+    tensor = _util._coerce_to_tensor(obj, torch_dtype, copy, ndmin)
     return ndarray._from_tensor_and_base(tensor, base)
 
 
@@ -621,13 +361,15 @@ class asarray_replacer:
 
 
 def can_cast(from_, to, casting="safe"):
+    # XXX: merge with _dtypes.can_cast. The Q is who converts from ndarray, if needed.
     from_dtype = from_.dtype if isinstance(from_, ndarray) else _dtypes.dtype(from_)
     to_dtype = to.dtype if isinstance(to, ndarray) else _dtypes.dtype(to)
 
-    return _dtypes._can_cast_dict[casting][from_dtype.name][to_dtype.name]
+    return _dtypes.can_cast(from_dtype, to_dtype, casting)
 
 
 def result_type(*arrays_and_dtypes):
+    # XXX: clean up
     dtypes = []
 
     from ._dtypes import issubclass_
@@ -635,7 +377,7 @@ def result_type(*arrays_and_dtypes):
     for entry in arrays_and_dtypes:
         if issubclass_(entry, _dtypes._scalar_types.generic):
             dtypes.append(_dtypes.dtype(entry))
-        elif isinstance(entry, _dtypes.dtype):
+        elif isinstance(entry, _dtypes.DType):
             dtypes.append(entry)
         else:
             dtypes.append(asarray(entry).dtype)
@@ -645,7 +387,7 @@ def result_type(*arrays_and_dtypes):
         return dtyp
 
     for curr in dtypes[1:]:
-        name = _dtypes._result_type_dict[dtyp.name][curr.name]
+        name = _dtypes._result_type_dict[dtyp.type.torch_dtype][curr.type.torch_dtype]
         dtyp = _dtypes.dtype(name)
 
     return dtyp

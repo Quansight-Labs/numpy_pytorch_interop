@@ -1,12 +1,11 @@
-import operator
-
 import torch
 
-from . import _dtypes, _util
-from ._ndarray import asarray, can_cast, ndarray
+from . import _dtypes
+from ._detail import _util
+from ._ndarray import asarray, ndarray
 
 
-def cast_and_broadcast(arrays, out, casting):
+def cast_and_broadcast(tensors, out, casting):
     """Cast dtypes of arrays to out.dtype and broadcast if needed.
 
     Parameters
@@ -29,69 +28,25 @@ def cast_and_broadcast(arrays, out, casting):
 
     """
     if out is None:
-        return tuple(arr.get() for arr in arrays)
+        return tensors
     else:
         if not isinstance(out, ndarray):
             raise TypeError("Return arrays must be of ArrayType")
 
-        tensors = []
-        for arr in arrays:
-            # check dtypes of x and out
-            if not can_cast(arr.dtype, out.dtype, casting=casting):
-                raise TypeError(
-                    f"Cannot cast array data from {arr.dtype} to"
-                    " {out_dtype} according to the rule '{casting}'"
-                )
-            tensor = arr.get()
-
-            # `out` broadcasts `arr`
-            if arr.shape != out.shape:
-                tensor = torch.broadcast_to(tensor, out.shape)
-
-            # cast arr if needed
-            if arr.dtype != out.dtype:
-                tensor = tensor.to(_dtypes.torch_dtype_from(out.dtype))
-
-            tensors.append(tensor)
+        tensors = _util.cast_and_broadcast(
+            tensors, out.dtype.type.torch_dtype, out.shape, casting
+        )
 
     return tuple(tensors)
-
-
-def cast_dont_broadcast(arrays, out_dtype, casting):
-    """Dtype-cast arrays to dtype."""
-    # check if we can dtype-cast all arguments
-    tensors = []
-    for arr in arrays:
-        if not can_cast(arr.dtype, out_dtype, casting=casting):
-            raise TypeError(
-                f"Cannot cast array data from {arr.dtype} to"
-                " {out_dtype} according to the rule '{casting}'"
-            )
-        tensor = arr.get()
-
-        # cast arr if needed
-        if arr.dtype != out_dtype:
-            tensor = tensor.to(_dtypes.torch_dtype_from(out_dtype))
-
-        tensors.append(tensor)
-
-    return tuple(tensors)
-
-
-def axis_none_ravel(*arrays, axis=None):
-    """Ravel the arrays if axis is none."""
-    if axis is None:
-        arrays = tuple(ar.ravel() for ar in arrays)
-        return arrays, 0
-    else:
-        return arrays, axis
 
 
 def result_or_out(result_tensor, out_array=None):
     """A helper for returns with out= argument."""
     if out_array is not None:
+        if not isinstance(out_array, ndarray):
+            raise TypeError("Return arrays must be of ArrayType")
         if result_tensor.shape != out_array.shape:
-            raise ValueError
+            raise ValueError("Bad size of the out array.")
         out_tensor = out_array.get()
         out_tensor.copy_(result_tensor)
         return out_array
@@ -99,51 +54,13 @@ def result_or_out(result_tensor, out_array=None):
         return asarray(result_tensor)
 
 
-def apply_keepdims(tensor, axis, ndim):
-    if axis is None:
-        # tensor was a scalar
-        tensor = torch.full((1,) * ndim, fill_value=tensor)
-    else:
-        shape = _util.expand_shape(tensor.shape, axis)
-        tensor = tensor.reshape(shape)
-    return tensor
-
-
-def standardize_axis_arg(axis, ndim):
-    """Return axis as either None or a tuple of normalized axes."""
-    if isinstance(axis, ndarray):
-        axis = operator.index(axis)
-
-    if axis is not None:
-        if not isinstance(axis, (list, tuple)):
-            axis = (axis,)
-        axis = _util.normalize_axis_tuple(axis, ndim)
-    return axis
-
-
-def allow_only_single_axis(axis):
-    if axis is None:
-        return axis
-    if len(axis) != 1:
-        raise NotImplementedError("does not handle tuple axis")
-    return axis[0]
-
-
-def to_tensors(*inputs):
-    """Convert all ndarrays from `inputs` to tensors."""
+def ndarrays_to_tensors(*inputs):
+    """Convert all ndarrays from `inputs` to tensors. (other things are intact)"""
     return tuple(
         [value.get() if isinstance(value, ndarray) else value for value in inputs]
     )
 
 
-def float_or_default(dtype, self_dtype, enforce_float=False):
-    """dtype helper for reductions."""
-    if dtype is None:
-        dtype = self_dtype
-    if dtype == _dtypes.dtype("bool"):
-        dtype = _dtypes.default_int_type()
-    if enforce_float:
-        if _dtypes.is_integer(dtype):
-            dtype = _dtypes.default_float_type()
-    torch_dtype = _dtypes.torch_dtype_from(dtype)
-    return torch_dtype
+def to_tensors(*inputs):
+    """Convert all array_likes from `inputs` to tensors."""
+    return tuple(asarray(value).get() for value in inputs)

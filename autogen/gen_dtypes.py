@@ -28,6 +28,10 @@ dt_names = [
     "bool",
 ]
 
+
+tmap = {dt: torch.as_tensor(np.ones(1, dtype=dt)).dtype for dt in dt_names}
+
+
 templ = """\
 {name} = dtype("{name}")
 """
@@ -55,8 +59,8 @@ def generate_can_cast(casting):
         dct_dtyp1 = {}
         for dtyp2 in dt_names:
             can_cast = np.can_cast(np.dtype(dtyp1), np.dtype(dtyp2), casting=casting)
-            dct_dtyp1[dtyp2] = can_cast
-        dct[dtyp1] = dct_dtyp1
+            dct_dtyp1[tmap[dtyp2]] = can_cast
+        dct[tmap[dtyp1]] = dct_dtyp1
     return dct
 
 
@@ -67,8 +71,8 @@ def generate_result_type():
         dct_dtyp1 = {}
         for dtyp2 in dt_names:
             result_type = np.result_type(np.dtype(dtyp1), np.dtype(dtyp2))
-            dct_dtyp1[dtyp2] = result_type.name
-        dct[dtyp1] = dct_dtyp1
+            dct_dtyp1[tmap[dtyp2]] = tmap[result_type.name]
+        dct[tmap[dtyp1]] = dct_dtyp1
     return dct
 
 

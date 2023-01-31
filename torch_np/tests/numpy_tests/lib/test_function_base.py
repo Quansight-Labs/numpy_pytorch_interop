@@ -33,7 +33,7 @@ from numpy.lib import (
     i0, insert, interp, kaiser, meshgrid, msort, piecewise, place, rot90,
     select, setxor1d, sinc, trapz, trim_zeros, unwrap, unique, vectorize
     )
-from torch_np._util import normalize_axis_tuple
+from torch_np._detail._util import normalize_axis_tuple
 
 
 def get_mat(n):

@@ -1,9 +1,5 @@
-import functools
-
-import torch
-
-from . import _dtypes, _helpers, _ufunc_impl, _util
-from ._ndarray import asarray
+from ._decorators import deco_unary_ufunc_from_impl
+from ._detail import _ufunc_impl
 
 __all__ = [
     "abs",
@@ -14,7 +10,6 @@ __all__ = [
     "arcsinh",
     "arctan",
     "arctanh",
-    "asarray",
     "cbrt",
     "ceil",
     "conj",
@@ -53,15 +48,6 @@ __all__ = [
     "trunc",
     "invert",
 ]
-
-
-def deco_unary_ufunc_from_impl(impl_func):
-    @functools.wraps(impl_func)
-    def wrapped(x1, *args, **kwds):
-        x1_array = asarray(x1)
-        return impl_func(x1_array, *args, **kwds)
-
-    return wrapped
 
 
 absolute = deco_unary_ufunc_from_impl(_ufunc_impl.absolute)
