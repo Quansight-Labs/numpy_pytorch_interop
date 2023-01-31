@@ -13,25 +13,28 @@ class dtype:
     def __init__(self, name):
         self._name = name
 
-dt_names = ['float16', 'float32', 'float64',
-         'complex64', 'complex128',
-         'uint8',
-         'int8',
-         'int16',
-         'int32',
-         'int64',
-         'bool']
+
+dt_names = [
+    "float16",
+    "float32",
+    "float64",
+    "complex64",
+    "complex128",
+    "uint8",
+    "int8",
+    "int16",
+    "int32",
+    "int64",
+    "bool",
+]
 
 
 tmap = {dt: torch.as_tensor(np.ones(1, dtype=dt)).dtype for dt in dt_names}
 
 
-
 templ = """\
 {name} = dtype("{name}")
 """
-
-
 
 
 ############### Output the dtypes #############
@@ -41,13 +44,12 @@ src = "".join(src_lines)
 print(src)
 
 
-
 ############### Output the casting dict ############3
 
-_casting_modes = ['no', 'equiv', 'safe', 'same_kind',  'unsafe']
+_casting_modes = ["no", "equiv", "safe", "same_kind", "unsafe"]
 
-# The structure is 
-#_can_cast_dict["safe"]["dtyp1"]["dtyp2"]
+# The structure is
+# _can_cast_dict["safe"]["dtyp1"]["dtyp2"]
 
 
 def generate_can_cast(casting):
@@ -56,8 +58,7 @@ def generate_can_cast(casting):
     for dtyp1 in dt_names:
         dct_dtyp1 = {}
         for dtyp2 in dt_names:
-            can_cast = np.can_cast(np.dtype(dtyp1), np.dtype(dtyp2),
-                                            casting=casting)
+            can_cast = np.can_cast(np.dtype(dtyp1), np.dtype(dtyp2), casting=casting)
             dct_dtyp1[tmap[dtyp2]] = can_cast
         dct[tmap[dtyp1]] = dct_dtyp1
     return dct
@@ -76,8 +77,8 @@ def generate_result_type():
 
 
 # pprint compact=True doesn't quite work :-)
-#import pprint
-#pprint.pprint(_can_cast_dict['no']['int32'], compact=True, width=100)
+# import pprint
+# pprint.pprint(_can_cast_dict['no']['int32'], compact=True, width=100)
 
 
 preamble = f"""
@@ -94,4 +95,3 @@ for casting in _casting_modes:
 print("_can_cast_dict = ", _can_cast_dict)
 print("\n")
 print("_result_type_dict = ", generate_result_type())
-

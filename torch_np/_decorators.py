@@ -3,8 +3,7 @@ import operator
 
 import torch
 
-from . import _dtypes
-from . import _helpers
+from . import _dtypes, _helpers
 from ._detail import _util
 
 NoValue = None
@@ -18,6 +17,7 @@ def dtype_to_torch(func):
             dtype = _dtypes.dtype(dtype)
             torch_dtype = dtype._scalar_type.torch_dtype
         return func(*args, dtype=torch_dtype, **kwds)
+
     return wrapped
 
 
@@ -26,6 +26,7 @@ def emulate_out_arg(func):
 
     With this decorator, the inner function just does not see the out array.
     """
+
     @functools.wraps(func)
     def wrapped(*args, out=None, **kwds):
         result_tensor = func(*args, **kwds)
@@ -41,10 +42,11 @@ def out_shape_dtype(func):
     extract the shape and dtype of the tensor which backs the `out` array
     and pass these through.
     """
+
     @functools.wraps(func)
     def wrapped(*args, out=None, **kwds):
         if out is not None:
-            kwds.update({'out_shape_dtype': (out.get().dtype, out.get().shape)})
+            kwds.update({"out_shape_dtype": (out.get().dtype, out.get().shape)})
         result_tensor = func(*args, **kwds)
         return _helpers.result_or_out(result_tensor, out)
 
@@ -57,9 +59,11 @@ def deco_unary_ufunc_from_impl(impl_func):
     @out_shape_dtype
     def wrapped(x1, *args, **kwds):
         from ._ndarray import asarray
+
         x1_tensor = asarray(x1).get()
         result = impl_func((x1_tensor,), *args, **kwds)
         return result
+
     return wrapped
 
 
@@ -71,11 +75,12 @@ def deco_binary_ufunc_from_impl(impl_func):
     @out_shape_dtype
     def wrapped(x1, x2, *args, **kwds):
         from ._ndarray import asarray
+
         x1_tensor = asarray(x1).get()
         x2_tensor = asarray(x2).get()
         return impl_func((x1_tensor, x2_tensor), *args, **kwds)
-    return wrapped
 
+    return wrapped
 
 
 def axis_keepdims_wrapper(func):
@@ -94,7 +99,8 @@ def axis_keepdims_wrapper(func):
     #       2. sort out function signatures: how they flow through all decorators etc
     @functools.wraps(func)
     def wrapped(a, axis=None, keepdims=NoValue, *args, **kwds):
-        from ._ndarray import ndarray, asarray
+        from ._ndarray import asarray, ndarray
+
         tensor = asarray(a).get()
 
         # standardize the axis argument

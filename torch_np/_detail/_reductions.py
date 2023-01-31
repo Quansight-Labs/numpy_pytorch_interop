@@ -5,8 +5,8 @@ Anything here only deals with torch objects, e.g. "dtype" is a torch.dtype insta
 """
 
 import torch
-from . import _util
-from . import _scalar_types
+
+from . import _scalar_types, _util
 
 NoValue = None
 
@@ -39,6 +39,7 @@ def argmax(tensor, axis=None):
     axis = _util.allow_only_single_axis(axis)
     tensor = torch.argmax(tensor, axis)
     return tensor
+
 
 def argmin(tensor, axis=None):
     axis = _util.allow_only_single_axis(axis)
@@ -160,4 +161,3 @@ def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
     result = tensor.var(dim=axis, correction=ddof)
 
     return result
-

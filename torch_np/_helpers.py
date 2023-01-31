@@ -1,10 +1,8 @@
-import operator
-
 import torch
-from . import _dtypes
-from ._ndarray import ndarray, asarray
 
+from . import _dtypes
 from ._detail import _util
+from ._ndarray import asarray, ndarray
 
 
 def cast_and_broadcast(tensors, out, casting):
@@ -35,7 +33,9 @@ def cast_and_broadcast(tensors, out, casting):
         if not isinstance(out, ndarray):
             raise TypeError("Return arrays must be of ArrayType")
 
-        tensors = _util.cast_and_broadcast(tensors, out.dtype.type.torch_dtype, out.shape, casting)
+        tensors = _util.cast_and_broadcast(
+            tensors, out.dtype.type.torch_dtype, out.shape, casting
+        )
 
     return tuple(tensors)
 
@@ -55,14 +55,12 @@ def result_or_out(result_tensor, out_array=None):
 
 
 def ndarrays_to_tensors(*inputs):
-    """Convert all ndarrays from `inputs` to tensors. (other things are intact)
-    """
-    return tuple([value.get() if isinstance(value, ndarray) else value
-            for value in inputs])
+    """Convert all ndarrays from `inputs` to tensors. (other things are intact)"""
+    return tuple(
+        [value.get() if isinstance(value, ndarray) else value for value in inputs]
+    )
 
 
 def to_tensors(*inputs):
-    """Convert all array_likes from `inputs` to tensors.
-    """
+    """Convert all array_likes from `inputs` to tensors."""
     return tuple(asarray(value).get() for value in inputs)
-

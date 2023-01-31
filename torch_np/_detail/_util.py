@@ -7,6 +7,7 @@ import torch
 
 from . import _scalar_types
 
+
 # https://github.com/numpy/numpy/blob/v1.23.0/numpy/distutils/misc_util.py#L497-L504
 def is_sequence(seq):
     if isinstance(seq, str):
@@ -110,7 +111,7 @@ def expand_shape(arr_shape, axis):
 def apply_keepdims(tensor, axis, ndim):
     if axis is None:
         # tensor was a scalar
-        tensor = torch.full((1,)*ndim, fill_value=tensor, dtype=tensor.dtype)
+        tensor = torch.full((1,) * ndim, fill_value=tensor, dtype=tensor.dtype)
     else:
         shape = expand_shape(tensor.shape, axis)
         tensor = tensor.reshape(shape)
@@ -133,7 +134,7 @@ def cast_dont_broadcast(tensors, target_dtype, casting):
     Parameters
     ----------
     tensors : iterable
-	    tuple or list of torch.Tensors to typecast
+            tuple or list of torch.Tensors to typecast
     target_dtype : torch dtype object, optional
         The array dtype to cast all tensors to
     casting : str
@@ -150,8 +151,10 @@ def cast_dont_broadcast(tensors, target_dtype, casting):
 
     for tensor in tensors:
         if not can_cast(tensor.dtype, target_dtype, casting=casting):
-            raise TypeError(f"Cannot cast array data from {tensor.dtype} to"
-                            f" {target_dtype} according to the rule '{casting}'")
+            raise TypeError(
+                f"Cannot cast array data from {tensor.dtype} to"
+                f" {target_dtype} according to the rule '{casting}'"
+            )
 
         # cast if needed
         if tensor.dtype != target_dtype:
@@ -166,7 +169,7 @@ def cast_and_broadcast(tensors, out_param, casting):
     Parameters
     ----------
     tensors : iterable
-	tuple or list of torch.Tensors to broadcast/typecast
+        tuple or list of torch.Tensors to broadcast/typecast
     target_dtype : a torch.dtype object
         The torch dtype to cast all tensors to
     target_shape : tuple
@@ -190,8 +193,10 @@ def cast_and_broadcast(tensors, out_param, casting):
     for tensor in tensors:
         # check dtypes of x and out
         if not can_cast(tensor.dtype, target_dtype, casting=casting):
-            raise TypeError(f"Cannot cast array data from {tensor.dtype} to"
-                            f" {target_dtype} according to the rule '{casting}'")
+            raise TypeError(
+                f"Cannot cast array data from {tensor.dtype} to"
+                f" {target_dtype} according to the rule '{casting}'"
+            )
 
         # cast arr if needed
         if tensor.dtype != target_dtype:
@@ -265,7 +270,9 @@ def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
 
         # Therefore, we treat `tensor.dtype` as a hint, and convert the
         # original object *again*, this time with an explicit dtype.
-        sctype = _scalar_types.get_default_type_for(_scalar_types.sctype_from_torch_dtype(tensor.dtype))
+        sctype = _scalar_types.get_default_type_for(
+            _scalar_types.sctype_from_torch_dtype(tensor.dtype)
+        )
         torch_dtype = sctype.torch_dtype
 
         tensor = torch.as_tensor(obj, dtype=torch_dtype)
@@ -277,7 +284,7 @@ def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
     # adjust ndim if needed
     ndim_extra = ndmin - tensor.ndim
     if ndim_extra > 0:
-        tensor = tensor.view((1,)*ndim_extra + tensor.shape)
+        tensor = tensor.view((1,) * ndim_extra + tensor.shape)
 
     # copy if requested
     if copy:

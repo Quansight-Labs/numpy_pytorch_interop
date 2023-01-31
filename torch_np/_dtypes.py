@@ -6,12 +6,12 @@
 #       3. convert from python types: np.ones(3, dtype=float) etc
 
 import builtins
+
 import torch
 
 from ._detail import _scalar_types
 
-
-__all__ = ['dtype', 'DType', 'typecodes', 'issubdtype']
+__all__ = ["dtype", "DType", "typecodes", "issubdtype"]
 
 
 # Define analogs of numpy dtypes supported by pytorch.
@@ -41,7 +41,7 @@ class DType:
         elif isinstance(arg, DType):
             sctype = arg._scalar_type
         # a has a right attribute?
-        elif hasattr(arg, 'dtype'):
+        elif hasattr(arg, "dtype"):
             sctype = arg.dtype._scalar_type
         else:
             sctype = _scalar_types.sctype_from_string(arg)
@@ -92,18 +92,19 @@ class DType:
         self._scalar_type = value
 
 
-typecodes = {'All': 'efdFDBbhil?',
-        'AllFloat': 'efdFD',
-        'AllInteger': 'Bbhil',
-        'Integer': 'bhil',
-        'UnsignedInteger': 'B',
-        'Float': 'efd',
-        'Complex': 'FD',
+typecodes = {
+    "All": "efdFDBbhil?",
+    "AllFloat": "efdFD",
+    "AllInteger": "Bbhil",
+    "Integer": "bhil",
+    "UnsignedInteger": "B",
+    "Float": "efd",
+    "Complex": "FD",
 }
 
 
-
 # ### Defaults and dtype discovery
+
 
 def default_int_type():
     return dtype(_scalar_types.default_int_type)
@@ -157,4 +158,3 @@ def can_cast(from_dtype, to_dtype, casting):
 
 # XXX : used in _ndarray.py/result_type, clean up
 from ._detail._casting_dicts import _result_type_dict
-

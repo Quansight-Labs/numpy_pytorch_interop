@@ -2,21 +2,15 @@ import functools
 
 import torch
 
-from ._detail import _util
-from ._detail import _reductions
-from . import _helpers
-from . import _dtypes
-from . import _unary_ufuncs
-from . import _binary_ufuncs
-
-from ._decorators import emulate_out_arg, axis_keepdims_wrapper, dtype_to_torch
-
-from ._decorators import NoValue
+from . import _binary_ufuncs, _dtypes, _helpers, _unary_ufuncs
+from ._decorators import NoValue, axis_keepdims_wrapper, dtype_to_torch, emulate_out_arg
+from ._detail import _reductions, _util
 
 newaxis = None
 
 
 ##################### ndarray class ###########################
+
 
 class ndarray:
     def __init__(self):
@@ -51,7 +45,7 @@ class ndarray:
 
     @property
     def strides(self):
-        return self._tensor.stride()   # XXX: byte strides
+        return self._tensor.stride()  # XXX: byte strides
 
     @property
     def base(self):
@@ -88,8 +82,8 @@ class ndarray:
         newt._tensor = self._tensor.to(torch_dtype)
         return newt
 
-    def copy(self, order='C'):
-        if order != 'C':
+    def copy(self, order="C"):
+        if order != "C":
             raise NotImplementedError
         tensor = self._tensor.clone()
         return ndarray._from_tensor_and_base(tensor, None)
@@ -99,7 +93,11 @@ class ndarray:
 
     ###  niceties ###
     def __str__(self):
-        return str(self._tensor).replace("tensor", "array_w").replace("dtype=torch.", "dtype=")
+        return (
+            str(self._tensor)
+            .replace("tensor", "array_w")
+            .replace("dtype=torch.", "dtype=")
+        )
 
     __repr__ = __str__
 
@@ -129,8 +127,10 @@ class ndarray:
         try:
             return bool(self._tensor)
         except RuntimeError:
-            raise ValueError("The truth value of an array with more than one "
-                             "element is ambiguous. Use a.any() or a.all()")
+            raise ValueError(
+                "The truth value of an array with more than one "
+                "element is ambiguous. Use a.any() or a.all()"
+            )
 
     def __index__(self):
         if self.size == 1:
@@ -154,7 +154,6 @@ class ndarray:
         else:
             return False
 
-
     ### sequence ###
     def __len__(self):
         return self._tensor.shape[0]
@@ -167,13 +166,11 @@ class ndarray:
     def __iadd__(self, other):
         return _binary_ufuncs.add(self, other, out=self)
 
-
     # sub, self - other
     __sub__ = __rsub__ = _binary_ufuncs.subtract
 
     def __isub__(self, other):
         return _binary_ufuncs.subtract(self, other, out=self)
-
 
     # mul, self * other
     __mul__ = __rmul__ = _binary_ufuncs.multiply
@@ -181,13 +178,11 @@ class ndarray:
     def __imul__(self, other):
         return _binary_ufuncs.multiply(self, other, out=self)
 
-
     # div, self / other
     __truediv__ = __rtruediv__ = _binary_ufuncs.divide
 
     def __itruediv__(self, other):
         return _binary_ufuncs.divide(self, other, out=self)
-
 
     # floordiv, self // other
     __floordiv__ = __rfloordiv__ = _binary_ufuncs.floor_divide
@@ -195,20 +190,17 @@ class ndarray:
     def __ifloordiv__(self, other):
         return _binary_ufuncs.floor_divide(self, other, out=self)
 
-
     # power, self**exponent
     __pow__ = __rpow__ = _binary_ufuncs.float_power
 
     def __ipow__(self, exponent):
         return _binary_ufuncs.float_power(self, exponent, out=self)
 
-
     # remainder, self % other
     __mod__ = __rmod__ = _binary_ufuncs.remainder
 
     def __imod__(self, other):
         return _binary_ufuncs.remainder(self, other, out=self)
-
 
     # bitwise ops
     # and, self & other
@@ -217,20 +209,17 @@ class ndarray:
     def __iand__(self, other):
         return _binary_ufuncs.bitwise_and(self, other, out=self)
 
-
     # or, self | other
     __or__ = __ror__ = _binary_ufuncs.bitwise_or
 
     def __ior__(self, other):
         return _binary_ufuncs.bitwise_or(self, other, out=self)
 
-
     # xor, self ^ other
     __xor__ = __rxor__ = _binary_ufuncs.bitwise_xor
 
     def __ixor__(self, other):
         return _binary_ufuncs.bitwise_xor(self, other, out=self)
-
 
     # unary ops
     __invert__ = _unary_ufuncs.invert
@@ -249,11 +238,10 @@ class ndarray:
             tensor = self._tensor.squeeze(axis)
         return ndarray._from_tensor_and_base(tensor, self)
 
-
-    def reshape(self, *shape, order='C'):
+    def reshape(self, *shape, order="C"):
         newshape = shape[0] if len(shape) == 1 else shape
         # if sh = (1, 2, 3), numpy allows both .reshape(sh) and .reshape(*sh)
-        if order != 'C':
+        if order != "C":
             raise NotImplementedError
         tensor = self._tensor.reshape(newshape)
         return ndarray._from_tensor_and_base(tensor, self)
@@ -269,8 +257,8 @@ class ndarray:
             raise ValueError("axes don't match array")
         return ndarray._from_tensor_and_base(tensor, self)
 
-    def ravel(self, order='C'):
-        if order != 'C':
+    def ravel(self, order="C"):
+        if order != "C":
             raise NotImplementedError
         return ndarray._from_tensor_and_base(self._tensor.ravel(), self)
 
@@ -292,11 +280,12 @@ class ndarray:
     var = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.var)))
     std = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.std)))
 
-
     ### indexing ###
     def __getitem__(self, *args, **kwds):
         t_args = _helpers.ndarrays_to_tensors(*args)
-        return ndarray._from_tensor_and_base(self._tensor.__getitem__(*t_args, **kwds), self)
+        return ndarray._from_tensor_and_base(
+            self._tensor.__getitem__(*t_args, **kwds), self
+        )
 
     def __setitem__(self, index, value):
         value = asarray(value).get()
@@ -306,10 +295,10 @@ class ndarray:
 # This is the ideally the only place which talks to ndarray directly.
 # The rest goes through asarray (preferred) or array.
 
-def array(obj, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
-          like=None):
+
+def array(obj, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=None):
     _util.subok_not_ok(like, subok)
-    if order != 'K':
+    if order != "K":
         raise NotImplementedError
 
     # a happy path
@@ -345,22 +334,24 @@ def array(obj, dtype=None, *, copy=True, order='K', subok=False, ndmin=0,
 
 def asarray(a, dtype=None, order=None, *, like=None):
     if order is None:
-        order = 'K'
+        order = "K"
     return array(a, dtype=dtype, order=order, like=like, copy=False, ndmin=0)
 
 
 class asarray_replacer:
-    def __init__(self, dispatch='one'):
-        if dispatch not in ['one', 'two']:
+    def __init__(self, dispatch="one"):
+        if dispatch not in ["one", "two"]:
             raise ValueError("ararray_replacer: unknown dispatch %s" % dispatch)
         self._dispatch = dispatch
 
     def __call__(self, func):
-        if self._dispatch == 'one':
+        if self._dispatch == "one":
+
             @functools.wraps(func)
             def wrapped(x, *args, **kwds):
                 x_tensor = asarray(x).get()
                 return asarray(func(x_tensor, *args, **kwds))
+
             return wrapped
         else:
             raise ValueError
@@ -368,7 +359,8 @@ class asarray_replacer:
 
 ###### dtype routines
 
-def can_cast(from_, to, casting='safe'):
+
+def can_cast(from_, to, casting="safe"):
     # XXX: merge with _dtypes.can_cast. The Q is who converts from ndarray, if needed.
     from_dtype = from_.dtype if isinstance(from_, ndarray) else _dtypes.dtype(from_)
     to_dtype = to.dtype if isinstance(to, ndarray) else _dtypes.dtype(to)
@@ -399,5 +391,3 @@ def result_type(*arrays_and_dtypes):
         dtyp = _dtypes.dtype(name)
 
     return dtyp
-
-

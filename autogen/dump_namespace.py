@@ -1,5 +1,5 @@
-from collections import defaultdict
 import inspect
+from collections import defaultdict
 
 import numpy as np
 
@@ -19,12 +19,12 @@ def get_signature(obj):
         return obj.__name__ + str(inspect.signature(obj))
     except Exception:
         # builtins don't have it, try the first line of the docstring
-        d = obj.__doc__.split('\n')
+        d = obj.__doc__.split("\n")
         if d[0]:
             return d[0].strip()
         else:
             # empty line, maybe the is lines 2-3 (np.vectorize)
-            return '\n'.join((d[1], d[2])).strip()
+            return "\n".join((d[1], d[2])).strip()
 
 
 def dump_signatures(keys, namespace=None, replace=None):
@@ -49,49 +49,47 @@ def dump_signatures(keys, namespace=None, replace=None):
 
 def dump_difference(namespace):
     import torch_np
+
     dct_wrapper = grab_namespace(torch_np)
-    wrapper_funcs =set([obj.__name__ for obj in dct_wrapper['function']])
+    wrapper_funcs = set([obj.__name__ for obj in dct_wrapper["function"]])
 
     dct_api = grab_namespace(namespace)
-    namespace_funcs = set(obj.__name__ for obj in dct_api['function'])
+    namespace_funcs = set(obj.__name__ for obj in dct_api["function"])
 
     missing_names = namespace_funcs.difference(wrapper_funcs)
 
     for name in sorted(missing_names):
-        print('- [ ]', name)
+        print("- [ ]", name)
 
     breakpoint()
 
     extras = wrapper_funcs.difference(namespace_funcs)
-    print('\n\n')
+    print("\n\n")
     for name in sorted(extras):
-        print('- [ ]', name)
+        print("- [ ]", name)
 
 
 if __name__ == "__main__":
 
-#    dct = grab_namespace(np)
-#    print(dct.keys())
+    #    dct = grab_namespace(np)
+    #    print(dct.keys())
 
-#    for obj in dct['function']:
-#        print( get_signature(obj) )
+    #    for obj in dct['function']:
+    #        print( get_signature(obj) )
 
+    # dump array_api, full_signatures
+    #  from numpy import array_api
 
-# dump array_api, full_signatures
-  #  from numpy import array_api
+    #   keys = ["builtin_function_or_method", "function"]
+    #   replace = {"<no value>": "NoValue"}
 
- #   keys = ["builtin_function_or_method", "function"]
- #   replace = {"<no value>": "NoValue"}
+    #   print(dump_signatures(keys, namespace=array_api, replace=replace))
 
- #   print(dump_signatures(keys, namespace=array_api, replace=replace))
-
-# dump the difference
+    # dump the difference
     from numpy import array_api
 
     dump_difference(array_api)
 
-   # keys = ["builtin_function_or_method", "function"]
-   # replace = {"<no value>": "NoValue"}
-   # print(dump_signatures(keys, namespace=array_api, replace=replace))
-
-
+# keys = ["builtin_function_or_method", "function"]
+# replace = {"<no value>": "NoValue"}
+# print(dump_signatures(keys, namespace=array_api, replace=replace))

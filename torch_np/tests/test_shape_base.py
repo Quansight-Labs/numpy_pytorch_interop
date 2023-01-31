@@ -1,12 +1,22 @@
+import numpy as _np
 import pytest
 from pytest import raises as assert_raises
 
-import numpy as _np
-
 import torch_np as np
-from torch_np import (concatenate, array, atleast_1d, atleast_2d, atleast_3d,
-                      vstack, hstack, dstack, column_stack, stack, expand_dims)
-from torch_np.testing import assert_equal, assert_array_equal
+from torch_np import (
+    array,
+    atleast_1d,
+    atleast_2d,
+    atleast_3d,
+    column_stack,
+    concatenate,
+    dstack,
+    expand_dims,
+    hstack,
+    stack,
+    vstack,
+)
+from torch_np.testing import assert_array_equal, assert_equal
 
 
 class TestAtleast1d:
@@ -41,12 +51,11 @@ class TestAtleast1d:
         assert_array_equal(res, desired)
 
     def test_r1array(self):
-        """ Test to make sure equivalent Travis O's r1array function
-        """
-        assert (atleast_1d(3).shape == (1,))
-        assert (atleast_1d(3j).shape == (1,))
-        assert (atleast_1d(3.0).shape == (1,))
-        assert (atleast_1d([[2, 3], [4, 5]]).shape == (2, 2))
+        """Test to make sure equivalent Travis O's r1array function"""
+        assert atleast_1d(3).shape == (1,)
+        assert atleast_1d(3j).shape == (1,)
+        assert atleast_1d(3.0).shape == (1,)
+        assert atleast_1d([[2, 3], [4, 5]]).shape == (2, 2)
 
 
 class TestAtleast2d:
@@ -81,11 +90,10 @@ class TestAtleast2d:
         assert_array_equal(res, desired)
 
     def test_r2array(self):
-        """ Test to make sure equivalent Travis O's r2array function
-        """
-        assert (atleast_2d(3).shape == (1, 1))
-        assert (atleast_2d([3j, 1]).shape == (1, 2))
-        assert (atleast_2d([[[3, 1], [4, 5]], [[3, 5], [1, 2]]]).shape == (2, 2, 2))
+        """Test to make sure equivalent Travis O's r2array function"""
+        assert atleast_2d(3).shape == (1, 1)
+        assert atleast_2d([3j, 1]).shape == (1, 2)
+        assert atleast_2d([[[3, 1], [4, 5]], [[3, 5], [1, 2]]]).shape == (2, 2, 2)
 
 
 class TestAtleast3d:
@@ -107,7 +115,7 @@ class TestAtleast3d:
         a = array([[1, 2], [1, 2]])
         b = array([[2, 3], [2, 3]])
         res = [atleast_3d(a), atleast_3d(b)]
-        desired = [a[:,:, np.newaxis], b[:,:, np.newaxis]]
+        desired = [a[:, :, np.newaxis], b[:, :, np.newaxis]]
         assert_array_equal(res, desired)
 
     def test_3D_array(self):
@@ -151,9 +159,9 @@ class TestHstack:
     def test_generator(self):
         # numpy 1.24 emits warnings but we don't
         # with assert_warns(FutureWarning):
-            hstack((np.arange(3) for _ in range(2)))
+        hstack((np.arange(3) for _ in range(2)))
         # with assert_warns(FutureWarning):
-            hstack(map(lambda x: x, np.ones((3, 2))))
+        hstack(map(lambda x: x, np.ones((3, 2))))
 
     def test_casting_and_dtype(self):
         a = np.array([1, 2, 3])
@@ -161,7 +169,7 @@ class TestHstack:
         res = np.hstack((a, b), casting="unsafe", dtype=np.int64)
         expected_res = np.array([1, 2, 3, 2, 3, 4])
         assert_array_equal(res, expected_res)
-    
+
     def test_casting_and_dtype_type_error(self):
         a = np.array([1, 2, 3])
         b = np.array([2.5, 3.5, 4.5])
@@ -214,7 +222,7 @@ class TestVstack:
         res = np.vstack((a, b), casting="unsafe", dtype=np.int64)
         expected_res = np.array([[1, 2, 3], [2, 3, 4]])
         assert_array_equal(res, expected_res)
-    
+
     def test_casting_and_dtype_type_error(self):
         a = np.array([1, 2, 3])
         b = np.array([2.5, 3.5, 4.5])
@@ -244,7 +252,17 @@ class TestDstack:
         a = np.array([[1], [2]])
         b = np.array([[1], [2]])
         res = dstack([a, b])
-        desired = np.array([[[1, 1]], [[2, 2, ]]])
+        desired = np.array(
+            [
+                [[1, 1]],
+                [
+                    [
+                        2,
+                        2,
+                    ]
+                ],
+            ]
+        )
         assert_array_equal(res, desired)
 
     def test_2D_array2(self):
@@ -257,7 +275,7 @@ class TestDstack:
     def test_generator(self):
         # numpy 1.24 emits a warning but we don't
         # with assert_warns(FutureWarning):
-            dstack((np.arange(3) for _ in range(2)))
+        dstack((np.arange(3) for _ in range(2)))
 
 
 class TestColumnStack:
@@ -268,9 +286,7 @@ class TestColumnStack:
         # example from docstring
         a = np.array((1, 2, 3))
         b = np.array((2, 3, 4))
-        expected = np.array([[1, 2],
-                             [2, 3],
-                             [3, 4]])
+        expected = np.array([[1, 2], [2, 3], [3, 4]])
         actual = np.column_stack((a, b))
         assert_equal(actual, expected)
 
@@ -278,22 +294,20 @@ class TestColumnStack:
         # same as hstack 2D docstring example
         a = np.array([[1], [2], [3]])
         b = np.array([[2], [3], [4]])
-        expected = np.array([[1, 2],
-                             [2, 3],
-                             [3, 4]])
+        expected = np.array([[1, 2], [2, 3], [3, 4]])
         actual = np.column_stack((a, b))
         assert_equal(actual, expected)
 
     def test_generator(self):
         # numpy 1.24 emits a warning but we don't
         # with assert_warns(FutureWarning):
-            column_stack((np.arange(3) for _ in range(2)))
+        column_stack((np.arange(3) for _ in range(2)))
 
 
 class TestConcatenate:
     def test_out_and_dtype_simple(self):
         # numpy raises TypeError on both out=... and dtype=...
-        a, b, out = np.ones(3), np.ones(4), np.ones(3+4)
+        a, b, out = np.ones(3), np.ones(4), np.ones(3 + 4)
 
         with pytest.raises(TypeError):
             concatenate((a, b), out=out, dtype=float)
@@ -307,7 +321,7 @@ class TestConcatenate:
     def test_exceptions(self):
         # test axis must be in bounds
         for ndim in [1, 2, 3]:
-            a = np.ones((1,)*ndim)
+            a = np.ones((1,) * ndim)
             np.concatenate((a, a), axis=0)  # OK
             assert_raises(np.AxisError, np.concatenate, (a, a), axis=ndim)
             assert_raises(np.AxisError, np.concatenate, (a, a), axis=-(ndim + 1))
@@ -317,13 +331,16 @@ class TestConcatenate:
         assert_raises(ValueError, concatenate, (np.array(0),))
 
         # dimensionality must match
-        assert_raises(ValueError,
-#        assert_raises_regex(
-#            ValueError,
-#            r"all the input arrays must have same number of dimensions, but "
-#            r"the array at index 0 has 1 dimension\(s\) and the array at "
-#            r"index 1 has 2 dimension\(s\)",
-            np.concatenate, (np.zeros(1), np.zeros((1, 1))))
+        assert_raises(
+            ValueError,
+            #        assert_raises_regex(
+            #            ValueError,
+            #            r"all the input arrays must have same number of dimensions, but "
+            #            r"the array at index 0 has 1 dimension\(s\) and the array at "
+            #            r"index 1 has 2 dimension\(s\)",
+            np.concatenate,
+            (np.zeros(1), np.zeros((1, 1))),
+        )
 
         # test shapes must match except for concatenation axis
         a = np.ones((1, 2, 3))
@@ -331,13 +348,17 @@ class TestConcatenate:
         axis = list(range(3))
         for i in range(3):
             np.concatenate((a, b), axis=axis[0])  # OK
-#            assert_raises_regex(
-            assert_raises(ValueError,
-#                "all the input array dimensions except for the concatenation axis "
-#                "must match exactly, but along dimension {}, the array at "
-#                "index 0 has size 1 and the array at index 1 has size 2"
-#                .format(i),
-                np.concatenate, (a, b), axis=axis[1])
+            #            assert_raises_regex(
+            assert_raises(
+                ValueError,
+                #                "all the input array dimensions except for the concatenation axis "
+                #                "must match exactly, but along dimension {}, the array at "
+                #                "index 0 has size 1 and the array at index 1 has size 2"
+                #                .format(i),
+                np.concatenate,
+                (a, b),
+                axis=axis[1],
+            )
             assert_raises(ValueError, np.concatenate, (a, b), axis=axis[2])
             a = np.moveaxis(a, -1, 0)
             b = np.moveaxis(b, -1, 0)
@@ -382,10 +403,10 @@ class TestConcatenate:
 
         # XXX: a single argument; relies on an ndarray being a sequence
         r4 = list(range(4))
-##        assert_array_equal(concatenate((r4,)), r4)
-##        # Any sequence
-##        assert_array_equal(concatenate((tuple(r4),)), r4)
-##        assert_array_equal(concatenate((array(r4),)), r4)
+        ##        assert_array_equal(concatenate((r4,)), r4)
+        ##        # Any sequence
+        ##        assert_array_equal(concatenate((tuple(r4),)), r4)
+        ##        assert_array_equal(concatenate((array(r4),)), r4)
         # 1D default concatenation
         r3 = list(range(3))
         assert_array_equal(concatenate((r4, r3)), r4 + r3)
@@ -426,14 +447,15 @@ class TestConcatenate:
         b = array([3, 4])
 
         assert_raises(ValueError, concatenate, (a, b), out=np.empty(5))
-        assert_raises(ValueError, concatenate, (a, b), out=np.empty((4,1)))
-        assert_raises(ValueError, concatenate, (a, b), out=np.empty((1,4)))
+        assert_raises(ValueError, concatenate, (a, b), out=np.empty((4, 1)))
+        assert_raises(ValueError, concatenate, (a, b), out=np.empty((1, 4)))
         concatenate((a, b), out=np.empty(4))
 
     @pytest.mark.parametrize("axis", [None, 0])
-    @pytest.mark.parametrize("out_dtype", ["c8", "f4", "f8",  "i8"])  # torch does not have ">f8", "S4"
-    @pytest.mark.parametrize("casting",
-            ['no', 'equiv', 'safe', 'same_kind', 'unsafe'])
+    @pytest.mark.parametrize(
+        "out_dtype", ["c8", "f4", "f8", "i8"]
+    )  # torch does not have ">f8", "S4"
+    @pytest.mark.parametrize("casting", ["no", "equiv", "safe", "same_kind", "unsafe"])
     def test_out_and_dtype(self, axis, out_dtype, casting):
         # Compare usage of `out=out` with `dtype=out.dtype`
         out = np.empty(4, dtype=out_dtype)
@@ -443,13 +465,12 @@ class TestConcatenate:
             with assert_raises(TypeError):
                 concatenate(to_concat, out=out, axis=axis, casting=casting)
             with assert_raises(TypeError):
-                concatenate(to_concat, dtype=out.dtype,
-                            axis=axis, casting=casting)
+                concatenate(to_concat, dtype=out.dtype, axis=axis, casting=casting)
         else:
-            res_out = concatenate(to_concat, out=out,
-                                  axis=axis, casting=casting)
-            res_dtype = concatenate(to_concat, dtype=out.dtype,
-                                    axis=axis, casting=casting)
+            res_out = concatenate(to_concat, out=out, axis=axis, casting=casting)
+            res_dtype = concatenate(
+                to_concat, dtype=out.dtype, axis=axis, casting=casting
+            )
             assert res_out is out
             assert_array_equal(out, res_dtype)
             assert res_dtype.dtype == out_dtype
@@ -463,9 +484,11 @@ def test_stack():
     assert_raises(TypeError, stack, 1)
 
     # 0d input
-    for input_ in [(1, 2, 3),
-                   [np.int32(1), np.int32(2), np.int32(3)],
-                   [np.array(1), np.array(2), np.array(3)]]:
+    for input_ in [
+        (1, 2, 3),
+        [np.int32(1), np.int32(2), np.int32(3)],
+        [np.array(1), np.array(2), np.array(3)],
+    ]:
         assert_array_equal(stack(input_), [1, 2, 3])
     # 1d input examples
     a = np.array([1, 2, 3])
@@ -479,7 +502,7 @@ def test_stack():
     assert_array_equal(np.stack(array([a, b])), r1)
 
     # all shapes for 1d input
-    arrays = [np.ones(3)*j for j in range(10)]
+    arrays = [np.ones(3) * j for j in range(10)]
     axes = [0, 1, -1, -2]
     expected_shapes = [(10, 3), (3, 10), (3, 10), (10, 3)]
     for axis, expected_shape in zip(axes, expected_shapes):
@@ -490,10 +513,16 @@ def test_stack():
     assert_raises(IndexError, stack, arrays, axis=-3)
 
     # all shapes for 2d input
-    arrays = [np.ones((3, 4))*j for j in range(10)]
+    arrays = [np.ones((3, 4)) * j for j in range(10)]
     axes = [0, 1, 2, -1, -2, -3]
-    expected_shapes = [(10, 3, 4), (3, 10, 4), (3, 4, 10),
-                       (3, 4, 10), (3, 10, 4), (10, 3, 4)]
+    expected_shapes = [
+        (10, 3, 4),
+        (3, 10, 4),
+        (3, 4, 10),
+        (3, 4, 10),
+        (3, 10, 4),
+        (10, 3, 4),
+    ]
     for axis, expected_shape in zip(axes, expected_shapes):
         assert_equal(np.stack(arrays, axis).shape, expected_shape)
 
@@ -534,9 +563,10 @@ def test_stack():
 
 
 @pytest.mark.parametrize("axis", [0])
-@pytest.mark.parametrize("out_dtype", ["c8", "f4", "f8", "i8"])  # torch does not have ">f8", 
-@pytest.mark.parametrize("casting",
-                         ['no', 'equiv', 'safe', 'same_kind', 'unsafe'])
+@pytest.mark.parametrize(
+    "out_dtype", ["c8", "f4", "f8", "i8"]
+)  # torch does not have ">f8",
+@pytest.mark.parametrize("casting", ["no", "equiv", "safe", "same_kind", "unsafe"])
 def test_stack_out_and_dtype(axis, out_dtype, casting):
     to_concat = (array([1, 2]), array([3, 4]))
     res = array([[1, 2], [3, 4]])
@@ -544,13 +574,10 @@ def test_stack_out_and_dtype(axis, out_dtype, casting):
 
     if not np.can_cast(to_concat[0], out_dtype, casting=casting):
         with assert_raises(TypeError):
-            stack(to_concat, dtype=out_dtype,
-                  axis=axis, casting=casting)
+            stack(to_concat, dtype=out_dtype, axis=axis, casting=casting)
     else:
-        res_out = stack(to_concat, out=out,
-                        axis=axis, casting=casting)
-        res_dtype = stack(to_concat, dtype=out_dtype,
-                          axis=axis, casting=casting)
+        res_out = stack(to_concat, out=out, axis=axis, casting=casting)
+        res_dtype = stack(to_concat, dtype=out_dtype, axis=axis, casting=casting)
         assert res_out is out
         assert_array_equal(out, res_dtype)
         assert res_dtype.dtype == out_dtype
@@ -561,9 +588,9 @@ def test_stack_out_and_dtype(axis, out_dtype, casting):
 
 class TestSqueeze:
     def test_basic(self):
-        a = np.arange(20*10*10*1*1).reshape(20, 10, 10, 1, 1)
-        b = np.arange(20*1*10*1*20).reshape(20, 1, 10, 1, 20)
-        c = np.arange(1*1*20*10).reshape(1, 1, 20, 10)
+        a = np.arange(20 * 10 * 10 * 1 * 1).reshape(20, 10, 10, 1, 1)
+        b = np.arange(20 * 1 * 10 * 1 * 20).reshape(20, 1, 10, 1, 20)
+        c = np.arange(1 * 1 * 20 * 10).reshape(1, 1, 20, 10)
         assert_array_equal(np.squeeze(a), np.reshape(a, (20, 10, 10)))
         assert_array_equal(np.squeeze(b), np.reshape(b, (20, 10, 20)))
         assert_array_equal(np.squeeze(c), np.reshape(c, (20, 10)))
@@ -603,7 +630,7 @@ class TestSqueeze:
     def test_squeeze_contiguous(self):
         # Similar to GitHub issue #387
         a = np.zeros((1, 2)).squeeze()
-        b = np.zeros((2, 2, 2), order='F')[:, :, ::2].squeeze()
+        b = np.zeros((2, 2, 2), order="F")[:, :, ::2].squeeze()
         assert_(a.flags.c_contiguous)
         assert_(a.flags.f_contiguous)
         assert_(b.flags.f_contiguous)
@@ -611,7 +638,7 @@ class TestSqueeze:
     @pytest.mark.xfail(reason="XXX: noop in torch, while numpy raises")
     def test_squeeze_axis_handling(self):
         with assert_raises(ValueError):
-            np.squeeze(np.array([[1],[2],[3]]), axis=0)
+            np.squeeze(np.array([[1], [2], [3]]), axis=0)
 
 
 class TestExpandDims:
@@ -645,4 +672,3 @@ class TestExpandDims:
     def test_repeated_axis(self):
         a = np.empty((3, 3, 3))
         assert_raises(ValueError, expand_dims, a, axis=(1, 1))
-
