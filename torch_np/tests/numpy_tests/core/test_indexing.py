@@ -245,6 +245,7 @@ class TestIndexing:
         assert_raises((ValueError, RuntimeError), f, a, [1, 2, 3])
         assert_raises((ValueError, RuntimeError), f, a[:1], [1, 2, 3])
 
+    @pytest.mark.xfail("torch does not support object dtype")
     def test_boolean_assignment_needs_api(self):
         # See also gh-7666
         # This caused a segfault on Python 2 due to the GIL not being
