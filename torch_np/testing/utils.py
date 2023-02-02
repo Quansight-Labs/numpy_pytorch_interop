@@ -116,11 +116,10 @@ def build_err_msg(
             msg.append(err_msg)
     if verbose:
         for i, a in enumerate(arrays):
-
             if isinstance(a, ndarray):
                 # precision argument is only needed if the objects are ndarrays
                 # r_func = partial(array_repr, precision=precision)
-                r_func = a.get().__repr__  # XXX
+                r_func = ndarray.__repr__
             else:
                 r_func = repr
 
@@ -660,7 +659,7 @@ def assert_array_compare(
         # do not trigger a failure (np.ma.masked != True evaluates as
         # np.ma.masked, which is falsy).
         if not cond:
-            n_mismatch = reduced.size - reduced.sum(dtype=intp)
+            n_mismatch = reduced.size - int(reduced.sum(dtype=intp))
             n_elements = flagged.size if flagged.ndim != 0 else reduced.size
             percent_mismatch = 100 * n_mismatch / n_elements
             remarks = [
@@ -677,12 +676,9 @@ def assert_array_compare(
                     error2 = abs(y - x)
                     np.minimum(error, error2, out=error)
                 max_abs_error = max(error)
-                if getattr(error, "dtype", object_) == object_:
-                    remarks.append("Max absolute difference: " + str(max_abs_error))
-                else:
-                    remarks.append(
-                        "Max absolute difference: " + array2string(max_abs_error)
-                    )
+                remarks.append(
+                    "Max absolute difference: " + array2string(max_abs_error)
+                )
 
                 # note: this definition of relative error matches that one
                 # used by assert_allclose (found in np.isclose)
@@ -692,12 +688,9 @@ def assert_array_compare(
                     max_rel_error = array(inf)
                 else:
                     max_rel_error = max(error[nonzero] / abs(y[nonzero]))
-                if getattr(error, "dtype", object_) == object_:
-                    remarks.append("Max relative difference: " + str(max_rel_error))
-                else:
-                    remarks.append(
-                        "Max relative difference: " + array2string(max_rel_error)
-                    )
+                remarks.append(
+                    "Max relative difference: " + array2string(max_rel_error)
+                )
 
             err_msg += "\n" + "\n".join(remarks)
             msg = build_err_msg(
