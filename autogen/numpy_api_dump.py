@@ -774,9 +774,6 @@ def product(*args, **kwargs):
     raise NotImplementedError
 
 
-def ptp(a, axis=None, out=None, keepdims=NoValue):
-    raise NotImplementedError
-
 
 def put(a, ind, v, mode="raise"):
     raise NotImplementedError

@@ -282,6 +282,7 @@ class ndarray:
     all = emulate_out_arg(axis_keepdims_wrapper(_reductions.all))
     max = emulate_out_arg(axis_keepdims_wrapper(_reductions.max))
     min = emulate_out_arg(axis_keepdims_wrapper(_reductions.min))
+    ptp = emulate_out_arg(axis_keepdims_wrapper(_reductions.ptp))
 
     sum = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.sum)))
     prod = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.prod)))

@@ -593,7 +593,6 @@ class TestAmin:
         assert_equal(np.amin(b, axis=1), [3.0, 4.0, 2.0])
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestPtp:
 
     def test_basic(self):

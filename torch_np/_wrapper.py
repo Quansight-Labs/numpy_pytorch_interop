@@ -604,6 +604,11 @@ def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValu
 min = amin
 
 
+def ptp(a, axis=None, out=None, keepdims=NoValue):
+    arr = asarray(a)
+    return arr.ptp(axis=axis, out=out, keepdims=keepdims)
+
+
 def all(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
     arr = asarray(a)
     return arr.all(axis=axis, out=out, keepdims=keepdims, where=where)

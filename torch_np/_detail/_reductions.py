@@ -89,6 +89,11 @@ def min(tensor, axis=None, initial=NoValue, where=NoValue):
     return result
 
 
+def ptp(tensor, axis=None):
+    result = tensor.amax(axis) - tensor.amin(axis)
+    return result
+
+
 def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     if initial is not NoValue or where is not NoValue:
         raise NotImplementedError
