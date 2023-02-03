@@ -188,3 +188,40 @@ def cumsum(tensor, axis=None, dtype=None):
 
     return result
 
+
+def average(a_tensor, axis, w_tensor):
+
+    # dtype
+    # FIXME: 1. use result_type
+    #        2. actually implement multiply w/dtype
+    if not a_tensor.dtype.is_floating_point:
+        result_dtype = torch.float64
+        a_tensor = a_tensor.to(result_dtype)
+
+    # axis
+    if axis is None:
+        (a_tensor, w_tensor), axis = _util.axis_none_ravel(a_tensor, w_tensor, axis=axis)
+
+    # axis & weights
+    if a_tensor.shape != w_tensor.shape:
+        if axis is None:
+            raise TypeError(
+                "Axis must be specified when shapes of a and weights "
+                "differ.")
+        if w_tensor.ndim != 1:
+            raise TypeError(
+                "1D weights expected when shapes of a and weights differ.")
+        if w_tensor.shape[0] != a_tensor.shape[axis]:
+            raise ValueError(
+                "Length of weights not compatible with specified axis.")
+
+        # setup weight to broadcast along axis
+        w_tensor = torch.broadcast_to(w_tensor, (a_tensor.ndim-1)*(1,) + w_tensor.shape)
+        w_tensor = w_tensor.swapaxes(-1, axis)
+
+    # do the work
+    numerator = torch.mul(a_tensor, w_tensor).sum(axis)
+    denominator = w_tensor.sum(axis)
+    result = numerator / denominator
+
+    return result, denominator
