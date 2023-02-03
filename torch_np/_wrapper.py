@@ -697,6 +697,30 @@ def average(a, axis=None, weights=None, returned=False, *, keepdims=NoValue):
         return asarray(result)
 
 
+def percentile(
+    a,
+    q,
+    axis=None,
+    out=None,
+    overwrite_input=False,
+    method="linear",
+    keepdims=False,
+    *,
+    interpolation=None,
+):
+    if interpolation is not None:
+        raise ValueError("'interpolation' argument is deprecated; use 'method' instead")
+
+    a_tensor, q_tensor = _helpers.to_tensors(a, q)
+
+    result = _reductions.percentile(a_tensor, q_tensor, axis, method)
+
+    # keepdims
+    if keepdims:
+        result = _util.apply_keepdims(result, axis, a_tensor.ndim)    
+
+    return _helpers.result_or_out(result, out, promote_scalar=True)
+
 
 @asarray_replacer()
 def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):

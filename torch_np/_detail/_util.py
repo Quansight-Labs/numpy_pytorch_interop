@@ -111,7 +111,7 @@ def expand_shape(arr_shape, axis):
 def apply_keepdims(tensor, axis, ndim):
     if axis is None:
         # tensor was a scalar
-        tensor = torch.full((1,) * ndim, fill_value=tensor, dtype=tensor.dtype)
+        tensor = torch.full((1,) * ndim, fill_value=tensor.item(), dtype=tensor.dtype)
     else:
         shape = expand_shape(tensor.shape, axis)
         tensor = tensor.reshape(shape)

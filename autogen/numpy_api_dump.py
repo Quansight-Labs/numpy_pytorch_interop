@@ -726,20 +726,6 @@ def partition(a, kth, axis=-1, kind="introselect", order=None):
     raise NotImplementedError
 
 
-def percentile(
-    a,
-    q,
-    axis=None,
-    out=None,
-    overwrite_input=False,
-    method="linear",
-    keepdims=False,
-    *,
-    interpolation=None,
-):
-    raise NotImplementedError
-
-
 def piecewise(x, condlist, funclist, *args, **kw):
     raise NotImplementedError
 
