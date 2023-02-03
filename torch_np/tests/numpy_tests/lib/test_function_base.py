@@ -3474,7 +3474,7 @@ class TestLerp:
         assert nfb._lerp(a, b, t) == 2.6
 
 
-@pytest.mark.xfail(reason='TODO: implement')
+#@pytest.mark.xfail(reason='TODO: implement')
 class TestMedian:
 
     def test_basic(self):
@@ -3494,7 +3494,11 @@ class TestMedian:
         assert_equal(a[0], np.median(a))
         a = np.array([0.0444502, 0.141249, 0.0463301])
         assert_equal(a[-1], np.median(a))
+
+    @pytest.mark.xfail(reason="median: scalar output vs 0-dim")
+    def test_basic_2(self):
         # check array scalar result
+        a = np.array([0.0444502, 0.141249, 0.0463301])
         assert_equal(np.median(a).ndim, 0)
         a[1] = np.nan
         assert_equal(np.median(a).ndim, 0)
@@ -3590,7 +3594,7 @@ class TestMedian:
 
         # no axis
         assert_equal(np.median(a), np.nan)
-        assert_equal(np.median(a).ndim, 0)
+  #      assert_equal(np.median(a).ndim, 0)
 
         # axis0
         b = np.median(np.arange(24, dtype=float).reshape(2, 3, 4), 0)
@@ -3604,12 +3608,29 @@ class TestMedian:
         b[1, 2] = np.nan
         assert_equal(np.median(a, 1), b)
 
+
+    @pytest.mark.xfail(reason="median: does not support tuple axes")
+    def test_nan_behavior_2(self):
+        a = np.arange(24, dtype=float).reshape(2, 3, 4)
+        a[1, 2, 3] = np.nan
+        a[1, 1, 2] = np.nan
+
         # axis02
         b = np.median(np.arange(24, dtype=float).reshape(2, 3, 4), (0, 2))
         b[1] = np.nan
         b[2] = np.nan
         assert_equal(np.median(a, (0, 2)), b)
 
+    @pytest.mark.xfail(reason="median: scalar vs 0-dim")
+    def test_nan_behavior_3(self):
+        a = np.arange(24, dtype=float).reshape(2, 3, 4)
+        a[1, 2, 3] = np.nan
+        a[1, 1, 2] = np.nan
+
+        # no axis
+        assert_equal(np.median(a).ndim, 0)
+
+    @pytest.mark.xfail(reason="median: torch.quantile does not handle empty tensors")
     @pytest.mark.skipif(IS_WASM, reason="fp errors don't work correctly")
     def test_empty(self):
         # mean(empty array) emits two warnings: empty slice and divide by 0
@@ -3640,6 +3661,7 @@ class TestMedian:
             assert_equal(np.median(a, axis=2), b)
             assert_(w[0].category is RuntimeWarning)
 
+    @pytest.mark.xfail(reason="median: tuple axes not implemented")
     def test_extended_axis(self):
         o = np.random.normal(size=(71, 23))
         x = np.dstack([o] * 10)
@@ -3682,6 +3704,10 @@ class TestMedian:
         d = np.ones((3, 5, 7, 11))
         assert_equal(np.median(d, axis=None, keepdims=True).shape,
                      (1, 1, 1, 1))
+
+    @pytest.mark.xfail(reason="median: tuple axis")
+    def test_keepdims_2(self):
+        d = np.ones((3, 5, 7, 11))
         assert_equal(np.median(d, axis=(0, 1), keepdims=True).shape,
                      (1, 1, 7, 11))
         assert_equal(np.median(d, axis=(0, 3), keepdims=True).shape,
@@ -3693,6 +3719,7 @@ class TestMedian:
         assert_equal(np.median(d, axis=(0, 1, 3), keepdims=True).shape,
                      (1, 1, 7, 1))
 
+    @pytest.mark.xfail(reason="median: tuple axis")
     @pytest.mark.parametrize(
         argnames='axis',
         argvalues=[

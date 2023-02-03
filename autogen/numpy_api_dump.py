@@ -602,10 +602,6 @@ def may_share_memory(a, b, /, max_work=None):
     raise NotImplementedError
 
 
-def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
-    raise NotImplementedError
-
-
 def meshgrid(*xi, copy=True, sparse=False, indexing="xy"):
     raise NotImplementedError
 

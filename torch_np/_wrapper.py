@@ -708,16 +708,8 @@ def percentile(
     *,
     interpolation=None,
 ):
-    if interpolation is not None:
-        raise ValueError("'interpolation' argument is deprecated; use 'method' instead")
-
-    a_tensor, q_tensor = _helpers.to_tensors(a, q)
-    result = _reductions.quantile(a_tensor, q_tensor / 100., axis, method)
-
-    # keepdims
-    if keepdims:
-        result = _util.apply_keepdims(result, axis, a_tensor.ndim)    
-    return _helpers.result_or_out(result, out, promote_scalar=True)
+    return quantile(a, asarray(q) / 100., axis, out, overwrite_input, method,
+                    keepdims=keepdims)
 
 
 def quantile(
@@ -743,6 +735,9 @@ def quantile(
     return _helpers.result_or_out(result, out, promote_scalar=True)
 
 
+def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
+    return quantile(a, 0.5, axis=axis, overwrite_input=overwrite_input,
+                    out=out, keepdims=keepdims)
 
 
 @asarray_replacer()
