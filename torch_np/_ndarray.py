@@ -391,6 +391,8 @@ def result_type(*arrays_and_dtypes):
             dtypes.append(_dtypes.dtype(entry))
         elif isinstance(entry, _dtypes.DType):
             dtypes.append(entry)
+        elif isinstance(entry, str):
+            dtypes.append(_dtypes.dtype(entry))
         else:
             dtypes.append(asarray(entry).dtype)
 

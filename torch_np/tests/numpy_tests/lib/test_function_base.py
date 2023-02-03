@@ -22,12 +22,12 @@ IS_WASM = False
 IS_PYPY = False
 
 import numpy.lib.function_base as nfb   # FIXME: remove
-from numpy.random import rand    # FIXME: random.rand
+from torch_np.random import rand
 
 
 # FIXME: make from torch_np
 from numpy.lib import (
-    add_newdoc_ufunc, angle, average, bartlett, blackman, corrcoef, cov,
+    add_newdoc_ufunc, angle, bartlett, blackman, corrcoef, cov,
     delete, diff, digitize, extract, flipud, gradient, hamming, hanning,
     i0, insert, interp, kaiser, meshgrid, msort, piecewise, place, rot90,
     select, setxor1d, sinc, trapz, trim_zeros, unwrap, unique, vectorize
@@ -289,26 +289,25 @@ class TestCopy:
         assert_(a_fort_copy.flags.f_contiguous)
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestAverage:
 
     def test_basic(self):
         y1 = np.array([1, 2, 3])
-        assert_(average(y1, axis=0) == 2.)
+        assert_(np.average(y1, axis=0) == 2.)
         y2 = np.array([1., 2., 3.])
-        assert_(average(y2, axis=0) == 2.)
+        assert_(np.average(y2, axis=0) == 2.)
         y3 = [0., 0., 0.]
-        assert_(average(y3, axis=0) == 0.)
+        assert_(np.average(y3, axis=0) == 0.)
 
         y4 = np.ones((4, 4))
         y4[0, 1] = 0
         y4[1, 0] = 2
-        assert_almost_equal(y4.mean(0), average(y4, 0))
-        assert_almost_equal(y4.mean(1), average(y4, 1))
+        assert_almost_equal(y4.mean(0), np.average(y4, 0))
+        assert_almost_equal(y4.mean(1), np.average(y4, 1))
 
         y5 = rand(5, 5)
-        assert_almost_equal(y5.mean(0), average(y5, 0))
-        assert_almost_equal(y5.mean(1), average(y5, 1))
+        assert_almost_equal(y5.mean(0), np.average(y5, 0))
+        assert_almost_equal(y5.mean(1), np.average(y5, 1))
 
     @pytest.mark.parametrize(
         'x, axis, expected_avg, weights, expected_wavg, expected_wsum',
@@ -336,18 +335,18 @@ class TestAverage:
     def test_weights(self):
         y = np.arange(10)
         w = np.arange(10)
-        actual = average(y, weights=w)
+        actual = np.average(y, weights=w)
         desired = (np.arange(10) ** 2).sum() * 1. / np.arange(10).sum()
         assert_almost_equal(actual, desired)
 
         y1 = np.array([[1, 2, 3], [4, 5, 6]])
         w0 = [1, 2]
-        actual = average(y1, weights=w0, axis=0)
+        actual = np.average(y1, weights=w0, axis=0)
         desired = np.array([3., 4., 5.])
         assert_almost_equal(actual, desired)
 
         w1 = [0, 0, 1]
-        actual = average(y1, weights=w1, axis=1)
+        actual = np.average(y1, weights=w1, axis=1)
         desired = np.array([3., 6.])
         assert_almost_equal(actual, desired)
 
@@ -357,8 +356,8 @@ class TestAverage:
         # 2D Case
         w2 = [[0, 0, 1], [0, 0, 2]]
         desired = np.array([3., 6.])
-        assert_array_equal(average(y1, weights=w2, axis=1), desired)
-        assert_equal(average(y1, weights=w2), 5.)
+        assert_array_equal(np.average(y1, weights=w2, axis=1), desired)
+        assert_equal(np.average(y1, weights=w2), 5.)
 
         y3 = rand(5).astype(np.float32)
         w3 = rand(5).astype(np.float64)
@@ -381,26 +380,26 @@ class TestAverage:
         y = np.array([[1, 2, 3], [4, 5, 6]])
 
         # No weights
-        avg, scl = average(y, returned=True)
+        avg, scl = np.average(y, returned=True)
         assert_equal(scl, 6.)
 
-        avg, scl = average(y, 0, returned=True)
+        avg, scl = np.average(y, 0, returned=True)
         assert_array_equal(scl, np.array([2., 2., 2.]))
 
-        avg, scl = average(y, 1, returned=True)
+        avg, scl = np.average(y, 1, returned=True)
         assert_array_equal(scl, np.array([3., 3.]))
 
         # With weights
         w0 = [1, 2]
-        avg, scl = average(y, weights=w0, axis=0, returned=True)
+        avg, scl = np.average(y, weights=w0, axis=0, returned=True)
         assert_array_equal(scl, np.array([3., 3., 3.]))
 
         w1 = [1, 2, 3]
-        avg, scl = average(y, weights=w1, axis=1, returned=True)
+        avg, scl = np.average(y, weights=w1, axis=1, returned=True)
         assert_array_equal(scl, np.array([6., 6.]))
 
         w2 = [[0, 0, 1], [1, 2, 3]]
-        avg, scl = average(y, weights=w2, axis=1, returned=True)
+        avg, scl = np.average(y, weights=w2, axis=1, returned=True)
         assert_array_equal(scl, np.array([1., 6.]))
 
     def test_upcasting(self):
@@ -411,6 +410,7 @@ class TestAverage:
             w = np.array([[1,2],[3,4]], dtype=wt)
             assert_equal(np.average(a, weights=w).dtype, np.dtype(rt))
 
+    @pytest.mark.skip(reason='support Fraction objects?')
     def test_average_class_without_dtype(self):
         # see gh-21988
         a = np.array([Fraction(1, 5), Fraction(3, 5)])

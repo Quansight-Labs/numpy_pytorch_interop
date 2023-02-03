@@ -626,9 +626,6 @@ class TestProdGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
         ]
 
 
-#                              (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
-
-
 class TestStdGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
     def setup_method(self):
         self.func = np.std
@@ -641,7 +638,6 @@ class TestVarGeneric(_GenericReductionsTestMixin, _GenericHasOutTestMixin):
         self.allowed_axes =  [0, 1, 2, -1, -2,
                               (0, 1), (1, 0), (0, 1, 2), (1, -1, 0)]
 
-torch_np/tests/numpy_tests/lib/test_function_base.pyM
 
 class _GenericCumSumProdTestMixin:
     """Run a set of generic tests to verify that self.func acts like a
