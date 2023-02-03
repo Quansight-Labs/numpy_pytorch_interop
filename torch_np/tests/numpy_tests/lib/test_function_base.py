@@ -3300,10 +3300,11 @@ class TestPercentile:
             np.percentile([1, 2, 3, 4.0], q)
 
 
-@pytest.mark.xfail(reason='TODO: implement')
+
 class TestQuantile:
     # most of this is already tested by TestPercentile
 
+    @pytest.mark.skip(reason="do not chase 1ulp")
     def test_max_ulp(self):
         x = [0.0, 0.2, 0.4]
         a = np.quantile(x, 0.45)
@@ -3318,6 +3319,7 @@ class TestQuantile:
         assert_equal(np.quantile(x, 1), 3.5)
         assert_equal(np.quantile(x, 0.5), 1.75)
 
+    @pytest.mark.xfail(reason="quantile w/integers or bools")
     def test_correct_quantile_value(self):
         a = np.array([True])
         tf_quant = np.quantile(True, False)
@@ -3328,6 +3330,7 @@ class TestQuantile:
         assert_array_equal(quant_res, a)
         assert_equal(quant_res.dtype, a.dtype)
 
+    @pytest.mark.skip(reason="support arrays of Fractions?")
     def test_fraction(self):
         # fractional input, integral quantile
         x = [Fraction(i, 2) for i in range(8)]
@@ -3355,10 +3358,9 @@ class TestQuantile:
         x = np.arange(8)
         assert_equal(np.quantile(x, Fraction(1, 2)), Fraction(7, 2))
 
+    @pytest.mark.skip(reason="does not raise in numpy?")
     def test_complex(self):
         #See gh-22652
-        arr_c = np.array([0.5+3.0j, 2.1+0.5j, 1.6+2.3j], dtype='G')
-        assert_raises(TypeError, np.quantile, arr_c, 0.5)
         arr_c = np.array([0.5+3.0j, 2.1+0.5j, 1.6+2.3j], dtype='D')
         assert_raises(TypeError, np.quantile, arr_c, 0.5)
         arr_c = np.array([0.5+3.0j, 2.1+0.5j, 1.6+2.3j], dtype='F')
@@ -3376,12 +3378,14 @@ class TestQuantile:
         np.quantile(np.arange(100.), p, method="midpoint")
         assert_array_equal(p, p0)
 
+    @pytest.mark.xfail(reason="TODO: make quantile preserve integers")
     @pytest.mark.parametrize("dtype", np.typecodes["AllInteger"])
     def test_quantile_preserve_int_type(self, dtype):
         res = np.quantile(np.array([1, 2], dtype=dtype), [0.5],
                           method="nearest")
         assert res.dtype == dtype
 
+    @pytest.mark.xfail(reason="1) np.sort not implemented; 2) methods")
     @pytest.mark.parametrize("method",
              ['inverted_cdf', 'averaged_inverted_cdf', 'closest_observation',
               'interpolated_inverted_cdf', 'hazen', 'weibull', 'linear',

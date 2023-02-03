@@ -228,10 +228,10 @@ def average(a_tensor, axis, w_tensor):
 
 
 
-def percentile(a_tensor, q_tensor, axis, method):
+def quantile(a_tensor, q_tensor, axis, method):
 
-    if (0 > q_tensor).any() or (q_tensor > 100).any():
-        raise ValueError("Percentiles must be in range [0, 100], got %s" % q_tensor)
+    if (0 > q_tensor).any() or (q_tensor > 1).any():
+        raise ValueError("Quantiles must be in range [0, 1], got %s" % q_tensor)
 
     if not a_tensor.dtype.is_floating_point:
         dtype = _scalar_types.default_float_type.torch_dtype
@@ -246,7 +246,7 @@ def percentile(a_tensor, q_tensor, axis, method):
         axis = _util.normalize_axis_tuple(axis, a_tensor.ndim)
     axis = _util.allow_only_single_axis(axis)
 
-    q_tensor = (q_tensor / 100.0).to(a_tensor.dtype)
+    q_tensor = q_tensor.to(a_tensor.dtype)
 
     (a_tensor, q_tensor), axis = _util.axis_none_ravel(a_tensor, q_tensor, axis=axis)
 

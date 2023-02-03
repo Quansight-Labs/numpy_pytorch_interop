@@ -794,20 +794,6 @@ def putmask(a, mask, values):
     raise NotImplementedError
 
 
-def quantile(
-    a,
-    q,
-    axis=None,
-    out=None,
-    overwrite_input=False,
-    method="linear",
-    keepdims=False,
-    *,
-    interpolation=None,
-):
-    raise NotImplementedError
-
-
 def ravel(a, order="C"):
     raise NotImplementedError
 
