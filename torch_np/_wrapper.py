@@ -476,6 +476,8 @@ def broadcast_arrays(*args, subok=False):
 
 @asarray_replacer()
 def moveaxis(a, source, destination):
+    source = _util.normalize_axis_tuple(source, a.ndim, 'source')
+    destination = _util.normalize_axis_tuple(destination, a.ndim, 'destination')
     return asarray(torch.moveaxis(a, source, destination))
 
 
