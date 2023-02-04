@@ -2425,7 +2425,6 @@ class TestStdVar:
         assert_array_equal(r, out)
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestStdVarComplex:
     def test_basic(self):
         A = np.array([1, 1.j, -1, -1.j])
