@@ -2593,7 +2593,6 @@ class TestIsclose:
         assert_(type(np.isclose(0, np.inf)) is np.bool_)
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestStdVar:
     def setup_method(self):
         self.A = np.array([1, -1, 1, -1])
