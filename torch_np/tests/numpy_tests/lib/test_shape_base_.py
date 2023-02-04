@@ -1,16 +1,18 @@
-import numpy as np
 import functools
 import sys
 import pytest
 
-from numpy.lib.shape_base import (
-    apply_along_axis, apply_over_axes, array_split, split, hsplit, dsplit,
-    vsplit, dstack, column_stack, kron, tile, expand_dims, take_along_axis,
-    put_along_axis
-    )
-from numpy.testing import (
-    assert_, assert_equal, assert_array_equal, assert_raises, assert_warns
-    )
+from numpy.lib.shape_base import (apply_along_axis, apply_over_axes, array_split,
+    split, hsplit, dsplit, vsplit, kron, tile
+    expand_dims, take_along_axis, put_along_axis)
+
+import torch_np as np
+from torch_np import column_stack, dstack, expand_dims
+
+from torch_np.random import rand
+
+from torch_np.testing import assert_array_equal, assert_equal, assert_
+from pytest import raises as assert_raises
 
 
 IS_64BIT = sys.maxsize > 2**32
@@ -26,7 +28,7 @@ def _add_keepdims(func):
         return np.expand_dims(res, axis=axis)
     return wrapped
 
-
+@pytest.mark.xfail(reason="TODO: implement")
 class TestTakeAlongAxis:
     def test_argequivalent(self):
         """ Test it translates from arg<func> to <func> """
@@ -79,6 +81,7 @@ class TestTakeAlongAxis:
         assert_equal(actual.shape, (3, 2, 5))
 
 
+@pytest.mark.xfail(reason="TODO: implement")
 class TestPutAlongAxis:
     def test_replace_max(self):
         a_base = np.array([[10, 30, 20], [60, 40, 50]])
@@ -104,6 +107,7 @@ class TestPutAlongAxis:
         assert_equal(take_along_axis(a, ai, axis=1), 20)
 
 
+@pytest.mark.xfail(reason="TODO: implement")
 class TestApplyAlongAxis:
     def test_simple(self):
         a = np.ones((20, 10), 'd')
@@ -270,6 +274,7 @@ class TestApplyAlongAxis:
             assert_equal(type(actual[i]), type(expected[i]))
 
 
+@pytest.mark.xfail(reason="TODO: implement")
 class TestApplyOverAxes:
     def test_simple(self):
         a = np.arange(24).reshape(2, 3, 4)
@@ -307,16 +312,8 @@ class TestExpandDims:
         a = np.empty((3, 3, 3))
         assert_raises(ValueError, expand_dims, a, axis=(1, 1))
 
-    def test_subclasses(self):
-        a = np.arange(10).reshape((2, 5))
-        a = np.ma.array(a, mask=a%3 == 0)
 
-        expanded = np.expand_dims(a, axis=1)
-        assert_(isinstance(expanded, np.ma.MaskedArray))
-        assert_equal(expanded.shape, (2, 1, 5))
-        assert_equal(expanded.mask.shape, (2, 1, 5))
-
-
+@pytest.mark.xfail(reason="TODO: implement")
 class TestArraySplit:
     def test_integer_0_split(self):
         a = np.arange(10)
@@ -451,6 +448,7 @@ class TestArraySplit:
         compare_results(res, desired)
 
 
+@pytest.mark.xfail(reason="TODO: implement")
 class TestSplit:
     # The split function is essentially the same as array_split,
     # except that it test if splitting will result in an
@@ -475,9 +473,7 @@ class TestColumnStack:
         # example from docstring
         a = np.array((1, 2, 3))
         b = np.array((2, 3, 4))
-        expected = np.array([[1, 2],
-                             [2, 3],
-                             [3, 4]])
+        expected = np.array([[1, 2], [2, 3], [3, 4]])
         actual = np.column_stack((a, b))
         assert_equal(actual, expected)
 
@@ -485,15 +481,14 @@ class TestColumnStack:
         # same as hstack 2D docstring example
         a = np.array([[1], [2], [3]])
         b = np.array([[2], [3], [4]])
-        expected = np.array([[1, 2],
-                             [2, 3],
-                             [3, 4]])
+        expected = np.array([[1, 2], [2, 3], [3, 4]])
         actual = np.column_stack((a, b))
         assert_equal(actual, expected)
 
     def test_generator(self):
-        with pytest.raises(TypeError, match="arrays to stack must be"):
-            column_stack((np.arange(3) for _ in range(2)))
+        # numpy 1.24 emits a warning but we don't
+        # with assert_warns(FutureWarning):
+        column_stack((np.arange(3) for _ in range(2)))
 
 
 class TestDstack:
@@ -529,12 +524,14 @@ class TestDstack:
         assert_array_equal(res, desired)
 
     def test_generator(self):
-        with pytest.raises(TypeError, match="arrays to stack must be"):
-            dstack((np.arange(3) for _ in range(2)))
+        # numpy 1.24 emits a warning but we don't
+        # with assert_warns(FutureWarning):
+        dstack((np.arange(3) for _ in range(2)))
 
 
 # array_split has more comprehensive test of splitting.
 # only do simple test on hsplit, vsplit, and dsplit
+@pytest.mark.xfail(reason="TODO: implement")
 class TestHsplit:
     """Only testing for integer splits.
 
@@ -564,6 +561,7 @@ class TestHsplit:
         compare_results(res, desired)
 
 
+@pytest.mark.xfail(reason="TODO: implement")
 class TestVsplit:
     """Only testing for integer splits.
 
@@ -591,6 +589,7 @@ class TestVsplit:
         compare_results(res, desired)
 
 
+@pytest.mark.xfail(reason="TODO: implement")
 class TestDsplit:
     # Only testing for integer splits.
     def test_non_iterable(self):
@@ -626,8 +625,6 @@ class TestDsplit:
 
 class TestSqueeze:
     def test_basic(self):
-        from numpy.random import rand
-
         a = rand(20, 10, 10, 1, 1)
         b = rand(20, 1, 10, 1, 20)
         c = rand(1, 1, 20, 10)
@@ -640,9 +637,48 @@ class TestSqueeze:
         res = np.squeeze(a)
         assert_equal(res, 1.5)
         assert_equal(res.ndim, 0)
-        assert_equal(type(res), np.ndarray)
+        assert type(res) is np.ndarray
+
+        aa = np.ones((3, 1, 4, 1, 1))
+        assert aa.squeeze().base is aa
+
+    def test_squeeze_axis(self):
+        A = [[[1, 1, 1], [2, 2, 2], [3, 3, 3]]]
+        assert_equal(np.squeeze(A).shape, (3, 3))
+        assert_equal(np.squeeze(A, axis=()), A)
+
+        assert_equal(np.squeeze(np.zeros((1, 3, 1))).shape, (3,))
+        assert_equal(np.squeeze(np.zeros((1, 3, 1)), axis=0).shape, (3, 1))
+        assert_equal(np.squeeze(np.zeros((1, 3, 1)), axis=-1).shape, (1, 3))
+        assert_equal(np.squeeze(np.zeros((1, 3, 1)), axis=2).shape, (1, 3))
+        assert_equal(np.squeeze([np.zeros((3, 1))]).shape, (3,))
+        assert_equal(np.squeeze([np.zeros((3, 1))], axis=0).shape, (3, 1))
+        assert_equal(np.squeeze([np.zeros((3, 1))], axis=2).shape, (1, 3))
+        assert_equal(np.squeeze([np.zeros((3, 1))], axis=-1).shape, (1, 3))
+
+    def test_squeeze_type(self):
+        # Ticket #133
+        a = np.array([3])
+        b = np.array(3)
+        assert type(a.squeeze()) is np.ndarray
+        assert type(b.squeeze()) is np.ndarray
+
+    @pytest.mark.skip(reason="XXX: order='F' not implemented")
+    def test_squeeze_contiguous(self):
+        # Similar to GitHub issue #387
+        a = np.zeros((1, 2)).squeeze()
+        b = np.zeros((2, 2, 2), order="F")[:, :, ::2].squeeze()
+        assert_(a.flags.c_contiguous)
+        assert_(a.flags.f_contiguous)
+        assert_(b.flags.f_contiguous)
+
+    @pytest.mark.xfail(reason="XXX: noop in torch, while numpy raises")
+    def test_squeeze_axis_handling(self):
+        with assert_raises(ValueError):
+            np.squeeze(np.array([[1], [2], [3]]), axis=0)
 
 
+@pytest.mark.xfail(reason="TODO: implement")
 class TestKron:
     def test_basic(self):
         # Using 0-dimensional ndarray
@@ -685,23 +721,6 @@ class TestKron:
         assert_equal(type(kron(ma, a)), myarray)
 
     @pytest.mark.parametrize(
-        "array_class", [np.asarray, np.mat]
-    )
-    def test_kron_smoke(self, array_class):
-        a = array_class(np.ones([3, 3]))
-        b = array_class(np.ones([3, 3]))
-        k = array_class(np.ones([9, 9]))
-
-        assert_array_equal(np.kron(a, b), k)
-
-    def test_kron_ma(self):
-        x = np.ma.array([[1, 2], [3, 4]], mask=[[0, 1], [1, 0]])
-        k = np.ma.array(np.diag([1, 4, 4, 16]),
-                mask=~np.array(np.identity(4), dtype=bool))
-
-        assert_array_equal(k, np.kron(x, x))
-
-    @pytest.mark.parametrize(
         "shape_a,shape_b", [
             ((1, 1), (1, 1)),
             ((1, 2, 3), (4, 5, 6)),
@@ -722,6 +741,7 @@ class TestKron:
                 k.shape, expected_shape), "Unexpected shape from kron"
 
 
+@pytest.mark.xfail(reason="TODO: implement")
 class TestTile:
     def test_basic(self):
         a = np.array([0, 1, 2])
@@ -762,6 +782,7 @@ class TestTile:
                 assert_equal(large, klarge)
 
 
+@pytest.mark.xfail(reason="TODO: implement")
 class TestMayShareMemory:
     def test_basic(self):
         d = np.ones((50, 60))
