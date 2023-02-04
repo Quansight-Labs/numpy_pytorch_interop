@@ -5,6 +5,7 @@ import torch
 
 from . import _scalar_types, _util
 
+
 def flip(m_tensor, axis=None):
     # XXX: semantic difference: np.flip returns a view, torch.flip copies
     if axis is None:
@@ -39,7 +40,7 @@ def rollaxis(tensor, axis, start=0):
         start += n
     msg = "'%s' arg requires %d <= %s < %d, but %d was passed in"
     if not (0 <= start < n + 1):
-        raise _util.AxisError(msg % ('start', -n, 'start', n + 1, start))
+        raise _util.AxisError(msg % ("start", -n, "start", n + 1, start))
     if axis < start:
         # it's been removed
         start -= 1

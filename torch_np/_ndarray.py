@@ -10,7 +10,7 @@ from ._decorators import (
     dtype_to_torch,
     emulate_out_arg,
 )
-from ._detail import _reductions, _util, _flips
+from ._detail import _flips, _reductions, _util
 
 newaxis = None
 
