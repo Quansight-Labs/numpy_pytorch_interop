@@ -7,7 +7,7 @@ pytorch tensors.
 
 import torch
 
-from . import _decorators, _dtypes, _helpers
+from . import _dtypes, _helpers, _decorators
 from ._detail import _flips, _reductions, _util
 from ._ndarray import (
     array,
