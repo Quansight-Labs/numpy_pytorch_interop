@@ -2,17 +2,15 @@ import functools
 
 import torch
 
-from ._detail import _util
-from ._detail import _reductions
-from . import _helpers
-from . import _dtypes
-from . import _unary_ufuncs
-from . import _binary_ufuncs
-
-from ._decorators import (emulate_out_arg, axis_keepdims_wrapper,
-                          dtype_to_torch, axis_none_ravel_wrapper)
-
-from ._decorators import NoValue
+from . import _binary_ufuncs, _dtypes, _helpers, _unary_ufuncs
+from ._decorators import (
+    NoValue,
+    axis_keepdims_wrapper,
+    axis_none_ravel_wrapper,
+    dtype_to_torch,
+    emulate_out_arg,
+)
+from ._detail import _reductions, _util
 
 newaxis = None
 
@@ -290,8 +288,12 @@ class ndarray:
     var = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.var)))
     std = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.std)))
 
-    cumprod = emulate_out_arg(axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumprod)))
-    cumsum = emulate_out_arg(axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumsum)))
+    cumprod = emulate_out_arg(
+        axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumprod))
+    )
+    cumsum = emulate_out_arg(
+        axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumsum))
+    )
 
     ### indexing ###
     def __getitem__(self, *args, **kwds):

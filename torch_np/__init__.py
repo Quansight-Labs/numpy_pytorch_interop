@@ -13,6 +13,5 @@ from ._unary_ufuncs import *
 alltrue = all
 sometrue = any
 
-inf = float('inf')
-nan = float('nan')
-
+inf = float("inf")
+nan = float("nan")

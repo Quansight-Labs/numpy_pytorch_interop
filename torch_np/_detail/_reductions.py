@@ -172,11 +172,12 @@ def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
 #   1. no keepdims
 #   2. axis=None ravels (cf concatenate)
 
+
 def cumprod(tensor, axis=None, dtype=None):
     if dtype == torch.bool:
         dtype = _scalar_types.default_int_type.dtype
     if dtype is None:
-        dtype=tensor.dtype
+        dtype = tensor.dtype
 
     result = tensor.cumprod(axis=axis, dtype=dtype)
 
@@ -187,7 +188,7 @@ def cumsum(tensor, axis=None, dtype=None):
     if dtype == torch.bool:
         dtype = _scalar_types.default_int_type.dtype
     if dtype is None:
-        dtype=tensor.dtype
+        dtype = tensor.dtype
 
     result = tensor.cumsum(axis=axis, dtype=dtype)
 
@@ -205,23 +206,25 @@ def average(a_tensor, axis, w_tensor):
 
     # axis
     if axis is None:
-        (a_tensor, w_tensor), axis = _util.axis_none_ravel(a_tensor, w_tensor, axis=axis)
+        (a_tensor, w_tensor), axis = _util.axis_none_ravel(
+            a_tensor, w_tensor, axis=axis
+        )
 
     # axis & weights
     if a_tensor.shape != w_tensor.shape:
         if axis is None:
             raise TypeError(
-                "Axis must be specified when shapes of a and weights "
-                "differ.")
+                "Axis must be specified when shapes of a and weights " "differ."
+            )
         if w_tensor.ndim != 1:
-            raise TypeError(
-                "1D weights expected when shapes of a and weights differ.")
+            raise TypeError("1D weights expected when shapes of a and weights differ.")
         if w_tensor.shape[0] != a_tensor.shape[axis]:
-            raise ValueError(
-                "Length of weights not compatible with specified axis.")
+            raise ValueError("Length of weights not compatible with specified axis.")
 
         # setup weight to broadcast along axis
-        w_tensor = torch.broadcast_to(w_tensor, (a_tensor.ndim-1)*(1,) + w_tensor.shape)
+        w_tensor = torch.broadcast_to(
+            w_tensor, (a_tensor.ndim - 1) * (1,) + w_tensor.shape
+        )
         w_tensor = w_tensor.swapaxes(-1, axis)
 
     # do the work
@@ -230,7 +233,6 @@ def average(a_tensor, axis, w_tensor):
     result = numerator / denominator
 
     return result, denominator
-
 
 
 def quantile(a_tensor, q_tensor, axis, method):

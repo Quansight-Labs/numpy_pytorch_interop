@@ -122,9 +122,11 @@ def axis_none_ravel_wrapper(func):
     similar logic.
 
     """
+
     @functools.wraps(func)
     def wrapped(a, axis=None, *args, **kwds):
-        from ._ndarray import ndarray, asarray
+        from ._ndarray import asarray, ndarray
+
         tensor = asarray(a).get()
 
         # standardize the axis argument

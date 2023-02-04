@@ -774,7 +774,6 @@ def product(*args, **kwargs):
     raise NotImplementedError
 
 
-
 def put(a, ind, v, mode="raise"):
     raise NotImplementedError
 

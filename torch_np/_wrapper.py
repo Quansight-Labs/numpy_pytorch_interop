@@ -645,7 +645,6 @@ def prod(
     )
 
 
-
 def cumprod(a, axis=None, dtype=None, out=None):
     arr = asarray(a)
     return arr.cumprod(axis=axis, dtype=dtype, out=out)
@@ -658,7 +657,9 @@ def cumsum(a, axis=None, dtype=None, out=None):
     arr = asarray(a)
     return arr.cumsum(axis=axis, dtype=dtype, out=out)
 
-#YYY: pattern : ddof
+
+# YYY: pattern : ddof
+
 
 def std(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
     arr = asarray(a)
@@ -679,7 +680,7 @@ def average(a, axis=None, weights=None, returned=False, *, keepdims=NoValue):
     if weights is None:
         result = mean(a, axis=axis, keepdims=keepdims)
         if returned:
-            scl = result.dtype.type(a.size/result.size)
+            scl = result.dtype.type(a.size / result.size)
             return result, scl
         return result
 
@@ -713,8 +714,9 @@ def percentile(
     *,
     interpolation=None,
 ):
-    return quantile(a, asarray(q) / 100., axis, out, overwrite_input, method,
-                    keepdims=keepdims)
+    return quantile(
+        a, asarray(q) / 100.0, axis, out, overwrite_input, method, keepdims=keepdims
+    )
 
 
 def quantile(
@@ -736,13 +738,14 @@ def quantile(
 
     # keepdims
     if keepdims:
-        result = _util.apply_keepdims(result, axis, a_tensor.ndim)    
+        result = _util.apply_keepdims(result, axis, a_tensor.ndim)
     return _helpers.result_or_out(result, out, promote_scalar=True)
 
 
 def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
-    return quantile(a, 0.5, axis=axis, overwrite_input=overwrite_input,
-                    out=out, keepdims=keepdims)
+    return quantile(
+        a, 0.5, axis=axis, overwrite_input=overwrite_input, out=out, keepdims=keepdims
+    )
 
 
 @asarray_replacer()
