@@ -146,10 +146,6 @@ def asmatrix(data, dtype=None):
     raise NotImplementedError
 
 
-def average(a, axis=None, weights=None, returned=False, *, keepdims=NoValue):
-    raise NotImplementedError
-
-
 def bartlett(M):
     raise NotImplementedError
 
@@ -242,10 +238,6 @@ def cross(a, b, axisa=-1, axisb=-1, axisc=-1, axis=None):
     raise NotImplementedError
 
 
-def cumsum(a, axis=None, dtype=None, out=None):
-    raise NotImplementedError
-
-
 def datetime_as_string(arr, unit=None, timezone="naive", casting="same_kind"):
     raise NotImplementedError
 
@@ -327,10 +319,6 @@ def find_common_type(array_types, scalar_types):
 
 
 def fix(x, out=None):
-    raise NotImplementedError
-
-
-def flip(m, axis=None):
     raise NotImplementedError
 
 
@@ -770,10 +758,6 @@ def printoptions(*args, **kwargs):
     raise NotImplementedError
 
 
-def product(*args, **kwargs):
-    raise NotImplementedError
-
-
 def put(a, ind, v, mode="raise"):
     raise NotImplementedError
 
@@ -815,10 +799,6 @@ def rollaxis(a, axis, start=0):
 
 
 def roots(p):
-    raise NotImplementedError
-
-
-def rot90(m, k=1, axes=(0, 1)):
     raise NotImplementedError
 
 

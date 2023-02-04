@@ -74,3 +74,9 @@ def ndarrays_to_tensors(*inputs):
 def to_tensors(*inputs):
     """Convert all array_likes from `inputs` to tensors."""
     return tuple(asarray(value).get() for value in inputs)
+
+
+def _outer(x, y):
+    x_tensor, y_tensor = to_tensors(x, y)
+    result = torch.outer(x_tensor, y_tensor)
+    return asarray(result)

@@ -8,7 +8,7 @@ pytorch tensors.
 import torch
 
 from . import _dtypes, _helpers
-from ._detail import _reductions, _util
+from ._detail import _reductions, _util, _flips
 from ._ndarray import (
     array,
     asarray,
@@ -440,12 +440,22 @@ def expand_dims(a, axis):
 
 @asarray_replacer()
 def flip(m, axis=None):
-    # XXX: semantic difference: np.flip returns a view, torch.flip copies
-    if axis is None:
-        axis = tuple(range(m.ndim))
-    else:
-        axis = _util.normalize_axis_tuple(axis, m.ndim)
-    return torch.flip(m, axis)
+    return _flips.flip(m, axis)
+
+
+@asarray_replacer()
+def flipud(m):
+    return _flips.flipud(m)
+
+
+@asarray_replacer()
+def fliplr(m):
+    return _flips.fliplr(m)
+
+
+@asarray_replacer()
+def rot90(m, k=1, axes=(0, 1)):
+    return _flips.rot90(m, k, axes)
 
 
 @asarray_replacer()
@@ -467,6 +477,12 @@ def broadcast_arrays(*args, subok=False):
 @asarray_replacer()
 def moveaxis(a, source, destination):
     return asarray(torch.moveaxis(a, source, destination))
+
+
+def swapaxis(a, axis1, axis2):
+    arr = asarray(a)
+    return arr.swapaxes(axis1, axis2)
+
 
 
 def unravel_index(indices, shape, order="C"):
@@ -644,6 +660,7 @@ def prod(
         axis=axis, dtype=dtype, out=out, keepdims=keepdims, initial=initial, where=where
     )
 
+product = prod
 
 def cumprod(a, axis=None, dtype=None, out=None):
     arr = asarray(a)
