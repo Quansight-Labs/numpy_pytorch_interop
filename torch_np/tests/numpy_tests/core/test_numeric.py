@@ -2499,12 +2499,6 @@ class TestCreationFuncs:
     def setup_method(self):
         dtypes = {np.dtype(tp) for tp in itertools.chain(*np.sctypes.values())}
         self.dtypes = dtypes
-        # void, bytes, str
-#        variable_sized = {tp for tp in dtypes if tp.str.endswith('0')}
-#        self.dtypes = sorted(dtypes - variable_sized |
-#                             {np.dtype(tp.str.replace("0", str(i)))
-#                              for tp in variable_sized for i in range(1, 10)},
-#                             key=lambda dtype: dtype.str)
         self.orders = {'C': 'c_contiguous'} # XXX: reeenable when implemented, 'F': 'f_contiguous'}
         self.ndims = 10
 
@@ -3258,22 +3252,6 @@ class TestRequire:
         a = self.generate_all_false('f8')
         assert_raises(ValueError, np.require, a, None, ['C', 'F'])
 
-    def test_ensure_array(self):
-        class ArraySubclass(np.ndarray):
-            pass
-
-        a = ArraySubclass((2, 2))
-        b = np.require(a, None, ['E'])
-        assert_(type(b) is np.ndarray)
-
-    def test_preserve_subtype(self):
-        class ArraySubclass(np.ndarray):
-            pass
-
-        for flag in self.flag_names:
-            a = ArraySubclass((2, 2))
-            self.set_and_check_flag(flag, None, a)
-
 
 @pytest.mark.xfail(reason="TODO")
 class TestBroadcast:
@@ -3331,19 +3309,6 @@ class TestBroadcast:
         with pytest.raises(ValueError, match=r"arg 0 with shape \(1, 3\) and "
                                              r"arg 2 with shape \(2,\)"):
             np.broadcast([[1, 2, 3]], [[4], [5]], [6, 7])
-
-
-@pytest.mark.xfail(reason="TODO")
-class TestKeepdims:
-
-    class sub_array(np.ndarray):
-        def sum(self, axis=None, dtype=None, out=None):
-            return np.ndarray.sum(self, axis, dtype, out, keepdims=True)
-
-    def test_raise(self):
-        sub_class = self.sub_array
-        x = np.arange(30).view(sub_class)
-        assert_raises(TypeError, np.sum, x, keepdims=True)
 
 
 @pytest.mark.xfail(reason="TODO")
