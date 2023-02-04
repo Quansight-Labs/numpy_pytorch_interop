@@ -30,3 +30,22 @@ def rot90(m_tensor, k=1, axes=(0, 1)):
 def swapaxes(tensor, axis1, axis2):
     return torch.swapaxes(tensor, axis1, axis2)
 
+
+# https://github.com/numpy/numpy/blob/v1.24.0/numpy/core/numeric.py#L1259
+def rollaxis(tensor, axis, start=0):
+    n = tensor.ndim
+    axis = _util.normalize_axis_index(axis, n)
+    if start < 0:
+        start += n
+    msg = "'%s' arg requires %d <= %s < %d, but %d was passed in"
+    if not (0 <= start < n + 1):
+        raise _util.AxisError(msg % ('start', -n, 'start', n + 1, start))
+    if axis < start:
+        # it's been removed
+        start -= 1
+    if axis == start:
+        return tensor[...]
+    axes = list(range(0, n))
+    axes.remove(axis)
+    axes.insert(start, axis)
+    return tensor.view(axes)

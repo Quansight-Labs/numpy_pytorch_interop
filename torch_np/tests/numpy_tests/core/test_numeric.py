@@ -3101,7 +3101,6 @@ class TestRoll:
         assert_equal(np.roll(x, 1), np.array([]))
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestRollaxis:
 
     # expected shape indexed by (axis, start) for array of
@@ -3126,6 +3125,7 @@ class TestRollaxis:
         assert_raises(np.AxisError, np.rollaxis, a, 4, 0)
         assert_raises(np.AxisError, np.rollaxis, a, 0, 5)
 
+    @pytest.mark.xfail(reason="needs np.indices")
     def test_results(self):
         a = np.arange(1*2*3*4).reshape(1, 2, 3, 4).copy()
         aind = np.indices(a.shape)
