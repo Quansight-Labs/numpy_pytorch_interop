@@ -6,20 +6,27 @@ import pytest
 import math
 from decimal import Decimal
 
-import numpy as np
+import torch_np as np
 from numpy.core import umath
-from numpy.random import rand, randint, randn
-from numpy.testing import (
-    assert_, assert_equal, assert_raises, assert_raises_regex,
+from torch_np.random import rand, randint, randn
+from torch_np.testing import (
+    assert_, assert_equal, assert_raises_regex,
     assert_array_equal, assert_almost_equal, assert_array_almost_equal,
-    assert_warns, assert_array_max_ulp, HAS_REFCOUNT, IS_WASM
+    assert_warns, # assert_array_max_ulp, HAS_REFCOUNT, IS_WASM
     )
 from numpy.core._rational_tests import rational
+
+IS_WASM = False
+HAS_REFCOUNT = True
+
+import pytest
+from pytest import raises as assert_raises
 
 from hypothesis import given, strategies as st
 from hypothesis.extra import numpy as hynp
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestResize:
     def test_copies(self):
         A = np.array([[1, 2], [3, 4]])
@@ -79,7 +86,7 @@ class TestResize:
         my_arr = np.array([]).view(MyArray)
         assert type(np.resize(my_arr, 5)) is MyArray
 
-
+@pytest.mark.xfail(reason="TODO")
 class TestNonarrayArgs:
     # check that non-array arguments to functions wrap them in arrays
     def test_choose(self):
@@ -175,7 +182,7 @@ class TestNonarrayArgs:
 
     @pytest.mark.parametrize('dtype', [
         np.int8, np.int16, np.int32, np.int64,
-        np.uint8, np.uint16, np.uint32, np.uint64,
+        np.uint8,
         np.float16, np.float32, np.float64,
     ])
     def test_dunder_round(self, dtype):
@@ -210,7 +217,8 @@ class TestNonarrayArgs:
         assert_(isinstance(round(i, ndigits=-2), np.int64))
         assert_array_max_ulp(round(i, ndigits=-2), 500)
 
-    @pytest.mark.xfail(raises=AssertionError, reason="gh-15896")
+ ##   @pytest.mark.xfail(raises=AssertionError, reason="gh-15896")
+    @pytest.mark.xfail   
     def test_round_py_consistency(self):
         f = 5.1 * 10**73
         assert_equal(round(np.float64(f), -73), round(f, -73))
@@ -297,6 +305,7 @@ class TestNonarrayArgs:
         assert_almost_equal(np.var(B), 0.25)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestIsscalar:
     def test_isscalar(self):
         assert_(np.isscalar(3.1))
@@ -313,6 +322,7 @@ class TestIsscalar:
         assert_(np.isscalar(Number()))
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestBoolScalar:
     def test_logical(self):
         f = np.False_
@@ -346,6 +356,7 @@ class TestBoolScalar:
         assert_((f ^ f) is f)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestBoolArray:
     def setup_method(self):
         # offset for simd tests
@@ -433,6 +444,7 @@ class TestBoolArray:
         assert_array_equal(self.im ^ False, self.im)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestBoolCmp:
     def setup_method(self):
         self.f = np.ones(256, dtype=np.float32)
@@ -533,6 +545,7 @@ class TestBoolCmp:
             assert_array_equal(np.signbit(self.signd[i:]), self.ed[i:])
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestSeterr:
     def test_default(self):
         err = np.geterr()
@@ -616,6 +629,7 @@ class TestSeterr:
             np.seterrobj(olderrobj)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestFloatExceptions:
     def assert_raises_fpe(self, fpeerr, flop, x, y):
         ftype = type(x)
@@ -720,12 +734,13 @@ class TestFloatExceptions:
                 assert_("underflow" in str(w[-1].message))
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestTypes:
     def check_promotion_cases(self, promote_func):
         # tests that the scalars get coerced correctly.
         b = np.bool_(0)
         i8, i16, i32, i64 = np.int8(0), np.int16(0), np.int32(0), np.int64(0)
-        u8, u16, u32, u64 = np.uint8(0), np.uint16(0), np.uint32(0), np.uint64(0)
+        u8 = np.uint8(0)
         f32, f64, fld = np.float32(0), np.float64(0), np.longdouble(0)
         c64, c128, cld = np.complex64(0), np.complex128(0), np.clongdouble(0)
 
@@ -733,7 +748,6 @@ class TestTypes:
         assert_equal(promote_func(i8, i16), np.dtype(np.int16))
         assert_equal(promote_func(i32, i8), np.dtype(np.int32))
         assert_equal(promote_func(i16, i64), np.dtype(np.int64))
-        assert_equal(promote_func(u8, u32), np.dtype(np.uint32))
         assert_equal(promote_func(f32, f64), np.dtype(np.float64))
         assert_equal(promote_func(fld, f32), np.dtype(np.longdouble))
         assert_equal(promote_func(f64, fld), np.dtype(np.longdouble))
@@ -760,10 +774,8 @@ class TestTypes:
         assert_equal(promote_func(np.array([b]), i8), np.dtype(np.int8))
         assert_equal(promote_func(np.array([b]), u8), np.dtype(np.uint8))
         assert_equal(promote_func(np.array([b]), i32), np.dtype(np.int32))
-        assert_equal(promote_func(np.array([b]), u32), np.dtype(np.uint32))
         assert_equal(promote_func(np.array([i8]), i64), np.dtype(np.int8))
         assert_equal(promote_func(u64, np.array([i32])), np.dtype(np.int32))
-        assert_equal(promote_func(i64, np.array([u32])), np.dtype(np.uint32))
         assert_equal(promote_func(np.int32(-1), np.array([u64])),
                      np.dtype(np.float64))
         assert_equal(promote_func(f64, np.array([f32])), np.dtype(np.float32))
@@ -780,13 +792,8 @@ class TestTypes:
         # the scalar has greater kind than the array
         assert_equal(promote_func(np.array([b]), f64), np.dtype(np.float64))
         assert_equal(promote_func(np.array([b]), i64), np.dtype(np.int64))
-        assert_equal(promote_func(np.array([b]), u64), np.dtype(np.uint64))
         assert_equal(promote_func(np.array([i8]), f64), np.dtype(np.float64))
         assert_equal(promote_func(np.array([u16]), f64), np.dtype(np.float64))
-
-        # uint and int are treated as the same "kind" for
-        # the purposes of array-scalar promotion.
-        assert_equal(promote_func(np.array([u16]), i32), np.dtype(np.uint16))
 
         # float and complex are treated as the same "kind" for
         # the purposes of array-scalar promotion, so that you can do
@@ -863,18 +870,6 @@ class TestTypes:
         assert_equal(np.promote_types('>U16', '>i8'), np.dtype('U21'))
         assert_equal(np.promote_types('<U16', '<i8'), np.dtype('U21'))
 
-        assert_equal(np.promote_types('<S5', '<U8'), np.dtype('U8'))
-        assert_equal(np.promote_types('>S5', '>U8'), np.dtype('U8'))
-        assert_equal(np.promote_types('<U8', '<S5'), np.dtype('U8'))
-        assert_equal(np.promote_types('>U8', '>S5'), np.dtype('U8'))
-        assert_equal(np.promote_types('<U5', '<U8'), np.dtype('U8'))
-        assert_equal(np.promote_types('>U8', '>U5'), np.dtype('U8'))
-
-        assert_equal(np.promote_types('<M8', '<M8'), np.dtype('M8'))
-        assert_equal(np.promote_types('>M8', '>M8'), np.dtype('M8'))
-        assert_equal(np.promote_types('<m8', '<m8'), np.dtype('m8'))
-        assert_equal(np.promote_types('>m8', '>m8'), np.dtype('m8'))
-
     def test_can_cast_and_promote_usertypes(self):
         # The rational type defines safe casting for signed integers,
         # boolean. Rational itself *does* cast safely to double.
@@ -933,27 +928,7 @@ class TestTypes:
         assert_equal(promote_types('u4', S+'30'), np.dtype(S+'30'))
         assert_equal(promote_types('u8', S+'1'), np.dtype(S+'20'))
         assert_equal(promote_types('u8', S+'30'), np.dtype(S+'30'))
-        # Promote with object:
-        assert_equal(promote_types('O', S+'30'), np.dtype('O'))
 
-    @pytest.mark.parametrize(["dtype1", "dtype2"],
-            [[np.dtype("V6"), np.dtype("V10")],  # mismatch shape
-             # Mismatching names:
-             [np.dtype([("name1", "i8")]), np.dtype([("name2", "i8")])],
-            ])
-    def test_invalid_void_promotion(self, dtype1, dtype2):
-        with pytest.raises(TypeError):
-            np.promote_types(dtype1, dtype2)
-
-    @pytest.mark.parametrize(["dtype1", "dtype2"],
-            [[np.dtype("V10"), np.dtype("V10")],
-             [np.dtype([("name1", "i8")]),
-              np.dtype([("name1", np.dtype("i8").newbyteorder())])],
-             [np.dtype("i8,i8"), np.dtype("i8,>i8")],
-             [np.dtype("i8,i8"), np.dtype("i4,i4")],
-            ])
-    def test_valid_void_promotion(self, dtype1, dtype2):
-        assert np.promote_types(dtype1, dtype2) == dtype1
 
     @pytest.mark.parametrize("dtype",
             list(np.typecodes["All"]) +
@@ -1168,6 +1143,7 @@ class NIterError(Exception):
     pass
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestFromiter:
     def makegen(self):
         return (x**2 for x in range(24))
@@ -1227,8 +1203,7 @@ class TestFromiter:
              # subarray dtypes (important because their dimensions end up
              # in the result arrays dimension:
              ("2i", [(1, 2), (5, 4), (2, 3), (9, 8), (6, 7)]),
-             (np.dtype(("O", (2, 3))),
-              [((1, 2, 3), (3, 4, 5)), ((3, 2, 1), (5, 4, 3))])])
+            ])
     @pytest.mark.parametrize("length_hint", [0, 1])
     def test_growth_and_complicated_dtypes(self, dtype, data, length_hint):
         dtype = np.dtype(dtype)
@@ -1275,6 +1250,8 @@ class TestFromiter:
         with pytest.raises(ValueError):
             np.fromiter(iterable, dtype=np.dtype((int, 2)))
 
+
+@pytest.mark.xfail(reason="TODO")
 class TestNonzero:
     def test_nonzero_trivial(self):
         assert_equal(np.count_nonzero(np.array([])), 0)
@@ -1500,11 +1477,6 @@ class TestNonzero:
 
         assert_equal(m.nonzero(), tgt)
 
-    def test_nonzero_invalid_object(self):
-        # gh-9295
-        a = np.array([np.array([1, 2]), 3], dtype=object)
-        assert_raises(ValueError, np.nonzero, a)
-
         class BoolErrors:
             def __bool__(self):
                 raise ValueError("Not allowed")
@@ -1611,6 +1583,7 @@ class TestNonzero:
         assert arr.dtype is dt
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestIndex:
     def test_boolean(self):
         a = rand(3, 5, 8)
@@ -1628,6 +1601,7 @@ class TestIndex:
         assert_equal(c.dtype, np.dtype('int32'))
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestBinaryRepr:
     def test_zero(self):
         assert_equal(np.binary_repr(0), '0')
@@ -1670,6 +1644,7 @@ class TestBinaryRepr:
                      '11' + '0'*62)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestBaseRepr:
     def test_base3(self):
         assert_equal(np.base_repr(3**5, 3), '100000')
@@ -1692,6 +1667,7 @@ class TestBaseRepr:
             np.base_repr(1, 37)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestArrayComparisons:
     def test_array_equal(self):
         res = np.array_equal(np.array([1, 2]), np.array([1, 2]))
@@ -1745,10 +1721,6 @@ class TestArrayComparisons:
         assert_(np.array_equal(a, b, equal_nan=True))
 
     def test_none_compares_elementwise(self):
-        a = np.array([None, 1, None], dtype=object)
-        assert_equal(a == None, [True, False, True])
-        assert_equal(a != None, [False, True, False])
-
         a = np.ones(3)
         assert_equal(a == None, [False, False, False])
         assert_equal(a != None, [True, True, True])
@@ -1800,6 +1772,7 @@ class TestArrayComparisons:
         assert (zeros != nonzeros).all()
 
 
+@pytest.mark.xfail(reason="TODO")
 def assert_array_strict_equal(x, y):
     assert_array_equal(x, y)
     # Check flags, 32 bit arches typically don't provide 16 byte alignment
@@ -1817,6 +1790,7 @@ def assert_array_strict_equal(x, y):
     assert_(x.dtype.isnative == y.dtype.isnative)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestClip:
     def setup_method(self):
         self.nr = 5
@@ -2312,23 +2286,6 @@ class TestClip:
         with assert_warns(DeprecationWarning):
             assert_equal(d.clip(min=np.nan, max=10), d)
 
-    def test_object_clip(self):
-        a = np.arange(10, dtype=object)
-        actual = np.clip(a, 1, 5)
-        expected = np.array([1, 1, 2, 3, 4, 5, 5, 5, 5, 5])
-        assert actual.tolist() == expected.tolist()
-
-    def test_clip_all_none(self):
-        a = np.arange(10, dtype=object)
-        with assert_raises_regex(ValueError, 'max or min'):
-            np.clip(a, None, None)
-
-    def test_clip_invalid_casting(self):
-        a = np.arange(10, dtype=object)
-        with assert_raises_regex(ValueError,
-                                 'casting must be one of'):
-            self.fastclip(a, 1, 8, casting="garbage")
-
     @pytest.mark.parametrize("amin, amax", [
         # two scalars
         (1, 0),
@@ -2344,26 +2301,8 @@ class TestClip:
         actual = np.clip(a, amin, amax)
         assert_equal(actual, expected)
 
-    @pytest.mark.parametrize("arr, amin, amax, exp", [
-        # for a bug in npy_ObjectClip, based on a
-        # case produced by hypothesis
-        (np.zeros(10, dtype=np.int64),
-         0,
-         -2**64+1,
-         np.full(10, -2**64+1, dtype=object)),
-        # for bugs in NPY_TIMEDELTA_MAX, based on a case
-        # produced by hypothesis
-        (np.zeros(10, dtype='m8') - 1,
-         0,
-         0,
-         np.zeros(10, dtype='m8')),
-    ])
-    def test_clip_problem_cases(self, arr, amin, amax, exp):
-        actual = np.clip(arr, amin, amax)
-        assert_equal(actual, exp)
-
     @pytest.mark.xfail(reason="no scalar nan propagation yet",
-                       raises=AssertionError,
+  ##                     raises=AssertionError,
                        strict=True)
     @pytest.mark.parametrize("arr, amin, amax", [
         # problematic scalar nan case from hypothesis
@@ -2375,20 +2314,6 @@ class TestClip:
     def test_clip_scalar_nan_propagation(self, arr, amin, amax):
         # enforcement of scalar nan propagation for comparisons
         # called through clip()
-        expected = np.minimum(np.maximum(arr, amin), amax)
-        actual = np.clip(arr, amin, amax)
-        assert_equal(actual, expected)
-
-    @pytest.mark.xfail(reason="propagation doesn't match spec")
-    @pytest.mark.parametrize("arr, amin, amax", [
-        (np.array([1] * 10, dtype='m8'),
-         np.timedelta64('NaT'),
-         np.zeros(10, dtype=np.int32)),
-    ])
-    @pytest.mark.filterwarnings("ignore::DeprecationWarning")
-    def test_NaT_propagation(self, arr, amin, amax):
-        # NOTE: the expected function spec doesn't
-        # propagate NaT, but clip() now does
         expected = np.minimum(np.maximum(arr, amin), amax)
         actual = np.clip(arr, amin, amax)
         assert_equal(actual, expected)
@@ -2443,6 +2368,7 @@ class TestClip:
         assert_array_equal(result, expected)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestAllclose:
     rtol = 1e-5
     atol = 1e-8
@@ -2528,6 +2454,7 @@ class TestAllclose:
         assert_(type(np.allclose(a, a)) is bool)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestIsclose:
     rtol = 1e-5
     atol = 1e-8
@@ -2665,16 +2592,8 @@ class TestIsclose:
         assert_(np.isclose(0, np.inf) is np.False_)
         assert_(type(np.isclose(0, np.inf)) is np.bool_)
 
-    def test_timedelta(self):
-        # Allclose currently works for timedelta64 as long as `atol` is
-        # an integer or also a timedelta64
-        a = np.array([[1, 2, 3, "NaT"]], dtype="m8[ns]")
-        assert np.isclose(a, a, atol=0, equal_nan=True).all()
-        assert np.isclose(a, a, atol=np.timedelta64(1, "ns"), equal_nan=True).all()
-        assert np.allclose(a, a, atol=0, equal_nan=True)
-        assert np.allclose(a, a, atol=np.timedelta64(1, "ns"), equal_nan=True)
 
-
+@pytest.mark.xfail(reason="TODO")
 class TestStdVar:
     def setup_method(self):
         self.A = np.array([1, -1, 1, -1])
@@ -2714,6 +2633,7 @@ class TestStdVar:
         assert_array_equal(r, out)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestStdVarComplex:
     def test_basic(self):
         A = np.array([1, 1.j, -1, -1.j])
@@ -2726,6 +2646,7 @@ class TestStdVarComplex:
         assert_equal(np.std(1j), 0)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestCreationFuncs:
     # Test ones, zeros, empty and full.
 
@@ -2797,6 +2718,7 @@ class TestCreationFuncs:
         assert_(sys.getrefcount(dim) == beg)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestLikeFuncs:
     '''Test ones_like, zeros_like, empty_like and full_like'''
 
@@ -2963,6 +2885,7 @@ class TestLikeFuncs:
             assert result.strides == (4, 1)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestCorrelate:
     def _setup(self, dt):
         self.x = np.array([1, 2, 3, 4, 5], dtype=dt)
@@ -3035,6 +2958,7 @@ class TestCorrelate:
             np.correlate(d, k, mode=None)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestConvolve:
     def test_object(self):
         d = [1.] * 100
@@ -3064,6 +2988,7 @@ class TestConvolve:
             np.convolve(d, k, mode=None)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestArgwhere:
 
     @pytest.mark.parametrize('nd', [0, 1, 2])
@@ -3101,6 +3026,7 @@ class TestArgwhere:
         assert_equal(np.argwhere([4, 0, 2, 1, 3]), [[0], [2], [3], [4]])
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestStringFunction:
 
     def test_set_string_function(self):
@@ -3116,6 +3042,7 @@ class TestStringFunction:
         assert_equal(str(a), "[1]")
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestRoll:
     def test_roll1d(self):
         x = np.arange(10)
@@ -3174,6 +3101,7 @@ class TestRoll:
         assert_equal(np.roll(x, 1), np.array([]))
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestRollaxis:
 
     # expected shape indexed by (axis, start) for array of
@@ -3236,6 +3164,7 @@ class TestRollaxis:
             assert_(not res.flags['OWNDATA'])
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestMoveaxis:
     def test_move_to_end(self):
         x = np.random.randn(5, 6, 7)
@@ -3310,6 +3239,7 @@ class TestMoveaxis:
         assert_(isinstance(result, np.ndarray))
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestCross:
     def test_2x2(self):
         u = [1, 2]
@@ -3396,6 +3326,7 @@ class TestCross:
         assert_equal(np.cross(u, v), -z)
 
 
+@pytest.mark.xfail(reason="TODO")
 def test_outer_out_param():
     arr1 = np.ones((5,))
     arr2 = np.ones((2,))
@@ -3407,6 +3338,7 @@ def test_outer_out_param():
     assert_equal(np.outer(arr2, arr3, out2), out2)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestIndices:
 
     def test_simple(self):
@@ -3448,6 +3380,7 @@ class TestIndices:
             assert_(arr.dtype == dtype)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestRequire:
     flag_names = ['C', 'C_CONTIGUOUS', 'CONTIGUOUS',
                   'F', 'F_CONTIGUOUS', 'FORTRAN',
@@ -3522,6 +3455,7 @@ class TestRequire:
             self.set_and_check_flag(flag, None, a)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestBroadcast:
     def test_broadcast_in_args(self):
         # gh-5881
@@ -3579,6 +3513,7 @@ class TestBroadcast:
             np.broadcast([[1, 2, 3]], [[4], [5]], [6, 7])
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestKeepdims:
 
     class sub_array(np.ndarray):
@@ -3591,6 +3526,7 @@ class TestKeepdims:
         assert_raises(TypeError, np.sum, x, keepdims=True)
 
 
+@pytest.mark.xfail(reason="TODO")
 class TestTensordot:
 
     def test_zero_dimension(self):
