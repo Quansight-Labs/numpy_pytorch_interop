@@ -8,9 +8,10 @@ from torch_np.testing import (
 from pytest import raises as assert_raises
 
 from torch_np import (
-    arange, add, fliplr, flipud, zeros, ones, eye, array, diag, histogram2d,
-    tri, mask_indices, triu_indices, triu_indices_from, tril_indices,
-    tril_indices_from, vander,
+    arange, add, fliplr, flipud, zeros, ones, eye, array, #diag, histogram2d,
+    tri, # mask_indices,
+    triu_indices, triu_indices_from, tril_indices,
+    tril_indices_from, # vander,
     )
 
 import torch_np as np
