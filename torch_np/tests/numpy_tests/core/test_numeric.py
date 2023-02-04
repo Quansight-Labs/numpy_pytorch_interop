@@ -2988,7 +2988,6 @@ class TestConvolve:
             np.convolve(d, k, mode=None)
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestArgwhere:
 
     @pytest.mark.parametrize('nd', [0, 1, 2])
@@ -3002,12 +3001,12 @@ class TestArgwhere:
 
         # only one
         x[...] = False
-        x.flat[0] = True
+        x.ravel()[0] = True
         assert_equal(np.argwhere(x).shape, (1, nd))
 
         # all but one
         x[...] = True
-        x.flat[0] = False
+        x.ravel()[0] = False
         assert_equal(np.argwhere(x).shape, (x.size - 1, nd))
 
         # all
