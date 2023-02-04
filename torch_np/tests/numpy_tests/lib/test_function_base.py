@@ -130,7 +130,7 @@ class TestFlip:
         assert_raises(np.AxisError, np.flip, np.ones((4, 4)), axis=-3)
         assert_raises(np.AxisError, np.flip, np.ones((4, 4)), axis=(0, 3))
 
-    @pytest.mark.xfail(reason='no [::-1] indexing')
+    @pytest.mark.skip(reason='no [::-1] indexing')
     def test_basic_lr(self):
         a = get_mat(4)
         b = a[:, ::-1]
@@ -141,7 +141,7 @@ class TestFlip:
              [5, 4, 3]]
         assert_equal(np.flip(a, 1), b)
 
-    @pytest.mark.xfail(reason='no [::-1] indexing')
+    @pytest.mark.skip(reason='no [::-1] indexing')
     def test_basic_ud(self):
         a = get_mat(4)
         b = a[::-1, :]

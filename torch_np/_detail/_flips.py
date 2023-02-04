@@ -32,7 +32,12 @@ def swapaxes(tensor, axis1, axis2):
     return torch.swapaxes(tensor, axis1, axis2)
 
 
+# Straight vendor from:
 # https://github.com/numpy/numpy/blob/v1.24.0/numpy/core/numeric.py#L1259
+#
+# Also note this function in NumPy is mostly retained for backwards compat
+# (https://stackoverflow.com/questions/29891583/reason-why-numpy-rollaxis-is-so-confusing)
+# so let's not touch it unless hard pressed.
 def rollaxis(tensor, axis, start=0):
     n = tensor.ndim
     axis = _util.normalize_axis_index(axis, n)
