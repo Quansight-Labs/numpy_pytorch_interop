@@ -481,7 +481,7 @@ def moveaxis(a, source, destination):
     return asarray(torch.moveaxis(a, source, destination))
 
 
-def swapaxis(a, axis1, axis2):
+def swapaxes(a, axis1, axis2):
     arr = asarray(a)
     return arr.swapaxes(axis1, axis2)
 
@@ -539,15 +539,18 @@ def roll(a, shift, axis=None):
     return a.roll(shift, axis)
 
 
-@asarray_replacer()
 def round_(a, decimals=0, out=None):
-    if torch.is_floating_point(a):
-        return torch.round(a, decimals=decimals, out=out)
-    else:
-        return a
+    arr = asarray(a)
+    return arr.round(decimals, out=out)
 
 
 around = round_
+round = round_
+
+
+def clip(a, a_min, a_max, out=None):
+    arr = asarray(a)
+    return arr.clip(a_min, a_max, out=out)
 
 
 ###### tri{l, u} and related

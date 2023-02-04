@@ -82,6 +82,14 @@ class ndarray:
     def imag(self, value):
         self._tensor.imag = asarray(value).get()
 
+    def round(self, decimals=0, out=None):
+        tensor = self._tensor
+        if torch.is_floating_point(tensor):
+            result = torch.round(tensor, decimals=decimals)
+        else:
+            result = tensor
+        return _helpers.result_or_out(result, out)
+
     # ctors
     def astype(self, dtype):
         newt = ndarray()
@@ -265,7 +273,7 @@ class ndarray:
         return ndarray._from_tensor_and_base(tensor, self)
 
     def swapaxes(self, axis1, axis2):
-        return _flips.swapaxes(self._tensor, axis1, axis2)
+        return asarray(_flips.swapaxes(self._tensor, axis1, axis2))
 
     def ravel(self, order="C"):
         if order != "C":
@@ -275,6 +283,27 @@ class ndarray:
     def nonzero(self):
         tensor = self._tensor
         return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
+
+    def clip(self, min, max, out=None):
+        tensor = self._tensor
+        a_min, a_max = min, max
+
+        t_min = None
+        if a_min is not None:
+            t_min = asarray(a_min).get()
+            t_min = torch.broadcast_to(t_min, tensor.shape)
+
+        t_max = None
+        if a_max is not None:
+            t_max = asarray(a_max).get()
+            t_max = torch.broadcast_to(t_max, tensor.shape)
+
+        if t_min is None and t_max is None:
+            raise ValueError("One of max or min must be given")
+
+        result = tensor.clamp(t_min, t_max)
+
+        return _helpers.result_or_out(result, out)
 
     argmin = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmin))
     argmax = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmax))
