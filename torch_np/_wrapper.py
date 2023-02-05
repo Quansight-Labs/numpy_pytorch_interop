@@ -9,6 +9,7 @@ import torch
 
 from . import _dtypes, _helpers, _decorators
 from ._detail import _flips, _reductions, _util
+from ._detail import implementations as _impl
 from ._ndarray import (
     array,
     asarray,
@@ -52,8 +53,6 @@ from ._ndarray import (
 #   - two-arg functions (second may be None)
 #   - first arg is a sequence/tuple (_stack familty, concatenate, atleast_Nd etc)
 #   - optional out arg
-#
-#  5. handle the out= arg: verify dimensions, handle dtype (blocked on dtype decision)
 
 
 NoValue = None
@@ -904,6 +903,23 @@ def isclose(a, b, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
 def allclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
     arr_res = isclose(a, b, rtol, atol, equal_nan)
     return arr_res.all()
+
+
+def array_equal(a1, a2, equal_nan=False):
+    a1_t, a2_t = _helpers.to_tensors(a1, a2)
+    result = _impl.tensor_equal(a1_t, a2_t, equal_nan)
+    return result
+
+
+def array_equiv(a1, a2):
+    a1_t, a2_t = _helpers.to_tensors(a1, a2)
+    try:
+        a1_t, a2_t = torch.broadcast_tensors(a1_t, a2_t)
+    except RuntimeError:
+        # failed to broadcast => not equivalent
+        return False
+    return _impl.tensor_equal(a1_t, a2_t)
+
 
 ###### mapping from numpy API objects to wrappers from this module ######
 
