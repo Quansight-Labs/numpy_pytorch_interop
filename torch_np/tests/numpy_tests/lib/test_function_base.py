@@ -10,7 +10,7 @@ import hypothesis.strategies as st
 
 
 import torch_np as np
-# from numpy import ma
+
 from torch_np.testing import (assert_, assert_equal, assert_array_equal, assert_almost_equal,
     assert_array_almost_equal, assert_allclose, # IS_PYPY,
     assert_warns, assert_raises_regex, suppress_warnings, # HAS_REFCOUNT, IS_WASM
@@ -27,13 +27,14 @@ from torch_np.random import rand
 
 # FIXME: make from torch_np
 from numpy.lib import (
-    add_newdoc_ufunc, angle, bartlett, blackman, corrcoef, cov,
+    angle, bartlett, blackman, cov,
     delete, diff, digitize, extract, gradient, hamming, hanning,
     i0, insert, interp, kaiser, meshgrid, msort, piecewise, place,
     select, setxor1d, sinc, trapz, trim_zeros, unwrap, unique, vectorize
     )
 from torch_np._detail._util import normalize_axis_tuple
 
+from torch_np import corrcoef
 
 def get_mat(n):
     data = np.arange(n)
@@ -1965,7 +1966,7 @@ class TestCheckFinite:
         assert_(a.dtype == np.float64)
 
 
-@pytest.mark.xfail(reason='TODO: implement')
+#@pytest.mark.xfail(reason='TODO: implement')
 class TestCorrCoef:
     A = np.array(
         [[0.15391142, 0.18045767, 0.14197213],
@@ -2000,6 +2001,7 @@ class TestCorrCoef:
         assert_almost_equal(tgt2, self.res2)
         assert_(np.all(np.abs(tgt2) <= 1.0))
 
+    @pytest.mark.skip(reason="deprecated in numpy, ignore")
     def test_ddof(self):
         # ddof raises DeprecationWarning
         with suppress_warnings() as sup:
@@ -2012,6 +2014,7 @@ class TestCorrCoef:
             assert_almost_equal(corrcoef(self.A, ddof=3), self.res1)
             assert_almost_equal(corrcoef(self.A, self.B, ddof=3), self.res2)
 
+    @pytest.mark.skip(reason="deprecated in numpy, ignore")
     def test_bias(self):
         # bias raises DeprecationWarning
         with suppress_warnings() as sup:
@@ -3474,7 +3477,6 @@ class TestLerp:
         assert nfb._lerp(a, b, t) == 2.6
 
 
-#@pytest.mark.xfail(reason='TODO: implement')
 class TestMedian:
 
     def test_basic(self):

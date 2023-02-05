@@ -312,21 +312,27 @@ def identity(n, dtype=None, *, like=None):
 
 ###### misc/unordered
 
-
-@asarray_replacer()
+@_decorators.dtype_to_torch
 def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
     if bias is not None or ddof is not None:
         # deprecated in NumPy
         raise NotImplementedError
+
+    # https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/function_base.py#L2636
     if y is not None:
-        # go figure what it means, XXX
-        raise NotImplementedError
+        x = array(x, ndmin=2)
+        y = array(y, ndmin=2)
+        x = concatenate((x, y), axis=0)
+
+    x_tensor = asarray(x).get()
 
     if rowvar is False:
-        x = x.T
+        x_tensor = x_tensor.T
     if dtype is not None:
-        x = x.to(dtype)
-    return torch.corrcoef(x)
+        x_tensor = x_tensor.to(dtype)
+    result = torch.corrcoef(x_tensor)
+
+    return asarray(result)
 
 
 def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
