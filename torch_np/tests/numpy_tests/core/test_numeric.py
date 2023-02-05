@@ -366,7 +366,6 @@ class TestBoolScalar:
         assert_((f ^ f) is f)
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestBoolArray:
     def setup_method(self):
         # offset for simd tests
@@ -454,7 +453,7 @@ class TestBoolArray:
         assert_array_equal(self.im ^ False, self.im)
 
 
-@pytest.mark.xfail(reason="TODO")
+@pytest.mark.xfail(reason="TODO: needs fancy indexing")
 class TestBoolCmp:
     def setup_method(self):
         self.f = np.ones(256, dtype=np.float32)
