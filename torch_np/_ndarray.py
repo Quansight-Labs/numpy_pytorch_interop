@@ -125,7 +125,7 @@ class ndarray:
             falsy = torch.full(self.shape, fill_value=False, dtype=bool)
             return asarray(falsy)
 
-    def __neq__(self, other):
+    def __ne__(self, other):
         try:
             return _binary_ufuncs.not_equal(self, other)
         except (RuntimeError, TypeError):
