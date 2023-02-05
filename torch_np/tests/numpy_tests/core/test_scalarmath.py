@@ -689,7 +689,6 @@ class TestAbs:
         self._test_abs_func(np.abs, dtype)
 
 
-@pytest.mark.xfail(reason='TODO: implement bit shifts')
 class TestBitShifts:
 
     @pytest.mark.parametrize('type_code', np.typecodes['AllInteger'])
@@ -704,11 +703,14 @@ class TestBitShifts:
             for shift in [nbits, nbits + 4]:
                 val_scl = np.array(val).astype(dt)[()]
                 shift_scl = dt.type(shift)
+
                 res_scl = op(val_scl, shift_scl)
                 if val_scl < 0 and op is operator.rshift:
                     # sign bit is preserved
                     assert_equal(res_scl, -1)
                 else:
+                    if type_code in ('i', 'l') and shift == np.iinfo(type_code).bits:
+                        pytest.xfail("https://github.com/pytorch/pytorch/issues/70904")
                     assert_equal(res_scl, 0)
 
                 # Result on scalars should be the same as on arrays
@@ -718,7 +720,7 @@ class TestBitShifts:
                 assert_equal(res_arr, res_scl)
 
 
-@pytest.mark.xfail(reason='Will rely on pytest for hashing')
+@pytest.mark.skip(reason='Will rely on pytest for hashing')
 class TestHash:
     @pytest.mark.parametrize("type_code", np.typecodes['AllInteger'])
     def test_integer_hashes(self, type_code):

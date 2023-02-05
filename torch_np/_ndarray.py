@@ -236,6 +236,17 @@ class ndarray:
     def __ixor__(self, other):
         return _binary_ufuncs.bitwise_xor(self, other, out=self)
 
+    # bit shifts
+    __lshift__ = __rlshift__ = _binary_ufuncs.left_shift
+
+    def __ilshift__(self, other):
+        return _binary_ufuncs.left_shift(self, other, out=self)
+
+    __rshift__ = __rrshift__ = _binary_ufuncs.right_shift
+
+    def __irshift__(self, other):
+        return _binary_ufuncs.right_shift(self, other, out=self)
+
     # unary ops
     __invert__ = _unary_ufuncs.invert
     __abs__ = _unary_ufuncs.absolute
