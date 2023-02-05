@@ -2863,7 +2863,6 @@ class TestStringFunction:
         assert_equal(str(a), "[1]")
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestRoll:
     def test_roll1d(self):
         x = np.arange(10)

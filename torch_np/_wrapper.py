@@ -536,6 +536,10 @@ count_nonzero = emulate_out_arg(axis_keepdims_wrapper(_reductions.count_nonzero)
 
 @asarray_replacer()
 def roll(a, shift, axis=None):
+    if axis is not None:
+        axis = _util.normalize_axis_tuple(axis, a.ndim, allow_duplicate=True)
+        if not isinstance(shift, tuple):
+            shift = (shift,) * len(axis)
     return a.roll(shift, axis)
 
 

@@ -794,10 +794,6 @@ def resize(a, new_shape):
     raise NotImplementedError
 
 
-def rollaxis(a, axis, start=0):
-    raise NotImplementedError
-
-
 def roots(p):
     raise NotImplementedError
 
