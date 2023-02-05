@@ -368,9 +368,24 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     return _helpers.result_or_out(result, out)
 
 
-@asarray_replacer()
 def bincount(x, /, weights=None, minlength=0):
-    return torch.bincount(x, weights, minlength)
+    if not isinstance(x, ndarray) and x == []:
+        # edge case allowed by numpy
+        x = asarray([], dtype=int)
+
+    x_tensor = asarray(x).get()
+
+    # XXX: default_dtype use torch dtypes
+    from ._detail._scalar_types import default_int_type
+    int_dtype = default_int_type.torch_dtype
+    x_tensor, = _util.cast_dont_broadcast((x_tensor,), int_dtype, casting='safe')
+
+    weights_tensor = None
+    if weights is not None:
+        weights_tensor = asarray(weights).get()
+
+    result = torch.bincount(x_tensor, weights_tensor, minlength)
+    return asarray(result)
 
 
 # YYY: pattern: sequence of arrays
