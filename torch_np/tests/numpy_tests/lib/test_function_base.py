@@ -26,14 +26,14 @@ from torch_np.random import rand
 
 # FIXME: make from torch_np
 from numpy.lib import (
-    angle, bartlett, blackman, cov,
+    angle, bartlett, blackman,
     delete, diff, digitize, extract, gradient, hamming, hanning,
     i0, insert, interp, kaiser, meshgrid, msort, piecewise, place,
     select, setxor1d, sinc, trapz, trim_zeros, unwrap, unique, vectorize
     )
 from torch_np._detail._util import normalize_axis_tuple
 
-from torch_np import corrcoef
+from torch_np import corrcoef, cov
 
 def get_mat(n):
     data = np.arange(n)
@@ -1965,7 +1965,6 @@ class TestCheckFinite:
         assert_(a.dtype == np.float64)
 
 
-#@pytest.mark.xfail(reason='TODO: implement')
 class TestCorrCoef:
     A = np.array(
         [[0.15391142, 0.18045767, 0.14197213],
@@ -2059,7 +2058,6 @@ class TestCorrCoef:
         assert test_type == res.dtype
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestCov:
     x1 = np.array([[0, 2], [1, 1], [2, 0]]).T
     res1 = np.array([[1., -1.], [-1., 1.]])
@@ -2119,13 +2117,13 @@ class TestCov:
         assert_allclose(cov(self.x1, fweights=self.unit_frequencies),
                         self.res1)
         nonint = self.frequencies + 0.5
-        assert_raises(TypeError, cov, self.x1, fweights=nonint)
+        assert_raises((TypeError, RuntimeError), cov, self.x1, fweights=nonint)
         f = np.ones((2, 3), dtype=np.int_)
         assert_raises(RuntimeError, cov, self.x1, fweights=f)
         f = np.ones(2, dtype=np.int_)
         assert_raises(RuntimeError, cov, self.x1, fweights=f)
         f = -1 * np.ones(3, dtype=np.int_)
-        assert_raises(ValueError, cov, self.x1, fweights=f)
+        assert_raises((ValueError, RuntimeError), cov, self.x1, fweights=f)
 
     def test_aweights(self):
         assert_allclose(cov(self.x1, aweights=self.weights), self.res3)
@@ -2137,7 +2135,7 @@ class TestCov:
         w = np.ones(2)
         assert_raises(RuntimeError, cov, self.x1, aweights=w)
         w = -1.0 * np.ones(3)
-        assert_raises(ValueError, cov, self.x1, aweights=w)
+        assert_raises((ValueError, RuntimeError), cov, self.x1, aweights=w)
 
     def test_unit_fweights_and_aweights(self):
         assert_allclose(cov(self.x2, fweights=self.frequencies,

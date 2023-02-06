@@ -7,7 +7,7 @@ pytorch tensors.
 
 import torch
 
-from . import _dtypes, _helpers, _decorators
+from . import _decorators, _dtypes, _helpers
 from ._detail import _flips, _reductions, _util
 from ._detail import implementations as _impl
 from ._ndarray import (
@@ -312,6 +312,7 @@ def identity(n, dtype=None, *, like=None):
 
 ###### misc/unordered
 
+
 @_decorators.dtype_to_torch
 def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
     if bias is not None or ddof is not None:
@@ -321,7 +322,13 @@ def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
     # https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/function_base.py#L2636
     if y is not None:
         x = array(x, ndmin=2)
+        if not rowvar and x.shape[0] != 1:
+            x = x.T
+
         y = array(y, ndmin=2)
+        if not rowvar and y.shape[0] != 1:
+            y = y.T
+
         x = concatenate((x, y), axis=0)
 
     x_tensor = asarray(x).get()
@@ -339,6 +346,60 @@ def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
         x_tensor = x_tensor.to(dtype)
 
     result = torch.corrcoef(x_tensor)
+
+    if is_half:
+        result = result.to(torch.float16)
+
+    return asarray(result)
+
+
+@_decorators.dtype_to_torch
+def cov(
+    m,
+    y=None,
+    rowvar=True,
+    bias=False,
+    ddof=None,
+    fweights=None,
+    aweights=None,
+    *,
+    dtype=None,
+):
+    # https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/function_base.py#L2636
+    if y is not None:
+        m = array(m, ndmin=2)
+        if not rowvar and m.shape[0] != 1:
+            m = m.T
+
+        y = array(y, ndmin=2)
+        if not rowvar and y.shape[0] != 1:
+            y = y.T
+
+        m = concatenate((m, y), axis=0)
+
+    if ddof is None:
+        if bias == 0:
+            ddof = 1
+        else:
+            ddof = 0
+
+    # work with tensors from now on
+    m_tensor, fweights_tensor, aweights_tensor = _helpers.to_tensors_or_none(
+        m, fweights, aweights
+    )
+
+    is_half = False
+    if dtype == torch.float16:
+        # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
+        is_half = True
+        dtype = torch.float32
+
+    if dtype is not None:
+        m_tensor = m_tensor.to(dtype)
+
+    result = torch.cov(
+        m_tensor, correction=ddof, aweights=aweights_tensor, fweights=fweights_tensor
+    )
 
     if is_half:
         result = result.to(torch.float16)
@@ -394,8 +455,9 @@ def bincount(x, /, weights=None, minlength=0):
 
     # XXX: default_dtype use torch dtypes
     from ._detail._scalar_types import default_int_type
+
     int_dtype = default_int_type.torch_dtype
-    x_tensor, = _util.cast_dont_broadcast((x_tensor,), int_dtype, casting='safe')
+    (x_tensor,) = _util.cast_dont_broadcast((x_tensor,), int_dtype, casting="safe")
 
     weights_tensor = None
     if weights is not None:

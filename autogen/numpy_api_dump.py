@@ -204,20 +204,6 @@ def correlate(a, v, mode="valid"):
     raise NotImplementedError
 
 
-def cov(
-    m,
-    y=None,
-    rowvar=True,
-    bias=False,
-    ddof=None,
-    fweights=None,
-    aweights=None,
-    *,
-    dtype=None,
-):
-    raise NotImplementedError
-
-
 def cross(a, b, axisa=-1, axisb=-1, axisc=-1, axis=None):
     raise NotImplementedError
 
