@@ -111,7 +111,8 @@ def expand_shape(arr_shape, axis):
 def apply_keepdims(tensor, axis, ndim):
     if axis is None:
         # tensor was a scalar
-        tensor = torch.full((1,) * ndim, fill_value=tensor, dtype=tensor.dtype)
+        shape = (1,) * ndim
+        tensor = tensor.expand(shape).contiguous()  # avoid CUDA synchronization
     else:
         shape = expand_shape(tensor.shape, axis)
         tensor = tensor.reshape(shape)
@@ -211,8 +212,8 @@ def cast_and_broadcast(tensors, out_param, casting):
     return tuple(processed_tensors)
 
 
-def axis_keepdims(func, tensor, axis, keepdims, *args, **kwds):
-    """Generically handle axis and keepdims arguments in reductions."""
+def axis_expand_func(func, tensor, axis, *args, **kwds):
+    """Generically handle axis arguments in reductions."""
     if axis is not None:
         if not isinstance(axis, (list, tuple)):
             axis = (axis,)
@@ -225,8 +226,18 @@ def axis_keepdims(func, tensor, axis, keepdims, *args, **kwds):
 
     result = func(tensor, axis=axis, *args, **kwds)
 
-    if keepdims:
-        result = apply_keepdims(result, axis, tensor.ndim)
+    return result
+
+
+def axis_ravel_func(func, tensor, axis, *args, **kwds):
+    """Generically handle axis arguments in cumsum/cumprod."""
+    if axis is not None:
+        axis = normalize_axis_index(axis, tensor.ndim)
+
+    tensors, axis = axis_none_ravel(tensor, axis=axis)
+    tensor = tensors[0]
+
+    result = func(tensor, axis=axis, *args, **kwds)
 
     return result
 

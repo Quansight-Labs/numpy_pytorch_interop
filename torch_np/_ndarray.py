@@ -3,7 +3,13 @@ import functools
 import torch
 
 from . import _binary_ufuncs, _dtypes, _helpers, _unary_ufuncs
-from ._decorators import NoValue, axis_keepdims_wrapper, dtype_to_torch, emulate_out_arg
+from ._decorators import (
+    NoValue,
+    axis_keepdims_wrapper,
+    axis_none_ravel_wrapper,
+    dtype_to_torch,
+    emulate_out_arg,
+)
 from ._detail import _reductions, _util
 
 newaxis = None
@@ -274,12 +280,20 @@ class ndarray:
     all = emulate_out_arg(axis_keepdims_wrapper(_reductions.all))
     max = emulate_out_arg(axis_keepdims_wrapper(_reductions.max))
     min = emulate_out_arg(axis_keepdims_wrapper(_reductions.min))
+    ptp = emulate_out_arg(axis_keepdims_wrapper(_reductions.ptp))
 
     sum = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.sum)))
     prod = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.prod)))
     mean = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.mean)))
     var = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.var)))
     std = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.std)))
+
+    cumprod = emulate_out_arg(
+        axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumprod))
+    )
+    cumsum = emulate_out_arg(
+        axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumsum))
+    )
 
     ### indexing ###
     def __getitem__(self, *args, **kwds):
@@ -380,6 +394,8 @@ def result_type(*arrays_and_dtypes):
             dtypes.append(_dtypes.dtype(entry))
         elif isinstance(entry, _dtypes.DType):
             dtypes.append(entry)
+        elif isinstance(entry, str):
+            dtypes.append(_dtypes.dtype(entry))
         else:
             dtypes.append(asarray(entry).dtype)
 

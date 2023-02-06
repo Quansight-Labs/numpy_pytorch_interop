@@ -242,14 +242,6 @@ def cross(a, b, axisa=-1, axisb=-1, axisc=-1, axis=None):
     raise NotImplementedError
 
 
-def cumprod(a, axis=None, dtype=None, out=None):
-    raise NotImplementedError
-
-
-def cumproduct(*args, **kwargs):
-    raise NotImplementedError
-
-
 def cumsum(a, axis=None, dtype=None, out=None):
     raise NotImplementedError
 
@@ -610,10 +602,6 @@ def may_share_memory(a, b, /, max_work=None):
     raise NotImplementedError
 
 
-def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
-    raise NotImplementedError
-
-
 def meshgrid(*xi, copy=True, sparse=False, indexing="xy"):
     raise NotImplementedError
 
@@ -734,20 +722,6 @@ def partition(a, kth, axis=-1, kind="introselect", order=None):
     raise NotImplementedError
 
 
-def percentile(
-    a,
-    q,
-    axis=None,
-    out=None,
-    overwrite_input=False,
-    method="linear",
-    keepdims=False,
-    *,
-    interpolation=None,
-):
-    raise NotImplementedError
-
-
 def piecewise(x, condlist, funclist, *args, **kw):
     raise NotImplementedError
 
@@ -800,10 +774,6 @@ def product(*args, **kwargs):
     raise NotImplementedError
 
 
-def ptp(a, axis=None, out=None, keepdims=NoValue):
-    raise NotImplementedError
-
-
 def put(a, ind, v, mode="raise"):
     raise NotImplementedError
 
@@ -813,20 +783,6 @@ def put_along_axis(arr, indices, values, axis):
 
 
 def putmask(a, mask, values):
-    raise NotImplementedError
-
-
-def quantile(
-    a,
-    q,
-    axis=None,
-    out=None,
-    overwrite_input=False,
-    method="linear",
-    keepdims=False,
-    *,
-    interpolation=None,
-):
     raise NotImplementedError
 
 

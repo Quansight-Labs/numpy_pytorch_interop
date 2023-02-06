@@ -40,13 +40,26 @@ def cast_and_broadcast(tensors, out, casting):
     return tuple(tensors)
 
 
-def result_or_out(result_tensor, out_array=None):
-    """A helper for returns with out= argument."""
+def result_or_out(result_tensor, out_array=None, promote_scalar=False):
+    """A helper for returns with out= argument.
+
+    If `promote_scalar is True`, then:
+        if result_tensor.numel() == 1 and out is zero-dimensional,
+            result_tensor is placed into the out array.
+    This weirdness is used e.g. in `np.percentile`
+    """
     if out_array is not None:
         if not isinstance(out_array, ndarray):
             raise TypeError("Return arrays must be of ArrayType")
         if result_tensor.shape != out_array.shape:
-            raise ValueError("Bad size of the out array.")
+            can_fit = result_tensor.numel() == 1 and out_array.ndim == 0
+            if promote_scalar and can_fit:
+                result_tensor = result_tensor.squeeze()
+            else:
+                raise ValueError(
+                    f"Bad size of the out array: out.shape = {out_array.shape}"
+                    f" while result.shape = {result_tensor.shape}."
+                )
         out_tensor = out_array.get()
         out_tensor.copy_(result_tensor)
         return out_array

@@ -604,6 +604,11 @@ def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValu
 min = amin
 
 
+def ptp(a, axis=None, out=None, keepdims=NoValue):
+    arr = asarray(a)
+    return arr.ptp(axis=axis, out=out, keepdims=keepdims)
+
+
 def all(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
     arr = asarray(a)
     return arr.all(axis=axis, out=out, keepdims=keepdims, where=where)
@@ -640,6 +645,19 @@ def prod(
     )
 
 
+def cumprod(a, axis=None, dtype=None, out=None):
+    arr = asarray(a)
+    return arr.cumprod(axis=axis, dtype=dtype, out=out)
+
+
+cumproduct = cumprod
+
+
+def cumsum(a, axis=None, dtype=None, out=None):
+    arr = asarray(a)
+    return arr.cumsum(axis=axis, dtype=dtype, out=out)
+
+
 # YYY: pattern : ddof
 
 
@@ -654,6 +672,79 @@ def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=N
     arr = asarray(a)
     return arr.var(
         axis=axis, dtype=dtype, out=out, ddof=ddof, keepdims=keepdims, where=where
+    )
+
+
+def average(a, axis=None, weights=None, returned=False, *, keepdims=NoValue):
+
+    if weights is None:
+        result = mean(a, axis=axis, keepdims=keepdims)
+        if returned:
+            scl = result.dtype.type(a.size / result.size)
+            return result, scl
+        return result
+
+    a_tensor, w_tensor = _helpers.to_tensors(a, weights)
+
+    result, wsum = _reductions.average(a_tensor, axis, w_tensor)
+
+    # keepdims
+    if keepdims:
+        result = _util.apply_keepdims(result, axis, a_tensor.ndim)
+
+    # returned
+    if returned:
+        scl = wsum
+        if scl.shape != result.shape:
+            scl = torch.broadcast_to(scl, result.shape).clone()
+
+        return asarray(result), asarray(scl)
+    else:
+        return asarray(result)
+
+
+def percentile(
+    a,
+    q,
+    axis=None,
+    out=None,
+    overwrite_input=False,
+    method="linear",
+    keepdims=False,
+    *,
+    interpolation=None,
+):
+    return quantile(
+        a, asarray(q) / 100.0, axis, out, overwrite_input, method, keepdims=keepdims
+    )
+
+
+def quantile(
+    a,
+    q,
+    axis=None,
+    out=None,
+    overwrite_input=False,
+    method="linear",
+    keepdims=False,
+    *,
+    interpolation=None,
+):
+    if interpolation is not None:
+        raise ValueError("'interpolation' argument is deprecated; use 'method' instead")
+
+    a_tensor, q_tensor = _helpers.to_tensors(a, q)
+    result = _reductions.quantile(a_tensor, q_tensor, axis, method)
+
+    # keepdims
+    if keepdims:
+        result = _util.apply_keepdims(result, axis, a_tensor.ndim)
+    return _helpers.result_or_out(result, out, promote_scalar=True)
+
+
+def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
+    return quantile(
+        a, 0.5, axis=axis, overwrite_input=overwrite_input, out=out, keepdims=keepdims
     )
 
 
