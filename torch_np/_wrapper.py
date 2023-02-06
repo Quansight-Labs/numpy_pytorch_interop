@@ -7,7 +7,6 @@ pytorch tensors.
 
 import torch
 
-from . import _dtypes, _helpers, _decorators  # isort: skip  # XXX
 from ._detail import _flips, _reductions, _util
 from ._detail import implementations as _impl
 from ._ndarray import (
@@ -19,6 +18,8 @@ from ._ndarray import (
     newaxis,
     result_type,
 )
+
+from . import _dtypes, _helpers, _decorators  # isort: skip  # XXX
 
 # Things to decide on (punt for now)
 #
@@ -390,7 +391,6 @@ def cov(
     is_half = dtype == torch.float16
     if is_half:
         # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
-        is_half = True
         dtype = torch.float32
 
     if dtype is not None:
@@ -450,7 +450,7 @@ def bincount(x, /, weights=None, minlength=0):
         # edge case allowed by numpy
         x = asarray([], dtype=int)
 
-    x_tensor, weights_tensor = _helpers.to_tensors_or_none(x, weghts)
+    x_tensor, weights_tensor = _helpers.to_tensors_or_none(x, weights)
 
     # XXX: default_dtype use torch dtypes
     from ._detail._scalar_types import default_int_type
@@ -889,6 +889,58 @@ def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoVal
     return result
 
 
+def nanmin():
+    raise NotImplementedError
+
+
+def nanmax():
+    raise NotImplementedError
+
+
+def nanvar():
+    raise NotImplementedError
+
+
+def nanstd():
+    raise NotImplementedError
+
+
+def nanargmin():
+    raise NotImplementedError
+
+
+def nanargmax():
+    raise NotImplementedError
+
+
+def nansum():
+    raise NotImplementedError
+
+
+def nanprod():
+    raise NotImplementedError
+
+
+def nancumsum():
+    raise NotImplementedError
+
+
+def nancumprod():
+    raise NotImplementedError
+
+
+def nanmedian():
+    raise NotImplementedError
+
+
+def nanquantile():
+    raise NotImplementedError
+
+
+def nanpercentile():
+    raise NotImplementedError
+
+
 @asarray_replacer()
 def argsort(a, axis=-1, kind=None, order=None):
     if order is not None:
@@ -908,6 +960,7 @@ def angle(z, deg=False):
     if deg:
         result *= 180 / torch.pi
     return asarray(result)
+
 
 @asarray_replacer()
 def sinc(x):

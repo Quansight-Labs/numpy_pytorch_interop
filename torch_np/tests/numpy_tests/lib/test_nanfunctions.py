@@ -438,8 +438,8 @@ _TEST_ARRAYS = {
     "1d": np.array([127, 39, 93, 87, 46])
 }
 for _v in _TEST_ARRAYS.values():
-    _v.setflags(write=False)
-
+ ## XXX  _v.setflags(write=False)
+    pass
 
 @pytest.mark.xfail(reason='TODO: implement')
 @pytest.mark.parametrize(

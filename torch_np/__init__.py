@@ -5,7 +5,7 @@ from ._detail._scalar_types import *
 from ._detail._util import AxisError, UFuncTypeError
 from ._dtypes import *
 from ._getlimits import errstate, finfo, iinfo
-from ._ndarray import can_cast, newaxis, result_type
+from ._ndarray import array, asarray, can_cast, ndarray, newaxis, result_type
 from ._unary_ufuncs import *
 
 # from . import testing
@@ -15,4 +15,4 @@ sometrue = any
 
 inf = float("inf")
 nan = float("nan")
-from math import pi   # isort: skip
+from math import pi  # isort: skip
