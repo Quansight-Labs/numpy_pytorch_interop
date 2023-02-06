@@ -7,7 +7,7 @@ pytorch tensors.
 
 import torch
 
-from . import _dtypes, _helpers
+from . import _decorators, _dtypes, _helpers
 from ._detail import _flips, _reductions, _util
 from ._ndarray import (
     array,
@@ -274,12 +274,12 @@ def ones_like(a, dtype=None, order="K", subok=False, shape=None):
 
 
 # XXX: dtype=float
+@_decorators.dtype_to_torch
 def zeros(shape, dtype=float, order="C", *, like=None):
     _util.subok_not_ok(like)
     if order != "C":
         raise NotImplementedError
-    torch_dtype = _dtypes.torch_dtype_from(dtype)
-    return asarray(torch.zeros(shape, dtype=torch_dtype))
+    return asarray(torch.zeros(shape, dtype=dtype))
 
 
 @asarray_replacer()
@@ -294,7 +294,7 @@ def zeros_like(a, dtype=None, order="K", subok=False, shape=None):
     return result
 
 
-# XXX: dtype=float
+@_decorators.dtype_to_torch
 def eye(N, M=None, k=0, dtype=float, order="C", *, like=None):
     _util.subok_not_ok(like)
     if order != "C":
@@ -593,9 +593,13 @@ def triu_indices_from(arr, k=0):
     return tuple(asarray(_) for _ in tensor_2)
 
 
+@_decorators.dtype_to_torch
 def tri(N, M=None, k=0, dtype=float, *, like=None):
     _util.subok_not_ok(like)
-    tensor = torch.tril(torch.ones((N, M), dtype=dtype), diagonal=k)
+    if M is None:
+        M = N
+    tensor = torch.ones((N, M), dtype=dtype)
+    tensor = torch.tril(tensor, diagonal=k)
     return asarray(tensor)
 
 

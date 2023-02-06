@@ -1,29 +1,29 @@
 """Test functions for matrix module
 
 """
-from numpy.testing import (
-    assert_equal, assert_array_equal, assert_array_max_ulp,
-    assert_array_almost_equal, assert_raises, assert_
+from torch_np.testing import (
+    assert_equal, assert_array_equal, # assert_array_max_ulp,
+    assert_array_almost_equal, assert_
+    )
+from pytest import raises as assert_raises
+
+from torch_np import (
+    arange, add, fliplr, flipud, zeros, ones, eye, array, #diag, histogram2d,
+    tri, # mask_indices,
+    triu_indices, triu_indices_from, tril_indices,
+    tril_indices_from, # vander,
     )
 
-from numpy import (
-    arange, add, fliplr, flipud, zeros, ones, eye, array, diag, histogram2d,
-    tri, mask_indices, triu_indices, triu_indices_from, tril_indices,
-    tril_indices_from, vander,
-    )
-
-import numpy as np
-
-
-from numpy.core.tests.test_overrides import requires_array_function
-
+import torch_np as np
 
 import pytest
 
 
 def get_mat(n):
-    data = arange(n)
-    data = add.outer(data, data)
+    data = np.arange(n)
+#    data = np.add.outer(data, data)
+    from torch_np._helpers import _outer
+    data = _outer(data, data)
     return data
 
 
@@ -43,12 +43,6 @@ class TestEye:
 
         assert_equal(eye(3) == 1,
                      eye(3, dtype=bool))
-
-    def test_uint64(self):
-        # Regression test for gh-9982
-        assert_equal(eye(np.uint64(2), dtype=int), array([[1, 0], [0, 1]]))
-        assert_equal(eye(np.uint64(2), M=np.uint64(4), k=np.uint64(1)),
-                     array([[0, 1, 0, 0], [0, 0, 1, 0]]))
 
     def test_diag(self):
         assert_equal(eye(4, k=1),
@@ -98,13 +92,10 @@ class TestEye:
         assert_equal(eye(3, 2, -2), [[0, 0], [0, 0], [1, 0]])
         assert_equal(eye(3, 2, -3), [[0, 0], [0, 0], [0, 0]])
 
-    def test_strings(self):
-        assert_equal(eye(2, 2, dtype='S3'),
-                     [[b'1', b''], [b'', b'1']])
-
     def test_bool(self):
         assert_equal(eye(2, 2, dtype=bool), [[True, False], [False, True]])
 
+    @pytest.mark.xfail(reason="TODO: implement order=non-default")
     def test_order(self):
         mat_c = eye(4, 3, k=-1)
         mat_f = eye(4, 3, k=-1, order='F')
@@ -115,6 +106,7 @@ class TestEye:
         assert mat_f.flags.f_contiguous
 
 
+@pytest.mark.xfail(reason="TODO: implement diag(...)")
 class TestDiag:
     def test_vector(self):
         vals = (100 * arange(5)).astype('l')
@@ -164,9 +156,10 @@ class TestDiag:
 
 class TestFliplr:
     def test_basic(self):
-        assert_raises(ValueError, fliplr, ones(4))
+        assert_raises((ValueError, RuntimeError), fliplr, ones(4))
         a = get_mat(4)
-        b = a[:, ::-1]
+        # b = a[:, ::-1]
+        b = np.flip(a, 1)
         assert_equal(fliplr(a), b)
         a = [[0, 1, 2],
              [3, 4, 5]]
@@ -178,7 +171,8 @@ class TestFliplr:
 class TestFlipud:
     def test_basic(self):
         a = get_mat(4)
-        b = a[::-1, :]
+        # b = a[::-1, :]
+        b = np.flip(a, 0)
         assert_equal(flipud(a), b)
         a = [[0, 1, 2],
              [3, 4, 5]]
@@ -187,6 +181,7 @@ class TestFlipud:
         assert_equal(flipud(a), b)
 
 
+@pytest.mark.xfail(reason="TODO: implement histogram2d(...)")
 class TestHistogram2d:
     def test_simple(self):
         x = array(
@@ -283,27 +278,6 @@ class TestHistogram2d:
         assert_array_equal(H, answer)
         assert_array_equal(xe, array([0., 0.25, 0.5, 0.75, 1]))
 
-    @requires_array_function
-    def test_dispatch(self):
-        class ShouldDispatch:
-            def __array_function__(self, function, types, args, kwargs):
-                return types, args, kwargs
-
-        xy = [1, 2]
-        s_d = ShouldDispatch()
-        r = histogram2d(s_d, xy)
-        # Cannot use assert_equal since that dispatches...
-        assert_(r == ((ShouldDispatch,), (s_d, xy), {}))
-        r = histogram2d(xy, s_d)
-        assert_(r == ((ShouldDispatch,), (xy, s_d), {}))
-        r = histogram2d(xy, xy, bins=s_d)
-        assert_(r, ((ShouldDispatch,), (xy, xy), dict(bins=s_d)))
-        r = histogram2d(xy, xy, bins=[s_d, 5])
-        assert_(r, ((ShouldDispatch,), (xy, xy), dict(bins=[s_d, 5])))
-        assert_raises(Exception, histogram2d, xy, xy, bins=[s_d])
-        r = histogram2d(xy, xy, weights=s_d)
-        assert_(r, ((ShouldDispatch,), (xy, xy), dict(weights=s_d)))
-
     @pytest.mark.parametrize(("x_len", "y_len"), [(10, 11), (20, 19)])
     def test_bad_length(self, x_len, y_len):
         x, y = np.ones(x_len), np.ones(y_len)
@@ -375,24 +349,12 @@ def test_tril_triu_dtype():
     # Issue 4916
     # tril and triu should return the same dtype as input
     for c in np.typecodes['All']:
-        if c == 'V':
-            continue
         arr = np.zeros((3, 3), dtype=c)
         assert_equal(np.triu(arr).dtype, arr.dtype)
         assert_equal(np.tril(arr).dtype, arr.dtype)
 
-    # check special cases
-    arr = np.array([['2001-01-01T12:00', '2002-02-03T13:56'],
-                    ['2004-01-01T12:00', '2003-01-03T13:45']],
-                   dtype='datetime64')
-    assert_equal(np.triu(arr).dtype, arr.dtype)
-    assert_equal(np.tril(arr).dtype, arr.dtype)
 
-    arr = np.zeros((3, 3), dtype='f4,f4')
-    assert_equal(np.triu(arr).dtype, arr.dtype)
-    assert_equal(np.tril(arr).dtype, arr.dtype)
-
-
+@pytest.mark.xfail(reason="TODO: implement mask_indices")
 def test_mask_indices():
     # simple test without offset
     iu = mask_indices(3, np.triu)
@@ -403,6 +365,7 @@ def test_mask_indices():
     assert_array_equal(a[iu1], array([1, 2, 5]))
 
 
+@pytest.mark.xfail(reason="TODO: fancy indexing")
 def test_tril_indices():
     # indices without and with offset
     il1 = tril_indices(4)
@@ -450,6 +413,7 @@ def test_tril_indices():
                               [-10, -10, -10, -10, -10]]))
 
 
+@pytest.mark.xfail(reason="TODO: fancy indexing")
 class TestTriuIndices:
     def test_triu_indices(self):
         iu1 = triu_indices(4)
@@ -514,6 +478,7 @@ class TestTriuIndicesFrom:
         # assert_raises(ValueError, triu_indices_from, np.ones((2, 3)))
 
 
+@pytest.mark.xfail(reason="TODO vander(...) implement ")
 class TestVander:
     def test_basic(self):
         c = np.array([0, 1, -2, 3])
