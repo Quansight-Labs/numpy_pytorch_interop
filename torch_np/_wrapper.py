@@ -21,6 +21,7 @@ from ._ndarray import (
 
 from . import _dtypes, _helpers, _decorators  # isort: skip  # XXX
 
+
 # Things to decide on (punt for now)
 #
 # 1. Q: What are the return types of wrapper functions: plain torch.Tensors or
@@ -273,12 +274,15 @@ def ones_like(a, dtype=None, order="K", subok=False, shape=None):
     return result
 
 
-# XXX: dtype=float
 @_decorators.dtype_to_torch
-def zeros(shape, dtype=float, order="C", *, like=None):
+def zeros(shape, dtype=None, order="C", *, like=None):
     _util.subok_not_ok(like)
     if order != "C":
         raise NotImplementedError
+    if dtype is None:
+        from ._detail._scalar_types import default_float_type
+
+        dtype = default_float_type.torch_dtype
     return asarray(torch.zeros(shape, dtype=dtype))
 
 
