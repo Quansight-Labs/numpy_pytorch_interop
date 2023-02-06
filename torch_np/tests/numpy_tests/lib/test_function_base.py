@@ -21,7 +21,6 @@ HAS_REFCOUNT = True
 IS_WASM = False
 IS_PYPY = False
 
-import numpy.lib.function_base as nfb   # FIXME: remove
 from torch_np.random import rand
 
 
@@ -3424,57 +3423,6 @@ class TestQuantile:
         actual = np.quantile(a, 0.5)
         assert np.isscalar(actual)
         assert_equal(np.quantile(a, 0.5), np.nan)
-
-
-@pytest.mark.skip(reason='no hypothesis')
-class TestLerp:
-    @hypothesis.given(t0=st.floats(allow_nan=False, allow_infinity=False,
-                                   min_value=0, max_value=1),
-                      t1=st.floats(allow_nan=False, allow_infinity=False,
-                                   min_value=0, max_value=1),
-                      a = st.floats(allow_nan=False, allow_infinity=False,
-                                    min_value=-1e300, max_value=1e300),
-                      b = st.floats(allow_nan=False, allow_infinity=False,
-                                    min_value=-1e300, max_value=1e300))
-    def test_linear_interpolation_formula_monotonic(self, t0, t1, a, b):
-        l0 = nfb._lerp(a, b, t0)
-        l1 = nfb._lerp(a, b, t1)
-        if t0 == t1 or a == b:
-            assert l0 == l1  # uninteresting
-        elif (t0 < t1) == (a < b):
-            assert l0 <= l1
-        else:
-            assert l0 >= l1
-
-    @hypothesis.given(t=st.floats(allow_nan=False, allow_infinity=False,
-                                  min_value=0, max_value=1),
-                      a=st.floats(allow_nan=False, allow_infinity=False,
-                                  min_value=-1e300, max_value=1e300),
-                      b=st.floats(allow_nan=False, allow_infinity=False,
-                                  min_value=-1e300, max_value=1e300))
-    def test_linear_interpolation_formula_bounded(self, t, a, b):
-        if a <= b:
-            assert a <= nfb._lerp(a, b, t) <= b
-        else:
-            assert b <= nfb._lerp(a, b, t) <= a
-
-    @hypothesis.given(t=st.floats(allow_nan=False, allow_infinity=False,
-                                  min_value=0, max_value=1),
-                      a=st.floats(allow_nan=False, allow_infinity=False,
-                                  min_value=-1e300, max_value=1e300),
-                      b=st.floats(allow_nan=False, allow_infinity=False,
-                                  min_value=-1e300, max_value=1e300))
-    def test_linear_interpolation_formula_symmetric(self, t, a, b):
-        # double subtraction is needed to remove the extra precision of t < 0.5
-        left = nfb._lerp(a, b, 1 - (1 - t))
-        right = nfb._lerp(b, a, 1 - t)
-        assert_allclose(left, right)
-
-    def test_linear_interpolation_formula_0d_inputs(self):
-        a = np.array(2)
-        b = np.array(5)
-        t = np.array(0.2)
-        assert nfb._lerp(a, b, t) == 2.6
 
 
 class TestMedian:
