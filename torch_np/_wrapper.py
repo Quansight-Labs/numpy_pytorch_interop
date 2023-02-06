@@ -387,7 +387,7 @@ def cov(
     )
 
     # work with tensors from now on
-    is_half = dtype == torch.float16:
+    is_half = dtype == torch.float16
     if is_half:
         # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
         is_half = True
@@ -450,17 +450,13 @@ def bincount(x, /, weights=None, minlength=0):
         # edge case allowed by numpy
         x = asarray([], dtype=int)
 
-    x_tensor = asarray(x).get()
+    x_tensor, weights_tensor = _helpers.to_tensors_or_none(x, weghts)
 
     # XXX: default_dtype use torch dtypes
     from ._detail._scalar_types import default_int_type
 
     int_dtype = default_int_type.torch_dtype
     (x_tensor,) = _util.cast_dont_broadcast((x_tensor,), int_dtype, casting="safe")
-
-    weights_tensor = None
-    if weights is not None:
-        weights_tensor = asarray(weights).get()
 
     result = torch.bincount(x_tensor, weights_tensor, minlength)
     return asarray(result)
