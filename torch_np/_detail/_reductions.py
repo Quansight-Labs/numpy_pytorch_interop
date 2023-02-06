@@ -173,7 +173,7 @@ def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
 #   2. axis=None ravels (cf concatenate)
 
 
-def cumprod(tensor, axis=None, dtype=None):
+def cumprod(tensor, axis, dtype=None):
     if dtype == torch.bool:
         dtype = _scalar_types.default_int_type.dtype
     if dtype is None:
@@ -184,7 +184,7 @@ def cumprod(tensor, axis=None, dtype=None):
     return result
 
 
-def cumsum(tensor, axis=None, dtype=None):
+def cumsum(tensor, axis, dtype=None):
     if dtype == torch.bool:
         dtype = _scalar_types.default_int_type.dtype
     if dtype is None:

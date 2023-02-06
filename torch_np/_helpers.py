@@ -56,7 +56,10 @@ def result_or_out(result_tensor, out_array=None, promote_scalar=False):
             if promote_scalar and can_fit:
                 result_tensor = result_tensor.squeeze()
             else:
-                raise ValueError("Bad size of the out array.")
+                raise ValueError(
+                    f"Bad size of the out array: out.shape = {out_array.shape}"
+                    f" while result.shape = {result_tensor.shape}."
+                )
         out_tensor = out_array.get()
         out_tensor.copy_(result_tensor)
         return out_array
