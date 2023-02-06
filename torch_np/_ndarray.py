@@ -182,7 +182,11 @@ class ndarray:
         return _binary_ufuncs.add(self, other, out=self)
 
     # sub, self - other
-    __sub__ = __rsub__ = _binary_ufuncs.subtract
+    __sub__ = _binary_ufuncs.subtract
+
+    # XXX: generate a function just for this? AND other non-commutative ops.
+    def __rsub__(self, other):
+        return _binary_ufuncs.subtract(other, self)
 
     def __isub__(self, other):
         return _binary_ufuncs.subtract(self, other, out=self)
@@ -194,19 +198,28 @@ class ndarray:
         return _binary_ufuncs.multiply(self, other, out=self)
 
     # div, self / other
-    __truediv__ = __rtruediv__ = _binary_ufuncs.divide
+    __truediv__ = _binary_ufuncs.divide
+
+    def __rtruediv__(self, other):
+        return _binary_ufuncs.divide(other, self)
 
     def __itruediv__(self, other):
         return _binary_ufuncs.divide(self, other, out=self)
 
     # floordiv, self // other
-    __floordiv__ = __rfloordiv__ = _binary_ufuncs.floor_divide
+    __floordiv__ = _binary_ufuncs.floor_divide
+
+    def __rfloordiv__(self, other):
+        return _binary_ufuncs.floor_divide(other, self)
 
     def __ifloordiv__(self, other):
         return _binary_ufuncs.floor_divide(self, other, out=self)
 
     # power, self**exponent
     __pow__ = __rpow__ = _binary_ufuncs.float_power
+
+    def __rpow__(self, exponent):
+        return _binary_ufuncs.float_power(exponent, self)
 
     def __ipow__(self, exponent):
         return _binary_ufuncs.float_power(self, exponent, out=self)

@@ -233,7 +233,7 @@ class TestNdarrayDunderVsUfunc:
 
         # __radd__
         a = np.array([1, 2, 3])
-        assert_equal(op(1, a), ufunc(a, 1))
+        assert_equal(op(1, a), ufunc(1, a))
         assert_equal(op(a.tolist(), a), ufunc(a, a.tolist()))
 
         # __iadd__
