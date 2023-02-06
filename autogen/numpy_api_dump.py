@@ -66,14 +66,6 @@ def seterrobj(errobj):
     raise NotImplementedError
 
 
-def allclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
-    raise NotImplementedError
-
-
-def alltrue(*args, **kwargs):
-    raise NotImplementedError
-
-
 def append(arr, values, axis=None):
     raise NotImplementedError
 
@@ -111,14 +103,6 @@ def array2string(
     *,
     legacy=None,
 ):
-    raise NotImplementedError
-
-
-def array_equal(a1, a2, equal_nan=False):
-    raise NotImplementedError
-
-
-def array_equiv(a1, a2):
     raise NotImplementedError
 
 
@@ -217,20 +201,6 @@ def copyto(dst, src, casting="same_kind", where=True):
 
 
 def correlate(a, v, mode="valid"):
-    raise NotImplementedError
-
-
-def cov(
-    m,
-    y=None,
-    rowvar=True,
-    bias=False,
-    ddof=None,
-    fweights=None,
-    aweights=None,
-    *,
-    dtype=None,
-):
     raise NotImplementedError
 
 
@@ -791,10 +761,6 @@ def require(a, dtype=None, requirements=None, *, like=None):
 
 
 def resize(a, new_shape):
-    raise NotImplementedError
-
-
-def rollaxis(a, axis, start=0):
     raise NotImplementedError
 
 

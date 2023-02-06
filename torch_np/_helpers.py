@@ -2,7 +2,6 @@ import torch
 
 from . import _dtypes
 from ._detail import _util
-from ._ndarray import asarray, ndarray
 
 
 def cast_and_broadcast(tensors, out, casting):
@@ -30,6 +29,8 @@ def cast_and_broadcast(tensors, out, casting):
     if out is None:
         return tensors
     else:
+        from ._ndarray import asarray, ndarray
+
         if not isinstance(out, ndarray):
             raise TypeError("Return arrays must be of ArrayType")
 
@@ -48,6 +49,8 @@ def result_or_out(result_tensor, out_array=None, promote_scalar=False):
             result_tensor is placed into the out array.
     This weirdness is used e.g. in `np.percentile`
     """
+    from ._ndarray import asarray, ndarray
+
     if out_array is not None:
         if not isinstance(out_array, ndarray):
             raise TypeError("Return arrays must be of ArrayType")
@@ -69,6 +72,8 @@ def result_or_out(result_tensor, out_array=None, promote_scalar=False):
 
 def ndarrays_to_tensors(*inputs):
     """Convert all ndarrays from `inputs` to tensors. (other things are intact)"""
+    from ._ndarray import asarray, ndarray
+
     return tuple(
         [value.get() if isinstance(value, ndarray) else value for value in inputs]
     )
@@ -76,7 +81,16 @@ def ndarrays_to_tensors(*inputs):
 
 def to_tensors(*inputs):
     """Convert all array_likes from `inputs` to tensors."""
+    from ._ndarray import asarray, ndarray
+
     return tuple(asarray(value).get() for value in inputs)
+
+
+def to_tensors_or_none(*inputs):
+    """Convert all array_likes from `inputs` to tensors. Nones pass through"""
+    from ._ndarray import asarray, ndarray
+
+    return tuple(None if value is None else asarray(value).get() for value in inputs)
 
 
 def _outer(x, y):

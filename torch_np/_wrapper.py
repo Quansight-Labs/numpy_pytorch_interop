@@ -7,8 +7,8 @@ pytorch tensors.
 
 import torch
 
-from . import _decorators, _dtypes, _helpers
 from ._detail import _flips, _reductions, _util
+from ._detail import implementations as _impl
 from ._ndarray import (
     array,
     asarray,
@@ -18,6 +18,8 @@ from ._ndarray import (
     newaxis,
     result_type,
 )
+
+from . import _dtypes, _helpers, _decorators  # isort: skip  # XXX
 
 # Things to decide on (punt for now)
 #
@@ -52,8 +54,6 @@ from ._ndarray import (
 #   - two-arg functions (second may be None)
 #   - first arg is a sequence/tuple (_stack familty, concatenate, atleast_Nd etc)
 #   - optional out arg
-#
-#  5. handle the out= arg: verify dimensions, handle dtype (blocked on dtype decision)
 
 
 NoValue = None
@@ -314,20 +314,96 @@ def identity(n, dtype=None, *, like=None):
 ###### misc/unordered
 
 
-@asarray_replacer()
+@_decorators.dtype_to_torch
 def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
     if bias is not None or ddof is not None:
         # deprecated in NumPy
         raise NotImplementedError
+
+    # https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/function_base.py#L2636
     if y is not None:
-        # go figure what it means, XXX
-        raise NotImplementedError
+        x = array(x, ndmin=2)
+        if not rowvar and x.shape[0] != 1:
+            x = x.T
+
+        y = array(y, ndmin=2)
+        if not rowvar and y.shape[0] != 1:
+            y = y.T
+
+        x = concatenate((x, y), axis=0)
+
+    x_tensor = asarray(x).get()
 
     if rowvar is False:
-        x = x.T
+        x_tensor = x_tensor.T
+
+    is_half = dtype == torch.float16
+    if is_half:
+        # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
+        dtype = torch.float32
+
     if dtype is not None:
-        x = x.to(dtype)
-    return torch.corrcoef(x)
+        x_tensor = x_tensor.to(dtype)
+
+    result = torch.corrcoef(x_tensor)
+
+    if is_half:
+        result = result.to(torch.float16)
+
+    return asarray(result)
+
+
+@_decorators.dtype_to_torch
+def cov(
+    m,
+    y=None,
+    rowvar=True,
+    bias=False,
+    ddof=None,
+    fweights=None,
+    aweights=None,
+    *,
+    dtype=None,
+):
+    # https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/function_base.py#L2636
+    if y is not None:
+        m = array(m, ndmin=2)
+        if not rowvar and m.shape[0] != 1:
+            m = m.T
+
+        y = array(y, ndmin=2)
+        if not rowvar and y.shape[0] != 1:
+            y = y.T
+
+        m = concatenate((m, y), axis=0)
+
+    if ddof is None:
+        if bias == 0:
+            ddof = 1
+        else:
+            ddof = 0
+
+    m_tensor, fweights_tensor, aweights_tensor = _helpers.to_tensors_or_none(
+        m, fweights, aweights
+    )
+
+    # work with tensors from now on
+    is_half = dtype == torch.float16
+    if is_half:
+        # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
+        dtype = torch.float32
+
+    if dtype is not None:
+        m_tensor = m_tensor.to(dtype)
+
+    result = torch.cov(
+        m_tensor, correction=ddof, aweights=aweights_tensor, fweights=fweights_tensor
+    )
+
+    if is_half:
+        result = result.to(torch.float16)
+
+    return asarray(result)
 
 
 def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
@@ -369,9 +445,21 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     return _helpers.result_or_out(result, out)
 
 
-@asarray_replacer()
 def bincount(x, /, weights=None, minlength=0):
-    return torch.bincount(x, weights, minlength)
+    if not isinstance(x, ndarray) and x == []:
+        # edge case allowed by numpy
+        x = asarray([], dtype=int)
+
+    x_tensor, weights_tensor = _helpers.to_tensors_or_none(x, weights)
+
+    # XXX: default_dtype use torch dtypes
+    from ._detail._scalar_types import default_int_type
+
+    int_dtype = default_int_type.torch_dtype
+    (x_tensor,) = _util.cast_dont_broadcast((x_tensor,), int_dtype, casting="safe")
+
+    result = torch.bincount(x_tensor, weights_tensor, minlength)
+    return asarray(result)
 
 
 # YYY: pattern: sequence of arrays
@@ -481,7 +569,7 @@ def moveaxis(a, source, destination):
     return asarray(torch.moveaxis(a, source, destination))
 
 
-def swapaxis(a, axis1, axis2):
+def swapaxes(a, axis1, axis2):
     arr = asarray(a)
     return arr.swapaxes(axis1, axis2)
 
@@ -536,18 +624,25 @@ count_nonzero = emulate_out_arg(axis_keepdims_wrapper(_reductions.count_nonzero)
 
 @asarray_replacer()
 def roll(a, shift, axis=None):
+    if axis is not None:
+        axis = _util.normalize_axis_tuple(axis, a.ndim, allow_duplicate=True)
+        if not isinstance(shift, tuple):
+            shift = (shift,) * len(axis)
     return a.roll(shift, axis)
 
 
-@asarray_replacer()
 def round_(a, decimals=0, out=None):
-    if torch.is_floating_point(a):
-        return torch.round(a, decimals=decimals, out=out)
-    else:
-        return a
+    arr = asarray(a)
+    return arr.round(decimals, out=out)
 
 
 around = round_
+round = round_
+
+
+def clip(a, a_min, a_max, out=None):
+    arr = asarray(a)
+    return arr.clip(a_min, a_max, out=out)
 
 
 ###### tri{l, u} and related
@@ -794,6 +889,58 @@ def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoVal
     return result
 
 
+def nanmin():
+    raise NotImplementedError
+
+
+def nanmax():
+    raise NotImplementedError
+
+
+def nanvar():
+    raise NotImplementedError
+
+
+def nanstd():
+    raise NotImplementedError
+
+
+def nanargmin():
+    raise NotImplementedError
+
+
+def nanargmax():
+    raise NotImplementedError
+
+
+def nansum():
+    raise NotImplementedError
+
+
+def nanprod():
+    raise NotImplementedError
+
+
+def nancumsum():
+    raise NotImplementedError
+
+
+def nancumprod():
+    raise NotImplementedError
+
+
+def nanmedian():
+    raise NotImplementedError
+
+
+def nanquantile():
+    raise NotImplementedError
+
+
+def nanpercentile():
+    raise NotImplementedError
+
+
 @asarray_replacer()
 def argsort(a, axis=-1, kind=None, order=None):
     if order is not None:
@@ -812,7 +959,12 @@ def angle(z, deg=False):
     result = torch.angle(z)
     if deg:
         result *= 180 / torch.pi
-    return result
+    return asarray(result)
+
+
+@asarray_replacer()
+def sinc(x):
+    return torch.sinc(x)
 
 
 def real(a):
@@ -892,6 +1044,27 @@ def isclose(a, b, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
     a = a.to(torch_dtype)
     b = b.to(torch_dtype)
     return asarray(torch.isclose(a, b, rtol=rtol, atol=atol, equal_nan=equal_nan))
+
+
+def allclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
+    arr_res = isclose(a, b, rtol, atol, equal_nan)
+    return arr_res.all()
+
+
+def array_equal(a1, a2, equal_nan=False):
+    a1_t, a2_t = _helpers.to_tensors(a1, a2)
+    result = _impl.tensor_equal(a1_t, a2_t, equal_nan)
+    return result
+
+
+def array_equiv(a1, a2):
+    a1_t, a2_t = _helpers.to_tensors(a1, a2)
+    try:
+        a1_t, a2_t = torch.broadcast_tensors(a1_t, a2_t)
+    except RuntimeError:
+        # failed to broadcast => not equivalent
+        return False
+    return _impl.tensor_equal(a1_t, a2_t)
 
 
 ###### mapping from numpy API objects to wrappers from this module ######

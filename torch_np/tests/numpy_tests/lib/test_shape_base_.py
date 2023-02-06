@@ -3,7 +3,7 @@ import sys
 import pytest
 
 from numpy.lib.shape_base import (apply_along_axis, apply_over_axes, array_split,
-    split, hsplit, dsplit, vsplit, kron, tile
+    split, hsplit, dsplit, vsplit, kron, tile,
     expand_dims, take_along_axis, put_along_axis)
 
 import torch_np as np
