@@ -28,8 +28,8 @@ from torch_np.random import rand
 # FIXME: make from torch_np
 from numpy.lib import (
     add_newdoc_ufunc, angle, bartlett, blackman, corrcoef, cov,
-    delete, diff, digitize, extract, flipud, gradient, hamming, hanning,
-    i0, insert, interp, kaiser, meshgrid, msort, piecewise, place, rot90,
+    delete, diff, digitize, extract, gradient, hamming, hanning,
+    i0, insert, interp, kaiser, meshgrid, msort, piecewise, place,
     select, setxor1d, sinc, trapz, trim_zeros, unwrap, unique, vectorize
     )
 from torch_np._detail._util import normalize_axis_tuple
@@ -37,7 +37,9 @@ from torch_np._detail._util import normalize_axis_tuple
 
 def get_mat(n):
     data = np.arange(n)
-    data = np.add.outer(data, data)
+#    data = np.add.outer(data, data)
+    from torch_np._helpers import _outer
+    data = _outer(data, data)
     return data
 
 
@@ -52,14 +54,13 @@ def _make_complex(real, imag):
     return ret
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestRot90:
     def test_basic(self):
-        assert_raises(ValueError, rot90, np.ones(4))
-        assert_raises(ValueError, rot90, np.ones((2,2,2)), axes=(0,1,2))
-        assert_raises(ValueError, rot90, np.ones((2,2)), axes=(0,2))
-        assert_raises(ValueError, rot90, np.ones((2,2)), axes=(1,1))
-        assert_raises(ValueError, rot90, np.ones((2,2,2)), axes=(-2,1))
+        assert_raises(ValueError, np.rot90, np.ones(4))
+        assert_raises((ValueError, RuntimeError), np.rot90, np.ones((2,2,2)), axes=(0,1,2))
+        assert_raises(ValueError, np.rot90, np.ones((2,2)), axes=(0,2))
+        assert_raises(ValueError, np.rot90, np.ones((2,2)), axes=(1,1))
+        assert_raises(ValueError, np.rot90, np.ones((2,2,2)), axes=(-2,1))
 
         a = [[0, 1, 2],
              [3, 4, 5]]
@@ -75,22 +76,22 @@ class TestRot90:
               [3, 4, 5]]
 
         for k in range(-3, 13, 4):
-            assert_equal(rot90(a, k=k), b1)
+            assert_equal(np.rot90(a, k=k), b1)
         for k in range(-2, 13, 4):
-            assert_equal(rot90(a, k=k), b2)
+            assert_equal(np.rot90(a, k=k), b2)
         for k in range(-1, 13, 4):
-            assert_equal(rot90(a, k=k), b3)
+            assert_equal(np.rot90(a, k=k), b3)
         for k in range(0, 13, 4):
-            assert_equal(rot90(a, k=k), b4)
+            assert_equal(np.rot90(a, k=k), b4)
 
-        assert_equal(rot90(rot90(a, axes=(0,1)), axes=(1,0)), a)
-        assert_equal(rot90(a, k=1, axes=(1,0)), rot90(a, k=-1, axes=(0,1)))
+        assert_equal(np.rot90(np.rot90(a, axes=(0,1)), axes=(1,0)), a)
+        assert_equal(np.rot90(a, k=1, axes=(1,0)), np.rot90(a, k=-1, axes=(0,1)))
 
     def test_axes(self):
         a = np.ones((50, 40, 3))
-        assert_equal(rot90(a).shape, (40, 50, 3))
-        assert_equal(rot90(a, axes=(0,2)), rot90(a, axes=(0,-1)))
-        assert_equal(rot90(a, axes=(1,2)), rot90(a, axes=(-2,-1)))
+        assert_equal(np.rot90(a).shape, (40, 50, 3))
+        assert_equal(np.rot90(a, axes=(0,2)), np.rot90(a, axes=(0,-1)))
+        assert_equal(np.rot90(a, axes=(1,2)), np.rot90(a, axes=(-2,-1)))
 
     def test_rotation_axes(self):
         a = np.arange(8).reshape((2,2,2))
@@ -112,16 +113,15 @@ class TestRot90:
                       [[6, 7],
                        [2, 3]]]
 
-        assert_equal(rot90(a, axes=(0, 1)), a_rot90_01)
-        assert_equal(rot90(a, axes=(1, 0)), a_rot90_10)
-        assert_equal(rot90(a, axes=(1, 2)), a_rot90_12)
+        assert_equal(np.rot90(a, axes=(0, 1)), a_rot90_01)
+        assert_equal(np.rot90(a, axes=(1, 0)), a_rot90_10)
+        assert_equal(np.rot90(a, axes=(1, 2)), a_rot90_12)
 
         for k in range(1,5):
-            assert_equal(rot90(a, k=k, axes=(2, 0)),
-                         rot90(a_rot90_20, k=k-1, axes=(2, 0)))
+            assert_equal(np.rot90(a, k=k, axes=(2, 0)),
+                         np.rot90(a_rot90_20, k=k-1, axes=(2, 0)))
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestFlip:
 
     def test_axes(self):
@@ -130,6 +130,7 @@ class TestFlip:
         assert_raises(np.AxisError, np.flip, np.ones((4, 4)), axis=-3)
         assert_raises(np.AxisError, np.flip, np.ones((4, 4)), axis=(0, 3))
 
+    @pytest.mark.skip(reason='no [::-1] indexing')
     def test_basic_lr(self):
         a = get_mat(4)
         b = a[:, ::-1]
@@ -140,6 +141,7 @@ class TestFlip:
              [5, 4, 3]]
         assert_equal(np.flip(a, 1), b)
 
+    @pytest.mark.skip(reason='no [::-1] indexing')
     def test_basic_ud(self):
         a = get_mat(4)
         b = a[::-1, :]

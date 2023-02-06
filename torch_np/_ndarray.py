@@ -10,7 +10,7 @@ from ._decorators import (
     dtype_to_torch,
     emulate_out_arg,
 )
-from ._detail import _reductions, _util
+from ._detail import _flips, _reductions, _util
 
 newaxis = None
 
@@ -263,6 +263,9 @@ class ndarray:
         except RuntimeError:
             raise ValueError("axes don't match array")
         return ndarray._from_tensor_and_base(tensor, self)
+
+    def swapaxes(self, axis1, axis2):
+        return _flips.swapaxes(self._tensor, axis1, axis2)
 
     def ravel(self, order="C"):
         if order != "C":
