@@ -750,19 +750,15 @@ class TestTypes:
         b = np.bool_(0)
         i8, i16, i32, i64 = np.int8(0), np.int16(0), np.int32(0), np.int64(0)
         u8 = np.uint8(0)
-        f32, f64, fld = np.float32(0), np.float64(0), np.longdouble(0)
-        c64, c128, cld = np.complex64(0), np.complex128(0), np.clongdouble(0)
+        f32, f64 = np.float32(0), np.float64(0)
+        c64, c128 = np.complex64(0), np.complex128(0)
 
         # coercion within the same kind
         assert_equal(promote_func(i8, i16), np.dtype(np.int16))
         assert_equal(promote_func(i32, i8), np.dtype(np.int32))
         assert_equal(promote_func(i16, i64), np.dtype(np.int64))
         assert_equal(promote_func(f32, f64), np.dtype(np.float64))
-        assert_equal(promote_func(fld, f32), np.dtype(np.longdouble))
-        assert_equal(promote_func(f64, fld), np.dtype(np.longdouble))
         assert_equal(promote_func(c128, c64), np.dtype(np.complex128))
-        assert_equal(promote_func(cld, c128), np.dtype(np.clongdouble))
-        assert_equal(promote_func(c64, fld), np.dtype(np.clongdouble))
 
         # coercion between kinds
         assert_equal(promote_func(b, i32), np.dtype(np.int32))
@@ -777,7 +773,6 @@ class TestTypes:
         assert_equal(promote_func(f32, u32), np.dtype(np.float64))
         assert_equal(promote_func(f32, c64), np.dtype(np.complex64))
         assert_equal(promote_func(c128, f32), np.dtype(np.complex128))
-        assert_equal(promote_func(cld, f64), np.dtype(np.clongdouble))
 
         # coercion between scalars and 1-D arrays
         assert_equal(promote_func(np.array([b]), i8), np.dtype(np.int8))
@@ -822,9 +817,6 @@ class TestTypes:
         for a in [np.array([True, False]), np.array([-3, 12], dtype=np.int8)]:
             b = 1.234 * a
             assert_equal(b.dtype, np.dtype('f8'), "array type %s" % a.dtype)
-            b = np.longdouble(1.234) * a
-            assert_equal(b.dtype, np.dtype(np.longdouble),
-                         "array type %s" % a.dtype)
             b = np.float64(1.234) * a
             assert_equal(b.dtype, np.dtype('f8'), "array type %s" % a.dtype)
             b = np.float32(1.234) * a
@@ -834,9 +826,6 @@ class TestTypes:
 
             b = 1.234j * a
             assert_equal(b.dtype, np.dtype('c16'), "array type %s" % a.dtype)
-            b = np.clongdouble(1.234j) * a
-            assert_equal(b.dtype, np.dtype(np.clongdouble),
-                         "array type %s" % a.dtype)
             b = np.complex128(1.234j) * a
             assert_equal(b.dtype, np.dtype('c16'), "array type %s" % a.dtype)
             b = np.complex64(1.234j) * a
