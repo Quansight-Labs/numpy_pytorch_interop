@@ -7,7 +7,7 @@ pytorch tensors.
 
 import torch
 
-from . import _decorators, _dtypes, _helpers
+from . import _dtypes, _helpers, _decorators  # isort: skip  # XXX
 from ._detail import _flips, _reductions, _util
 from ._detail import implementations as _impl
 from ._ndarray import (
@@ -383,11 +383,11 @@ def cov(
         else:
             ddof = 0
 
-    # work with tensors from now on
     m_tensor, fweights_tensor, aweights_tensor = _helpers.to_tensors_or_none(
         m, fweights, aweights
     )
 
+    # work with tensors from now on
     is_half = False
     if dtype == torch.float16:
         # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
@@ -909,10 +909,15 @@ def argsort(a, axis=-1, kind=None, order=None):
 
 @asarray_replacer()
 def angle(z, deg=False):
+#    z = asarray(z, dtype='float64').get()
     result = torch.angle(z)
     if deg:
         result *= 180 / torch.pi
-    return result
+    return asarray(result)
+
+@asarray_replacer()
+def sinc(x):
+    return torch.sinc(x)
 
 
 def real(a):

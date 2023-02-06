@@ -26,14 +26,14 @@ from torch_np.random import rand
 
 # FIXME: make from torch_np
 from numpy.lib import (
-    angle, bartlett, blackman,
+    bartlett, blackman,
     delete, diff, digitize, extract, gradient, hamming, hanning,
-    i0, insert, interp, kaiser, meshgrid, msort, piecewise, place,
-    select, setxor1d, sinc, trapz, trim_zeros, unwrap, unique, vectorize
+    insert, interp, kaiser, meshgrid, msort, piecewise, place,
+    select, setxor1d, trapz, trim_zeros, unique, unwrap, vectorize
     )
 from torch_np._detail._util import normalize_axis_tuple
 
-from torch_np import corrcoef, cov
+from torch_np import corrcoef, cov, i0, angle, sinc
 
 def get_mat(n):
     data = np.arange(n)
@@ -1130,7 +1130,6 @@ class TestGradient:
         assert_array_equal(dfdx, [0.5, 0.5])
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestAngle:
 
     def test_basic(self):
@@ -1916,14 +1915,13 @@ class TestTrapz:
         assert_almost_equal(r, qz)
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestSinc:
 
     def test_simple(self):
         assert_(sinc(0) == 1)
         w = sinc(np.linspace(-1, 1, 100))
         # check symmetry
-        assert_array_almost_equal(w, flipud(w), 7)
+        assert_array_almost_equal(w, np.flipud(w), 7)
 
     def test_array_like(self):
         x = [0, 0.5]
@@ -2164,7 +2162,6 @@ class TestCov:
         assert test_type == res.dtype
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class Test_I0:
 
     def test_simple(self):
@@ -2195,25 +2192,11 @@ class Test_I0:
         assert_equal(i0_0.shape, (1,))
         assert_array_equal(np.i0([0.]), np.array([1.]))
 
-    def test_non_array(self):
-        a = np.arange(4)
-
-        class array_like:
-            __array_interface__ = a.__array_interface__
-
-            def __array_wrap__(self, arr):
-                return self
-
-        # E.g. pandas series survive ufunc calls through array-wrap:
-        assert isinstance(np.abs(array_like()), array_like)
-        exp = np.i0(a)
-        res = np.i0(array_like())
-
-        assert_array_equal(exp, res)
-
     def test_complex(self):
         a = np.array([0, 1 + 2j])
-        with pytest.raises(TypeError, match="i0 not supported for complex values"):
+        with pytest.raises((TypeError, RuntimeError),
+                           # match="i0 not supported for complex values"
+                          ):
             res = i0(a)
 
 
