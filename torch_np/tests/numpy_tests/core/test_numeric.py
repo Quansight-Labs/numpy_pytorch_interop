@@ -750,19 +750,15 @@ class TestTypes:
         b = np.bool_(0)
         i8, i16, i32, i64 = np.int8(0), np.int16(0), np.int32(0), np.int64(0)
         u8 = np.uint8(0)
-        f32, f64, fld = np.float32(0), np.float64(0), np.longdouble(0)
-        c64, c128, cld = np.complex64(0), np.complex128(0), np.clongdouble(0)
+        f32, f64 = np.float32(0), np.float64(0)
+        c64, c128 = np.complex64(0), np.complex128(0)
 
         # coercion within the same kind
         assert_equal(promote_func(i8, i16), np.dtype(np.int16))
         assert_equal(promote_func(i32, i8), np.dtype(np.int32))
         assert_equal(promote_func(i16, i64), np.dtype(np.int64))
         assert_equal(promote_func(f32, f64), np.dtype(np.float64))
-        assert_equal(promote_func(fld, f32), np.dtype(np.longdouble))
-        assert_equal(promote_func(f64, fld), np.dtype(np.longdouble))
         assert_equal(promote_func(c128, c64), np.dtype(np.complex128))
-        assert_equal(promote_func(cld, c128), np.dtype(np.clongdouble))
-        assert_equal(promote_func(c64, fld), np.dtype(np.clongdouble))
 
         # coercion between kinds
         assert_equal(promote_func(b, i32), np.dtype(np.int32))
@@ -777,7 +773,6 @@ class TestTypes:
         assert_equal(promote_func(f32, u32), np.dtype(np.float64))
         assert_equal(promote_func(f32, c64), np.dtype(np.complex64))
         assert_equal(promote_func(c128, f32), np.dtype(np.complex128))
-        assert_equal(promote_func(cld, f64), np.dtype(np.clongdouble))
 
         # coercion between scalars and 1-D arrays
         assert_equal(promote_func(np.array([b]), i8), np.dtype(np.int8))
@@ -822,9 +817,6 @@ class TestTypes:
         for a in [np.array([True, False]), np.array([-3, 12], dtype=np.int8)]:
             b = 1.234 * a
             assert_equal(b.dtype, np.dtype('f8'), "array type %s" % a.dtype)
-            b = np.longdouble(1.234) * a
-            assert_equal(b.dtype, np.dtype(np.longdouble),
-                         "array type %s" % a.dtype)
             b = np.float64(1.234) * a
             assert_equal(b.dtype, np.dtype('f8'), "array type %s" % a.dtype)
             b = np.float32(1.234) * a
@@ -834,9 +826,6 @@ class TestTypes:
 
             b = 1.234j * a
             assert_equal(b.dtype, np.dtype('c16'), "array type %s" % a.dtype)
-            b = np.clongdouble(1.234j) * a
-            assert_equal(b.dtype, np.dtype(np.clongdouble),
-                         "array type %s" % a.dtype)
             b = np.complex128(1.234j) * a
             assert_equal(b.dtype, np.dtype('c16'), "array type %s" % a.dtype)
             b = np.complex64(1.234j) * a
@@ -1097,41 +1086,6 @@ class TestTypes:
         # Also test keyword arguments
         assert_(np.can_cast(from_=np.int32, to=np.int64))
 
-    def test_can_cast_simple_to_structured(self):
-        # Non-structured can only be cast to structured in 'unsafe' mode.
-        assert_(not np.can_cast('i4', 'i4,i4'))
-        assert_(not np.can_cast('i4', 'i4,i2'))
-        assert_(np.can_cast('i4', 'i4,i4', casting='unsafe'))
-        assert_(np.can_cast('i4', 'i4,i2', casting='unsafe'))
-        # Even if there is just a single field which is OK.
-        assert_(not np.can_cast('i2', [('f1', 'i4')]))
-        assert_(not np.can_cast('i2', [('f1', 'i4')], casting='same_kind'))
-        assert_(np.can_cast('i2', [('f1', 'i4')], casting='unsafe'))
-        # It should be the same for recursive structured or subarrays.
-        assert_(not np.can_cast('i2', [('f1', 'i4,i4')]))
-        assert_(np.can_cast('i2', [('f1', 'i4,i4')], casting='unsafe'))
-        assert_(not np.can_cast('i2', [('f1', '(2,3)i4')]))
-        assert_(np.can_cast('i2', [('f1', '(2,3)i4')], casting='unsafe'))
-
-    def test_can_cast_structured_to_simple(self):
-        # Need unsafe casting for structured to simple.
-        assert_(not np.can_cast([('f1', 'i4')], 'i4'))
-        assert_(np.can_cast([('f1', 'i4')], 'i4', casting='unsafe'))
-        assert_(np.can_cast([('f1', 'i4')], 'i2', casting='unsafe'))
-        # Since it is unclear what is being cast, multiple fields to
-        # single should not work even for unsafe casting.
-        assert_(not np.can_cast('i4,i4', 'i4', casting='unsafe'))
-        # But a single field inside a single field is OK.
-        assert_(not np.can_cast([('f1', [('x', 'i4')])], 'i4'))
-        assert_(np.can_cast([('f1', [('x', 'i4')])], 'i4', casting='unsafe'))
-        # And a subarray is fine too - it will just take the first element
-        # (arguably not very consistently; might also take the first field).
-        assert_(not np.can_cast([('f0', '(3,)i4')], 'i4'))
-        assert_(np.can_cast([('f0', '(3,)i4')], 'i4', casting='unsafe'))
-        # But a structured subarray with multiple fields should fail.
-        assert_(not np.can_cast([('f0', ('i4,i4'), (2,))], 'i4',
-                                casting='unsafe'))
-
     def test_can_cast_values(self):
         # gh-5917
         for dt in np.sctypes['int'] + np.sctypes['uint']:
@@ -1189,7 +1143,7 @@ class TestFromiter:
                 raise NIterError('error at index %s' % eindex)
             yield e
 
-    @pytest.mark.parametrize("dtype", [int, object])
+    @pytest.mark.parametrize("dtype", [int])
     @pytest.mark.parametrize(["count", "error_index"], [(10, 5), (10, 9)])
     def test_2592(self, count, error_index, dtype):
         # Test iteration exceptions are correctly raised. The data/generator
@@ -1198,40 +1152,6 @@ class TestFromiter:
         with pytest.raises(NIterError):
             np.fromiter(iterable, dtype=dtype, count=count)
 
-    @pytest.mark.parametrize("dtype", ["S", "S0", "V0", "U0"])
-    def test_empty_not_structured(self, dtype):
-        # Note, "S0" could be allowed at some point, so long "S" (without
-        # any length) is rejected.
-        with pytest.raises(ValueError, match="Must specify length"):
-            np.fromiter([], dtype=dtype)
-
-    @pytest.mark.parametrize(["dtype", "data"],
-            [("d", [1, 2, 3, 4, 5, 6, 7, 8, 9]),
-             ("O", [1, 2, 3, 4, 5, 6, 7, 8, 9]),
-             ("i,O", [(1, 2), (5, 4), (2, 3), (9, 8), (6, 7)]),
-             # subarray dtypes (important because their dimensions end up
-             # in the result arrays dimension:
-             ("2i", [(1, 2), (5, 4), (2, 3), (9, 8), (6, 7)]),
-            ])
-    @pytest.mark.parametrize("length_hint", [0, 1])
-    def test_growth_and_complicated_dtypes(self, dtype, data, length_hint):
-        dtype = np.dtype(dtype)
-
-        data = data * 100  # make sure we realloc a bit
-
-        class MyIter:
-            # Class/example from gh-15789
-            def __length_hint__(self):
-                # only required to be an estimate, this is legal
-                return length_hint  # 0 or 1
-
-            def __iter__(self):
-                return iter(data)
-
-        res = np.fromiter(MyIter(), dtype=dtype)
-        expected = np.array(data, dtype=dtype)
-
-        assert_array_equal(res, expected)
 
     def test_empty_result(self):
         class MyIter:

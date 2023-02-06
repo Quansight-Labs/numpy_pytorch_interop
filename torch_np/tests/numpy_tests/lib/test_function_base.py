@@ -741,18 +741,6 @@ class TestDiff:
             assert_equal(out.dtype, np.int_)
             assert_equal(len(out), max(0, len(x) - n))
 
-    def test_times(self):
-        x = np.arange('1066-10-13', '1066-10-16', dtype=np.datetime64)
-        expected = [
-            np.array([1, 1], dtype='timedelta64[D]'),
-            np.array([0], dtype='timedelta64[D]'),
-        ]
-        expected.extend([np.array([], dtype='timedelta64[D]')] * 3)
-        for n, exp in enumerate(expected, start=1):
-            out = diff(x, n=n)
-            assert_array_equal(out, exp)
-            assert_equal(out.dtype, exp.dtype)
-
     def test_prepend(self):
         x = np.arange(5) + 1
         assert_array_equal(diff(x, prepend=0), np.ones(5))
@@ -1067,17 +1055,6 @@ class TestGradient:
         assert_raises(np.AxisError, gradient, x, axis=3)
         assert_raises(np.AxisError, gradient, x, axis=-3)
         # assert_raises(TypeError, gradient, x, axis=[1,])
-
-    def test_timedelta64(self):
-        # Make sure gradient() can handle special types like timedelta64
-        x = np.array(
-            [-5, -3, 10, 12, 61, 321, 300],
-            dtype='timedelta64[D]')
-        dx = np.array(
-            [2, 7, 7, 25, 154, 119, -21],
-            dtype='timedelta64[D]')
-        assert_array_equal(gradient(x), dx)
-        assert_(dx.dtype == np.dtype('timedelta64[D]'))
 
     def test_inexact_dtypes(self):
         for dt in [np.float16, np.float32, np.float64]:
@@ -1620,26 +1597,6 @@ class TestVectorize:
         with assert_raises_regex(ValueError, 'new output dimensions'):
             f(x)
 
-    def test_subclasses(self):
-        class subclass(np.ndarray):
-            pass
-
-        m = np.array([[1., 0., 0.],
-                      [0., 0., 1.],
-                      [0., 1., 0.]]).view(subclass)
-        v = np.array([[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]]).view(subclass)
-        # generalized (gufunc)
-        matvec = np.vectorize(np.matmul, signature='(m,m),(m)->(m)')
-        r = matvec(m, v)
-        assert_equal(type(r), subclass)
-        assert_equal(r, [[1., 3., 2.], [4., 6., 5.], [7., 9., 8.]])
-
-        # element-wise (ufunc)
-        mult = np.vectorize(lambda x, y: x*y)
-        r = mult(m, v)
-        assert_equal(type(r), subclass)
-        assert_equal(r, m * v)
-
 
 @pytest.mark.xfail(reason='TODO: implement')
 class TestDigitize:
@@ -1705,15 +1662,6 @@ class TestDigitize:
         x, bins = bins, x
         assert_raises(TypeError, digitize, x, bins)
 
-    def test_return_type(self):
-        # Functions returning indices should always return base ndarrays
-        class A(np.ndarray):
-            pass
-        a = np.arange(5).view(A)
-        b = np.arange(1, 3).view(A)
-        assert_(not isinstance(digitize(b, a, False), A))
-        assert_(not isinstance(digitize(b, a, True), A))
-
     def test_large_integers_increasing(self):
         # gh-11022
         x = 2**54  # loses precision in a float
@@ -1757,7 +1705,7 @@ class TestUnwrap:
 
 @pytest.mark.xfail(reason='TODO: implement')
 @pytest.mark.parametrize(
-    "dtype", "O" + np.typecodes["AllInteger"] + np.typecodes["Float"]
+    "dtype", np.typecodes["AllInteger"] + np.typecodes["Float"]
 )
 @pytest.mark.parametrize("M", [0, 1, 10])
 class TestFilterwindows:
@@ -1766,10 +1714,7 @@ class TestFilterwindows:
         scalar = np.array(M, dtype=dtype)[()]
 
         w = hanning(scalar)
-        if dtype == "O":
-            ref_dtype = np.float64
-        else:
-            ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(scalar.dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
@@ -1787,10 +1732,7 @@ class TestFilterwindows:
         scalar = np.array(M, dtype=dtype)[()]
 
         w = hamming(scalar)
-        if dtype == "O":
-            ref_dtype = np.float64
-        else:
-            ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(scalar.dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
@@ -1808,10 +1750,7 @@ class TestFilterwindows:
         scalar = np.array(M, dtype=dtype)[()]
 
         w = bartlett(scalar)
-        if dtype == "O":
-            ref_dtype = np.float64
-        else:
-            ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(scalar.dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
@@ -1829,10 +1768,7 @@ class TestFilterwindows:
         scalar = np.array(M, dtype=dtype)[()]
 
         w = blackman(scalar)
-        if dtype == "O":
-            ref_dtype = np.float64
-        else:
-            ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(scalar.dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
@@ -1850,10 +1786,7 @@ class TestFilterwindows:
         scalar = np.array(M, dtype=dtype)[()]
 
         w = kaiser(scalar, 0)
-        if dtype == "O":
-            ref_dtype = np.float64
-        else:
-            ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(scalar.dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
@@ -2438,14 +2371,6 @@ class TestPiecewise:
         assert_array_equal(y, np.array([[-1., -1., -1.],
                                         [3., 3., 1.]]))
 
-    def test_subclasses(self):
-        class subclass(np.ndarray):
-            pass
-        x = np.arange(5.).view(subclass)
-        r = piecewise(x, [x<2., x>=4], [-1., 1., 0.])
-        assert_equal(type(r), subclass)
-        assert_equal(r, [-1., -1., 0., 0., 1.])
-
 
 class TestBincount:
 
@@ -2840,10 +2765,7 @@ class TestPercentile:
             actual, expected_dtype.type(expected), 14)
 
         if method in ["inverted_cdf", "closest_observation"]:
-            if input_dtype == "O":
-                np.testing.assert_equal(np.asarray(actual).dtype, np.float64)
-            else:
-                np.testing.assert_equal(np.asarray(actual).dtype,
+            np.testing.assert_equal(np.asarray(actual).dtype,
                                         np.dtype(input_dtype))
         else:
             np.testing.assert_equal(np.asarray(actual).dtype,

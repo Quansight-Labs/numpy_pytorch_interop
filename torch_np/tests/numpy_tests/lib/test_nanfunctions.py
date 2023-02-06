@@ -192,7 +192,7 @@ class TestNanFunctions_MinMax:
             assert_almost_equal(res, tgt)
 
     def test_dtype_from_input(self):
-        codes = 'efdgFDG'
+        codes = 'efdFD'
         for nf, rf in zip(self.nanfuncs, self.stdfuncs):
             for c in codes:
                 mat = np.eye(3, dtype=c)
@@ -284,18 +284,6 @@ class TestNanFunctions_MinMax:
                 assert_(res.shape == ())
                 assert_(res != np.nan)
                 assert_(len(w) == 0)
-
-    def test_object_array(self):
-        arr = np.array([[1.0, 2.0], [np.nan, 4.0], [np.nan, np.nan]], dtype=object)
-        assert_equal(np.nanmin(arr), 1.0)
-        assert_equal(np.nanmin(arr, axis=0), [1.0, 2.0])
-
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter('always')
-            # assert_equal does not work on object arrays of nan
-            assert_equal(list(np.nanmin(arr, axis=1)), [1.0, 4.0, np.nan])
-            assert_(len(w) == 1, 'no warning raised')
-            assert_(issubclass(w[0].category, RuntimeWarning))
 
     @pytest.mark.parametrize("dtype", np.typecodes["AllFloat"])
     def test_initial(self, dtype):
@@ -444,7 +432,7 @@ for _v in _TEST_ARRAYS.values():
 @pytest.mark.xfail(reason='TODO: implement')
 @pytest.mark.parametrize(
     "dtype",
-    np.typecodes["AllInteger"] + np.typecodes["AllFloat"] + "O",
+    np.typecodes["AllInteger"] + np.typecodes["AllFloat"]
 )
 @pytest.mark.parametrize("mat", _TEST_ARRAYS.values(), ids=_TEST_ARRAYS.keys())
 class TestNanFunctions_NumberTypes:
@@ -491,10 +479,7 @@ class TestNanFunctions_NumberTypes:
 
             assert_almost_equal(out, tgt)
 
-            if dtype == "O":
-                assert type(out) is type(tgt)
-            else:
-                assert out.dtype == tgt.dtype
+            assert out.dtype == tgt.dtype
 
     @pytest.mark.parametrize(
         "nanfunc,func",
@@ -507,10 +492,7 @@ class TestNanFunctions_NumberTypes:
         out = nanfunc(mat, ddof=0.5)
 
         assert_almost_equal(out, tgt)
-        if dtype == "O":
-            assert type(out) is type(tgt)
-        else:
-            assert out.dtype == tgt.dtype
+        assert out.dtype == tgt.dtype
 
 
 class SharedNanFunctionsTestsMixin:
@@ -540,11 +522,11 @@ class SharedNanFunctionsTestsMixin:
 
     def test_dtype_from_dtype(self):
         mat = np.eye(3)
-        codes = 'efdgFDG'
+        codes = 'efdFD'
         for nf, rf in zip(self.nanfuncs, self.stdfuncs):
             for c in codes:
                 with suppress_warnings() as sup:
-                    if nf in {np.nanstd, np.nanvar} and c in 'FDG':
+                    if nf in {np.nanstd, np.nanvar} and c in 'FD':
                         # Giving the warning is a small bug, see gh-8000
                         sup.filter(np.ComplexWarning)
                     tgt = rf(mat, dtype=np.dtype(c), axis=1).dtype.type
@@ -557,11 +539,11 @@ class SharedNanFunctionsTestsMixin:
 
     def test_dtype_from_char(self):
         mat = np.eye(3)
-        codes = 'efdgFDG'
+        codes = 'efdFD'
         for nf, rf in zip(self.nanfuncs, self.stdfuncs):
             for c in codes:
                 with suppress_warnings() as sup:
-                    if nf in {np.nanstd, np.nanvar} and c in 'FDG':
+                    if nf in {np.nanstd, np.nanvar} and c in 'FD':
                         # Giving the warning is a small bug, see gh-8000
                         sup.filter(np.ComplexWarning)
                     tgt = rf(mat, dtype=c, axis=1).dtype.type
@@ -573,7 +555,7 @@ class SharedNanFunctionsTestsMixin:
                     assert_(res is tgt)
 
     def test_dtype_from_input(self):
-        codes = 'efdgFDG'
+        codes = 'efdFD'
         for nf, rf in zip(self.nanfuncs, self.stdfuncs):
             for c in codes:
                 mat = np.eye(3, dtype=c)
@@ -760,12 +742,12 @@ class TestNanFunctions_MeanVarStd(SharedNanFunctionsTestsMixin):
 
     def test_dtype_error(self):
         for f in self.nanfuncs:
-            for dtype in [np.bool_, np.int_, np.object_]:
+            for dtype in [np.bool_, np.int_]:
                 assert_raises(TypeError, f, _ndat, axis=1, dtype=dtype)
 
     def test_out_dtype_error(self):
         for f in self.nanfuncs:
-            for dtype in [np.bool_, np.int_, np.object_]:
+            for dtype in [np.bool_, np.int_]:
                 out = np.empty(_ndat.shape[0], dtype=dtype)
                 assert_raises(TypeError, f, _ndat, axis=1, out=out)
 
@@ -850,13 +832,8 @@ class TestNanFunctions_MeanVarStd(SharedNanFunctionsTestsMixin):
             np.testing.assert_allclose(ret, reference)
 
 
-_TIME_UNITS = (
-    "Y", "M", "W", "D", "h", "m", "s", "ms", "us", "ns", "ps", "fs", "as"
-)
-
-# All `inexact` + `timdelta64` type codes
+# All `inexact` type codes
 _TYPE_CODES = list(np.typecodes["AllFloat"])
-_TYPE_CODES += [f"m8[{unit}]" for unit in _TIME_UNITS]
 
 
 @pytest.mark.xfail(reason='TODO: implement')
