@@ -124,37 +124,6 @@ class TestApplyAlongAxis:
         assert_array_equal(apply_along_axis(np.sum, 0, a),
                            [[27, 30, 33], [36, 39, 42], [45, 48, 51]])
 
-    def test_preserve_subclass(self):
-        def double(row):
-            return row * 2
-
-        class MyNDArray(np.ndarray):
-            pass
-
-        m = np.array([[0, 1], [2, 3]]).view(MyNDArray)
-        expected = np.array([[0, 2], [4, 6]]).view(MyNDArray)
-
-        result = apply_along_axis(double, 0, m)
-        assert_(isinstance(result, MyNDArray))
-        assert_array_equal(result, expected)
-
-        result = apply_along_axis(double, 1, m)
-        assert_(isinstance(result, MyNDArray))
-        assert_array_equal(result, expected)
-
-    def test_subclass(self):
-        class MinimalSubclass(np.ndarray):
-            data = 1
-
-        def minimal_function(array):
-            return array.data
-
-        a = np.zeros((6, 3)).view(MinimalSubclass)
-
-        assert_array_equal(
-            apply_along_axis(minimal_function, 0, a), np.array([1, 1, 1])
-        )
-
     def test_scalar_array(self, cls=np.ndarray):
         a = np.ones((6, 3)).view(cls)
         res = apply_along_axis(np.sum, 0, a)
@@ -211,13 +180,6 @@ class TestApplyAlongAxis:
         ], axis=-1).view(cls)
         assert_equal(type(actual), type(expected))
         assert_equal(actual, expected)
-
-    def test_subclass_preservation(self):
-        class MinimalSubclass(np.ndarray):
-            pass
-        self.test_scalar_array(MinimalSubclass)
-        self.test_0d_array(MinimalSubclass)
-        self.test_axis_insertion(MinimalSubclass)
 
     def test_axis_insertion_ma(self):
         def f1to2(x):

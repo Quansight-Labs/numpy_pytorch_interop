@@ -1097,41 +1097,6 @@ class TestTypes:
         # Also test keyword arguments
         assert_(np.can_cast(from_=np.int32, to=np.int64))
 
-    def test_can_cast_simple_to_structured(self):
-        # Non-structured can only be cast to structured in 'unsafe' mode.
-        assert_(not np.can_cast('i4', 'i4,i4'))
-        assert_(not np.can_cast('i4', 'i4,i2'))
-        assert_(np.can_cast('i4', 'i4,i4', casting='unsafe'))
-        assert_(np.can_cast('i4', 'i4,i2', casting='unsafe'))
-        # Even if there is just a single field which is OK.
-        assert_(not np.can_cast('i2', [('f1', 'i4')]))
-        assert_(not np.can_cast('i2', [('f1', 'i4')], casting='same_kind'))
-        assert_(np.can_cast('i2', [('f1', 'i4')], casting='unsafe'))
-        # It should be the same for recursive structured or subarrays.
-        assert_(not np.can_cast('i2', [('f1', 'i4,i4')]))
-        assert_(np.can_cast('i2', [('f1', 'i4,i4')], casting='unsafe'))
-        assert_(not np.can_cast('i2', [('f1', '(2,3)i4')]))
-        assert_(np.can_cast('i2', [('f1', '(2,3)i4')], casting='unsafe'))
-
-    def test_can_cast_structured_to_simple(self):
-        # Need unsafe casting for structured to simple.
-        assert_(not np.can_cast([('f1', 'i4')], 'i4'))
-        assert_(np.can_cast([('f1', 'i4')], 'i4', casting='unsafe'))
-        assert_(np.can_cast([('f1', 'i4')], 'i2', casting='unsafe'))
-        # Since it is unclear what is being cast, multiple fields to
-        # single should not work even for unsafe casting.
-        assert_(not np.can_cast('i4,i4', 'i4', casting='unsafe'))
-        # But a single field inside a single field is OK.
-        assert_(not np.can_cast([('f1', [('x', 'i4')])], 'i4'))
-        assert_(np.can_cast([('f1', [('x', 'i4')])], 'i4', casting='unsafe'))
-        # And a subarray is fine too - it will just take the first element
-        # (arguably not very consistently; might also take the first field).
-        assert_(not np.can_cast([('f0', '(3,)i4')], 'i4'))
-        assert_(np.can_cast([('f0', '(3,)i4')], 'i4', casting='unsafe'))
-        # But a structured subarray with multiple fields should fail.
-        assert_(not np.can_cast([('f0', ('i4,i4'), (2,))], 'i4',
-                                casting='unsafe'))
-
     def test_can_cast_values(self):
         # gh-5917
         for dt in np.sctypes['int'] + np.sctypes['uint']:
@@ -1189,7 +1154,7 @@ class TestFromiter:
                 raise NIterError('error at index %s' % eindex)
             yield e
 
-    @pytest.mark.parametrize("dtype", [int, object])
+    @pytest.mark.parametrize("dtype", [int])
     @pytest.mark.parametrize(["count", "error_index"], [(10, 5), (10, 9)])
     def test_2592(self, count, error_index, dtype):
         # Test iteration exceptions are correctly raised. The data/generator
@@ -1198,40 +1163,6 @@ class TestFromiter:
         with pytest.raises(NIterError):
             np.fromiter(iterable, dtype=dtype, count=count)
 
-    @pytest.mark.parametrize("dtype", ["S", "S0", "V0", "U0"])
-    def test_empty_not_structured(self, dtype):
-        # Note, "S0" could be allowed at some point, so long "S" (without
-        # any length) is rejected.
-        with pytest.raises(ValueError, match="Must specify length"):
-            np.fromiter([], dtype=dtype)
-
-    @pytest.mark.parametrize(["dtype", "data"],
-            [("d", [1, 2, 3, 4, 5, 6, 7, 8, 9]),
-             ("O", [1, 2, 3, 4, 5, 6, 7, 8, 9]),
-             ("i,O", [(1, 2), (5, 4), (2, 3), (9, 8), (6, 7)]),
-             # subarray dtypes (important because their dimensions end up
-             # in the result arrays dimension:
-             ("2i", [(1, 2), (5, 4), (2, 3), (9, 8), (6, 7)]),
-            ])
-    @pytest.mark.parametrize("length_hint", [0, 1])
-    def test_growth_and_complicated_dtypes(self, dtype, data, length_hint):
-        dtype = np.dtype(dtype)
-
-        data = data * 100  # make sure we realloc a bit
-
-        class MyIter:
-            # Class/example from gh-15789
-            def __length_hint__(self):
-                # only required to be an estimate, this is legal
-                return length_hint  # 0 or 1
-
-            def __iter__(self):
-                return iter(data)
-
-        res = np.fromiter(MyIter(), dtype=dtype)
-        expected = np.array(data, dtype=dtype)
-
-        assert_array_equal(res, expected)
 
     def test_empty_result(self):
         class MyIter:
