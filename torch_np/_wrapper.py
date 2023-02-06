@@ -387,8 +387,8 @@ def cov(
     )
 
     # work with tensors from now on
-    is_half = False
-    if dtype == torch.float16:
+    is_half = dtype == torch.float16:
+    if is_half:
         # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
         is_half = True
         dtype = torch.float32
@@ -908,7 +908,6 @@ def argsort(a, axis=-1, kind=None, order=None):
 
 @asarray_replacer()
 def angle(z, deg=False):
-#    z = asarray(z, dtype='float64').get()
     result = torch.angle(z)
     if deg:
         result *= 180 / torch.pi
