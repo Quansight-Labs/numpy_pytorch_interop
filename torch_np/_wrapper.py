@@ -336,10 +336,9 @@ def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
     if rowvar is False:
         x_tensor = x_tensor.T
 
-    is_half = False
-    if dtype == torch.float16:
+    is_half = dtype == torch.float16
+    if is_half:
         # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
-        is_half = True
         dtype = torch.float32
 
     if dtype is not None:
