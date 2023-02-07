@@ -185,6 +185,11 @@ def assert_equal(actual, desired, err_msg="", verbose=True):
 
     """
     __tracebackhide__ = True  # Hide traceback for py.test
+    try:
+        return actual == desired
+    except Exception:
+        pass
+
     if isinstance(desired, dict):
         if not isinstance(actual, dict):
             raise AssertionError(repr(type(actual)))

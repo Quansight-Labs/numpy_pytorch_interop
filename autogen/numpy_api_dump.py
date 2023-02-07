@@ -220,10 +220,6 @@ def deprecate_with_doc(msg):
     raise NotImplementedError
 
 
-def diag(v, k=0):
-    raise NotImplementedError
-
-
 def diag_indices(n, ndim=2):
     raise NotImplementedError
 
@@ -237,10 +233,6 @@ def diagflat(v, k=0):
 
 
 def diagonal(a, offset=0, axis1=0, axis2=1):
-    raise NotImplementedError
-
-
-def diff(a, n=1, axis=-1, prepend=NoValue, append=NoValue):
     raise NotImplementedError
 
 
@@ -281,14 +273,6 @@ def find_common_type(array_types, scalar_types):
 
 
 def fix(x, out=None):
-    raise NotImplementedError
-
-
-def fliplr(m):
-    raise NotImplementedError
-
-
-def flipud(m):
     raise NotImplementedError
 
 
@@ -541,10 +525,6 @@ def maximum_sctype(t):
 
 
 def may_share_memory(a, b, /, max_work=None):
-    raise NotImplementedError
-
-
-def meshgrid(*xi, copy=True, sparse=False, indexing="xy"):
     raise NotImplementedError
 
 
@@ -912,10 +892,6 @@ def unpackbits(a, /, axis=None, count=None, bitorder="big"):
 
 
 def unwrap(p, discont=None, axis=-1, *, period=6.283185307179586):
-    raise NotImplementedError
-
-
-def vander(x, N=None, increasing=False):
     raise NotImplementedError
 
 
