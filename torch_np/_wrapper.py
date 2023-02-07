@@ -14,6 +14,7 @@ from ._ndarray import (
     asarray,
     asarray_replacer,
     can_cast,
+    maybe_set_base,
     ndarray,
     newaxis,
     result_type,
@@ -156,6 +157,62 @@ def stack(arrays, axis=0, out=None, *, dtype=None, casting="same_kind"):
     return concatenate(
         expanded_arrays, axis=axis, out=out, dtype=dtype, casting=casting
     )
+
+
+def array_split(ary, indices_or_sections, axis=0):
+    tensor = asarray(ary).get()
+    base = ary if isinstance(ary, ndarray) else None
+    axis = _util.normalize_axis_index(axis, tensor.ndim)
+
+    result = _impl.split_helper(tensor, indices_or_sections, axis)
+
+    return tuple(maybe_set_base(_, base) for _ in result)
+
+
+def split(ary, indices_or_sections, axis=0):
+    tensor = asarray(ary).get()
+    base = ary if isinstance(ary, ndarray) else None
+    axis = _util.normalize_axis_index(axis, tensor.ndim)
+
+    result = _impl.split_helper(tensor, indices_or_sections, axis, strict=True)
+
+    return tuple(maybe_set_base(_, base) for _ in result)
+
+
+def hsplit(ary, indices_or_sections):
+    tensor = asarray(ary).get()
+    base = ary if isinstance(ary, ndarray) else None
+
+    if tensor.ndim == 0:
+        raise ValueError("hsplit only works on arrays of 1 or more dimensions")
+
+    axis = 1 if tensor.ndim > 1 else 0
+
+    result = _impl.split_helper(tensor, indices_or_sections, axis, strict=True)
+
+    return tuple(maybe_set_base(_, base) for _ in result)
+
+
+def vsplit(ary, indices_or_sections):
+    tensor = asarray(ary).get()
+    base = ary if isinstance(ary, ndarray) else None
+
+    if tensor.ndim < 2:
+        raise ValueError("vsplit only works on arrays of 2 or more dimensions")
+    result = _impl.split_helper(tensor, indices_or_sections, 0, strict=True)
+
+    return tuple(maybe_set_base(_, base) for _ in result)
+
+
+def dsplit(ary, indices_or_sections):
+    tensor = asarray(ary).get()
+    base = ary if isinstance(ary, ndarray) else None
+
+    if tensor.ndim < 3:
+        raise ValueError("dsplit only works on arrays of 3 or more dimensions")
+    result = _impl.split_helper(tensor, indices_or_sections, 2, strict=True)
+
+    return tuple(maybe_set_base(_, base) for _ in result)
 
 
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None, axis=0):

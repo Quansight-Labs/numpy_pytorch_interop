@@ -2,12 +2,12 @@ import functools
 import sys
 import pytest
 
-from numpy.lib.shape_base import (apply_along_axis, apply_over_axes, array_split,
-    split, hsplit, dsplit, vsplit, kron, tile,
-    expand_dims, take_along_axis, put_along_axis)
+from numpy.lib.shape_base import (apply_along_axis, apply_over_axes, kron, tile,
+    take_along_axis, put_along_axis)
 
 import torch_np as np
-from torch_np import column_stack, dstack, expand_dims
+from torch_np import (column_stack, dstack, expand_dims, array_split,
+    split, hsplit, dsplit, vsplit,)
 
 from torch_np.random import rand
 
@@ -275,7 +275,6 @@ class TestExpandDims:
         assert_raises(ValueError, expand_dims, a, axis=(1, 1))
 
 
-@pytest.mark.xfail(reason="TODO: implement")
 class TestArraySplit:
     def test_integer_0_split(self):
         a = np.arange(10)
@@ -410,7 +409,6 @@ class TestArraySplit:
         compare_results(res, desired)
 
 
-@pytest.mark.xfail(reason="TODO: implement")
 class TestSplit:
     # The split function is essentially the same as array_split,
     # except that it test if splitting will result in an
@@ -493,7 +491,6 @@ class TestDstack:
 
 # array_split has more comprehensive test of splitting.
 # only do simple test on hsplit, vsplit, and dsplit
-@pytest.mark.xfail(reason="TODO: implement")
 class TestHsplit:
     """Only testing for integer splits.
 
@@ -523,7 +520,6 @@ class TestHsplit:
         compare_results(res, desired)
 
 
-@pytest.mark.xfail(reason="TODO: implement")
 class TestVsplit:
     """Only testing for integer splits.
 
@@ -551,7 +547,6 @@ class TestVsplit:
         compare_results(res, desired)
 
 
-@pytest.mark.xfail(reason="TODO: implement")
 class TestDsplit:
     # Only testing for integer splits.
     def test_non_iterable(self):

@@ -110,10 +110,6 @@ def array_repr(arr, max_line_width=None, precision=None, suppress_small=None):
     raise NotImplementedError
 
 
-def array_split(ary, indices_or_sections, axis=0):
-    raise NotImplementedError
-
-
 def array_str(a, max_line_width=None, precision=None, suppress_small=None):
     raise NotImplementedError
 
@@ -257,10 +253,6 @@ def disp(mesg, device=None, linefeed=True):
 
 
 def dot(a, b, out=None):
-    raise NotImplementedError
-
-
-def dsplit(ary, indices_or_sections):
     raise NotImplementedError
 
 
@@ -414,10 +406,6 @@ def histogram_bin_edges(a, bins=10, range=None, weights=None):
 
 
 def histogramdd(sample, bins=10, range=None, normed=None, weights=None, density=None):
-    raise NotImplementedError
-
-
-def hsplit(ary, indices_or_sections):
     raise NotImplementedError
 
 
@@ -875,10 +863,6 @@ def sort_complex(a):
     raise NotImplementedError
 
 
-def split(ary, indices_or_sections, axis=0):
-    raise NotImplementedError
-
-
 def swapaxes(a, axis1, axis2):
     raise NotImplementedError
 
@@ -944,10 +928,6 @@ def vander(x, N=None, increasing=False):
 
 
 def vdot(a, b, /):
-    raise NotImplementedError
-
-
-def vsplit(ary, indices_or_sections):
     raise NotImplementedError
 
 
