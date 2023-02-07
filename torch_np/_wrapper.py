@@ -215,6 +215,21 @@ def dsplit(ary, indices_or_sections):
     return tuple(maybe_set_base(_, base) for _ in result)
 
 
+def kron(a, b):
+    a_tensor, b_tensor = _helpers.to_tensors(a, b)
+    result = torch.kron(a_tensor, b_tensor)
+    return asarray(result)
+
+
+def tile(A, reps):
+    a_tensor = asarray(A).get()
+    if isinstance(reps, int):
+        reps = (reps,)
+
+    result = torch.tile(a_tensor, reps)
+    return asarray(result)
+
+
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None, axis=0):
     if axis != 0 or retstep or not endpoint:
         raise NotImplementedError

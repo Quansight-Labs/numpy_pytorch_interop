@@ -481,10 +481,6 @@ def kaiser(M, beta):
     raise NotImplementedError
 
 
-def kron(a, b):
-    raise NotImplementedError
-
-
 def lexsort(keys, axis=-1):
     raise NotImplementedError
 

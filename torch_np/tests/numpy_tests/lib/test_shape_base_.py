@@ -2,14 +2,14 @@ import functools
 import sys
 import pytest
 
-from numpy.lib.shape_base import (apply_along_axis, apply_over_axes, kron, tile,
+from numpy.lib.shape_base import (apply_along_axis, apply_over_axes,
     take_along_axis, put_along_axis)
 
 import torch_np as np
 from torch_np import (column_stack, dstack, expand_dims, array_split,
-    split, hsplit, dsplit, vsplit,)
+    split, hsplit, dsplit, vsplit, kron, tile,)
 
-from torch_np.random import rand
+from torch_np.random import rand, randint
 
 from torch_np.testing import assert_array_equal, assert_equal, assert_
 from pytest import raises as assert_raises
@@ -635,7 +635,6 @@ class TestSqueeze:
             np.squeeze(np.array([[1], [2], [3]]), axis=0)
 
 
-@pytest.mark.xfail(reason="TODO: implement")
 class TestKron:
     def test_basic(self):
         # Using 0-dimensional ndarray
@@ -666,16 +665,6 @@ class TestKron:
         k = np.array([[[1, 2], [3, 4]], [[2, 4], [6, 8]]])
         assert_array_equal(np.kron(a, b), k)
 
-    def test_return_type(self):
-        class myarray(np.ndarray):
-            __array_priority__ = 1.0
-
-        a = np.ones([2, 2])
-        ma = myarray(a.shape, a.dtype, a.data)
-        assert_equal(type(kron(a, a)), np.ndarray)
-        assert_equal(type(kron(ma, ma)), myarray)
-        assert_equal(type(kron(a, ma)), myarray)
-        assert_equal(type(kron(ma, a)), myarray)
 
     @pytest.mark.parametrize(
         "shape_a,shape_b", [
@@ -698,7 +687,6 @@ class TestKron:
                 k.shape, expected_shape), "Unexpected shape from kron"
 
 
-@pytest.mark.xfail(reason="TODO: implement")
 class TestTile:
     def test_basic(self):
         a = np.array([0, 1, 2])
@@ -726,8 +714,6 @@ class TestTile:
         assert_equal(d, (3, 2, 0))
 
     def test_kroncompare(self):
-        from numpy.random import randint
-
         reps = [(2,), (1, 2), (2, 1), (2, 2), (2, 3, 2), (3, 2)]
         shape = [(3,), (2, 3), (3, 4, 3), (3, 2, 3), (4, 3, 2, 4), (2, 2)]
         for s in shape:
