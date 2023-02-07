@@ -409,6 +409,10 @@ def asarray(a, dtype=None, order=None, *, like=None):
     return array(a, dtype=dtype, order=order, like=like, copy=False, ndmin=0)
 
 
+def maybe_set_base(tensor, base):
+    return ndarray._from_tensor_and_base(tensor, base)
+
+
 class asarray_replacer:
     def __init__(self, dispatch="one"):
         if dispatch not in ["one", "two"]:
