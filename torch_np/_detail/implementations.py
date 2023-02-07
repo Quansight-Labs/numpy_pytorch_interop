@@ -46,7 +46,7 @@ def split_helper_int(tensor, indices_or_sections, axis, strict=False):
         num, sz = l % n, l // n + 1
         lst = [sz] * num
 
-   lst += [sz - 1] * (n - num)
+    lst += [sz - 1] * (n - num)
 
     result = torch.split(tensor, lst, axis)
 
@@ -61,7 +61,7 @@ def split_helper_list(tensor, indices_or_sections, axis, strict=False):
     lst = [x for x in indices_or_sections if x <= tensor.shape[axis]]
     num_extra = len(indices_or_sections) - len(lst)
 
-    lst = lst + [tensor.shape[axis]]
+    lst.append(tensor.shape[axis])
     lst = [
         lst[0],
     ] + [a - b for a, b in zip(lst[1:], lst[:-1])]

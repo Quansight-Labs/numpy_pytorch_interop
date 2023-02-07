@@ -166,7 +166,7 @@ def array_split(ary, indices_or_sections, axis=0):
 
     result = _impl.split_helper(tensor, indices_or_sections, axis)
 
-    return tuple(maybe_set_base(_, base) for _ in result)
+    return tuple(maybe_set_base(x, base) for x in result)
 
 
 def split(ary, indices_or_sections, axis=0):
@@ -176,7 +176,7 @@ def split(ary, indices_or_sections, axis=0):
 
     result = _impl.split_helper(tensor, indices_or_sections, axis, strict=True)
 
-    return tuple(maybe_set_base(_, base) for _ in result)
+    return tuple(maybe_set_base(x, base) for x in result)
 
 
 def hsplit(ary, indices_or_sections):
@@ -190,7 +190,7 @@ def hsplit(ary, indices_or_sections):
 
     result = _impl.split_helper(tensor, indices_or_sections, axis, strict=True)
 
-    return tuple(maybe_set_base(_, base) for _ in result)
+    return tuple(maybe_set_base(x, base) for x in result)
 
 
 def vsplit(ary, indices_or_sections):
@@ -201,7 +201,7 @@ def vsplit(ary, indices_or_sections):
         raise ValueError("vsplit only works on arrays of 2 or more dimensions")
     result = _impl.split_helper(tensor, indices_or_sections, 0, strict=True)
 
-    return tuple(maybe_set_base(_, base) for _ in result)
+    return tuple(maybe_set_base(x, base) for x in result)
 
 
 def dsplit(ary, indices_or_sections):
@@ -212,7 +212,7 @@ def dsplit(ary, indices_or_sections):
         raise ValueError("dsplit only works on arrays of 3 or more dimensions")
     result = _impl.split_helper(tensor, indices_or_sections, 2, strict=True)
 
-    return tuple(maybe_set_base(_, base) for _ in result)
+    return tuple(maybe_set_base(x, base) for x in result)
 
 
 def kron(a, b):

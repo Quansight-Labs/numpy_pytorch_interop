@@ -875,10 +875,6 @@ def tensordot(a, b, axes=2):
     raise NotImplementedError
 
 
-def tile(A, reps):
-    raise NotImplementedError
-
-
 def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None):
     raise NotImplementedError
 
