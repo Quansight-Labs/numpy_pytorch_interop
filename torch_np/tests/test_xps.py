@@ -1,0 +1,54 @@
+"""
+Tests which use hypothesis.extra.array_api
+
+These tests aren't specifically for testing Array API adoption!
+"""
+import math
+import warnings
+
+import pytest
+
+pytest.importorskip("hypothesis")
+
+from hypothesis import given
+from hypothesis import strategies as st
+from hypothesis.errors import HypothesisWarning
+from hypothesis.extra.array_api import make_strategies_namespace
+
+import torch_np as np
+
+__all__ = ["xps"]
+
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=HypothesisWarning)
+    np.bool = np.bool_
+    xps = make_strategies_namespace(np, api_version="2021.12")
+
+
+@given(shape=xps.array_shapes(), data=st.data())
+def test_full(shape, data):
+    if data.draw(st.booleans(), label="pass kwargs?"):
+        kw = {}
+    else:
+        dtype = data.draw(st.none() | xps.scalar_dtypes(), label="dtype")
+        kw = {"dtype": dtype}
+    _dtype = kw.get("dtype", None) or data.draw(
+        st.sampled_from([np.bool, np.int64, np.float64]), label="_dtype"
+    )
+    fill_value = data.draw(xps.from_dtype(_dtype), label="fill_value")
+    out = np.full(shape, fill_value, **kw)
+    if kw.get("dtype", None) is None:
+        if isinstance(fill_value, bool):
+            assert out.dtype == np.bool
+        elif isinstance(fill_value, int):
+            assert out.dtype == np.int64
+        else:
+            assert isinstance(fill_value, float)  # sanity check
+            assert out.dtype == np.float64
+    else:
+        assert out.dtype == kw["dtype"]
+    assert out.shape == shape
+    if math.isnan(fill_value):
+        assert np.isnan(out).all()
+    else:
+        assert (out == fill_value).all()

@@ -310,7 +310,19 @@ def full(shape, fill_value, dtype=None, order="C", *, like=None):
         raise NotImplementedError
     if isinstance(fill_value, ndarray):
         fill_value = fill_value.get()
-    torch_dtype = _dtypes.torch_dtype_from(dtype)
+    if dtype is None:
+        if isinstance(fill_value, bool):
+            torch_dtype = torch.bool
+        elif isinstance(fill_value, int):
+            torch_dtype = torch.int64
+        elif isinstance(fill_value, float):
+            torch_dtype = torch.float64
+        elif isinstance(fill_value, complex):
+            torch_dtype = torch.complex128
+        else:
+            torch_dtype = _dtypes.torch_dtype_from(dtype)
+    else:
+        torch_dtype = _dtypes.torch_dtype_from(dtype)
     return asarray(torch.full(shape, fill_value, dtype=torch_dtype))
 
 
