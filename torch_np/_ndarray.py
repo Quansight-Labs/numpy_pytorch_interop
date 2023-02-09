@@ -494,11 +494,24 @@ class asarray_replacer:
 
 
 def can_cast(from_, to, casting="safe"):
-    from_ = from_.dtype if isinstance(from_, ndarray) else _dtypes.dtype(from_)
-    to_ = to.dtype if isinstance(to, ndarray) else _dtypes.dtype(to)
+    from_ = _extract_dtype(from_)
+    to_ = extract_dtype(to_)
 
     return _dtypes_impl.can_cast_impl(from_.torch_dtype, to_.torch_dtype, casting)
 
+'''
+    # XXX: merge with _dtypes.can_cast. The Q is who converts from ndarray, if needed.
+    try:
+        from_dtype = asarray(from_).dtype
+    except (TypeError, RuntimeError):
+        # not an array_like; try convering to a dtype
+        from_dtype = _dtypes.dtype(from_)
+
+    try:
+        to_dtype = asarray(to).dtype
+    except (TypeError, RuntimeError):
+        to_dtype = _dtypes.dtype(to)
+'''
 
 def _extract_dtype(entry):
     try:
