@@ -311,7 +311,7 @@ def full(shape, fill_value, dtype=None, order="C", *, like=None):
     if isinstance(fill_value, ndarray):
         fill_value = fill_value.get()
     if dtype is None:
-        torch_dtype = _dtypes.torch_dtype_from(type(fill_value))
+        torch_dtype = asarray(fill_value).get().dtype
     else:
         torch_dtype = _dtypes.torch_dtype_from(dtype)
     return asarray(torch.full(shape, fill_value, dtype=torch_dtype))
