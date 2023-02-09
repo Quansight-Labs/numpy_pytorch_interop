@@ -157,6 +157,9 @@ class ndarray:
     def __float__(self):
         return float(self._tensor)
 
+    def __complex__(self):
+        return complex(self._tensor)
+
     def __int__(self):
         return int(self._tensor)
 
