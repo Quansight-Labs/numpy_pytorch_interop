@@ -14,6 +14,55 @@ from ._detail import _flips, _reductions, _util
 
 newaxis = None
 
+FLAGS = [
+    "C_CONTIGUOUS",
+    "F_CONTIGUOUS",
+    "OWNDATA",
+    "WRITEABLE",
+    "ALIGNED",
+    "WRITEBACKIFCOPY",
+    "FNC",
+    "FORC",
+    "BEHAVED",
+    "CARRAY",
+    "FARRAY",
+]
+
+SHORTHAND_TO_FLAGS = {
+    "C": "C_CONTIGUOUS",
+    "F": "F_CONTIGUOUS",
+    "O": "OWNDATA",
+    "W": "WRITEABLE",
+    "A": "ALIGNED",
+    "X": "WRITEBACKIFCOPY",
+    "B": "BEHAVED",
+    "CA": "CARRAY",
+    "FA": "FARRAY",
+}
+
+
+class Flags:
+    def __init__(self, flag_to_value: dict):
+        assert all(k in FLAGS for k in flag_to_value.keys())  # sanity check
+        self._flag_to_value = flag_to_value
+
+    def __getattr__(self, attr: str):
+        if attr.islower() and attr.upper() in FLAGS:
+            return self[attr.upper()]
+        else:
+            raise AttributeError(f"No flag '{attr}'")
+
+    def __getitem__(self, key):
+        if key in SHORTHAND_TO_FLAGS.keys():
+            key = SHORTHAND_TO_FLAGS[key]
+        if key in FLAGS:
+            try:
+                return self._flag_to_value[key]
+            except KeyError as e:
+                raise NotImplementedError(f"{key=}") from e
+        else:
+            raise KeyError(f"No flag '{key}'")
+
 
 ##################### ndarray class ###########################
 
@@ -57,6 +106,17 @@ class ndarray:
     @property
     def base(self):
         return self._base
+
+    @property
+    def flags(self):
+        # Note contiguous in torch is assumed C-style
+        flag_to_value = {"C_CONTIGUOUS": self._tensor.is_contiguous()}
+        if flag_to_value["C_CONTIGUOUS"]:
+            # There's no proper way to determine if a tensor is Fortran-style
+            # contiguous in torch, but at least we know it isn't when it is
+            # C-style.
+            flag_to_value["F_CONTIGUOUS"] = False
+        return Flags(flag_to_value)
 
     @property
     def T(self):
