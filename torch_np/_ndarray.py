@@ -396,7 +396,7 @@ class ndarray:
         return ndarray._from_tensor_and_base(self._tensor.__getitem__(index), self)
 
     def __setitem__(self, index, value):
-        index = _helpers.to_tensors(index)
+        index = _helpers.ndarrays_to_tensors(index)
         index = ndarray._upcast_int_indices(index)
         value = asarray(value).get()
         return self._tensor.__setitem__(index, value)
