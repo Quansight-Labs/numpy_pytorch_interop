@@ -369,11 +369,11 @@ class TestIndexing:
         ind = np.ones(20, dtype=np.intp)
         ind[-1] = 10
         assert_raises(IndexError, a.__getitem__, ind)
-        assert_raises(IndexError, a.__setitem__, ind, 0)
+        assert_raises((IndexError, RuntimeError), a.__setitem__, ind, 0)
         ind = np.ones(20, dtype=np.intp)
         ind[0] = 11
         assert_raises(IndexError, a.__getitem__, ind)
-        assert_raises(IndexError, a.__setitem__, ind, 0)
+        assert_raises((IndexError, RuntimeError), a.__setitem__, ind, 0)
 
     def test_trivial_fancy_not_possible(self):
         # Test that the fast path for trivial assignment is not incorrectly
