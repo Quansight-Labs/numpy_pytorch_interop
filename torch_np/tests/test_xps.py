@@ -3,7 +3,7 @@ Tests which use hypothesis.extra.array_api
 
 These tests aren't specifically for testing Array API adoption!
 """
-import math
+import cmath
 import warnings
 
 import pytest
@@ -22,7 +22,7 @@ __all__ = ["xps"]
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=HypothesisWarning)
     np.bool = np.bool_
-    xps = make_strategies_namespace(np, api_version="2021.12")
+    xps = make_strategies_namespace(np, api_version="2022.12")
 
 
 @given(shape=xps.array_shapes(), data=st.data())
@@ -33,7 +33,7 @@ def test_full(shape, data):
         dtype = data.draw(st.none() | xps.scalar_dtypes(), label="dtype")
         kw = {"dtype": dtype}
     _dtype = kw.get("dtype", None) or data.draw(
-        st.sampled_from([np.bool, np.int64, np.float64]), label="_dtype"
+        st.sampled_from([np.bool, np.int64, np.float64, np.complex128]), label="_dtype"
     )
     fill_value = data.draw(xps.from_dtype(_dtype), label="fill_value")
     out = np.full(shape, fill_value, **kw)
@@ -42,13 +42,15 @@ def test_full(shape, data):
             assert out.dtype == np.bool
         elif isinstance(fill_value, int):
             assert out.dtype == np.int64
-        else:
-            assert isinstance(fill_value, float)  # sanity check
+        elif isinstance(fill_value, float):
             assert out.dtype == np.float64
+        else:
+            assert isinstance(fill_value, complex)  # sanity check
+            assert out.dtype == np.complex128
     else:
         assert out.dtype == kw["dtype"]
     assert out.shape == shape
-    if math.isnan(fill_value):
+    if cmath.isnan(fill_value):
         assert np.isnan(out).all()
     else:
         assert (out == fill_value).all()
