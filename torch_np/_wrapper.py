@@ -314,8 +314,7 @@ def full(shape, fill_value, dtype=None, order="C", *, like=None):
     _util.subok_not_ok(like)
     if order != "C":
         raise NotImplementedError
-    if isinstance(fill_value, ndarray):
-        fill_value = fill_value.get()
+    fill_value = asarray(fill_value).get()
     if dtype is None:
         torch_dtype = asarray(fill_value).get().dtype
     else:
