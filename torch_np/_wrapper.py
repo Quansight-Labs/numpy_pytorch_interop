@@ -309,17 +309,16 @@ def empty_like(prototype, dtype=None, order="K", subok=False, shape=None):
         result = result.reshape(shape)
     return result
 
-
+@_decorators.dtype_to_torch
 def full(shape, fill_value, dtype=None, order="C", *, like=None):
     _util.subok_not_ok(like)
     if order != "C":
         raise NotImplementedError
     fill_value = asarray(fill_value).get()
     if dtype is None:
-        torch_dtype = asarray(fill_value).get().dtype
-    else:
-        torch_dtype = _dtypes.torch_dtype_from(dtype)
-    return asarray(torch.full(shape, fill_value, dtype=torch_dtype))
+        dtype =  fill_value.dtype
+    result = torch.full(shape, fill_value, dtype=dtype)
+    return asarray(result)
 
 
 @asarray_replacer()
