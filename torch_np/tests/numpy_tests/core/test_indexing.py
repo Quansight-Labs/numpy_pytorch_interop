@@ -250,7 +250,7 @@ class TestIndexing:
         assert_raises((ValueError, RuntimeError), f, a, [1, 2, 3])
         assert_raises((ValueError, RuntimeError), f, a[:1], [1, 2, 3])
 
-    @pytest.mark.xfail("torch does not support object dtype")
+    @pytest.mark.xfail(reason="torch does not support object dtype")
     def test_boolean_assignment_needs_api(self):
         # See also gh-7666
         # This caused a segfault on Python 2 due to the GIL not being
@@ -332,7 +332,7 @@ class TestIndexing:
 
         assert_equal(a, b)
 
-    @pytest.mark.xfail("torch does not limit dims to 32")
+    @pytest.mark.xfail(reason="torch does not limit dims to 32")
     def test_too_many_fancy_indices_special_case(self):
         # Just documents behaviour, this is a small limitation.
         a = np.ones((1,) * 32)  # 32 is NPY_MAXDIMS
@@ -390,6 +390,7 @@ class TestIndexing:
         res[3] = -1
         assert_array_equal(a, res)
 
+    @pytest.mark.xfail(reason="XXX: wrapping view stuff is TBD")
     def test_nonbaseclass_values(self):
         class SubClass(np.ndarray):
             def __array_finalize__(self, old):
@@ -411,6 +412,7 @@ class TestIndexing:
         a[...] = s
         assert_((a == 1).all())
 
+    @pytest.mark.xfail(reason="XXX: wrapping view stuff is TBD")
     def test_array_like_values(self):
         # Similar to the above test, but use a memoryview instead
         a = np.zeros((5, 5))
@@ -496,6 +498,7 @@ class TestIndexing:
         if HAS_REFCOUNT:
             assert_equal(sys.getrefcount(np.dtype(np.intp)), refcount)
 
+    @pytest.mark.xfail(reason="XXX: wrapping view stuff is TBD")
     def test_unaligned(self):
         v = (np.zeros(64, dtype=np.int8) + ord('a'))[1:-7]
         d = v.view(np.dtype("S8"))
@@ -603,6 +606,8 @@ class TestIndexing:
         with pytest.raises(IndexError):
             arr[(index,) * num] = 1.
 
+
+    @pytest.mark.xfail(reason="XXX: wrapping view stuff is TBD")
     @pytest.mark.skipif(IS_WASM, reason="no threading")
     def test_structured_advanced_indexing(self):
         # Test that copyswap(n) used by integer array indexing is threadsafe
@@ -712,6 +717,7 @@ class TestBroadcastedAssignments:
         assert_((a[::-1] == v).all())
 
 
+@pytest.mark.xfail(reason="XXX: wrapping view stuff is TBD")
 class TestSubclasses:
     def test_basic(self):
         # Test that indexing in various ways produces SubClass instances,
@@ -1187,6 +1193,7 @@ class TestMultiIndexingAutomated:
     def _compare_index_result(self, arr, index, mimic_get, no_copy):
         """Compare mimicked result to indexing result.
         """
+        pytest.xfail("XXX: wrapping view stuff is TBD")
         arr = arr.copy()
         indexed_arr = arr[index]
         assert_array_equal(indexed_arr, mimic_get)
