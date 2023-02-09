@@ -50,7 +50,7 @@ class Flags:
         if attr.islower() and attr.upper() in FLAGS:
             return self[attr.upper()]
         else:
-            raise AttributeError(f"No flag '{attr}'")
+            raise AttributeError(f"No flag attribute '{attr}'")
 
     def __getitem__(self, key):
         if key in SHORTHAND_TO_FLAGS.keys():
@@ -61,7 +61,7 @@ class Flags:
             except KeyError as e:
                 raise NotImplementedError(f"{key=}") from e
         else:
-            raise KeyError(f"No flag '{key}'")
+            raise KeyError(f"No flag key '{key}'")
 
 
 ##################### ndarray class ###########################
