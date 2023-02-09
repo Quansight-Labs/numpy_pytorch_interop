@@ -2666,12 +2666,19 @@ class TestConvolve:
             np.convolve(d, k, mode=None)
 
 
+class TestDtypePositional:
+
+    @pytest.mark.xfail(reason='TODO: restore dtypes as positional args')
+    def test_dtype_positional(self):
+        np.empty((2,), bool)
+
+
 class TestArgwhere:
 
     @pytest.mark.parametrize('nd', [0, 1, 2])
     def test_nd(self, nd):
         # get an nd array with multiple elements in every dimension
-        x = np.empty((2,)*nd, bool)
+        x = np.empty((2,)*nd, dtype=bool)
 
         # none
         x[...] = False

@@ -719,7 +719,7 @@ class TestTile:
         for s in shape:
             b = randint(0, 10, size=s)
             for r in reps:
-                a = np.ones(r, b.dtype)
+                a = np.ones(r, dtype=b.dtype)   # TODO: restore dtype positional arg
                 large = tile(b, r)
                 klarge = kron(a, b)
                 assert_equal(large, klarge)

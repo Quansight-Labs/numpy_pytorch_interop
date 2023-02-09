@@ -288,12 +288,20 @@ def arange(start=None, stop=None, step=1, dtype=None, *, like=None):
         raise ValueError("Maximum allowed size exceeded")
 
 
+@_decorators.dtype_to_torch
 def empty(shape, dtype=float, order="C", *, like=None):
     _util.subok_not_ok(like)
     if order != "C":
         raise NotImplementedError
-    torch_dtype = _dtypes.torch_dtype_from(dtype)
-    return asarray(torch.empty(shape, dtype=torch_dtype))
+
+    if dtype is None:
+        from ._detail._scalar_types import default_float_type
+
+        dtype = default_float_type.torch_dtype
+
+    result = torch.empty(shape, dtype=dtype)
+
+    return asarray(result)
 
 
 # NB: *_like function deliberately deviate from numpy: it has subok=True
@@ -309,15 +317,22 @@ def empty_like(prototype, dtype=None, order="K", subok=False, shape=None):
         result = result.reshape(shape)
     return result
 
+
 @_decorators.dtype_to_torch
 def full(shape, fill_value, dtype=None, order="C", *, like=None):
     _util.subok_not_ok(like)
     if order != "C":
         raise NotImplementedError
+
     fill_value = asarray(fill_value).get()
     if dtype is None:
-        dtype =  fill_value.dtype
+        dtype = fill_value.dtype
+
+    if not isinstance(shape, (tuple, list)):
+        shape = (shape,)
+
     result = torch.full(shape, fill_value, dtype=dtype)
+
     return asarray(result)
 
 
@@ -333,12 +348,19 @@ def full_like(a, fill_value, dtype=None, order="K", subok=False, shape=None):
     return result
 
 
+@_decorators.dtype_to_torch
 def ones(shape, dtype=None, order="C", *, like=None):
     _util.subok_not_ok(like)
     if order != "C":
         raise NotImplementedError
-    torch_dtype = _dtypes.torch_dtype_from(dtype)
-    return asarray(torch.ones(shape, dtype=torch_dtype))
+    if dtype is None:
+        from ._detail._scalar_types import default_float_type
+
+        dtype = default_float_type.torch_dtype
+
+    result = torch.ones(shape, dtype=dtype)
+
+    return asarray(result)
 
 
 @asarray_replacer()
@@ -360,7 +382,8 @@ def zeros(shape, dtype=None, order="C", *, like=None):
         raise NotImplementedError
     if dtype is None:
         dtype = _dtypes_impl.default_float_dtype
-    return asarray(torch.zeros(shape, dtype=dtype))
+    result = torch.zeros(shape, dtype=dtype)
+    return asarray(result)
 
 
 @asarray_replacer()
