@@ -332,6 +332,7 @@ class TestIndexing:
 
         assert_equal(a, b)
 
+    @pytest.mark.xfail("torch does not limit dims to 32")
     def test_too_many_fancy_indices_special_case(self):
         # Just documents behaviour, this is a small limitation.
         a = np.ones((1,) * 32)  # 32 is NPY_MAXDIMS
