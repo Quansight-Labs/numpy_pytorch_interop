@@ -286,6 +286,10 @@ class DType:
         return self._scalar_type
 
     @property
+    def kind(self):
+        raise NotImplementedError
+
+    @property
     def typecode(self):
         return self._scalar_type.typecode
 
