@@ -110,13 +110,7 @@ class ndarray:
     @property
     def flags(self):
         # Note contiguous in torch is assumed C-style
-        flag_to_value = {"C_CONTIGUOUS": self._tensor.is_contiguous()}
-        if flag_to_value["C_CONTIGUOUS"]:
-            # There's no proper way to determine if a tensor is Fortran-style
-            # contiguous in torch, but at least we know it isn't when it is
-            # C-style.
-            flag_to_value["F_CONTIGUOUS"] = False
-        return Flags(flag_to_value)
+        return Flags({"C_CONTIGUOUS": self._tensor.is_contiguous()})
 
     @property
     def T(self):
