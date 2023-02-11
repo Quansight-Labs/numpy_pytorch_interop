@@ -434,23 +434,7 @@ def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
         x = concatenate((x, y), axis=0)
 
     x_tensor = asarray(x).get()
-
-    if rowvar is False:
-        x_tensor = x_tensor.T
-
-    is_half = dtype == torch.float16
-    if is_half:
-        # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
-        dtype = torch.float32
-
-    if dtype is not None:
-        x_tensor = x_tensor.to(dtype)
-
-    result = torch.corrcoef(x_tensor)
-
-    if is_half:
-        result = result.to(torch.float16)
-
+    result = _impl.corrcoef(x_tensor, rowvar, dtype=dtype)
     return asarray(result)
 
 
@@ -478,44 +462,24 @@ def cov(
 
         m = concatenate((m, y), axis=0)
 
-    if ddof is None:
-        if bias == 0:
-            ddof = 1
-        else:
-            ddof = 0
+#    if ddof is None:
+#        if bias == 0:
+#            ddof = 1
+#        else:
+#            ddof = 0
 
     m_tensor, fweights_tensor, aweights_tensor = _helpers.to_tensors_or_none(
         m, fweights, aweights
     )
-
-    # work with tensors from now on
-    is_half = dtype == torch.float16
-    if is_half:
-        # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
-        dtype = torch.float32
-
-    if dtype is not None:
-        m_tensor = m_tensor.to(dtype)
-
-    result = torch.cov(
-        m_tensor, correction=ddof, aweights=aweights_tensor, fweights=fweights_tensor
-    )
-
-    if is_half:
-        result = result.to(torch.float16)
-
+    result = _impl.cov(m_tensor, bias, ddof, fweights_tensor, aweights_tensor, dtype=dtype)
     return asarray(result)
 
 
+@_decorators.dtype_to_torch
 def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
     if ar_tuple == ():
         # XXX: RuntimeError in torch, ValueError in numpy
         raise ValueError("need at least one array to concatenate")
-
-    tensors = _helpers.to_tensors(*ar_tuple)
-
-    # np.concatenate ravels if axis=None
-    tensors, axis = _util.axis_none_ravel(*tensors, axis=axis)
 
     if out is not None:
         if not isinstance(out, ndarray):
@@ -527,22 +491,8 @@ def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
                 "concatenate() only takes `out` or `dtype` as an "
                 "argument, but both were provided."
             )
-
-    # figure out the type of the inputs and outputs
-    if out is None and dtype is None:
-        out_dtype = None
-    else:
-        out_dtype = out.dtype if dtype is None else _dtypes.dtype(dtype)
-        out_dtype = out_dtype.type.torch_dtype
-
-        # cast input arrays if necessary; do not broadcast them agains `out`
-        tensors = _util.cast_dont_broadcast(tensors, out_dtype, casting)
-
-    try:
-        result = torch.cat(tensors, axis)
-    except (IndexError, RuntimeError):
-        raise _util.AxisError
-
+    tensors = _helpers.to_tensors(*ar_tuple)
+    result = _impl.concatenate(tensors, axis, out, dtype, casting)
     return _helpers.result_or_out(result, out)
 
 

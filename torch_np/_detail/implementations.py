@@ -95,6 +95,82 @@ def diff(a_tensor, n=1, axis=-1, prepend_tensor=None, append_tensor=None):
     return result
 
 
+# #### concatenate and relatives
+
+def concatenate(tensors, axis=0, out=None, dtype=None, casting="same_kind"):
+    # np.concatenate ravels if axis=None
+    tensors, axis = _util.axis_none_ravel(*tensors, axis=axis)
+
+    # figure out the type of the inputs and outputs
+    if out is None and dtype is None:
+        out_dtype = None
+    else:
+        out_dtype = out.dtype.torch_dtype if dtype is None else dtype
+
+        # cast input arrays if necessary; do not broadcast them agains `out`
+        tensors = _util.cast_dont_broadcast(tensors, out_dtype, casting)
+
+    try:
+        result = torch.cat(tensors, axis)
+    except (IndexError, RuntimeError):
+        raise _util.AxisError
+
+    return result
+
+
+# #### cov & corrcoef
+
+def corrcoef(xy_tensor,  rowvar=True, *, dtype=None):
+    if rowvar is False:
+        # xy_tensor is at least 2D, so using .T is safe
+        xy_tensor = x_tensor.T
+
+    is_half = dtype == torch.float16
+    if is_half:
+        # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
+        dtype = torch.float32
+
+    if dtype is not None:
+        xy_tensor = xy_tensor.to(dtype)
+
+    result = torch.corrcoef(xy_tensor)
+
+    if is_half:
+        result = result.to(torch.float16)
+
+    return result
+
+
+def cov(
+    m_tensor,
+    bias=False,
+    ddof=None,
+    fweights_tensor=None,
+    aweights_tensor=None,
+    *,
+    dtype=None,
+):
+    if ddof is None:
+        ddof = 1 if bias == 0 else 0
+
+    is_half = dtype == torch.float16
+    if is_half:
+        # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
+        dtype = torch.float32
+
+    if dtype is not None:
+        m_tensor = m_tensor.to(dtype)
+
+    result = torch.cov(
+        m_tensor, correction=ddof, aweights=aweights_tensor, fweights=fweights_tensor
+    )
+
+    if is_half:
+        result = result.to(torch.float16)
+
+    return result
+
+
 def meshgrid(*xi_tensors, copy=True, sparse=False, indexing="xy"):
     # https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/function_base.py#L4892-L5047
     ndim = len(xi_tensors)
@@ -118,3 +194,4 @@ def meshgrid(*xi_tensors, copy=True, sparse=False, indexing="xy"):
         output = [x.clone() for x in output]
 
     return output
+
