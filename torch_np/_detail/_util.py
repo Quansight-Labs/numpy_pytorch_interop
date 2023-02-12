@@ -6,6 +6,7 @@ import operator
 import torch
 
 from . import _scalar_types
+from . import _dtypes
 
 
 # https://github.com/numpy/numpy/blob/v1.23.0/numpy/distutils/misc_util.py#L497-L504
@@ -281,11 +282,7 @@ def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
 
         # Therefore, we treat `tensor.dtype` as a hint, and convert the
         # original object *again*, this time with an explicit dtype.
-        sctype = _scalar_types.get_default_type_for(
-            _scalar_types.sctype_from_torch_dtype(tensor.dtype)
-        )
-        torch_dtype = sctype.torch_dtype
-
+        torch_dtype = _dtypes.get_default_dtype_for(tensor.dtype)
         tensor = torch.as_tensor(obj, dtype=torch_dtype)
 
     # type cast if requested

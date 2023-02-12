@@ -243,21 +243,6 @@ default_complex_type = complex128
 ##########################
 
 
-def get_default_type_for(sctype):
-    """Default scalar type given sctype category."""
-    if issubclass(sctype, integer):
-        result = default_int_type
-    elif issubclass(sctype, floating):
-        result = default_float_type
-    elif issubclass(sctype, complexfloating):
-        result = default_complex_type
-    elif issubclass(sctype, bool_):
-        result = bool_
-    else:
-        raise RuntimeError("cannot be here with sctype= %s" % sctype)
-    return result
-
-
 # XXX: is it ever used? cf _detail/reductions.py::_atleast_float(...)
 def float_or_default(sctype, enforce_float=False):
     """bool -> int; int -> float"""

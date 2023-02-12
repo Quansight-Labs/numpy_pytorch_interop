@@ -129,8 +129,8 @@ def is_integer(dtyp):
 
 
 def get_default_dtype_for(dtyp):
-    sctype = dtype(dtyp).type
-    return _scalar_types.get_default_type_for(sctype)
+    torch_dtype = dtype(dtyp).torch_dtype
+    return _detail._dtypes.get_default_type_for(torch_dtype)
 
 
 def issubclass_(arg, klass):
