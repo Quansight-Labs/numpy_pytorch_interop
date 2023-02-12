@@ -6,7 +6,7 @@ Anything here only deals with torch objects, e.g. "dtype" is a torch.dtype insta
 
 import torch
 
-from . import _scalar_types, _util
+from . import _dtypes_impl, _util
 
 NoValue = None
 
@@ -21,8 +21,7 @@ def _atleast_float(dtype, other_dtype):
     if dtype is None:
         dtype = other_dtype
     if not (dtype.is_floating_point or dtype.is_complex):
-        sctype = _scalar_types.default_float_type
-        dtype = sctype.torch_dtype
+        return _dtypes_impl.default_float_dtype
     return dtype
 
 
@@ -101,7 +100,7 @@ def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     assert dtype is None or isinstance(dtype, torch.dtype)
 
     if dtype == torch.bool:
-        dtype = _scalar_types.default_int_type.dtype
+        dtype = _dtypes_impl.default_int_dtype
 
     if axis is None:
         result = tensor.sum(dtype=dtype)
@@ -118,7 +117,7 @@ def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     axis = _util.allow_only_single_axis(axis)
 
     if dtype == torch.bool:
-        dtype = _scalar_types.default_int_type.dtype
+        dtype = _dtypes_impl.default_int_dtype
 
     if axis is None:
         result = tensor.prod(dtype=dtype)
@@ -175,7 +174,7 @@ def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
 
 def cumprod(tensor, axis, dtype=None):
     if dtype == torch.bool:
-        dtype = _scalar_types.default_int_type.dtype
+        dtype = _dtypes_impl.default_int_dtype
     if dtype is None:
         dtype = tensor.dtype
 
@@ -186,7 +185,7 @@ def cumprod(tensor, axis, dtype=None):
 
 def cumsum(tensor, axis, dtype=None):
     if dtype == torch.bool:
-        dtype = _scalar_types.default_int_type.dtype
+        dtype = _dtypes_impl.default_int_dtype
     if dtype is None:
         dtype = tensor.dtype
 
@@ -241,7 +240,7 @@ def quantile(a_tensor, q_tensor, axis, method):
         raise ValueError("Quantiles must be in range [0, 1], got %s" % q_tensor)
 
     if not a_tensor.dtype.is_floating_point:
-        dtype = _scalar_types.default_float_type.torch_dtype
+        dtype = _dtypes_impl.default_float_dtype
         a_tensor = a_tensor.to(dtype)
 
     # edge case: torch.quantile only supports float32 and float64

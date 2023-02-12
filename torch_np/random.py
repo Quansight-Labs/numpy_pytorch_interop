@@ -10,10 +10,9 @@ from math import sqrt
 import torch
 
 from . import asarray
-from ._detail import _util
-from ._detail._scalar_types import default_float_type as _default_float_type
+from ._detail import _dtypes_impl, _util
 
-_default_dtype = _default_float_type.torch_dtype
+_default_dtype = _dtypes_impl.default_float_dtype
 
 __all__ = [
     "seed",

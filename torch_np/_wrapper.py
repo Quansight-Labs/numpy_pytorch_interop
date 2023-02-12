@@ -7,7 +7,7 @@ pytorch tensors.
 
 import torch
 
-from ._detail import _flips, _reductions, _util
+from ._detail import _dtypes_impl, _flips, _reductions, _util
 from ._detail import implementations as _impl
 from ._ndarray import (
     array,
@@ -352,9 +352,7 @@ def zeros(shape, dtype=None, order="C", *, like=None):
     if order != "C":
         raise NotImplementedError
     if dtype is None:
-        from ._detail._scalar_types import default_float_type
-
-        dtype = default_float_type.torch_dtype
+        dtype = _dtypes_impl.default_float_dtype
     return asarray(torch.zeros(shape, dtype=dtype))
 
 
@@ -527,11 +525,7 @@ def bincount(x, /, weights=None, minlength=0):
         x = asarray([], dtype=int)
 
     x_tensor, weights_tensor = _helpers.to_tensors_or_none(x, weights)
-
-    # XXX: default_dtype use torch dtypes
-    from ._detail._scalar_types import default_int_type
-
-    int_dtype = default_int_type.torch_dtype
+    int_dtype = _dtypes_impl.default_int_dtype
     (x_tensor,) = _util.cast_dont_broadcast((x_tensor,), int_dtype, casting="safe")
 
     result = torch.bincount(x_tensor, weights_tensor, minlength)

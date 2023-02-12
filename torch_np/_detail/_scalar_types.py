@@ -235,35 +235,6 @@ def sctype_from_torch_dtype(torch_dtype):
     return _torch_dtypes[torch_dtype]
 
 
-#### default : mimic NumPy
-default_scalar_type = float64
-default_int_type = int64
-default_float_type = float64
-default_complex_type = complex128
-##########################
-
-
-# XXX: is it ever used? cf _detail/reductions.py::_atleast_float(...)
-def float_or_default(sctype, enforce_float=False):
-    """bool -> int; int -> float"""
-    if issubclass(sctype, bool_):
-        sctype = default_int_type
-    if enforce_float and issubclass(sctype, integer):
-        sctype = default_float_type
-    return sctype
-
-
-from . import _casting_dicts as _cd
-
-
-def _can_cast_sctypes(from_sctype, to_sctype, casting):
-    return _can_cast_impl(from_sctype.torch_dtype, to_sctype.torch_dtype, casting)
-
-
-def _can_cast_impl(from_torch_dtype, to_torch_dtype, casting):
-    return _cd._can_cast_dict[casting][from_torch_dtype][to_torch_dtype]
-
-
 __all__ = list(_names.keys())
 __all__ += [
     "intp",

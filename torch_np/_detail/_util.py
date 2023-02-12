@@ -5,8 +5,7 @@ import operator
 
 import torch
 
-from . import _scalar_types
-from . import _dtypes
+from . import _dtypes_impl
 
 
 # https://github.com/numpy/numpy/blob/v1.23.0/numpy/distutils/misc_util.py#L497-L504
@@ -149,7 +148,7 @@ def cast_dont_broadcast(tensors, target_dtype, casting):
     """
     # check if we can dtype-cast all arguments
     cast_tensors = []
-    can_cast = _scalar_types._can_cast_impl
+    can_cast = _dtypes_impl.can_cast_impl
 
     for tensor in tensors:
         if not can_cast(tensor.dtype, target_dtype, casting=casting):
@@ -189,7 +188,7 @@ def cast_and_broadcast(tensors, out_param, casting):
 
     target_dtype, target_shape = out_param
 
-    can_cast = _scalar_types._can_cast_impl
+    can_cast = _dtypes_impl.can_cast_impl
 
     processed_tensors = []
     for tensor in tensors:
@@ -282,7 +281,7 @@ def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
 
         # Therefore, we treat `tensor.dtype` as a hint, and convert the
         # original object *again*, this time with an explicit dtype.
-        torch_dtype = _dtypes.get_default_dtype_for(tensor.dtype)
+        torch_dtype = _dtypes_impl.get_default_dtype_for(tensor.dtype)
         tensor = torch.as_tensor(obj, dtype=torch_dtype)
 
     # type cast if requested

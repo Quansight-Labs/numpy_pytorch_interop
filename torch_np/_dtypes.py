@@ -1,15 +1,8 @@
 """ Define the supported dtypes and numpy <--> torch dtype mapping, define casting rules. 
 """
-
-# TODO: 1. define torch_np dtypes, make this work without numpy.
-#       2. mimic numpy's various aliases (np.half == np.float16, dtype='i8' etc)
-#       3. convert from python types: np.ones(3, dtype=float) etc
-
-import builtins
-
 import torch
 
-from ._detail import _scalar_types
+from ._detail import _dtypes_impl, _scalar_types
 
 __all__ = ["dtype", "DType", "typecodes", "issubdtype"]
 
@@ -19,7 +12,7 @@ __all__ = ["dtype", "DType", "typecodes", "issubdtype"]
 
 def dtype(arg):
     if arg is None:
-        arg = _scalar_types.default_scalar_type
+        arg = _dtypes_impl.default_scalar_dtype
     return DType(arg)
 
 
@@ -107,30 +100,20 @@ typecodes = {
 
 
 def default_int_type():
-    return dtype(_scalar_types.default_int_type)
+    return dtype(_dtypes_impl.default_int_dtype)
 
 
 def default_float_type():
-    return dtype(_scalar_types.default_float_type)
+    return dtype(_dtypes_impl.default_float_dtype)
 
 
 def default_complex_type():
-    return dtype(_scalar_types.default_complex_type)
-
-
-def is_floating(dtyp):
-    dtyp = dtype(dtyp)
-    return issubclass(dtyp.type, _scalar_types.floating)
-
-
-def is_integer(dtyp):
-    dtyp = dtype(dtyp)
-    return issubclass(dtyp.type, _scalar_types.integer)
+    return dtype(_dtypes_impl.default_complex_dtype)
 
 
 def get_default_dtype_for(dtyp):
     torch_dtype = dtype(dtyp).torch_dtype
-    return _detail._dtypes.get_default_type_for(torch_dtype)
+    return _dtypes_impl.get_default_type_for(torch_dtype)
 
 
 def issubclass_(arg, klass):
@@ -147,13 +130,6 @@ def issubdtype(arg1, arg2):
     if not issubclass_(arg2, _scalar_types.generic):
         arg2 = dtype(arg2).type
     return issubclass(arg1, arg2)
-
-
-def can_cast(from_dtype, to_dtype, casting):
-    from_sctype = dtype(from_dtype).type.torch_dtype
-    to_sctype = dtype(to_dtype).type.torch_dtype
-
-    return _scalar_types._can_cast_impl(from_sctype, to_sctype, casting)
 
 
 # XXX : used in _ndarray.py/result_type, clean up
