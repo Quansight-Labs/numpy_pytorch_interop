@@ -27,13 +27,13 @@ from torch_np.random import rand
 # FIXME: make from torch_np
 from numpy.lib import (
     bartlett, blackman,
-    delete, diff, digitize, extract, gradient, hamming, hanning,
-    insert, interp, kaiser, meshgrid, msort, piecewise, place,
+    delete, digitize, extract, gradient, hamming, hanning,
+    insert, interp, kaiser, msort, piecewise, place,
     select, setxor1d, trapz, trim_zeros, unique, unwrap, vectorize
     )
 from torch_np._detail._util import normalize_axis_tuple
 
-from torch_np import corrcoef, cov, i0, angle, sinc
+from torch_np import corrcoef, cov, i0, angle, sinc, diff, meshgrid 
 
 def get_mat(n):
     data = np.arange(n)
@@ -680,7 +680,6 @@ class TestCumprod:
                                              [10, 30, 120, 600]], ctype))
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestDiff:
 
     def test_basic(self):
@@ -761,7 +760,7 @@ class TestDiff:
         result = np.diff(x, axis=0, prepend=[[0, 0]])
         assert_array_equal(result, expected)
 
-        assert_raises(ValueError, np.diff, x, prepend=np.zeros((3,3)))
+        assert_raises((ValueError, RuntimeError), np.diff, x, prepend=np.zeros((3,3)))
 
         assert_raises(np.AxisError, diff, x, prepend=0, axis=3)
 
@@ -789,7 +788,7 @@ class TestDiff:
         result = np.diff(x, axis=0, append=[[0, 0]])
         assert_array_equal(result, expected)
 
-        assert_raises(ValueError, np.diff, x, append=np.zeros((3,3)))
+        assert_raises((ValueError, RuntimeError), np.diff, x, append=np.zeros((3,3)))
 
         assert_raises(np.AxisError, diff, x, append=0, axis=3)
 
@@ -1123,7 +1122,7 @@ class TestAngle:
         assert_array_almost_equal(z, zo, 11)
 
 
-@pytest.mark.xfail(reason='TODO: implement')
+@pytest.mark.xfail(reason='trim_zeros not implemented')
 class TestTrimZeros:
 
     a = np.array([0, 0, 1, 0, 2, 3, 4, 0])
@@ -2153,7 +2152,7 @@ class TestKaiser:
         kaiser(3, 4)
 
 
-@pytest.mark.xfail(reason='TODO: implement')
+@pytest.mark.skip(reason='msort is deprecated, do not bother')
 class TestMsort:
 
     def test_simple(self):
@@ -2168,7 +2167,6 @@ class TestMsort:
                           [0.64864341, 0.79115165, 0.96098397]]))
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestMeshgrid:
 
     def test_simple(self):

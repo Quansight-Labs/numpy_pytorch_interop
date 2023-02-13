@@ -1,5 +1,7 @@
 import torch
 
+from . import _util
+
 
 def tensor_equal(a1_t, a2_t, equal_nan=False):
     """Implementation of array_equal/array_equiv."""
@@ -68,3 +70,51 @@ def split_helper_list(tensor, indices_or_sections, axis, strict=False):
     lst += [0] * num_extra
 
     return torch.split(tensor, lst, axis)
+
+
+def diff(a_tensor, n=1, axis=-1, prepend_tensor=None, append_tensor=None):
+    axis = _util.normalize_axis_index(axis, a_tensor.ndim)
+
+    if n < 0:
+        raise ValueError(f"order must be non-negative but got {n}")
+
+    if prepend_tensor is not None:
+        shape = list(a_tensor.shape)
+        shape[axis] = prepend_tensor.shape[axis] if prepend_tensor.ndim > 0 else 1
+        prepend_tensor = torch.broadcast_to(prepend_tensor, shape)
+
+    if append_tensor is not None:
+        shape = list(a_tensor.shape)
+        shape[axis] = append_tensor.shape[axis] if append_tensor.ndim > 0 else 1
+        append_tensor = torch.broadcast_to(append_tensor, shape)
+
+    result = torch.diff(
+        a_tensor, n, axis=axis, prepend=prepend_tensor, append=append_tensor
+    )
+
+    return result
+
+
+def meshgrid(*xi_tensors, copy=True, sparse=False, indexing="xy"):
+    # https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/function_base.py#L4892-L5047
+    ndim = len(xi_tensors)
+
+    if indexing not in ["xy", "ij"]:
+        raise ValueError("Valid values for `indexing` are 'xy' and 'ij'.")
+
+    s0 = (1,) * ndim
+    output = [x.reshape(s0[:i] + (-1,) + s0[i + 1 :]) for i, x in enumerate(xi_tensors)]
+
+    if indexing == "xy" and ndim > 1:
+        # switch first and second axis
+        output[0] = output[0].reshape((1, -1) + s0[2:])
+        output[1] = output[1].reshape((-1, 1) + s0[2:])
+
+    if not sparse:
+        # Return the full N-D matrix (not only the 1-D vector)
+        output = torch.broadcast_tensors(*output)
+
+    if copy:
+        output = [x.clone() for x in output]
+
+    return output

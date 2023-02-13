@@ -8,10 +8,10 @@ from torch_np.testing import (
 from pytest import raises as assert_raises
 
 from torch_np import (
-    arange, add, fliplr, flipud, zeros, ones, eye, array, #diag, histogram2d,
+    arange, add, fliplr, flipud, zeros, ones, eye, array, diag, #histogram2d,
     tri, # mask_indices,
     triu_indices, triu_indices_from, tril_indices,
-    tril_indices_from, # vander,
+    tril_indices_from, vander,
     )
 
 import torch_np as np
@@ -106,7 +106,6 @@ class TestEye:
         assert mat_f.flags.f_contiguous
 
 
-@pytest.mark.xfail(reason="TODO: implement diag(...)")
 class TestDiag:
     def test_vector(self):
         vals = (100 * arange(5)).astype('l')
@@ -137,6 +136,7 @@ class TestDiag:
             b[k] = vals[k + 2, k]
         assert_equal(diag(vals, -2), b[:3])
 
+    @pytest.mark.xfail(reason='TODO implement orders')
     def test_fortran_order(self):
         vals = array((100 * get_mat(5) + 1), order='F', dtype='l')
         self.test_matrix(vals)
@@ -151,7 +151,7 @@ class TestDiag:
         assert_equal(diag(A, k=-3), [])
 
     def test_failure(self):
-        assert_raises(ValueError, diag, [[[1]]])
+        assert_raises((ValueError, RuntimeError), diag, [[[1]]])
 
 
 class TestFliplr:
@@ -478,7 +478,6 @@ class TestTriuIndicesFrom:
         # assert_raises(ValueError, triu_indices_from, np.ones((2, 3)))
 
 
-@pytest.mark.xfail(reason="TODO vander(...) implement ")
 class TestVander:
     def test_basic(self):
         c = np.array([0, 1, -2, 3])

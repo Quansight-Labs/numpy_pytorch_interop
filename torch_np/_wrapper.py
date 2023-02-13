@@ -230,6 +230,12 @@ def tile(A, reps):
     return asarray(result)
 
 
+def vander(x, N=None, increasing=False):
+    x_tensor = asarray(x).get()
+    result = torch.vander(x_tensor, N, increasing)
+    return asarray(result)
+
+
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None, axis=0):
     if axis != 0 or retstep or not endpoint:
         raise NotImplementedError
@@ -386,6 +392,12 @@ def eye(N, M=None, k=0, dtype=float, order="C", *, like=None):
 def identity(n, dtype=None, *, like=None):
     _util.subok_not_ok(like)
     return asarray(torch.eye(n, dtype=dtype))
+
+
+def diag(v, k=0):
+    v_tensor = asarray(v).get()
+    result = torch.diag(v_tensor, k)
+    return asarray(result)
 
 
 ###### misc/unordered
@@ -671,6 +683,12 @@ def unravel_index(indices, shape, order="C"):
 def ravel_multi_index(multi_index, dims, mode="raise", order="C"):
     # XXX: not available in pytorch, implement
     return sum(idx * dim for idx, dim in zip(multi_index, dims))
+
+
+def meshgrid(*xi, copy=True, sparse=False, indexing="xy"):
+    xi_tensors = _helpers.to_tensors(*xi)
+    output = _impl.meshgrid(*xi_tensors, copy=copy, sparse=sparse, indexing=indexing)
+    return [asarray(t) for t in output]
 
 
 def nonzero(a):
@@ -1012,6 +1030,26 @@ def nanquantile():
 
 def nanpercentile():
     raise NotImplementedError
+
+
+def diff(a, n=1, axis=-1, prepend=NoValue, append=NoValue):
+
+    if n == 0:
+        # match numpy and return the input immediately
+        return a
+
+    a_tensor, prepend_tensor, append_tensor = _helpers.to_tensors_or_none(
+        a, prepend, append
+    )
+
+    result = _impl.diff(
+        a_tensor,
+        n=n,
+        axis=axis,
+        prepend_tensor=prepend_tensor,
+        append_tensor=append_tensor,
+    )
+    return asarray(result)
 
 
 @asarray_replacer()
