@@ -97,14 +97,13 @@ def diff(a_tensor, n=1, axis=-1, prepend_tensor=None, append_tensor=None):
 
 # #### concatenate and relatives
 
+
 def concatenate(tensors, axis=0, out=None, dtype=None, casting="same_kind"):
     # np.concatenate ravels if axis=None
     tensors, axis = _util.axis_none_ravel(*tensors, axis=axis)
 
-    # figure out the type of the inputs and outputs
-    if out is None and dtype is None:
-        out_dtype = None
-    else:
+    if out is not None or dtype is not None:
+        # figure out the type of the inputs and outputs
         out_dtype = out.dtype.torch_dtype if dtype is None else dtype
 
         # cast input arrays if necessary; do not broadcast them agains `out`
@@ -120,7 +119,8 @@ def concatenate(tensors, axis=0, out=None, dtype=None, casting="same_kind"):
 
 # #### cov & corrcoef
 
-def corrcoef(xy_tensor,  rowvar=True, *, dtype=None):
+
+def corrcoef(xy_tensor, rowvar=True, *, dtype=None):
     if rowvar is False:
         # xy_tensor is at least 2D, so using .T is safe
         xy_tensor = x_tensor.T
@@ -194,4 +194,3 @@ def meshgrid(*xi_tensors, copy=True, sparse=False, indexing="xy"):
         output = [x.clone() for x in output]
 
     return output
-

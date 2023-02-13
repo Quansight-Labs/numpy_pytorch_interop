@@ -462,16 +462,12 @@ def cov(
 
         m = concatenate((m, y), axis=0)
 
-#    if ddof is None:
-#        if bias == 0:
-#            ddof = 1
-#        else:
-#            ddof = 0
-
     m_tensor, fweights_tensor, aweights_tensor = _helpers.to_tensors_or_none(
         m, fweights, aweights
     )
-    result = _impl.cov(m_tensor, bias, ddof, fweights_tensor, aweights_tensor, dtype=dtype)
+    result = _impl.cov(
+        m_tensor, bias, ddof, fweights_tensor, aweights_tensor, dtype=dtype
+    )
     return asarray(result)
 
 
