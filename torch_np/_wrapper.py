@@ -293,14 +293,9 @@ def empty(shape, dtype=float, order="C", *, like=None):
     _util.subok_not_ok(like)
     if order != "C":
         raise NotImplementedError
-
     if dtype is None:
-        from ._detail._scalar_types import default_float_type
-
-        dtype = default_float_type.torch_dtype
-
+        dtype = _dtypes_impl.default_float_dtype
     result = torch.empty(shape, dtype=dtype)
-
     return asarray(result)
 
 
@@ -354,12 +349,8 @@ def ones(shape, dtype=None, order="C", *, like=None):
     if order != "C":
         raise NotImplementedError
     if dtype is None:
-        from ._detail._scalar_types import default_float_type
-
-        dtype = default_float_type.torch_dtype
-
+        dtype = _dtypes_impl.default_float_dtype
     result = torch.ones(shape, dtype=dtype)
-
     return asarray(result)
 
 
