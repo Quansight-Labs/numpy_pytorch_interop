@@ -451,7 +451,7 @@ def result_type(*arrays_and_dtypes):
     from ._dtypes import issubclass_
 
     for entry in arrays_and_dtypes:
-        if issubclass_(entry, _dtypes._scalar_types.generic):
+        if issubclass_(entry, _dtypes.generic):
             dtypes.append(_dtypes.dtype(entry))
         elif isinstance(entry, _dtypes.DType):
             dtypes.append(entry)
