@@ -12,8 +12,8 @@ from ._detail import _dtypes_impl
 __all__ = ["dtype", "DType", "typecodes", "issubdtype"]
 
 
-
 # ### Scalar types ###
+
 
 class generic(abc.ABC):
     @property
@@ -244,8 +244,6 @@ def sctype_from_torch_dtype(torch_dtype):
     return _torch_dtypes[torch_dtype]
 
 
-
-
 # ### DTypes. ###
 
 
@@ -369,10 +367,6 @@ def issubdtype(arg1, arg2):
     if not issubclass_(arg2, generic):
         arg2 = dtype(arg2).type
     return issubclass(arg1, arg2)
-
-
-# FIXME : used in _ndarray.py/result_type, clean up
-from ._detail._casting_dicts import _result_type_dict
 
 
 __all__ += list(_names.keys())

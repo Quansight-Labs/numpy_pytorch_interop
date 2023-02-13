@@ -437,35 +437,26 @@ class asarray_replacer:
 
 
 def can_cast(from_, to, casting="safe"):
-    # XXX: merge with _dtypes.can_cast. The Q is who converts from ndarray, if needed.
     from_ = from_.dtype if isinstance(from_, ndarray) else _dtypes.dtype(from_)
     to_ = to.dtype if isinstance(to, ndarray) else _dtypes.dtype(to)
 
     return _dtypes_impl.can_cast_impl(from_.torch_dtype, to_.torch_dtype, casting)
 
 
+def _extract_dtype(entry):
+    try:
+        dty = _dtypes.dtype(entry)
+    except Exception:
+        dty = asarray(entry).dtype
+    return dty
+
+
 def result_type(*arrays_and_dtypes):
-    # XXX: clean up
     dtypes = []
 
-    from ._dtypes import issubclass_
-
     for entry in arrays_and_dtypes:
-        if issubclass_(entry, _dtypes.generic):
-            dtypes.append(_dtypes.dtype(entry))
-        elif isinstance(entry, _dtypes.DType):
-            dtypes.append(entry)
-        elif isinstance(entry, str):
-            dtypes.append(_dtypes.dtype(entry))
-        else:
-            dtypes.append(asarray(entry).dtype)
+        dty = _extract_dtype(entry)
+        dtypes.append(dty.torch_dtype)
 
-    dtyp = dtypes[0]
-    if len(dtypes) == 1:
-        return dtyp
-
-    for curr in dtypes[1:]:
-        name = _dtypes._result_type_dict[dtyp.type.torch_dtype][curr.type.torch_dtype]
-        dtyp = _dtypes.dtype(name)
-
-    return dtyp
+    torch_dtype = _dtypes_impl.result_type_impl(dtypes)
+    return _dtypes.dtype(torch_dtype)
