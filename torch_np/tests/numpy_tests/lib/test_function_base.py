@@ -1122,7 +1122,7 @@ class TestAngle:
         assert_array_almost_equal(z, zo, 11)
 
 
-@pytest.mark.skip(reason='ignore trim_zeros')
+@pytest.mark.xfail(reason='trim_zeros not implemented')
 class TestTrimZeros:
 
     a = np.array([0, 0, 1, 0, 2, 3, 4, 0])
