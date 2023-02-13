@@ -12,6 +12,7 @@ from ._decorators import (
     emulate_out_arg,
 )
 from ._detail import _dtypes_impl, _flips, _reductions, _util
+from ._detail import implementations as _impl
 
 newaxis = None
 
@@ -367,24 +368,8 @@ class ndarray:
         return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
 
     def clip(self, min, max, out=None):
-        tensor = self._tensor
-        a_min, a_max = min, max
-
-        t_min = None
-        if a_min is not None:
-            t_min = asarray(a_min).get()
-            t_min = torch.broadcast_to(t_min, tensor.shape)
-
-        t_max = None
-        if a_max is not None:
-            t_max = asarray(a_max).get()
-            t_max = torch.broadcast_to(t_max, tensor.shape)
-
-        if t_min is None and t_max is None:
-            raise ValueError("One of max or min must be given")
-
-        result = tensor.clamp(t_min, t_max)
-
+        tensor, t_min, t_max = _helpers.to_tensors_or_none(self, min, max)
+        result = _impl.clip(tensor, t_min, t_max)
         return _helpers.result_or_out(result, out)
 
     argmin = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmin))

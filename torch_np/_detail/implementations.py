@@ -72,6 +72,20 @@ def split_helper_list(tensor, indices_or_sections, axis, strict=False):
     return torch.split(tensor, lst, axis)
 
 
+def clip(tensor, t_min, t_max):
+    if t_min is not None:
+        t_min = torch.broadcast_to(t_min, tensor.shape)
+
+    if t_max is not None:
+        t_max = torch.broadcast_to(t_max, tensor.shape)
+
+    if t_min is None and t_max is None:
+        raise ValueError("One of max or min must be given")
+
+    result = tensor.clamp(t_min, t_max)
+    return result
+
+
 def diff(a_tensor, n=1, axis=-1, prepend_tensor=None, append_tensor=None):
     axis = _util.normalize_axis_index(axis, a_tensor.ndim)
 
