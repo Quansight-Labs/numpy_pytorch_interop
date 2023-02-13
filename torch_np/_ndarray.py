@@ -1,4 +1,5 @@
 import functools
+import operator
 
 import torch
 
@@ -10,7 +11,7 @@ from ._decorators import (
     dtype_to_torch,
     emulate_out_arg,
 )
-from ._detail import _flips, _reductions, _util
+from ._detail import _dtypes_impl, _flips, _reductions, _util
 
 newaxis = None
 
@@ -148,11 +149,11 @@ class ndarray:
             )
 
     def __index__(self):
-        if self.size == 1:
-            if _dtypes.is_integer(self.dtype):
-                return int(self._tensor.item())
-        mesg = "only integer scalar arrays can be converted to a scalar index"
-        raise TypeError(mesg)
+        try:
+            return operator.index(self._tensor.item())
+        except Exception:
+            mesg = "only integer scalar arrays can be converted to a scalar index"
+            raise TypeError(mesg)
 
     def __float__(self):
         return float(self._tensor)
@@ -164,13 +165,13 @@ class ndarray:
         return int(self._tensor)
 
     # XXX : are single-element ndarrays scalars?
+    # in numpy, only array scalars have the `is_integer` method
     def is_integer(self):
-        if self.shape == ():
-            if _dtypes.is_integer(self.dtype):
-                return True
-            return self._tensor.item().is_integer()
-        else:
-            return False
+        try:
+            result = int(self._tensor) == self._tensor
+        except Exception:
+            result = False
+        return result
 
     ### sequence ###
     def __len__(self):
@@ -439,35 +440,26 @@ class asarray_replacer:
 
 
 def can_cast(from_, to, casting="safe"):
-    # XXX: merge with _dtypes.can_cast. The Q is who converts from ndarray, if needed.
-    from_dtype = from_.dtype if isinstance(from_, ndarray) else _dtypes.dtype(from_)
-    to_dtype = to.dtype if isinstance(to, ndarray) else _dtypes.dtype(to)
+    from_ = from_.dtype if isinstance(from_, ndarray) else _dtypes.dtype(from_)
+    to_ = to.dtype if isinstance(to, ndarray) else _dtypes.dtype(to)
 
-    return _dtypes.can_cast(from_dtype, to_dtype, casting)
+    return _dtypes_impl.can_cast_impl(from_.torch_dtype, to_.torch_dtype, casting)
+
+
+def _extract_dtype(entry):
+    try:
+        dty = _dtypes.dtype(entry)
+    except Exception:
+        dty = asarray(entry).dtype
+    return dty
 
 
 def result_type(*arrays_and_dtypes):
-    # XXX: clean up
     dtypes = []
 
-    from ._dtypes import issubclass_
-
     for entry in arrays_and_dtypes:
-        if issubclass_(entry, _dtypes._scalar_types.generic):
-            dtypes.append(_dtypes.dtype(entry))
-        elif isinstance(entry, _dtypes.DType):
-            dtypes.append(entry)
-        elif isinstance(entry, str):
-            dtypes.append(_dtypes.dtype(entry))
-        else:
-            dtypes.append(asarray(entry).dtype)
+        dty = _extract_dtype(entry)
+        dtypes.append(dty.torch_dtype)
 
-    dtyp = dtypes[0]
-    if len(dtypes) == 1:
-        return dtyp
-
-    for curr in dtypes[1:]:
-        name = _dtypes._result_type_dict[dtyp.type.torch_dtype][curr.type.torch_dtype]
-        dtyp = _dtypes.dtype(name)
-
-    return dtyp
+    torch_dtype = _dtypes_impl.result_type_impl(dtypes)
+    return _dtypes.dtype(torch_dtype)

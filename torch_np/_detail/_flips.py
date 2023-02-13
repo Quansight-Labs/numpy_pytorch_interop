@@ -3,7 +3,7 @@
 
 import torch
 
-from . import _scalar_types, _util
+from . import _util
 
 
 def flip(m_tensor, axis=None):
