@@ -1107,17 +1107,15 @@ def isscalar(a):
 
 
 def isclose(a, b, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
-    a, b = _helpers.to_tensors(a, b)
-    dtype = result_type(a, b)
-    torch_dtype = dtype.type.torch_dtype
-    a = a.to(torch_dtype)
-    b = b.to(torch_dtype)
-    return asarray(torch.isclose(a, b, rtol=rtol, atol=atol, equal_nan=equal_nan))
+    a_t, b_t = _helpers.to_tensors(a, b)
+    result = _impl.tensor_isclose(a_t, b_t, rtol, atol, equal_nan=equal_nan)
+    return asarray(result)
 
 
 def allclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
-    arr_res = isclose(a, b, rtol, atol, equal_nan)
-    return arr_res.all()
+    a_t, b_t = _helpers.to_tensors(a, b)
+    result = _impl.tensor_isclose(a_t, b_t, rtol, atol, equal_nan=equal_nan)
+    return result.all()
 
 
 def array_equal(a1, a2, equal_nan=False):
@@ -1128,12 +1126,8 @@ def array_equal(a1, a2, equal_nan=False):
 
 def array_equiv(a1, a2):
     a1_t, a2_t = _helpers.to_tensors(a1, a2)
-    try:
-        a1_t, a2_t = torch.broadcast_tensors(a1_t, a2_t)
-    except RuntimeError:
-        # failed to broadcast => not equivalent
-        return False
-    return _impl.tensor_equal(a1_t, a2_t)
+    result = _impl.tensor_equiv(a1_t, a2_t)
+    return result
 
 
 def common_type():

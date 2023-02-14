@@ -1,6 +1,8 @@
 import torch
 
-from . import _util
+from . import _dtypes_impl, _util
+
+# ### equality, equivalence, allclose ###
 
 
 def tensor_equal(a1_t, a2_t, equal_nan=False):
@@ -17,6 +19,27 @@ def tensor_equal(a1_t, a2_t, equal_nan=False):
     else:
         result = a1_t == a2_t
     return bool(result.all())
+
+
+def tensor_equiv(a1_t, a2_t):
+    # *almost* the same as tensor_equal: _equiv tries to broadcast, _equal does not
+    try:
+        a1_t, a2_t = torch.broadcast_tensors(a1_t, a2_t)
+    except RuntimeError:
+        # failed to broadcast => not equivalent
+        return False
+    return tensor_equal(a1_t, a2_t)
+
+
+def tensor_isclose(a, b, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
+    dtype = _dtypes_impl.result_type_impl((a.dtype, b.dtype))
+    a = a.to(dtype)
+    b = b.to(dtype)
+    result = torch.isclose(a, b, rtol=rtol, atol=atol, equal_nan=equal_nan)
+    return result
+
+
+# ### splits ###
 
 
 def split_helper(tensor, indices_or_sections, axis, strict=False):
