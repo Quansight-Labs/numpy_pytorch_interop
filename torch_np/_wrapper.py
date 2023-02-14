@@ -1025,10 +1025,8 @@ def argsort(a, axis=-1, kind=None, order=None):
 
 @asarray_replacer()
 def angle(z, deg=False):
-    result = torch.angle(z)
-    if deg:
-        result *= 180 / torch.pi
-    return asarray(result)
+    result = _impl.tensor_angle(z, deg)
+    return result
 
 
 @asarray_replacer()
@@ -1048,28 +1046,20 @@ def imag(a):
 
 @asarray_replacer()
 def real_if_close(a, tol=100):
-    if not torch.is_complex(a):
-        return a
-    if torch.abs(torch.imag) < tol * torch.finfo(a.dtype).eps:
-        return torch.real(a)
-    else:
-        return a
+    result = _impl.tensor_real_if_close(a, tol=tol)
+    return result
 
 
 @asarray_replacer()
 def iscomplex(x):
-    if torch.is_complex(x):
-        return torch.as_tensor(x).imag != 0
-    result = torch.zeros_like(x, dtype=torch.bool)
-    return result[()]
+    result = _impl.tensor_iscomplex(x)
+    return result  # XXX: missing .item on a zero-dim value; a case for array_or_scalar(value) ?
 
 
 @asarray_replacer()
 def isreal(x):
-    if torch.is_complex(x):
-        return torch.as_tensor(x).imag == 0
-    result = torch.zeros_like(x, dtype=torch.bool)
-    return result[()]
+    result = _impl.tensor_isreal(x)
+    return result
 
 
 @asarray_replacer()

@@ -39,6 +39,47 @@ def tensor_isclose(a, b, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
     return result
 
 
+# ### is arg real or complex valued ###
+
+
+def tensor_iscomplex(x):
+    if torch.is_complex(x):
+        return torch.as_tensor(x).imag != 0
+    result = torch.zeros_like(x, dtype=torch.bool)
+    if result.ndim == 0:
+        result = result.item()
+    return result
+
+
+def tensor_isreal(x):
+    if torch.is_complex(x):
+        return torch.as_tensor(x).imag == 0
+    result = torch.zeros_like(x, dtype=torch.bool)
+    if result.ndim == 0:
+        result = result.item()
+    return result
+
+
+def tensor_real_if_close(x, tol=100):
+    if not torch.is_complex(x):
+        return x
+    mask = torch.abs(x.imag) < tol * torch.finfo(x.dtype).eps
+    if mask.all():
+        return x.real
+    else:
+        return x
+
+
+# ### math functions ###
+
+
+def tensor_angle(z, deg=False):
+    result = torch.angle(z)
+    if deg:
+        result *= 180 / torch.pi
+    return result
+
+
 # ### splits ###
 
 
