@@ -498,10 +498,7 @@ def bincount(x, /, weights=None, minlength=0):
         x = asarray([], dtype=int)
 
     x_tensor, weights_tensor = _helpers.to_tensors_or_none(x, weights)
-    int_dtype = _dtypes_impl.default_int_dtype
-    (x_tensor,) = _util.cast_dont_broadcast((x_tensor,), int_dtype, casting="safe")
-
-    result = torch.bincount(x_tensor, weights_tensor, minlength)
+    result = _impl.bincount(x_tensor, weights_tensor, minlength)
     return asarray(result)
 
 

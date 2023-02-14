@@ -323,3 +323,12 @@ def meshgrid(*xi_tensors, copy=True, sparse=False, indexing="xy"):
         output = [x.clone() for x in output]
 
     return output
+
+
+
+def bincount(x_tensor, /, weights_tensor=None, minlength=0):
+    int_dtype = _dtypes_impl.default_int_dtype
+    (x_tensor,) = _util.cast_dont_broadcast((x_tensor,), int_dtype, casting="safe")
+
+    result = torch.bincount(x_tensor, weights_tensor, minlength)
+    return result
