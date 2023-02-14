@@ -705,7 +705,6 @@ def triu(m, k=0):
     return m.triu(k)
 
 
-# YYY: pattern: return sequence
 def tril_indices(n, k=0, m=None):
     if m is None:
         m = n
@@ -1012,12 +1011,8 @@ def diff(a, n=1, axis=-1, prepend=NoValue, append=NoValue):
 
 @asarray_replacer()
 def argsort(a, axis=-1, kind=None, order=None):
-    if order is not None:
-        raise NotImplementedError
-    stable = True if kind == "stable" else False
-    if axis is None:
-        axis = -1
-    return torch.argsort(a, stable=stable, dim=axis, descending=False)
+    result = _impl.tensor_argsort(a, axis, kind, order)
+    return result
 
 
 ##### math functions

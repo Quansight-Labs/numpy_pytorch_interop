@@ -80,6 +80,17 @@ def tensor_angle(z, deg=False):
     return result
 
 
+# ### sorting ###
+
+def tensor_argsort(tensor, axis=-1, kind=None, order=None):
+    if order is not None:
+        raise NotImplementedError
+    stable = True if kind == "stable" else False
+    if axis is None:
+        axis = -1
+    return torch.argsort(tensor, stable=stable, dim=axis, descending=False)
+
+
 # ### splits ###
 
 
