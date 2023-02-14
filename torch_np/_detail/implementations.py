@@ -82,6 +82,7 @@ def tensor_angle(z, deg=False):
 
 # ### sorting ###
 
+
 def tensor_argsort(tensor, axis=-1, kind=None, order=None):
     if order is not None:
         raise NotImplementedError
@@ -89,6 +90,45 @@ def tensor_argsort(tensor, axis=-1, kind=None, order=None):
     if axis is None:
         axis = -1
     return torch.argsort(tensor, stable=stable, dim=axis, descending=False)
+
+
+# ### tri*-something ###
+
+
+def tri(N, M, k, dtype):
+    if M is None:
+        M = N
+    tensor = torch.ones((N, M), dtype=dtype)
+    tensor = torch.tril(tensor, diagonal=k)
+    return tensor
+
+
+def triu_indices_from(tensor, k):
+    if tensor.ndim != 2:
+        raise ValueError("input array must be 2-d")
+    result = torch.triu_indices(tensor.shape[0], tensor.shape[1], offset=k)
+    return result
+
+
+def tril_indices_from(tensor, k=0):
+    if tensor.ndim != 2:
+        raise ValueError("input array must be 2-d")
+    result = torch.tril_indices(tensor.shape[0], tensor.shape[1], offset=k)
+    return result
+
+
+def tril_indices(n, k=0, m=None):
+    if m is None:
+        m = n
+    result = torch.tril_indices(n, m, offset=k)
+    return result
+
+
+def triu_indices(n, k=0, m=None):
+    if m is None:
+        m = n
+    result = torch.triu_indices(n, m, offset=k)
+    return result
 
 
 # ### splits ###

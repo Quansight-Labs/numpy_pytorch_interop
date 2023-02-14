@@ -601,7 +601,8 @@ from torch import broadcast_shapes
 # YYY: pattern: tuple of arrays as input, tuple of arrays as output; cf nonzero
 def broadcast_arrays(*args, subok=False):
     _util.subok_not_ok(subok=subok)
-    res = torch.broadcast_tensors(*[asarray(a).get() for a in args])
+    tensors = _helpers.to_tensors(*args)
+    res = torch.broadcast_tensors(*tensors)
     return tuple(asarray(_) for _ in res)
 
 
@@ -706,44 +707,32 @@ def triu(m, k=0):
 
 
 def tril_indices(n, k=0, m=None):
-    if m is None:
-        m = n
-    tensor_2 = torch.tril_indices(n, m, offset=k)
-    return tuple(asarray(_) for _ in tensor_2)
+    result = _impl.tril_indices(n, k, m)
+    return tuple(asarray(t) for t in result)
 
 
 def triu_indices(n, k=0, m=None):
-    if m is None:
-        m = n
-    tensor_2 = torch.tril_indices(n, m, offset=k)
-    return tuple(asarray(_) for _ in tensor_2)
+    result = _impl.triu_indices(n, k, m)
+    return tuple(asarray(t) for t in result)
 
 
-# YYY: pattern: array in, sequence of arrays out
 def tril_indices_from(arr, k=0):
-    arr = asarray(arr).get()
-    if arr.ndim != 2:
-        raise ValueError("input array must be 2-d")
-    tensor_2 = torch.tril_indices(arr.shape[0], arr.shape[1], offset=k)
-    return tuple(asarray(_) for _ in tensor_2)
+    tensor = asarray(arr).get()
+    result = _impl.tril_indices_from(tensor, k)
+    return tuple(asarray(t) for t in result)
 
 
 def triu_indices_from(arr, k=0):
-    arr = asarray(arr).get()
-    if arr.ndim != 2:
-        raise ValueError("input array must be 2-d")
-    tensor_2 = torch.tril_indices(arr.shape[0], arr.shape[1], offset=k)
-    return tuple(asarray(_) for _ in tensor_2)
+    tensor = asarray(arr).get()
+    result = _impl.triu_indices_from(tensor, k)
+    return tuple(asarray(t) for t in result)
 
 
 @_decorators.dtype_to_torch
 def tri(N, M=None, k=0, dtype=float, *, like=None):
     _util.subok_not_ok(like)
-    if M is None:
-        M = N
-    tensor = torch.ones((N, M), dtype=dtype)
-    tensor = torch.tril(tensor, diagonal=k)
-    return asarray(tensor)
+    result = _impl.tri(N, M, k, dtype)
+    return asarray(result)
 
 
 ###### reductions
