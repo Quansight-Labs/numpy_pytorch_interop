@@ -593,6 +593,7 @@ class TestIndexing:
         arr[slices] = 10
         assert_array_equal(arr, 10.)
 
+    @pytest.mark.xfail(reason="torch does not support character/string dtypes")
     def test_character_assignment(self):
         # This is an example a function going through CopyObject which
         # used to have an untested special path for scalars
