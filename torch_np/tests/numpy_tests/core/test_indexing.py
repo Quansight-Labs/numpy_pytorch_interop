@@ -542,8 +542,9 @@ class TestIndexing:
         # Unlike the non nd-index:
         assert_(arr[index,].shape != (1,))
 
+    @pytest.mark.xfail(reason="XXX: low-prio behaviour to support")
     def test_broken_sequence_not_nd_index(self):
-        # See gh-5063:
+        # See https://github.com/numpy/numpy/issues/5063
         # If we have an object which claims to be a sequence, but fails
         # on item getting, this should not be converted to an nd-index (tuple)
         # If this object happens to be a valid index otherwise, it should work
