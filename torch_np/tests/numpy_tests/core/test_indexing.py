@@ -485,6 +485,12 @@ class TestIndexing:
         assert_(isinstance(a[z, np.array(0)], np.ndarray))
         assert_(isinstance(a[z, ArrayLike()], np.ndarray))
 
+    @pytest.mark.xfail(
+        reason=(
+            "torch does not support integer indexing int tensors with uints - "
+            "uint8 tensor indexes are treated as boolean masks (deprecated)"
+        )
+    )
     def test_small_regressions(self):
         # Reference count of intp for index checks
         a = np.array([0])
