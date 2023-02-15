@@ -427,6 +427,7 @@ class TestIndexing:
         a[...] = memoryview(s)
         assert_array_equal(a, s)
 
+    @pytest.mark.xfail(reason="XXX: recarray stuff is TBD")
     def test_subclass_writeable(self):
         d = np.rec.array([('NGC1001', 11), ('NGC1002', 1.), ('NGC1003', 1.)],
                          dtype=[('target', 'S20'), ('V_mag', '>f4')])
