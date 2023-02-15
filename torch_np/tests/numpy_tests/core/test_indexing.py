@@ -611,6 +611,9 @@ class TestIndexing:
         # These are limitations based on the number of arguments we can process.
         # For `num=32` (and all boolean cases), the result is actually define;
         # but the use of NpyIter (NPY_MAXARGS) limits it for technical reasons.
+        if not (isinstance(index, np.ndarray) and original_ndim < num):
+            # non-xfail cases fail because of assigning too many indices
+            pytest.xfail("torch does not limit dims to 32")
         arr = np.ones((1,) * original_ndim)
         with pytest.raises(IndexError):
             arr[(index,) * num]
