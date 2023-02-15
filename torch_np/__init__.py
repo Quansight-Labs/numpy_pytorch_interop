@@ -15,3 +15,6 @@ sometrue = any
 inf = float("inf")
 nan = float("nan")
 from math import pi  # isort: skip
+
+from numpy import s_  # isort: skip
+from numpy import index_exp  # isort: skip
