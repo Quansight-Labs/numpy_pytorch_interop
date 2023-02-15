@@ -450,6 +450,7 @@ class TestIndexing:
         a = a.reshape(-1, 1)
         assert_(a[b, 0].flags.f_contiguous)
 
+    @pytest.mark.xfail(reason="torch has no type distinct from a 0-d array")
     def test_scalar_return_type(self):
         # Full scalar indices should return scalars and object
         # arrays should not call PyArray_Return on their items
@@ -643,6 +644,7 @@ class TestIndexing:
 
 
 class TestFieldIndexing:
+    @pytest.mark.xfail(reason="torch has no type distinct from a 0-d array")
     def test_scalar_return_type(self):
         # Field access on an array should return an array, even if it
         # is 0-d.
