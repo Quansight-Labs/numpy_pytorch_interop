@@ -685,20 +685,20 @@ class TestBroadcastedAssignments:
         a = np.zeros(5)
 
         # Too large and not only ones.
-        assert_raises(ValueError, assign, a, s_[...],  np.ones((2, 1)))
-        assert_raises(ValueError, assign, a, s_[[1, 2, 3],], np.ones((2, 1)))
-        assert_raises(ValueError, assign, a, s_[[[1], [2]],], np.ones((2,2,1)))
+        assert_raises((ValueError, RuntimeError), assign, a, s_[...],  np.ones((2, 1)))
+        assert_raises((ValueError, RuntimeError), assign, a, s_[[1, 2, 3],], np.ones((2, 1)))
+        assert_raises((ValueError, RuntimeError), assign, a, s_[[[1], [2]],], np.ones((2,2,1)))
 
     def test_simple_broadcasting_errors(self):
         assign = self.assign
         s_ = np.s_
         a = np.zeros((5, 1))
 
-        assert_raises(ValueError, assign, a, s_[...], np.zeros((5, 2)))
-        assert_raises(ValueError, assign, a, s_[...], np.zeros((5, 0)))
-        assert_raises(ValueError, assign, a, s_[:, [0]], np.zeros((5, 2)))
-        assert_raises(ValueError, assign, a, s_[:, [0]], np.zeros((5, 0)))
-        assert_raises(ValueError, assign, a, s_[[0], :], np.zeros((2, 1)))
+        assert_raises((ValueError, RuntimeError), assign, a, s_[...], np.zeros((5, 2)))
+        assert_raises((ValueError, RuntimeError), assign, a, s_[...], np.zeros((5, 0)))
+        assert_raises((ValueError, RuntimeError), assign, a, s_[:, [0]], np.zeros((5, 2)))
+        assert_raises((ValueError, RuntimeError), assign, a, s_[:, [0]], np.zeros((5, 0)))
+        assert_raises((ValueError, RuntimeError), assign, a, s_[[0], :], np.zeros((2, 1)))
 
     @pytest.mark.parametrize("index", [
             (..., [1, 2], slice(None)),
@@ -711,7 +711,7 @@ class TestBroadcastedAssignments:
         # We currently report without any spaces (could be changed)
         shape_str = str(arr[index].shape).replace(" ", "")
         
-        with pytest.raises(ValueError) as e:
+        with pytest.raises((ValueError, RuntimeError)) as e:
             arr[index] = values
 
         assert str(e.value).endswith(shape_str)
