@@ -185,10 +185,20 @@ def assert_equal(actual, desired, err_msg="", verbose=True):
 
     """
     __tracebackhide__ = True  # Hide traceback for py.test
-    try:
-        return actual == desired
-    except Exception:
-        pass
+
+    num_nones = sum([actual is None, desired is None])
+    if num_nones == 1:
+        raise AssertionError(f"Not equal: {actual} != {desired}")
+    elif num_nones == 2:
+        return True
+    # else, carry on
+
+    if isinstance(actual, np.DType) or isinstance(desired, np.DType):
+        result = actual == desired
+        if not result:
+            raise AssertionError(f"Not equal: {actual} != {desired}")
+        else:
+            return True
 
     if isinstance(desired, dict):
         if not isinstance(actual, dict):
@@ -209,9 +219,6 @@ def assert_equal(actual, desired, err_msg="", verbose=True):
     if isinstance(actual, ndarray) or isinstance(desired, ndarray):
         return assert_array_equal(actual, desired, err_msg, verbose)
     msg = build_err_msg([actual, desired], err_msg, verbose=verbose)
-
-    if isinstance(actual, np.DType) and isinstance(desired, np.DType):
-        return actual == desired
 
     # Handle complex numbers: separate into real/imag to handle
     # nan/inf/negative zero correctly
