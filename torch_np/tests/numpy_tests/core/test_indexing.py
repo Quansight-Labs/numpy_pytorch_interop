@@ -826,6 +826,7 @@ class TestFancyIndexingCast:
         assert_equal(zero_array[0, 1], 0)
 
 class TestFancyIndexingEquivalence:
+    @pytest.mark.xfail(reason="torch does not support object dtype")
     def test_object_assign(self):
         # Check that the field and object special case using copyto is active.
         # The right hand side cannot be converted to an array here.
