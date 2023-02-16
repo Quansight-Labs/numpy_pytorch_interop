@@ -2,6 +2,7 @@ import sys
 import warnings
 import functools
 import operator
+import re
 
 import pytest
 from pytest import raises as assert_raises
@@ -708,13 +709,15 @@ class TestBroadcastedAssignments:
         values = np.zeros((100, 100))  # will never broadcast below  
 
         arr = np.zeros((3, 4, 5, 6, 7))
-        # We currently report without any spaces (could be changed)
-        shape_str = str(arr[index].shape).replace(" ", "")
         
         with pytest.raises((ValueError, RuntimeError)) as e:
             arr[index] = values
 
-        assert str(e.value).endswith(shape_str)
+        shape = arr[index].shape
+        r_inner_shape = (
+            "".join(f"{side}, ?" for side in shape[:-1]) + str(shape[-1])
+        )
+        assert re.search(fr"[\(\[]{r_inner_shape}[\]\)]$", str(e.value))
 
     def test_index_is_larger(self):
         # Simple case of fancy index broadcasting of the index.
