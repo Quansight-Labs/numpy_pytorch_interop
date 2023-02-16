@@ -859,6 +859,7 @@ class TestFancyIndexingEquivalence:
         arr[[0], ...] = [[[1], [2], [3], [4]]]
         assert_array_equal(arr, cmp_arr)
 
+    @pytest.mark.xfail(reason="torch does not support character/string dtypes")
     def test_cast_equivalence(self):
         # Yes, normal slicing uses unsafe casting.
         a = np.arange(5)
