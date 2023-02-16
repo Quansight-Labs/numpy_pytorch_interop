@@ -493,19 +493,19 @@ class asarray_replacer:
 ###### dtype routines
 
 
-def can_cast(from_, to, casting="safe"):
-    from_ = from_.dtype if isinstance(from_, ndarray) else _dtypes.dtype(from_)
-    to_ = to.dtype if isinstance(to, ndarray) else _dtypes.dtype(to)
-
-    return _dtypes_impl.can_cast_impl(from_.torch_dtype, to_.torch_dtype, casting)
-
-
 def _extract_dtype(entry):
     try:
         dty = _dtypes.dtype(entry)
     except Exception:
         dty = asarray(entry).dtype
     return dty
+
+
+def can_cast(from_, to, casting="safe"):
+    from_ = _extract_dtype(from_)
+    to_ = _extract_dtype(to)
+
+    return _dtypes_impl.can_cast_impl(from_.torch_dtype, to_.torch_dtype, casting)
 
 
 def result_type(*arrays_and_dtypes):

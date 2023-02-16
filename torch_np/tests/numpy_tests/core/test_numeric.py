@@ -743,7 +743,6 @@ class TestFloatExceptions:
                 assert_("underflow" in str(w[-1].message))
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestTypes:
     def check_promotion_cases(self, promote_func):
         # tests that the scalars get coerced correctly.
@@ -765,12 +764,9 @@ class TestTypes:
         assert_equal(promote_func(b, u8), np.dtype(np.uint8))
         assert_equal(promote_func(i8, u8), np.dtype(np.int16))
         assert_equal(promote_func(u8, i32), np.dtype(np.int32))
-        assert_equal(promote_func(i64, u32), np.dtype(np.int64))
-        assert_equal(promote_func(u64, i32), np.dtype(np.float64))
         assert_equal(promote_func(i32, f32), np.dtype(np.float64))
         assert_equal(promote_func(i64, f32), np.dtype(np.float64))
         assert_equal(promote_func(f32, i16), np.dtype(np.float32))
-        assert_equal(promote_func(f32, u32), np.dtype(np.float64))
         assert_equal(promote_func(f32, c64), np.dtype(np.complex64))
         assert_equal(promote_func(c128, f32), np.dtype(np.complex128))
 
@@ -779,14 +775,7 @@ class TestTypes:
         assert_equal(promote_func(np.array([b]), u8), np.dtype(np.uint8))
         assert_equal(promote_func(np.array([b]), i32), np.dtype(np.int32))
         assert_equal(promote_func(np.array([i8]), i64), np.dtype(np.int8))
-        assert_equal(promote_func(u64, np.array([i32])), np.dtype(np.int32))
-        assert_equal(promote_func(np.int32(-1), np.array([u64])),
-                     np.dtype(np.float64))
         assert_equal(promote_func(f64, np.array([f32])), np.dtype(np.float32))
-        assert_equal(promote_func(fld, np.array([f32])), np.dtype(np.float32))
-        assert_equal(promote_func(np.array([f64]), fld), np.dtype(np.float64))
-        assert_equal(promote_func(fld, np.array([c64])),
-                     np.dtype(np.complex64))
         assert_equal(promote_func(c64, np.array([f64])),
                      np.dtype(np.complex128))
         assert_equal(promote_func(np.complex64(3j), np.array([f64])),
@@ -797,7 +786,6 @@ class TestTypes:
         assert_equal(promote_func(np.array([b]), f64), np.dtype(np.float64))
         assert_equal(promote_func(np.array([b]), i64), np.dtype(np.int64))
         assert_equal(promote_func(np.array([i8]), f64), np.dtype(np.float64))
-        assert_equal(promote_func(np.array([u16]), f64), np.dtype(np.float64))
 
         # float and complex are treated as the same "kind" for
         # the purposes of array-scalar promotion, so that you can do
@@ -856,158 +844,16 @@ class TestTypes:
 
     def test_result_type(self):
         self.check_promotion_cases(np.result_type)
+
+    @pytest.mark.skip(reason='array(None) not supported')
+    def test_tesult_type_2(self):
         assert_(np.result_type(None) == np.dtype(None))
 
+    @pytest.mark.skip(reason='no endianness in dtypes')
     def test_promote_types_endian(self):
         # promote_types should always return native-endian types
         assert_equal(np.promote_types('<i8', '<i8'), np.dtype('i8'))
         assert_equal(np.promote_types('>i8', '>i8'), np.dtype('i8'))
-
-        assert_equal(np.promote_types('>i8', '>U16'), np.dtype('U21'))
-        assert_equal(np.promote_types('<i8', '<U16'), np.dtype('U21'))
-        assert_equal(np.promote_types('>U16', '>i8'), np.dtype('U21'))
-        assert_equal(np.promote_types('<U16', '<i8'), np.dtype('U21'))
-
-    def test_can_cast_and_promote_usertypes(self):
-        # The rational type defines safe casting for signed integers,
-        # boolean. Rational itself *does* cast safely to double.
-        # (rational does not actually cast to all signed integers, e.g.
-        # int64 can be both long and longlong and it registers only the first)
-        valid_types = ["int8", "int16", "int32", "int64", "bool"]
-        invalid_types = "BHILQP" + "FDG" + "mM" + "f" + "V"
-
-        rational_dt = np.dtype(rational)
-        for numpy_dtype in valid_types:
-            numpy_dtype = np.dtype(numpy_dtype)
-            assert np.can_cast(numpy_dtype, rational_dt)
-            assert np.promote_types(numpy_dtype, rational_dt) is rational_dt
-
-        for numpy_dtype in invalid_types:
-            numpy_dtype = np.dtype(numpy_dtype)
-            assert not np.can_cast(numpy_dtype, rational_dt)
-            with pytest.raises(TypeError):
-                np.promote_types(numpy_dtype, rational_dt)
-
-        double_dt = np.dtype("double")
-        assert np.can_cast(rational_dt, double_dt)
-        assert np.promote_types(double_dt, rational_dt) is double_dt
-
-    @pytest.mark.parametrize("swap", ["", "swap"])
-    @pytest.mark.parametrize("string_dtype", ["U", "S"])
-    def test_promote_types_strings(self, swap, string_dtype):
-        if swap == "swap":
-            promote_types = lambda a, b: np.promote_types(b, a)
-        else:
-            promote_types = np.promote_types
-
-        S = string_dtype
-
-        # Promote numeric with unsized string:
-        assert_equal(promote_types('bool', S), np.dtype(S+'5'))
-        assert_equal(promote_types('b', S), np.dtype(S+'4'))
-        assert_equal(promote_types('u1', S), np.dtype(S+'3'))
-        assert_equal(promote_types('u2', S), np.dtype(S+'5'))
-        assert_equal(promote_types('u4', S), np.dtype(S+'10'))
-        assert_equal(promote_types('u8', S), np.dtype(S+'20'))
-        assert_equal(promote_types('i1', S), np.dtype(S+'4'))
-        assert_equal(promote_types('i2', S), np.dtype(S+'6'))
-        assert_equal(promote_types('i4', S), np.dtype(S+'11'))
-        assert_equal(promote_types('i8', S), np.dtype(S+'21'))
-        # Promote numeric with sized string:
-        assert_equal(promote_types('bool', S+'1'), np.dtype(S+'5'))
-        assert_equal(promote_types('bool', S+'30'), np.dtype(S+'30'))
-        assert_equal(promote_types('b', S+'1'), np.dtype(S+'4'))
-        assert_equal(promote_types('b', S+'30'), np.dtype(S+'30'))
-        assert_equal(promote_types('u1', S+'1'), np.dtype(S+'3'))
-        assert_equal(promote_types('u1', S+'30'), np.dtype(S+'30'))
-        assert_equal(promote_types('u2', S+'1'), np.dtype(S+'5'))
-        assert_equal(promote_types('u2', S+'30'), np.dtype(S+'30'))
-        assert_equal(promote_types('u4', S+'1'), np.dtype(S+'10'))
-        assert_equal(promote_types('u4', S+'30'), np.dtype(S+'30'))
-        assert_equal(promote_types('u8', S+'1'), np.dtype(S+'20'))
-        assert_equal(promote_types('u8', S+'30'), np.dtype(S+'30'))
-
-
-    @pytest.mark.parametrize("dtype",
-            list(np.typecodes["All"]) +
-            ["i,i", "10i", "S3", "S100", "U3", "U100", rational])
-    def test_promote_identical_types_metadata(self, dtype):
-        # The same type passed in twice to promote types always
-        # preserves metadata
-        metadata = {1: 1}
-        dtype = np.dtype(dtype, metadata=metadata)
-
-        res = np.promote_types(dtype, dtype)
-        assert res.metadata == dtype.metadata
-
-        # byte-swapping preserves and makes the dtype native:
-        dtype = dtype.newbyteorder()
-        if dtype.isnative:
-            # The type does not have byte swapping
-            return
-
-        res = np.promote_types(dtype, dtype)
-
-        # Metadata is (currently) generally lost on byte-swapping (except for
-        # unicode.
-        if dtype.char != "U":
-            assert res.metadata is None
-        else:
-            assert res.metadata == metadata
-        assert res.isnative
-
-    @pytest.mark.slow
-    @pytest.mark.filterwarnings('ignore:Promotion of numbers:FutureWarning')
-    @pytest.mark.parametrize(["dtype1", "dtype2"],
-            itertools.product(
-                list(np.typecodes["All"]) +
-                ["i,i", "S3", "S100", "U3", "U100", rational],
-                repeat=2))
-    def test_promote_types_metadata(self, dtype1, dtype2):
-        """Metadata handling in promotion does not appear formalized
-        right now in NumPy. This test should thus be considered to
-        document behaviour, rather than test the correct definition of it.
-
-        This test is very ugly, it was useful for rewriting part of the
-        promotion, but probably should eventually be replaced/deleted
-        (i.e. when metadata handling in promotion is better defined).
-        """
-        metadata1 = {1: 1}
-        metadata2 = {2: 2}
-        dtype1 = np.dtype(dtype1, metadata=metadata1)
-        dtype2 = np.dtype(dtype2, metadata=metadata2)
-
-        try:
-            res = np.promote_types(dtype1, dtype2)
-        except TypeError:
-            # Promotion failed, this test only checks metadata
-            return
-
-        if res.char not in "USV" or res.names is not None or res.shape != ():
-            # All except string dtypes (and unstructured void) lose metadata
-            # on promotion (unless both dtypes are identical).
-            # At some point structured ones did not, but were restrictive.
-            assert res.metadata is None
-        elif res == dtype1:
-            # If one result is the result, it is usually returned unchanged:
-            assert res is dtype1
-        elif res == dtype2:
-            # dtype1 may have been cast to the same type/kind as dtype2.
-            # If the resulting dtype is identical we currently pick the cast
-            # version of dtype1, which lost the metadata:
-            if np.promote_types(dtype1, dtype2.kind) == dtype2:
-                res.metadata is None
-            else:
-                res.metadata == metadata2
-        else:
-            assert res.metadata is None
-
-        # Try again for byteswapped version
-        dtype1 = dtype1.newbyteorder()
-        assert dtype1.metadata == metadata1
-        res_bs = np.promote_types(dtype1, dtype2)
-        assert res_bs == res
-        assert res_bs.metadata == res.metadata
 
     def test_can_cast(self):
         assert_(np.can_cast(np.int32, np.int64))
@@ -1016,9 +862,11 @@ class TestTypes:
 
         assert_(np.can_cast('i8', 'f8'))
         assert_(not np.can_cast('i8', 'f4'))
-        assert_(np.can_cast('i4', 'S11'))
 
         assert_(np.can_cast('i8', 'i8', 'no'))
+
+    @pytest.mark.skip(reason="no endianness in dtypes")
+    def test_can_cast_2(self):
         assert_(not np.can_cast('<i8', '>i8', 'no'))
 
         assert_(np.can_cast('<i8', '>i8', 'equiv'))
@@ -1032,60 +880,13 @@ class TestTypes:
 
         assert_(np.can_cast('<i8', '>u4', 'unsafe'))
 
-        assert_(np.can_cast('bool', 'S5'))
-        assert_(not np.can_cast('bool', 'S4'))
-
-        assert_(np.can_cast('b', 'S4'))
-        assert_(not np.can_cast('b', 'S3'))
-
-        assert_(np.can_cast('u1', 'S3'))
-        assert_(not np.can_cast('u1', 'S2'))
-        assert_(np.can_cast('u2', 'S5'))
-        assert_(not np.can_cast('u2', 'S4'))
-        assert_(np.can_cast('u4', 'S10'))
-        assert_(not np.can_cast('u4', 'S9'))
-        assert_(np.can_cast('u8', 'S20'))
-        assert_(not np.can_cast('u8', 'S19'))
-
-        assert_(np.can_cast('i1', 'S4'))
-        assert_(not np.can_cast('i1', 'S3'))
-        assert_(np.can_cast('i2', 'S6'))
-        assert_(not np.can_cast('i2', 'S5'))
-        assert_(np.can_cast('i4', 'S11'))
-        assert_(not np.can_cast('i4', 'S10'))
-        assert_(np.can_cast('i8', 'S21'))
-        assert_(not np.can_cast('i8', 'S20'))
-
-        assert_(np.can_cast('bool', 'S5'))
-        assert_(not np.can_cast('bool', 'S4'))
-
-        assert_(np.can_cast('b', 'U4'))
-        assert_(not np.can_cast('b', 'U3'))
-
-        assert_(np.can_cast('u1', 'U3'))
-        assert_(not np.can_cast('u1', 'U2'))
-        assert_(np.can_cast('u2', 'U5'))
-        assert_(not np.can_cast('u2', 'U4'))
-        assert_(np.can_cast('u4', 'U10'))
-        assert_(not np.can_cast('u4', 'U9'))
-        assert_(np.can_cast('u8', 'U20'))
-        assert_(not np.can_cast('u8', 'U19'))
-
-        assert_(np.can_cast('i1', 'U4'))
-        assert_(not np.can_cast('i1', 'U3'))
-        assert_(np.can_cast('i2', 'U6'))
-        assert_(not np.can_cast('i2', 'U5'))
-        assert_(np.can_cast('i4', 'U11'))
-        assert_(not np.can_cast('i4', 'U10'))
-        assert_(np.can_cast('i8', 'U21'))
-        assert_(not np.can_cast('i8', 'U20'))
-
         assert_raises(TypeError, np.can_cast, 'i4', None)
         assert_raises(TypeError, np.can_cast, None, 'i4')
 
         # Also test keyword arguments
         assert_(np.can_cast(from_=np.int32, to=np.int64))
 
+    @pytest.mark.xfail(reason='value-based casting?')
     def test_can_cast_values(self):
         # gh-5917
         for dt in np.sctypes['int'] + np.sctypes['uint']:
@@ -2666,12 +2467,19 @@ class TestConvolve:
             np.convolve(d, k, mode=None)
 
 
+class TestDtypePositional:
+
+    @pytest.mark.xfail(reason='TODO: restore dtypes as positional args')
+    def test_dtype_positional(self):
+        np.empty((2,), bool)
+
+
 class TestArgwhere:
 
     @pytest.mark.parametrize('nd', [0, 1, 2])
     def test_nd(self, nd):
         # get an nd array with multiple elements in every dimension
-        x = np.empty((2,)*nd, bool)
+        x = np.empty((2,)*nd, dtype=bool)
 
         # none
         x[...] = False

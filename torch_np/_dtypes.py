@@ -197,6 +197,7 @@ _names = {st.name: st for cat in sctypes for st in sctypes[cat]}
 _typecodes = {st.typecode: st for cat in sctypes for st in sctypes[cat]}
 _torch_dtypes = {st.torch_dtype: st for cat in sctypes for st in sctypes[cat]}
 
+
 _aliases = {
     "u1": uint8,
     "i1": int8,
@@ -284,6 +285,11 @@ class DType:
     @property
     def type(self):
         return self._scalar_type
+
+    @property
+    def kind(self):
+        # https://numpy.org/doc/stable/reference/generated/numpy.dtype.kind.html
+        return _torch_dtypes[self.torch_dtype].name[0]
 
     @property
     def typecode(self):
