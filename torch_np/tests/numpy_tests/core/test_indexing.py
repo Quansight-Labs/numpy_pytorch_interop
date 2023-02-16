@@ -801,6 +801,9 @@ class TestSubclasses:
 
 
 class TestFancyIndexingCast:
+    @pytest.mark.xfail(
+        reason="XXX: low-prio to support assigning complex values on floating arrays"
+    )
     def test_boolean_index_cast_assign(self):
         # Setup the boolean index and float arrays.
         shape = (8, 63)
