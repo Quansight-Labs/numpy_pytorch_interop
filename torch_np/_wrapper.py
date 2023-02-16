@@ -74,7 +74,8 @@ def copy(a, order="K", subok=False):
 
 
 def atleast_1d(*arys):
-    res = torch.atleast_1d([asarray(a).get() for a in arys])
+    tensors = _helpers.to_tensors(*arys)
+    res = torch.atleast_1d(tensors)
     if len(res) == 1:
         return asarray(res[0])
     else:
@@ -82,7 +83,8 @@ def atleast_1d(*arys):
 
 
 def atleast_2d(*arys):
-    res = torch.atleast_2d([asarray(a).get() for a in arys])
+    tensors = _helpers.to_tensors(*arys)
+    res = torch.atleast_2d(tensors)
     if len(res) == 1:
         return asarray(res[0])
     else:
@@ -90,73 +92,85 @@ def atleast_2d(*arys):
 
 
 def atleast_3d(*arys):
-    res = torch.atleast_3d([asarray(a).get() for a in arys])
+    tensors = _helpers.to_tensors(*arys)
+    res = torch.atleast_3d(tensors)
     if len(res) == 1:
         return asarray(res[0])
     else:
         return list(asarray(_) for _ in res)
 
 
+def _concat_check(tup, dtype, out):
+    """Check inputs in concatenate et al."""
+    if tup == ():
+        # XXX: RuntimeError in torch, ValueError in numpy
+        raise ValueError("need at least one array to concatenate")
+
+    if out is not None:
+        if not isinstance(out, ndarray):
+            raise ValueError("'out' must be an array")
+
+        if dtype is not None:
+            # mimic numpy
+            raise TypeError(
+                "concatenate() only takes `out` or `dtype` as an "
+                "argument, but both were provided."
+            )
+
+
+@_decorators.dtype_to_torch
+def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
+    _concat_check(ar_tuple, dtype, out=out)
+    tensors = _helpers.to_tensors(*ar_tuple)
+    result = _impl.concatenate(tensors, axis, out, dtype, casting)
+    return _helpers.result_or_out(result, out)
+
+
+@_decorators.dtype_to_torch
 def vstack(tup, *, dtype=None, casting="same_kind"):
-    arrs = atleast_2d(*tup)
-    if not isinstance(arrs, list):
-        arrs = [arrs]
-    return concatenate(arrs, 0, dtype=dtype, casting=casting)
+    tensors = _helpers.to_tensors(*tup)
+    _concat_check(tensors, dtype, out=None)
+    result = _impl.vstack(tensors, dtype=dtype, casting=casting)
+    return asarray(result)
 
 
 row_stack = vstack
 
 
+@_decorators.dtype_to_torch
 def hstack(tup, *, dtype=None, casting="same_kind"):
-    arrs = atleast_1d(*tup)
-    if not isinstance(arrs, list):
-        arrs = [arrs]
-    # As a special case, dimension 0 of 1-dimensional arrays is "horizontal"
-    if arrs and arrs[0].ndim == 1:
-        return concatenate(arrs, 0, dtype=dtype, casting=casting)
-    else:
-        return concatenate(arrs, 1, dtype=dtype, casting=casting)
+    tensors = _helpers.to_tensors(*tup)
+    _concat_check(tensors, dtype, out=None)
+    result = _impl.hstack(tensors, dtype=dtype, casting=casting)
+    return asarray(result)
 
 
+@_decorators.dtype_to_torch
 def dstack(tup, *, dtype=None, casting="same_kind"):
     # XXX: in numpy 1.24 dstack does not have dtype and casting keywords
     # but {h,v}stack do.  Hence add them here for consistency.
-    arrs = atleast_3d(*tup)
-    if not isinstance(arrs, list):
-        arrs = [arrs]
-    return concatenate(arrs, 2, dtype=dtype, casting=casting)
+    tensors = _helpers.to_tensors(*tup)
+    result = _impl.dstack(tensors, dtype=dtype, casting=casting)
+    return asarray(result)  
 
 
+@_decorators.dtype_to_torch
 def column_stack(tup, *, dtype=None, casting="same_kind"):
     # XXX: in numpy 1.24 column_stack does not have dtype and casting keywords
     # but row_stack does. (because row_stack is an alias for vstack, really).
     # Hence add these keywords here for consistency.
-    arrays = []
-    for v in tup:
-        arr = asarray(v)
-        if arr.ndim < 2:
-            arr = array(arr, copy=False, ndmin=2).T
-        arrays.append(arr)
-    return concatenate(arrays, 1, dtype=dtype, casting=casting)
+    tensors = _helpers.to_tensors(*tup)
+    _concat_check(tensors, dtype, out=None)
+    result = _impl.column_stack(tensors, dtype=dtype, casting=casting)
+    return asarray(result)
 
 
+@_decorators.dtype_to_torch
 def stack(arrays, axis=0, out=None, *, dtype=None, casting="same_kind"):
-    arrays = [asarray(arr) for arr in arrays]
-    if not arrays:
-        raise ValueError("need at least one array to stack")
-
-    shapes = {arr.shape for arr in arrays}
-    if len(shapes) != 1:
-        raise ValueError("all input arrays must have the same shape")
-
-    result_ndim = arrays[0].ndim + 1
-    axis = _util.normalize_axis_index(axis, result_ndim)
-
-    sl = (slice(None),) * axis + (newaxis,)
-    expanded_arrays = [arr[sl] for arr in arrays]
-    return concatenate(
-        expanded_arrays, axis=axis, out=out, dtype=dtype, casting=casting
-    )
+    tensors = _helpers.to_tensors(*arrays)
+    _concat_check(tensors, dtype, out=out)
+    result = _impl.stack(tensors, axis=axis, out=out, dtype=dtype, casting=casting)
+    return _helpers.result_or_out(result, out)
 
 
 def array_split(ary, indices_or_sections, axis=0):
@@ -469,27 +483,6 @@ def cov(
         m_tensor, bias, ddof, fweights_tensor, aweights_tensor, dtype=dtype
     )
     return asarray(result)
-
-
-@_decorators.dtype_to_torch
-def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
-    if ar_tuple == ():
-        # XXX: RuntimeError in torch, ValueError in numpy
-        raise ValueError("need at least one array to concatenate")
-
-    if out is not None:
-        if not isinstance(out, ndarray):
-            raise ValueError("'out' must be an array")
-
-        if dtype is not None:
-            # mimic numpy
-            raise TypeError(
-                "concatenate() only takes `out` or `dtype` as an "
-                "argument, but both were provided."
-            )
-    tensors = _helpers.to_tensors(*ar_tuple)
-    result = _impl.concatenate(tensors, axis, out, dtype, casting)
-    return _helpers.result_or_out(result, out)
 
 
 def bincount(x, /, weights=None, minlength=0):

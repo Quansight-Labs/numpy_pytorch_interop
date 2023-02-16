@@ -246,6 +246,55 @@ def concatenate(tensors, axis=0, out=None, dtype=None, casting="same_kind"):
     return result
 
 
+def stack(tensors, axis=0, out=None, *, dtype=None, casting="same_kind"):
+    shapes = {t.shape for t in tensors}
+    if len(shapes) != 1:
+        raise ValueError("all input arrays must have the same shape")
+
+    result_ndim = tensors[0].ndim + 1
+    axis = _util.normalize_axis_index(axis, result_ndim)
+
+    sl = (slice(None),) * axis + (None,)
+    expanded_tensors = [tensor[sl] for tensor in tensors]
+    result = concatenate(expanded_tensors, axis=axis, out=out, dtype=dtype, casting=casting)
+
+    return result
+
+
+def column_stack(tensors_, *, dtype=None, casting="same_kind"):
+    tensors = []
+    for t in tensors_:
+        if t.ndim < 2:
+            t = _util._coerce_to_tensor(t, copy=False, ndmin=2).mT
+        tensors.append(t)
+
+    result = concatenate(tensors, 1, dtype=dtype, casting=casting)
+    return result
+
+
+def dstack(tensors, *, dtype=None, casting="same_kind"):
+    tensors = torch.atleast_3d(tensors)
+    result = concatenate(tensors, 2, dtype=dtype, casting=casting)
+    return result
+
+
+def hstack(tensors, *, dtype=None, casting="same_kind"):
+    tensors = torch.atleast_1d(tensors)
+
+    # As a special case, dimension 0 of 1-dimensional arrays is "horizontal"s
+    if tensors and tensors[0].ndim == 1:
+        result = concatenate(tensors, 0, dtype=dtype, casting=casting)
+    else:
+        result = concatenate(tensors, 1, dtype=dtype, casting=casting)
+    return result
+
+
+def vstack(tensors, *, dtype=None, casting="same_kind"):
+    tensors = torch.atleast_2d(tensors)
+    result = concatenate(tensors, 0, dtype=dtype, casting=casting)
+    return result
+
+
 # #### cov & corrcoef
 
 
