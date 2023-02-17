@@ -117,7 +117,9 @@ class TestIndexing:
         assert_equal(a[()], a)
         assert_(a[()].base is a)
         a = np.array(0)
-        pytest.xfail("torch_np does not have scalars")
+        pytest.xfail(
+            "torch doesn't have scalar types with distinct instancing behaviours"
+        )
         assert_(isinstance(a[()], np.int_))
 
     @pytest.mark.xfail(reason="torch does not have an equivalent to np.void")
@@ -1343,6 +1345,11 @@ class TestFloatNonIntegerArgument:
         assert_raises(TypeError, np.take, a, [0], 1.)
         assert_raises(TypeError, np.take, a, [0], np.float64(1.))
 
+    @pytest.mark.xfail(
+        reason=(
+            "torch doesn't have scalar types with distinct element-wise behaviours"
+        )
+    )
     def test_non_integer_sequence_multiplication(self):
         # NumPy scalar sequence multiply should not work with non-integers
         def mult(a, b):
