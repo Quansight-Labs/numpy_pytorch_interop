@@ -31,7 +31,7 @@ def tensor_equiv(a1_t, a2_t):
     return tensor_equal(a1_t, a2_t)
 
 
-def tensor_isclose(a, b, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
+def isclose(a, b, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
     dtype = _dtypes_impl.result_type_impl((a.dtype, b.dtype))
     a = a.to(dtype)
     b = b.to(dtype)
@@ -42,7 +42,7 @@ def tensor_isclose(a, b, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
 # ### is arg real or complex valued ###
 
 
-def tensor_iscomplex(x):
+def iscomplex(x):
     if torch.is_complex(x):
         return torch.as_tensor(x).imag != 0
     result = torch.zeros_like(x, dtype=torch.bool)
@@ -51,7 +51,7 @@ def tensor_iscomplex(x):
     return result
 
 
-def tensor_isreal(x):
+def isreal(x):
     if torch.is_complex(x):
         return torch.as_tensor(x).imag == 0
     result = torch.ones_like(x, dtype=torch.bool)
@@ -60,7 +60,8 @@ def tensor_isreal(x):
     return result
 
 
-def tensor_real_if_close(x, tol=100):
+def real_if_close(x, tol=100):
+    # XXX: copies vs views; numpy seems to return a copy?
     if not torch.is_complex(x):
         return x
     mask = torch.abs(x.imag) < tol * torch.finfo(x.dtype).eps
@@ -73,20 +74,20 @@ def tensor_real_if_close(x, tol=100):
 # ### math functions ###
 
 
-def tensor_angle(z, deg=False):
+def angle(z, deg=False):
     result = torch.angle(z)
     if deg:
-        result *= 180 / torch.pi
+        result = result * 180 / torch.pi
     return result
 
 
 # ### sorting ###
 
 
-def tensor_argsort(tensor, axis=-1, kind=None, order=None):
+def argsort(tensor, axis=-1, kind=None, order=None):
     if order is not None:
         raise NotImplementedError
-    stable = True if kind == "stable" else False
+    stable = kind == "stable"
     if axis is None:
         axis = -1
     return torch.argsort(tensor, stable=stable, dim=axis, descending=False)
@@ -387,11 +388,11 @@ def bincount(x_tensor, /, weights_tensor=None, minlength=0):
 def geomspace(start, stop, num=50, endpoint=True, dtype=None, axis=0):
     if axis != 0 or not endpoint:
         raise NotImplementedError
-    tstart, tstop = torch.as_tensor([start, stop])
-    base = torch.pow(tstop / tstart, 1.0 / (num - 1))
+    base = torch.pow(stop / start, 1.0 / (num - 1))
+    logbase = torch.log(base)
     result = torch.logspace(
-        torch.log(tstart) / torch.log(base),
-        torch.log(tstop) / torch.log(base),
+        torch.log(start) / logbase,
+        torch.log(stop) / logbase,
         num,
         base=base,
     )

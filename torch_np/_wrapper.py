@@ -261,6 +261,7 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None, axis
 def geomspace(start, stop, num=50, endpoint=True, dtype=None, axis=0):
     if axis != 0 or not endpoint:
         raise NotImplementedError
+    start, stop = _helpers.to_tensors(start, stop)
     result = _impl.geomspace(start, stop, num, endpoint, dtype, axis)
     return asarray(result)
 
@@ -954,7 +955,7 @@ def diff(a, n=1, axis=-1, prepend=NoValue, append=NoValue):
 
 @asarray_replacer()
 def argsort(a, axis=-1, kind=None, order=None):
-    result = _impl.tensor_argsort(a, axis, kind, order)
+    result = _impl.argsort(a, axis, kind, order)
     return result
 
 
@@ -963,7 +964,7 @@ def argsort(a, axis=-1, kind=None, order=None):
 
 @asarray_replacer()
 def angle(z, deg=False):
-    result = _impl.tensor_angle(z, deg)
+    result = _impl.angle(z, deg)
     return result
 
 
@@ -984,19 +985,19 @@ def imag(a):
 
 @asarray_replacer()
 def real_if_close(a, tol=100):
-    result = _impl.tensor_real_if_close(a, tol=tol)
+    result = _impl.real_if_close(a, tol=tol)
     return result
 
 
 @asarray_replacer()
 def iscomplex(x):
-    result = _impl.tensor_iscomplex(x)
+    result = _impl.iscomplex(x)
     return result  # XXX: missing .item on a zero-dim value; a case for array_or_scalar(value) ?
 
 
 @asarray_replacer()
 def isreal(x):
-    result = _impl.tensor_isreal(x)
+    result = _impl.isreal(x)
     return result
 
 
@@ -1036,13 +1037,13 @@ def isscalar(a):
 
 def isclose(a, b, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
     a_t, b_t = _helpers.to_tensors(a, b)
-    result = _impl.tensor_isclose(a_t, b_t, rtol, atol, equal_nan=equal_nan)
+    result = _impl.isclose(a_t, b_t, rtol, atol, equal_nan=equal_nan)
     return asarray(result)
 
 
 def allclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
     a_t, b_t = _helpers.to_tensors(a, b)
-    result = _impl.tensor_isclose(a_t, b_t, rtol, atol, equal_nan=equal_nan)
+    result = _impl.isclose(a_t, b_t, rtol, atol, equal_nan=equal_nan)
     return result.all()
 
 
