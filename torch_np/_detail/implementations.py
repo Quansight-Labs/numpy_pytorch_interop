@@ -33,8 +33,8 @@ def tensor_equiv(a1_t, a2_t):
 
 def isclose(a, b, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
     dtype = _dtypes_impl.result_type_impl((a.dtype, b.dtype))
-    a = a.to(dtype)
-    b = b.to(dtype)
+    a = _util.cast_if_needed(a, dtype)
+    b = _util.cast_if_needed(b, dtype)
     result = torch.isclose(a, b, rtol=rtol, atol=atol, equal_nan=equal_nan)
     return result
 
@@ -308,9 +308,7 @@ def corrcoef(xy_tensor, *, dtype=None):
         # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
         dtype = torch.float32
 
-    if dtype is not None:
-        xy_tensor = xy_tensor.to(dtype)
-
+    xy_tensor = _util.cast_if_needed(xy_tensor, dtype)
     result = torch.corrcoef(xy_tensor)
 
     if is_half:
@@ -336,8 +334,7 @@ def cov(
         # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
         dtype = torch.float32
 
-    if dtype is not None:
-        m_tensor = m_tensor.to(dtype)
+    m_tensor = _util.cast_if_needed(m_tensor, dtype)
 
     result = torch.cov(
         m_tensor, correction=ddof, aweights=aweights_tensor, fweights=fweights_tensor

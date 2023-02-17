@@ -146,9 +146,7 @@ def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
         raise NotImplementedError
 
     dtype = _atleast_float(dtype, tensor.dtype)
-
-    if dtype is not None:
-        tensor = tensor.to(dtype)
+    tensor = _util.cast_if_needed(tensor, dtype)
     result = tensor.std(dim=axis, correction=ddof)
 
     return result
@@ -159,9 +157,7 @@ def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
         raise NotImplementedError
 
     dtype = _atleast_float(dtype, tensor.dtype)
-
-    if dtype is not None:
-        tensor = tensor.to(dtype)
+    tensor = _util.cast_if_needed(tensor, dtype)
     result = tensor.var(dim=axis, correction=ddof)
 
     return result
@@ -204,10 +200,9 @@ def average(a_tensor, axis, w_tensor):
         a_tensor = a_tensor.to(result_dtype)
 
     result_dtype = _dtypes_impl.result_type_impl([a_tensor.dtype, w_tensor.dtype])
-    if a_tensor.dtype != result_dtype:
-        a_tensor = a_tensor.to(result_dtype)
-    if w_tensor.dtype != result_dtype:
-        w_tensor = w_tensor.to(result_dtype)
+
+    a_tensor = _util.cast_if_needed(a_tensor, result_dtype)
+    w_tensor = _util.cast_if_needed(w_tensor, result_dtype)
 
     # axis
     if axis is None:
@@ -258,7 +253,7 @@ def quantile(a_tensor, q_tensor, axis, method):
         axis = _util.normalize_axis_tuple(axis, a_tensor.ndim)
     axis = _util.allow_only_single_axis(axis)
 
-    q_tensor = q_tensor.to(a_tensor.dtype)
+    q_tensor = _util.cast_if_needed(q_tensor, a_tensor.dtype)
 
     (a_tensor, q_tensor), axis = _util.axis_none_ravel(a_tensor, q_tensor, axis=axis)
 
