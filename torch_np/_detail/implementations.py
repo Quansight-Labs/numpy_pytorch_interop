@@ -229,73 +229,66 @@ def diff(a_tensor, n=1, axis=-1, prepend_tensor=None, append_tensor=None):
 # #### concatenate and relatives
 
 
-def concatenate(tensors, axis=0, out=None, dtype=None, casting="same_kind"):
-    # np.concatenate ravels if axis=None
-    tensors, axis = _util.axis_none_ravel(*tensors, axis=axis)
+def _concat_cast_helper(tensors, out=None, dtype=None, casting="same_kind"):
+    """Figure out dtypes, cast if necessary."""
 
     if out is not None or dtype is not None:
         # figure out the type of the inputs and outputs
         out_dtype = out.dtype.torch_dtype if dtype is None else dtype
+    else:
+        out_dtype = _dtypes_impl.result_type_impl([t.dtype for t in tensors])
 
-        # cast input arrays if necessary; do not broadcast them agains `out`
-        tensors = _util.cast_dont_broadcast(tensors, out_dtype, casting)
+    # cast input arrays if necessary; do not broadcast them agains `out`
+    tensors = _util.cast_dont_broadcast(tensors, out_dtype, casting)
+
+    return tensors
+
+
+def concatenate(tensors, axis=0, out=None, dtype=None, casting="same_kind"):
+    # np.concatenate ravels if axis=None
+    tensors, axis = _util.axis_none_ravel(*tensors, axis=axis)
+    tensors = _concat_cast_helper(tensors, out, dtype, casting)
 
     try:
         result = torch.cat(tensors, axis)
-    except (IndexError, RuntimeError):
-        raise _util.AxisError
+    except (IndexError, RuntimeError) as e:
+        raise _util.AxisError(*e.args)
 
     return result
 
 
 def stack(tensors, axis=0, out=None, *, dtype=None, casting="same_kind"):
-    shapes = {t.shape for t in tensors}
-    if len(shapes) != 1:
-        raise ValueError("all input arrays must have the same shape")
-
+    tensors = _concat_cast_helper(tensors, dtype=dtype, casting=casting)
     result_ndim = tensors[0].ndim + 1
     axis = _util.normalize_axis_index(axis, result_ndim)
-
-    sl = (slice(None),) * axis + (None,)
-    expanded_tensors = [tensor[sl] for tensor in tensors]
-    result = concatenate(
-        expanded_tensors, axis=axis, out=out, dtype=dtype, casting=casting
-    )
-
+    try:
+        result = torch.stack(tensors, axis=axis)
+    except RuntimeError as e:
+        raise ValueError(*e.args)
     return result
 
 
-def column_stack(tensors_, *, dtype=None, casting="same_kind"):
-    tensors = []
-    for t in tensors_:
-        if t.ndim < 2:
-            t = _util._coerce_to_tensor(t, copy=False, ndmin=2).mT
-        tensors.append(t)
-
-    result = concatenate(tensors, 1, dtype=dtype, casting=casting)
+def column_stack(tensors, *, dtype=None, casting="same_kind"):
+    tensors = _concat_cast_helper(tensors, dtype=dtype, casting=casting)
+    result = torch.column_stack(tensors)
     return result
 
 
 def dstack(tensors, *, dtype=None, casting="same_kind"):
-    tensors = torch.atleast_3d(tensors)
-    result = concatenate(tensors, 2, dtype=dtype, casting=casting)
+    tensors = _concat_cast_helper(tensors, dtype=dtype, casting=casting)
+    result = torch.dstack(tensors)
     return result
 
 
 def hstack(tensors, *, dtype=None, casting="same_kind"):
-    tensors = torch.atleast_1d(tensors)
-
-    # As a special case, dimension 0 of 1-dimensional arrays is "horizontal"s
-    if tensors and tensors[0].ndim == 1:
-        result = concatenate(tensors, 0, dtype=dtype, casting=casting)
-    else:
-        result = concatenate(tensors, 1, dtype=dtype, casting=casting)
+    tensors = _concat_cast_helper(tensors, dtype=dtype, casting=casting)
+    result = torch.hstack(tensors)
     return result
 
 
 def vstack(tensors, *, dtype=None, casting="same_kind"):
-    tensors = torch.atleast_2d(tensors)
-    result = concatenate(tensors, 0, dtype=dtype, casting=casting)
+    tensors = _concat_cast_helper(tensors, dtype=dtype, casting=casting)
+    result = torch.vstack(tensors)
     return result
 
 
