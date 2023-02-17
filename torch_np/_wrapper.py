@@ -151,7 +151,7 @@ def dstack(tup, *, dtype=None, casting="same_kind"):
     # but {h,v}stack do.  Hence add them here for consistency.
     tensors = _helpers.to_tensors(*tup)
     result = _impl.dstack(tensors, dtype=dtype, casting=casting)
-    return asarray(result)  
+    return asarray(result)
 
 
 @_decorators.dtype_to_torch
@@ -257,49 +257,27 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None, axis
     return asarray(torch.linspace(start, stop, num, dtype=dtype))
 
 
+@_decorators.dtype_to_torch
 def geomspace(start, stop, num=50, endpoint=True, dtype=None, axis=0):
     if axis != 0 or not endpoint:
         raise NotImplementedError
-    tstart, tstop = torch.as_tensor([start, stop])
-    base = torch.pow(tstop / tstart, 1.0 / (num - 1))
-    result = torch.logspace(
-        torch.log(tstart) / torch.log(base),
-        torch.log(tstop) / torch.log(base),
-        num,
-        base=base,
-    )
+    result = _impl.geomspace(start, stop, num, endpoint, dtype, axis)
     return asarray(result)
 
 
+@_decorators.dtype_to_torch
 def logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0):
     if axis != 0 or not endpoint:
         raise NotImplementedError
     return asarray(torch.logspace(start, stop, num, base=base, dtype=dtype))
 
 
+@_decorators.dtype_to_torch
 def arange(start=None, stop=None, step=1, dtype=None, *, like=None):
     _util.subok_not_ok(like)
-    if step == 0:
-        raise ZeroDivisionError
-    if stop is None and start is None:
-        raise TypeError
-    if stop is None:
-        # XXX: this breaks if start is passed as a kwarg:
-        # arange(start=4) should raise (no stop) but doesn't
-        start, stop = 0, start
-    if start is None:
-        start = 0
-
-    if dtype is None:
-        dtype = _dtypes.default_int_type()
-        dtype = result_type(start, stop, step, dtype)
-    torch_dtype = _dtypes.torch_dtype_from(dtype)
     start, stop, step = _helpers.ndarrays_to_tensors(start, stop, step)
-
-    try:
-        return asarray(torch.arange(start, stop, step, dtype=torch_dtype))
-    except RuntimeError:
-        raise ValueError("Maximum allowed size exceeded")
+    result = _impl.arange(start, stop, step, dtype=dtype)
+    return asarray(result)
 
 
 @_decorators.dtype_to_torch
@@ -316,14 +294,12 @@ def empty(shape, dtype=float, order="C", *, like=None):
 # NB: *_like function deliberately deviate from numpy: it has subok=True
 # as the default; we set subok=False and raise on anything else.
 @asarray_replacer()
+@_decorators.dtype_to_torch
 def empty_like(prototype, dtype=None, order="K", subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != "K":
         raise NotImplementedError
-    torch_dtype = None if dtype is None else _dtypes.torch_dtype_from(dtype)
-    result = torch.empty_like(prototype, dtype=torch_dtype)
-    if shape is not None:
-        result = result.reshape(shape)
+    result = _impl.empty_like(prototype, dtype=dtype, shape=shape)
     return result
 
 
@@ -332,28 +308,18 @@ def full(shape, fill_value, dtype=None, order="C", *, like=None):
     _util.subok_not_ok(like)
     if order != "C":
         raise NotImplementedError
-
     fill_value = asarray(fill_value).get()
-    if dtype is None:
-        dtype = fill_value.dtype
-
-    if not isinstance(shape, (tuple, list)):
-        shape = (shape,)
-
-    result = torch.full(shape, fill_value, dtype=dtype)
-
+    result = _impl.full(shape, fill_value, dtype=dtype)
     return asarray(result)
 
 
 @asarray_replacer()
+@_decorators.dtype_to_torch
 def full_like(a, fill_value, dtype=None, order="K", subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != "K":
         raise NotImplementedError
-    torch_dtype = None if dtype is None else _dtypes.torch_dtype_from(dtype)
-    result = torch.full_like(a, fill_value, dtype=torch_dtype)
-    if shape is not None:
-        result = result.reshape(shape)
+    result = _impl.full_like(a, fill_value, dtype=dtype, shape=shape)
     return result
 
 
@@ -369,14 +335,12 @@ def ones(shape, dtype=None, order="C", *, like=None):
 
 
 @asarray_replacer()
+@_decorators.dtype_to_torch
 def ones_like(a, dtype=None, order="K", subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != "K":
         raise NotImplementedError
-    torch_dtype = None if dtype is None else _dtypes.torch_dtype_from(dtype)
-    result = torch.ones_like(a, dtype=torch_dtype)
-    if shape is not None:
-        result = result.reshape(shape)
+    result = _impl.ones_like(a, dtype=dtype, shape=shape)
     return result
 
 
@@ -392,14 +356,12 @@ def zeros(shape, dtype=None, order="C", *, like=None):
 
 
 @asarray_replacer()
+@_decorators.dtype_to_torch
 def zeros_like(a, dtype=None, order="K", subok=False, shape=None):
     _util.subok_not_ok(subok=subok)
     if order != "K":
         raise NotImplementedError
-    torch_dtype = None if dtype is None else _dtypes.torch_dtype_from(dtype)
-    result = torch.zeros_like(a, dtype=torch_dtype)
-    if shape is not None:
-        result = result.reshape(shape)
+    result = _impl.zeros_like(a, dtype=dtype, shape=shape)
     return result
 
 
@@ -408,11 +370,8 @@ def eye(N, M=None, k=0, dtype=float, order="C", *, like=None):
     _util.subok_not_ok(like)
     if order != "C":
         raise NotImplementedError
-    if M is None:
-        M = N
-    z = torch.zeros(N, M, dtype=dtype)
-    z.diagonal(k).fill_(1)
-    return asarray(z)
+    result = _impl.eye(N, M, k, dtype)
+    return asarray(result)
 
 
 def identity(n, dtype=None, *, like=None):

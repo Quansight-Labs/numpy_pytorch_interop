@@ -138,7 +138,8 @@ def split_helper(tensor, indices_or_sections, axis, strict=False):
     if isinstance(indices_or_sections, int):
         return split_helper_int(tensor, indices_or_sections, axis, strict)
     elif isinstance(indices_or_sections, (list, tuple)):
-        return split_helper_list(tensor, list(indices_or_sections), axis, strict)
+        # NB: drop split=..., it only applies to split_helper_int
+        return split_helper_list(tensor, list(indices_or_sections), axis)
     else:
         raise TypeError("split_helper: ", type(indices_or_sections))
 
@@ -170,7 +171,7 @@ def split_helper_int(tensor, indices_or_sections, axis, strict=False):
     return result
 
 
-def split_helper_list(tensor, indices_or_sections, axis, strict=False):
+def split_helper_list(tensor, indices_or_sections, axis):
     if not isinstance(indices_or_sections, list):
         raise NotImplementedError("split: indices_or_sections: list")
     # numpy expectes indices, while torch expects lengths of sections
@@ -256,7 +257,9 @@ def stack(tensors, axis=0, out=None, *, dtype=None, casting="same_kind"):
 
     sl = (slice(None),) * axis + (None,)
     expanded_tensors = [tensor[sl] for tensor in tensors]
-    result = concatenate(expanded_tensors, axis=axis, out=out, dtype=dtype, casting=casting)
+    result = concatenate(
+        expanded_tensors, axis=axis, out=out, dtype=dtype, casting=casting
+    )
 
     return result
 
@@ -374,10 +377,99 @@ def meshgrid(*xi_tensors, copy=True, sparse=False, indexing="xy"):
     return output
 
 
-
 def bincount(x_tensor, /, weights_tensor=None, minlength=0):
     int_dtype = _dtypes_impl.default_int_dtype
     (x_tensor,) = _util.cast_dont_broadcast((x_tensor,), int_dtype, casting="safe")
 
     result = torch.bincount(x_tensor, weights_tensor, minlength)
+    return result
+
+
+# ### linspace, geomspace, logspace and arange ###
+
+
+def geomspace(start, stop, num=50, endpoint=True, dtype=None, axis=0):
+    if axis != 0 or not endpoint:
+        raise NotImplementedError
+    tstart, tstop = torch.as_tensor([start, stop])
+    base = torch.pow(tstop / tstart, 1.0 / (num - 1))
+    result = torch.logspace(
+        torch.log(tstart) / torch.log(base),
+        torch.log(tstop) / torch.log(base),
+        num,
+        base=base,
+    )
+    return result
+
+
+def arange(start=None, stop=None, step=1, dtype=None):
+    if step == 0:
+        raise ZeroDivisionError
+    if stop is None and start is None:
+        raise TypeError
+    if stop is None:
+        # XXX: this breaks if start is passed as a kwarg:
+        # arange(start=4) should raise (no stop) but doesn't
+        start, stop = 0, start
+    if start is None:
+        start = 0
+
+    if dtype is None:
+        dt_list = [_util._coerce_to_tensor(x).dtype for x in (start, stop, step)]
+        dtype = _dtypes_impl.default_int_dtype
+        dt_list.append(dtype)
+        dtype = _dtypes_impl.result_type_impl(dt_list)
+
+    try:
+        return torch.arange(start, stop, step, dtype=dtype)
+    except RuntimeError:
+        raise ValueError("Maximum allowed size exceeded")
+
+
+# ### empty/full et al ###
+
+
+def eye(N, M=None, k=0, dtype=float):
+    if M is None:
+        M = N
+    z = torch.zeros(N, M, dtype=dtype)
+    z.diagonal(k).fill_(1)
+    return z
+
+
+def zeros_like(a, dtype=None, shape=None):
+    result = torch.zeros_like(a, dtype=dtype)
+    if shape is not None:
+        result = result.reshape(shape)
+    return result
+
+
+def ones_like(a, dtype=None, shape=None):
+    result = torch.ones_like(a, dtype=dtype)
+    if shape is not None:
+        result = result.reshape(shape)
+    return result
+
+
+def full_like(a, fill_value, dtype=None, shape=None):
+    # XXX: fill_value broadcasts
+    result = torch.full_like(a, fill_value, dtype=dtype)
+    if shape is not None:
+        result = result.reshape(shape)
+    return result
+
+
+def empty_like(prototype, dtype=None, shape=None):
+    result = torch.empty_like(prototype, dtype=dtype)
+    if shape is not None:
+        result = result.reshape(shape)
+    return result
+
+
+def full(shape, fill_value, dtype=None):
+    if dtype is None:
+        dtype = fill_value.dtype
+    if not isinstance(shape, (tuple, list)):
+        shape = (shape,)
+    result = torch.full(shape, fill_value, dtype=dtype)
     return result
