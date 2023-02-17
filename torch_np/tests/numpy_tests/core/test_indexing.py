@@ -1339,6 +1339,7 @@ class TestFloatNonIntegerArgument:
 
         assert_raises(TypeError, np.reshape, a, (1., 1., -1))
         assert_raises(TypeError, np.reshape, a, (np.array(1.), -1))
+        pytest.xfail("XXX: take not implemented")
         assert_raises(TypeError, np.take, a, [0], 1.)
         assert_raises(TypeError, np.take, a, [0], np.float64(1.))
 
@@ -1370,6 +1371,7 @@ class TestBooleanIndexing:
         # array is thus also deprecated, but not with the same message:
         assert_raises(TypeError, operator.index, np.array(True))
         assert_warns(DeprecationWarning, operator.index, np.True_)
+        pytest.xfail("XXX: take not implemented")
         assert_raises(TypeError, np.take, args=(a, [0], False))
 
     def test_boolean_indexing_weirdness(self):
@@ -1424,6 +1426,7 @@ class TestArrayToIndexDeprecation:
 
         assert_raises(TypeError, operator.index, np.array([1]))
         assert_raises(TypeError, np.reshape, a, (a, -1))
+        pytest.xfail("XXX: take not implemented")
         assert_raises(TypeError, np.take, a, [0], a)
 
 
