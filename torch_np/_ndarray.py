@@ -149,7 +149,7 @@ class ndarray:
     # ctors
     def astype(self, dtype):
         newt = ndarray()
-        torch_dtype = _dtypes.torch_dtype_from(dtype)
+        torch_dtype = _dtypes.dtype(dtype).torch_dtype
         newt._tensor = self._tensor.to(torch_dtype)
         return newt
 
@@ -439,7 +439,7 @@ def array(obj, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=N
     # is a specific dtype requrested?
     torch_dtype = None
     if dtype is not None:
-        torch_dtype = _dtypes.torch_dtype_from(dtype)
+        torch_dtype = _dtypes.dtype(dtype).torch_dtype
         base = None
 
     tensor = _util._coerce_to_tensor(obj, torch_dtype, copy, ndmin)
