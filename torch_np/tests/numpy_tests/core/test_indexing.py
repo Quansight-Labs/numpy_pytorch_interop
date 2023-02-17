@@ -652,6 +652,12 @@ class TestIndexing:
         a = np.arange(25).reshape((5, 5))
         assert_equal(a[[0, 1]], np.array([a[0], a[1]]))
         assert_equal(a[[0, 1], [0, 1]], np.array([0, 6]))
+        pytest.xfail(
+            "torch happily consumes non-tuple sequences with multi-axis "
+            "indices (i.e. slices) as an index, whereas NumPy invalidates "
+            "them, assumedly to keep things simple. This invalidation "
+            "behaviour is just too niche to bother emulating."
+        )
         assert_raises(IndexError, a.__getitem__, [slice(None)])
 
 
