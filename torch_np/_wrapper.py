@@ -1190,6 +1190,22 @@ def array_equiv(a1, a2):
     return _impl.tensor_equal(a1_t, a2_t)
 
 
+def common_type():
+    raise NotImplementedError
+
+
+def mintypecode():
+    raise NotImplementedError
+
+
+def nan_to_num():
+    raise NotImplementedError
+
+
+def asfarray():
+    raise NotImplementedError
+
+
 ###### mapping from numpy API objects to wrappers from this module ######
 
 # All is in the mapping dict in _mapping.py
