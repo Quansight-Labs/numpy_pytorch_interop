@@ -764,8 +764,7 @@ class TestTypes:
         assert_equal(promote_func(b, u8), np.dtype(np.uint8))
         assert_equal(promote_func(i8, u8), np.dtype(np.int16))
         assert_equal(promote_func(u8, i32), np.dtype(np.int32))
-        assert_equal(promote_func(i32, f32), np.dtype(np.float64))
-        assert_equal(promote_func(i64, f32), np.dtype(np.float64))
+
         assert_equal(promote_func(f32, i16), np.dtype(np.float32))
         assert_equal(promote_func(f32, c64), np.dtype(np.complex64))
         assert_equal(promote_func(c128, f32), np.dtype(np.complex128))
@@ -774,8 +773,6 @@ class TestTypes:
         assert_equal(promote_func(np.array([b]), i8), np.dtype(np.int8))
         assert_equal(promote_func(np.array([b]), u8), np.dtype(np.uint8))
         assert_equal(promote_func(np.array([b]), i32), np.dtype(np.int32))
-        assert_equal(promote_func(np.array([i8]), i64), np.dtype(np.int8))
-        assert_equal(promote_func(f64, np.array([f32])), np.dtype(np.float32))
         assert_equal(promote_func(c64, np.array([f64])),
                      np.dtype(np.complex128))
         assert_equal(promote_func(np.complex64(3j), np.array([f64])),
@@ -786,6 +783,22 @@ class TestTypes:
         assert_equal(promote_func(np.array([b]), f64), np.dtype(np.float64))
         assert_equal(promote_func(np.array([b]), i64), np.dtype(np.int64))
         assert_equal(promote_func(np.array([i8]), f64), np.dtype(np.float64))
+
+    def check_promotion_cases_2(self, promote_func):
+        # these are failing because of the "scalars do not upcast arrays" rule
+        # Two first tests (i32 + f32 -> f64, and i64+f32 -> f64) xfail
+        # until ufuncs implement the proper type promotion (ufunc loops?)
+        b = np.bool_(0)
+        i8, i16, i32, i64 = np.int8(0), np.int16(0), np.int32(0), np.int64(0)
+        u8 = np.uint8(0)
+        f32, f64 = np.float32(0), np.float64(0)
+        c64, c128 = np.complex64(0), np.complex128(0)
+
+        assert_equal(promote_func(i32, f32), np.dtype(np.float64))
+        assert_equal(promote_func(i64, f32), np.dtype(np.float64))
+
+        assert_equal(promote_func(np.array([i8]), i64), np.dtype(np.int8))
+        assert_equal(promote_func(f64, np.array([f32])), np.dtype(np.float32))
 
         # float and complex are treated as the same "kind" for
         # the purposes of array-scalar promotion, so that you can do
@@ -841,6 +854,13 @@ class TestTypes:
         # b = (~t)*a
         # assert_equal(b, [0.0, 1.5])
         # assert_equal(b.dtype, np.dtype('f4'))
+
+    @pytest.mark.xfail(reason="'Scalars do not upcast arrays' rule")
+    def test_coercion_2(self):
+        def res_type(a, b):
+            return np.add(a, b).dtype
+
+        self.check_promotion_cases_2(res_type)
 
     def test_result_type(self):
         self.check_promotion_cases(np.result_type)

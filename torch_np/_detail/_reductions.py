@@ -203,6 +203,12 @@ def average(a_tensor, axis, w_tensor):
         result_dtype = torch.float64
         a_tensor = a_tensor.to(result_dtype)
 
+    result_dtype = _dtypes_impl.result_type_impl([a_tensor.dtype, w_tensor.dtype])
+    if a_tensor.dtype != result_dtype:
+        a_tensor = a_tensor.to(result_dtype)
+    if w_tensor.dtype != result_dtype:
+        w_tensor = w_tensor.to(result_dtype)
+
     # axis
     if axis is None:
         (a_tensor, w_tensor), axis = _util.axis_none_ravel(
