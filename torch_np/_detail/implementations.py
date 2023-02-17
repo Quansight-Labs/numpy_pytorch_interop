@@ -301,11 +301,7 @@ def vstack(tensors, *, dtype=None, casting="same_kind"):
 # #### cov & corrcoef
 
 
-def corrcoef(xy_tensor, rowvar=True, *, dtype=None):
-    if rowvar is False:
-        # xy_tensor is at least 2D, so using .T is safe
-        xy_tensor = x_tensor.T
-
+def corrcoef(xy_tensor, *, dtype=None):
     is_half = dtype == torch.float16
     if is_half:
         # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
