@@ -54,7 +54,7 @@ def tensor_iscomplex(x):
 def tensor_isreal(x):
     if torch.is_complex(x):
         return torch.as_tensor(x).imag == 0
-    result = torch.zeros_like(x, dtype=torch.bool)
+    result = torch.ones_like(x, dtype=torch.bool)
     if result.ndim == 0:
         result = result.item()
     return result
