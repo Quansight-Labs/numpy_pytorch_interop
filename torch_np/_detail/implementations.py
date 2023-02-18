@@ -64,7 +64,13 @@ def real_if_close(x, tol=100):
     # XXX: copies vs views; numpy seems to return a copy?
     if not torch.is_complex(x):
         return x
-    mask = torch.abs(x.imag) < tol * torch.finfo(x.dtype).eps
+    if tol > 1:
+        # Undocumented in numpy: if tol < 1, it's an absolute tolerance!
+        # Otherwise, tol > 1 is relative tolerance, in units of the dtype epsilon
+        # https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/type_check.py#L577
+        tol = tol * torch.finfo(x.dtype).eps
+
+    mask = torch.abs(x.imag) < tol
     if mask.all():
         return x.real
     else:
