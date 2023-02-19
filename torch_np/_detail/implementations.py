@@ -155,6 +155,8 @@ def split_helper_int(tensor, indices_or_sections, axis, strict=False):
     if not isinstance(indices_or_sections, int):
         raise NotImplementedError("split: indices_or_sections")
 
+    axis = _util.normalize_axis_index(axis, tensor.ndim)
+
     # numpy: l%n chunks of size (l//n + 1), the rest are sized l//n
     l, n = tensor.shape[axis], indices_or_sections
 
@@ -193,6 +195,26 @@ def split_helper_list(tensor, indices_or_sections, axis):
     lst += [0] * num_extra
 
     return torch.split(tensor, lst, axis)
+
+
+def hsplit(tensor, indices_or_sections):
+    if tensor.ndim == 0:
+        raise ValueError("hsplit only works on arrays of 1 or more dimensions")
+    axis = 1 if tensor.ndim > 1 else 0
+    return split_helper(tensor, indices_or_sections, axis, strict=True)
+
+
+def vsplit(tensor, indices_or_sections):
+    if tensor.ndim < 2:
+        raise ValueError("vsplit only works on arrays of 2 or more dimensions")
+    return split_helper(tensor, indices_or_sections, 0, strict=True)
+
+
+def dsplit(tensor, indices_or_sections):
+    if tensor.ndim < 3:
+        raise ValueError("dsplit only works on arrays of 3 or more dimensions")
+    return split_helper(tensor, indices_or_sections, 2, strict=True)
+
 
 
 def clip(tensor, t_min, t_max):
