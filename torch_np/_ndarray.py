@@ -385,6 +385,17 @@ class ndarray:
         value = asarray(value).get()
         return self._tensor.__setitem__(index, value)
 
+    ### sorting ###
+
+    def sort(self, axis=-1, kind=None, order=None):
+        result = _impl.sort(self.tensor, axis, kind, order)
+        self._tensor = result
+        return None
+
+    def argsort(self, axis=-1, kind=None, order=None):
+        result = _impl.argsort(self.tensor, axis, kind, order)
+        return asarray(result)
+
 
 # This is the ideally the only place which talks to ndarray directly.
 # The rest goes through asarray (preferred) or array.
