@@ -595,9 +595,9 @@ def flatnonzero(a):
 
 
 def argwhere(a):
-    arr = asarray(a)
-    tensor = arr.get()
-    return asarray(torch.argwhere(tensor))
+    tensor = asarray(a).get()
+    result = torch.argwhere(tensor)
+    return asarray(result)
 
 
 from ._decorators import emulate_out_arg
@@ -606,13 +606,10 @@ from ._ndarray import axis_keepdims_wrapper
 count_nonzero = emulate_out_arg(axis_keepdims_wrapper(_reductions.count_nonzero))
 
 
-@asarray_replacer()
 def roll(a, shift, axis=None):
-    if axis is not None:
-        axis = _util.normalize_axis_tuple(axis, a.ndim, allow_duplicate=True)
-        if not isinstance(shift, tuple):
-            shift = (shift,) * len(axis)
-    return a.roll(shift, axis)
+    tensor = asarray(a).get()
+    result = _impl.roll(tensor, shift, axis)
+    return asarray(result)
 
 
 def round_(a, decimals=0, out=None):

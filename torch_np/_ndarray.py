@@ -139,11 +139,7 @@ class ndarray:
         self._tensor.imag = asarray(value).get()
 
     def round(self, decimals=0, out=None):
-        tensor = self._tensor
-        if torch.is_floating_point(tensor):
-            result = torch.round(tensor, decimals=decimals)
-        else:
-            result = tensor
+        result = _impl.round(self._tensor, decimals)
         return _helpers.result_or_out(result, out)
 
     # ctors
@@ -328,32 +324,16 @@ class ndarray:
     ### methods to match namespace functions
 
     def squeeze(self, axis=None):
-        if axis == ():
-            tensor = self._tensor
-        elif axis is None:
-            tensor = self._tensor.squeeze()
-        else:
-            tensor = self._tensor.squeeze(axis)
-        return ndarray._from_tensor_and_base(tensor, self)
+        result = _impl.squeeze(self._tensor, axis)
+        return ndarray._from_tensor_and_base(result, self)
 
     def reshape(self, *shape, order="C"):
-        newshape = shape[0] if len(shape) == 1 else shape
-        # if sh = (1, 2, 3), numpy allows both .reshape(sh) and .reshape(*sh)
-        if order != "C":
-            raise NotImplementedError
-        tensor = self._tensor.reshape(newshape)
-        return ndarray._from_tensor_and_base(tensor, self)
+        result = _impl.reshape(self._tensor, *shape, order=order)
+        return ndarray._from_tensor_and_base(result, self)
 
     def transpose(self, *axes):
-        # numpy allows both .reshape(sh) and .reshape(*sh)
-        axes = axes[0] if len(axes) == 1 else axes
-        if axes == () or axes is None:
-            axes = tuple(range(self.ndim))[::-1]
-        try:
-            tensor = self._tensor.permute(axes)
-        except RuntimeError:
-            raise ValueError("axes don't match array")
-        return ndarray._from_tensor_and_base(tensor, self)
+        result = _impl.transpose(self._tensor, *axes)
+        return ndarray._from_tensor_and_base(result, self)
 
     def swapaxes(self, axis1, axis2):
         return asarray(_flips.swapaxes(self._tensor, axis1, axis2))

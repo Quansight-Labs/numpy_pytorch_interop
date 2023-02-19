@@ -216,7 +216,6 @@ def dsplit(tensor, indices_or_sections):
     return split_helper(tensor, indices_or_sections, 2, strict=True)
 
 
-
 def clip(tensor, t_min, t_max):
     if t_min is not None:
         t_min = torch.broadcast_to(t_min, tensor.shape)
@@ -487,4 +486,65 @@ def full(shape, fill_value, dtype=None):
     if not isinstance(shape, (tuple, list)):
         shape = (shape,)
     result = torch.full(shape, fill_value, dtype=dtype)
+    return result
+
+
+# ### shape manipulations ###
+
+
+def roll(tensor, shift, axis=None):
+    if axis is not None:
+        axis = _util.normalize_axis_tuple(axis, tensor.ndim, allow_duplicate=True)
+        if not isinstance(shift, tuple):
+            shift = (shift,) * len(axis)
+    result = tensor.roll(shift, axis)
+    return result
+
+
+def squeeze(tensor, axis=None):
+    if axis == ():
+        result = tensor
+    elif axis is None:
+        result = tensor.squeeze()
+    else:
+        result = tensor.squeeze(axis)
+    return result
+
+
+def reshape(tensor, *shape, order="C"):
+    if order != "C":
+        raise NotImplementedError
+    newshape = shape[0] if len(shape) == 1 else shape
+    # if sh = (1, 2, 3), numpy allows both .reshape(sh) and .reshape(*sh)
+    result = tensor.reshape(newshape)
+    return result
+
+
+def transpose(tensor, *axes):
+    # numpy allows both .reshape(sh) and .reshape(*sh)
+    axes = axes[0] if len(axes) == 1 else axes
+    if axes == () or axes is None:
+        axes = tuple(range(tensor.ndim))[::-1]
+    try:
+        result = tensor.permute(axes)
+    except RuntimeError:
+        raise ValueError("axes don't match array")
+    return result
+
+
+# ### Numeric ###
+
+
+def round(tensor, decimals=0):
+    if tensor.is_floating_point():
+        result = torch.round(tensor, decimals=decimals)
+    elif tensor.is_complex():
+        # RuntimeError: "round_cpu" not implemented for 'ComplexFloat'
+        result = (
+            torch.round(tensor.real, decimals=decimals)
+            + torch.round(tensor.imag, decimals=decimals) * 1j
+        )
+    else:
+        # RuntimeError: "round_cpu" not implemented for 'int'
+        result = tensor
     return result
