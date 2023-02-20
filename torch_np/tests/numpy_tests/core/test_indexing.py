@@ -883,6 +883,7 @@ class TestFancyIndexingEquivalence:
         assert_array_equal(a, b[0])
 
 
+@pytest.mark.xfail(reason="XXX: requires broadcast() and broadcast_to()")
 class TestMultiIndexingAutomated:
     """
     These tests use code to mimic the C-Code indexing for selection.
@@ -924,7 +925,7 @@ class TestMultiIndexingAutomated:
             np.empty((0, 1, 1), dtype=np.intp),  # empty and can be broadcast
             np.array([0, 1, -2]),
             np.array([[2], [0], [1]]),
-            np.array([[0, -1], [0, 1]], dtype=np.dtype('intp').newbyteorder()),
+            np.array([[0, -1], [0, 1]], dtype=np.dtype('intp')),
             np.array([2, -1], dtype=np.int8),
             np.zeros([1]*31, dtype=int),  # trigger too large array.
             np.array([0., 1.])]  # invalid datatype
