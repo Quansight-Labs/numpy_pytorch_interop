@@ -393,7 +393,7 @@ class TestIndexing:
         res[3] = -1
         assert_array_equal(a, res)
 
-    @pytest.mark.xfail(reason="XXX: wrapping view stuff is TBD")
+    @pytest.mark.skip(reason="torch does not support subclassing")
     def test_nonbaseclass_values(self):
         class SubClass(np.ndarray):
             def __array_finalize__(self, old):
@@ -415,7 +415,7 @@ class TestIndexing:
         a[...] = s
         assert_((a == 1).all())
 
-    @pytest.mark.xfail(reason="XXX: wrapping view stuff is TBD")
+    @pytest.mark.skip(reason="torch does not support subclassing")
     def test_array_like_values(self):
         # Similar to the above test, but use a memoryview instead
         a = np.zeros((5, 5))
@@ -510,7 +510,7 @@ class TestIndexing:
         if HAS_REFCOUNT:
             assert_equal(sys.getrefcount(np.dtype(np.intp)), refcount)
 
-    @pytest.mark.xfail(reason="XXX: wrapping view stuff is TBD")
+    @pytest.mark.skip(reason="torch does not support subclassing")
     def test_unaligned(self):
         v = (np.zeros(64, dtype=np.int8) + ord('a'))[1:-7]
         d = v.view(np.dtype("S8"))
@@ -624,7 +624,7 @@ class TestIndexing:
             arr[(index,) * num] = 1.
 
 
-    @pytest.mark.xfail(reason="XXX: wrapping view stuff is TBD")
+    @pytest.mark.skip(reason="torch does not support subclassing")
     @pytest.mark.skipif(IS_WASM, reason="no threading")
     def test_structured_advanced_indexing(self):
         # Test that copyswap(n) used by integer array indexing is threadsafe
@@ -743,7 +743,7 @@ class TestBroadcastedAssignments:
         assert_((a[::-1] == v).all())
 
 
-@pytest.mark.xfail(reason="XXX: wrapping view stuff is TBD")
+@pytest.mark.skip(reason="torch does not support subclassing")
 class TestSubclasses:
     def test_basic(self):
         # Test that indexing in various ways produces SubClass instances,
@@ -1225,7 +1225,7 @@ class TestMultiIndexingAutomated:
     def _compare_index_result(self, arr, index, mimic_get, no_copy):
         """Compare mimicked result to indexing result.
         """
-        pytest.xfail("XXX: wrapping view stuff is TBD")
+        pytest.skip("torch does not support subclassing")
         arr = arr.copy()
         indexed_arr = arr[index]
         assert_array_equal(indexed_arr, mimic_get)
