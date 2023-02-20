@@ -1467,6 +1467,12 @@ class TestMultipleEllipsisError:
     """An index can only have a single ellipsis.
 
     """
+    @pytest.mark.xfail(
+        reason=(
+            "torch currently consumes multiple ellipsis, no bother raising "
+            "here. See https://github.com/pytorch/pytorch/issues/59787#issue-917252204"
+        )
+    )
     def test_basic(self):
         a = np.arange(10)
         assert_raises(IndexError, lambda: a[..., ...])
