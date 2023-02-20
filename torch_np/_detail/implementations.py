@@ -552,10 +552,9 @@ def put_along_dim(tensor, t_indices, t_values, axis):
     (tensor,), axis = _util.axis_none_ravel(tensor, axis=axis)
     axis = _util.normalize_axis_index(axis, tensor.ndim)
 
-    result = tensor.clone()
     t_indices, t_values = torch.broadcast_tensors(t_indices, t_values)
-    t_values = _util.cast_if_needed(t_values, result.dtype)
-    result.scatter_(axis, t_indices, t_values)
+    t_values = _util.cast_if_needed(t_values, tensor.dtype)
+    result = torch.scatter(tensor, axis, t_indices, t_values)
     return result
 
 
@@ -565,7 +564,9 @@ def put_along_dim(tensor, t_indices, t_values, axis):
 def _sort_helper(tensor, axis, kind, order):
     if order is not None:
         # only relevant for structured dtypes; not supported
-        raise NotImplementedError
+        raise NotImplementedError(
+            "'order' keyword is only relevant for structured dtypes"
+        )
 
     (tensor,), axis = _util.axis_none_ravel(tensor, axis=axis)
     axis = _util.normalize_axis_index(axis, tensor.ndim)
@@ -577,11 +578,11 @@ def _sort_helper(tensor, axis, kind, order):
 
 def sort(tensor, axis=-1, kind=None, order=None):
     tensor, axis, stable = _sort_helper(tensor, axis, kind, order)
-    result = torch.sort(tensor, dim=axis, stable=stable, descending=False)
+    result = torch.sort(tensor, dim=axis, stable=stable)
     return result.values
 
 
 def argsort(tensor, axis=-1, kind=None, order=None):
     tensor, axis, stable = _sort_helper(tensor, axis, kind, order)
-    result = torch.argsort(tensor, dim=axis, stable=stable, descending=False)
+    result = torch.argsort(tensor, dim=axis, stable=stable)
     return result
