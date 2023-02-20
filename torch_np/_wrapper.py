@@ -223,6 +223,11 @@ def tile(A, reps):
     return asarray(result)
 
 
+def repeat(a, repeats, axis=None):
+    arr = asarray(a)
+    return arr.repeat(repeats, axis)
+
+
 def vander(x, N=None, increasing=False):
     x_tensor = asarray(x).get()
     result = torch.vander(x_tensor, N, increasing)

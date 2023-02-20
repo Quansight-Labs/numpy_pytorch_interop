@@ -708,10 +708,6 @@ def recfromtxt(fname, **kwargs):
     raise NotImplementedError
 
 
-def repeat(a, repeats, axis=None):
-    raise NotImplementedError
-
-
 def require(a, dtype=None, requirements=None, *, like=None):
     raise NotImplementedError
 

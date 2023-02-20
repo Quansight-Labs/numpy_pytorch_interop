@@ -398,13 +398,17 @@ class TestArgmax:
         ([True, False, True, False, False], 0),
     ]
 
-    @pytest.mark.skip(reason="XXX: need np.repeat + 0D array indexing (?)")
     @pytest.mark.parametrize("data", nan_arr)
     def test_combinations(self, data):
         arr, pos = data
         #      with suppress_warnings() as sup:
         #          sup.filter(RuntimeWarning,
         #                      "invalid value encountered in reduce")
+        if np.asarray(arr).dtype.kind in "cb":
+            pytest.xfail(
+                reason="'max_values_cpu' not implemented for 'ComplexDouble', 'Bool'"
+            )
+
         val = np.max(arr)
 
         assert_equal(np.argmax(arr), pos)  # , err_msg="%r" % arr)
@@ -500,13 +504,18 @@ class TestArgmin:
         ([False, True, False, True, True], 0),
     ]
 
-    @pytest.mark.skip(reason="XXX: np.repeat, 0D indexing (?)")
     @pytest.mark.parametrize("data", nan_arr)
     def test_combinations(self, data):
         arr, pos = data
-        with suppress_warnings() as sup:
-            sup.filter(RuntimeWarning, "invalid value encountered in reduce")
-            min_val = np.min(arr)
+
+        if np.asarray(arr).dtype.kind in "cb":
+            pytest.xfail(
+                reason="'min_values_cpu' not implemented for 'ComplexDouble', 'Bool'"
+            )
+
+        #        with suppress_warnings() as sup:
+        #            sup.filter(RuntimeWarning, "invalid value encountered in reduce")
+        min_val = np.min(arr)
 
         assert_equal(np.argmin(arr), pos, err_msg="%r" % arr)
         assert_equal(arr[np.argmin(arr)], min_val, err_msg="%r" % arr)

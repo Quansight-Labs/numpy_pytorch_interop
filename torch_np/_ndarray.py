@@ -352,6 +352,12 @@ class ndarray:
         result = _impl.clip(tensor, t_min, t_max)
         return _helpers.result_or_out(result, out)
 
+    def repeat(self, repeats, axis=None):
+        t_repeats = asarray(repeats).get()  # XXX: scalar repeats
+        tensor = self._tensor
+        result = torch.repeat_interleave(tensor, t_repeats, axis)
+        return asarray(result)
+
     argmin = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmin))
     argmax = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmax))
 
