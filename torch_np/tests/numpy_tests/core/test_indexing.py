@@ -92,7 +92,7 @@ class TestIndexing:
         # should still get the DeprecationWarning if step = 0.
         assert_raises(TypeError, lambda: a[::0.0])
 
-    @pytest.mark.xfail(reason="torch allows slicing with non-0d array components")
+    @pytest.mark.skip(reason="torch allows slicing with non-0d array components")
     def test_index_no_array_to_index(self):
         # No non-scalar arrays.
         a = np.array([[[1]]])
@@ -117,12 +117,12 @@ class TestIndexing:
         assert_equal(a[()], a)
         assert_(a[()].base is a)
         a = np.array(0)
-        pytest.xfail(
+        pytest.skip(
             "torch doesn't have scalar types with distinct instancing behaviours"
         )
         assert_(isinstance(a[()], np.int_))
 
-    @pytest.mark.xfail(reason="torch does not have an equivalent to np.void")
+    @pytest.mark.skip(reason="torch does not have an equivalent to np.void")
     def test_void_scalar_empty_tuple(self):
         s = np.zeros((), dtype='V4')
         assert_equal(s[()].dtype, s.dtype)
@@ -253,7 +253,7 @@ class TestIndexing:
         assert_raises((ValueError, RuntimeError), f, a, [1, 2, 3])
         assert_raises((ValueError, RuntimeError), f, a[:1], [1, 2, 3])
 
-    @pytest.mark.xfail(reason="torch does not support object dtype")
+    @pytest.mark.skip(reason="torch does not support object dtype")
     def test_boolean_assignment_needs_api(self):
         # See also gh-7666
         # This caused a segfault on Python 2 due to the GIL not being
@@ -335,7 +335,7 @@ class TestIndexing:
 
         assert_equal(a, b)
 
-    @pytest.mark.xfail(reason="torch does not limit dims to 32")
+    @pytest.mark.skip(reason="torch does not limit dims to 32")
     def test_too_many_fancy_indices_special_case(self):
         # Just documents behaviour, this is a small limitation.
         a = np.ones((1,) * 32)  # 32 is NPY_MAXDIMS
@@ -453,7 +453,7 @@ class TestIndexing:
         a = a.reshape(-1, 1)
         assert_(a[b, 0].flags.f_contiguous)
 
-    @pytest.mark.xfail(reason="torch has no type distinct from a 0-d array")
+    @pytest.mark.skip(reason="torch has no type distinct from a 0-d array")
     def test_scalar_return_type(self):
         # Full scalar indices should return scalars and object
         # arrays should not call PyArray_Return on their items
@@ -596,7 +596,7 @@ class TestIndexing:
         arr[slices] = 10
         assert_array_equal(arr, 10.)
 
-    @pytest.mark.xfail(reason="torch does not support character/string dtypes")
+    @pytest.mark.skip(reason="torch does not support character/string dtypes")
     def test_character_assignment(self):
         # This is an example a function going through CopyObject which
         # used to have an untested special path for scalars
@@ -615,8 +615,8 @@ class TestIndexing:
         # For `num=32` (and all boolean cases), the result is actually define;
         # but the use of NpyIter (NPY_MAXARGS) limits it for technical reasons.
         if not (isinstance(index, np.ndarray) and original_ndim < num):
-            # non-xfail cases fail because of assigning too many indices
-            pytest.xfail("torch does not limit dims to 32")
+            # unskipped cases fail because of assigning too many indices
+            pytest.skip("torch does not limit dims to 32")
         arr = np.ones((1,) * original_ndim)
         with pytest.raises(IndexError):
             arr[(index,) * num]
@@ -654,7 +654,7 @@ class TestIndexing:
         a = np.arange(25).reshape((5, 5))
         assert_equal(a[[0, 1]], np.array([a[0], a[1]]))
         assert_equal(a[[0, 1], [0, 1]], np.array([0, 6]))
-        pytest.xfail(
+        pytest.skip(
             "torch happily consumes non-tuple sequences with multi-axis "
             "indices (i.e. slices) as an index, whereas NumPy invalidates "
             "them, assumedly to keep things simple. This invalidation "
@@ -664,7 +664,7 @@ class TestIndexing:
 
 
 class TestFieldIndexing:
-    @pytest.mark.xfail(reason="torch has no type distinct from a 0-d array")
+    @pytest.mark.skip(reason="torch has no type distinct from a 0-d array")
     def test_scalar_return_type(self):
         # Field access on an array should return an array, even if it
         # is 0-d.
@@ -834,7 +834,7 @@ class TestFancyIndexingCast:
         assert_equal(zero_array[0, 1], 0)
 
 class TestFancyIndexingEquivalence:
-    @pytest.mark.xfail(reason="torch does not support object dtype")
+    @pytest.mark.skip(reason="torch does not support object dtype")
     def test_object_assign(self):
         # Check that the field and object special case using copyto is active.
         # The right hand side cannot be converted to an array here.
@@ -867,7 +867,7 @@ class TestFancyIndexingEquivalence:
         arr[[0], ...] = [[[1], [2], [3], [4]]]
         assert_array_equal(arr, cmp_arr)
 
-    @pytest.mark.xfail(reason="torch does not support character/string dtypes")
+    @pytest.mark.skip(reason="torch does not support character/string dtypes")
     def test_cast_equivalence(self):
         # Yes, normal slicing uses unsafe casting.
         a = np.arange(5)
@@ -1346,7 +1346,7 @@ class TestFloatNonIntegerArgument:
         assert_raises(TypeError, np.take, a, [0], 1.)
         assert_raises(TypeError, np.take, a, [0], np.float64(1.))
 
-    @pytest.mark.xfail(
+    @pytest.mark.skip(
         reason=(
             "torch doesn't have scalar types with distinct element-wise behaviours"
         )
@@ -1381,7 +1381,7 @@ class TestBooleanIndexing:
         pytest.xfail("XXX: take not implemented")
         assert_raises(TypeError, np.take, args=(a, [0], False))
 
-        pytest.xfail("torch consumes boolean tensors as ints, no bother raising here")
+        pytest.skip("torch consumes boolean tensors as ints, no bother raising here")
         assert_raises(TypeError, np.reshape, a, (np.bool_(True), -1))
         assert_raises(TypeError, operator.index, np.array(True))
 
@@ -1430,13 +1430,13 @@ class TestArrayToIndexDeprecation:
         pytest.xfail("XXX: take not implemented")
         assert_raises(TypeError, np.take, a, [0], a)
 
-        pytest.xfail(
+        pytest.skip(
             "Multi-dimensional tensors are indexable just as long as they only "
             "contain a single element, no bother raising here"
         )
         assert_raises(TypeError, operator.index, np.array([1]))
 
-        pytest.xfail("torch consumes tensors as ints, no bother raising here")
+        pytest.skip("torch consumes tensors as ints, no bother raising here")
         assert_raises(TypeError, np.reshape, a, (a, -1))
 
 
@@ -1447,7 +1447,7 @@ class TestNonIntegerArrayLike:
     an integer.
 
     """
-    @pytest.mark.xfail(
+    @pytest.mark.skip(
         reason=(
             "torch consumes floats by way of falling back on its deprecated "
             "__index__ behaviour, no bother raising here"
