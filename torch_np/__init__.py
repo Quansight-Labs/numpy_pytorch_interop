@@ -18,3 +18,6 @@ from math import pi  # isort: skip
 
 from numpy import s_  # isort: skip
 from numpy import index_exp  # isort: skip
+
+False_ = asarray(False, bool_)
+True_ = asarray(True, bool_)
