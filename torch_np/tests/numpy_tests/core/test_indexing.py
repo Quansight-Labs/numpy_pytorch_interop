@@ -1426,10 +1426,17 @@ class TestArrayToIndexDeprecation:
         # so no exception is expected. The raising is effectively tested above.
         a = np.array([[[1]]])
 
-        assert_raises(TypeError, operator.index, np.array([1]))
-        assert_raises(TypeError, np.reshape, a, (a, -1))
         pytest.xfail("XXX: take not implemented")
         assert_raises(TypeError, np.take, a, [0], a)
+
+        pytest.xfail(
+            "Multi-dimensional tensors are indexable just as long as they only "
+            "contain a single element, no bother raising here"
+        )
+        assert_raises(TypeError, operator.index, np.array([1]))
+
+        pytest.xfail("torch consumes tensors as ints, no bother raising here")
+        assert_raises(TypeError, np.reshape, a, (a, -1))
 
 
 class TestNonIntegerArrayLike:
