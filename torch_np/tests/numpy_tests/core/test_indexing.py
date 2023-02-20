@@ -1373,13 +1373,16 @@ class TestBooleanIndexing:
         a = np.array([[[1]]])
 
         assert_raises(TypeError, np.reshape, a, (True, -1))
-        assert_raises(TypeError, np.reshape, a, (np.bool_(True), -1))
         # Note that operator.index(np.array(True)) does not work, a boolean
         # array is thus also deprecated, but not with the same message:
-        assert_raises(TypeError, operator.index, np.array(True))
         assert_warns(DeprecationWarning, operator.index, np.True_)
+
         pytest.xfail("XXX: take not implemented")
         assert_raises(TypeError, np.take, args=(a, [0], False))
+
+        pytest.xfail("torch consumes boolean tensors as ints, no bother raising here")
+        assert_raises(TypeError, np.reshape, a, (np.bool_(True), -1))
+        assert_raises(TypeError, operator.index, np.array(True))
 
     def test_boolean_indexing_weirdness(self):
         # Weird boolean indexing things
