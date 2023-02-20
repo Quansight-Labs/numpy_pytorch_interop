@@ -129,17 +129,11 @@ class TestIndexing:
         assert_equal(s[()], s)
         assert_equal(type(s[...]), np.ndarray)
 
-    @pytest.mark.xfail(
-        reason=(
-            "torch does not support integer indexing int tensors with uints - "
-            "torch instead treats uint8 tensors as boolean masks (deprecated)"
-        )
-    )
     def test_same_kind_index_casting(self):
         # Indexes should be cast with same-kind and not safe, even if that
         # is somewhat unsafe. So test various different code paths.
         index = np.arange(5)
-        u_index = index.astype(np.uintp)  # i.e. cast to default uint indexing dtype
+        u_index = index.astype(np.uint8)  # i.e. cast to default uint indexing dtype
         arr = np.arange(10)
 
         assert_array_equal(arr[index], arr[u_index])
@@ -150,6 +144,7 @@ class TestIndexing:
         assert_array_equal(arr[index], arr[u_index])
 
         arr[u_index] = np.arange(5)[:,None]
+        pytest.xfail("XXX: repeat() not implemented")
         assert_array_equal(arr, np.arange(5)[:,None].repeat(2, axis=1))
 
         arr = np.arange(25).reshape(5, 5)
@@ -488,12 +483,6 @@ class TestIndexing:
         assert_(isinstance(a[z, np.array(0)], np.ndarray))
         assert_(isinstance(a[z, ArrayLike()], np.ndarray))
 
-    @pytest.mark.xfail(
-        reason=(
-            "torch does not support integer indexing int tensors with uints - "
-            "torch instead treats uint8 tensors as boolean masks (deprecated)"
-        )
-    )
     def test_small_regressions(self):
         # Reference count of intp for index checks
         a = np.array([0])
