@@ -161,23 +161,23 @@ class bool_(generic):
 
 
 # name aliases : FIXME (OS, bitness)
-intp = int64
-int_ = int64
-intc = int32
-
-byte = int8
-short = int16
-longlong = int64  # XXX: is this correct?
-
-ubyte = uint8
-
-half = float16
-single = float32
-double = float64
-float_ = float64
-
-csingle = complex64
-cdouble = complex128
+_name_aliases = {
+    "intp": int64,
+    "int_": int64,
+    "intc": int32,
+    "byte": int8,
+    "short": int16,
+    "longlong": int64,  # XXX: is this correct?
+    "ubyte": uint8,
+    "half": float16,
+    "single": float32,
+    "double": float64,
+    "float_": float64,
+    "csingle": complex64,
+    "cdouble": complex128,
+}
+for name, obj in _name_aliases.items():
+    globals()[name] = obj
 
 
 # Replicate this NumPy-defined way of grouping scalar types,
@@ -232,6 +232,8 @@ def sctype_from_string(s):
     """Normalize a string value: a type 'name' or a typecode or a width alias."""
     if s in _names:
         return _names[s]
+    if s in _name_aliases.keys():
+        return _name_aliases[s]
     if s in _typecodes:
         return _typecodes[s]
     if s in _aliases:
