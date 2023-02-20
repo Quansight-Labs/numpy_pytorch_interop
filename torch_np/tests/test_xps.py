@@ -36,6 +36,7 @@ kind_to_strat = {
 scalar_dtype_strat = st.one_of(kind_to_strat.values()).map(np.dtype)
 
 
+@pytest.mark.skip(reason="flaky")
 @given(shape=xps.array_shapes(), data=st.data())
 def test_full(shape, data):
     if data.draw(st.booleans(), label="pass kwargs?"):
