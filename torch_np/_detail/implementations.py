@@ -1,6 +1,7 @@
 import torch
 
 from . import _dtypes_impl, _util
+from .. import _helpers
 
 # ### equality, equivalence, allclose ###
 
@@ -504,7 +505,7 @@ def reshape(tensor, *shape, order="C"):
         raise NotImplementedError
     newshape = shape[0] if len(shape) == 1 else shape
     # if sh = (1, 2, 3), numpy allows both .reshape(sh) and .reshape(*sh)
-    result = tensor.reshape(newshape)
+    result = tensor.reshape(_helpers.ndarrays_to_tensors(newshape))
     return result
 
 
