@@ -132,7 +132,7 @@ class TestIndexing:
     @pytest.mark.xfail(
         reason=(
             "torch does not support integer indexing int tensors with uints - "
-            "uint8 tensor indexes are treated as boolean masks (deprecated)"
+            "torch instead treats uint8 tensors as boolean masks (deprecated)"
         )
     )
     def test_same_kind_index_casting(self):
@@ -491,7 +491,7 @@ class TestIndexing:
     @pytest.mark.xfail(
         reason=(
             "torch does not support integer indexing int tensors with uints - "
-            "uint8 tensor indexes are treated as boolean masks (deprecated)"
+            "torch instead treats uint8 tensors as boolean masks (deprecated)"
         )
     )
     def test_small_regressions(self):
