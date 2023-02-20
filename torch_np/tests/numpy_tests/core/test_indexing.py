@@ -1446,6 +1446,13 @@ class TestNonIntegerArrayLike:
     an integer.
 
     """
+    @pytest.mark.xfail(
+        reason=(
+            "torch consumes floats by way of falling back on its deprecated "
+            "__index__ behaviour, no bother raising here"
+        )
+    )
+    @pytest.mark.filterwarnings("ignore::DeprecationWarning")
     def test_basic(self):
         a = np.arange(10)
 
