@@ -237,9 +237,9 @@ class TestIndexing:
         def f(a, v):
             a[a > -1] = v
 
-        assert_raises((ValueError, RuntimeError), f, a, [])
-        assert_raises((ValueError, RuntimeError), f, a, [1, 2, 3])
-        assert_raises((ValueError, RuntimeError), f, a[:1], [1, 2, 3])
+        assert_raises((ValueError, TypeError), f, a, [])
+        assert_raises((ValueError, TypeError), f, a, [1, 2, 3])
+        assert_raises((ValueError, TypeError), f, a[:1], [1, 2, 3])
 
     def test_boolean_indexing_twodim(self):
         # Indexing a 2-dimensional array with
