@@ -122,13 +122,6 @@ class TestIndexing:
         )
         assert_(isinstance(a[()], np.int_))
 
-    @pytest.mark.skip(reason="torch does not have an equivalent to np.void")
-    def test_void_scalar_empty_tuple(self):
-        s = np.zeros((), dtype='V4')
-        assert_equal(s[()].dtype, s.dtype)
-        assert_equal(s[()], s)
-        assert_equal(type(s[...]), np.ndarray)
-
     def test_same_kind_index_casting(self):
         # Indexes should be cast with same-kind and not safe, even if that
         # is somewhat unsafe. So test various different code paths.
@@ -247,21 +240,6 @@ class TestIndexing:
         assert_raises((ValueError, RuntimeError), f, a, [])
         assert_raises((ValueError, RuntimeError), f, a, [1, 2, 3])
         assert_raises((ValueError, RuntimeError), f, a[:1], [1, 2, 3])
-
-    @pytest.mark.skip(reason="torch does not support object dtype")
-    def test_boolean_assignment_needs_api(self):
-        # See also gh-7666
-        # This caused a segfault on Python 2 due to the GIL not being
-        # held when the iterator does not need it, but the transfer function
-        # does
-        arr = np.zeros(1000)
-        indx = np.zeros(1000, dtype=bool)
-        indx[:100] = True
-        arr[indx] = np.ones(100, dtype=object)
-
-        expected = np.zeros(1000)
-        expected[:100] = 1
-        assert_array_equal(arr, expected)
 
     def test_boolean_indexing_twodim(self):
         # Indexing a 2-dimensional array with
@@ -388,43 +366,6 @@ class TestIndexing:
         res[3] = -1
         assert_array_equal(a, res)
 
-    @pytest.mark.skip(reason="torch does not support subclassing")
-    def test_nonbaseclass_values(self):
-        class SubClass(np.ndarray):
-            def __array_finalize__(self, old):
-                # Have array finalize do funny things
-                self.fill(99)
-
-        a = np.zeros((5, 5))
-        s = a.copy().view(type=SubClass)
-        s.fill(1)
-
-        a[[0, 1, 2, 3, 4], :] = s
-        assert_((a == 1).all())
-
-        # Subspace is last, so transposing might want to finalize
-        a[:, [0, 1, 2, 3, 4]] = s
-        assert_((a == 1).all())
-
-        a.fill(0)
-        a[...] = s
-        assert_((a == 1).all())
-
-    @pytest.mark.skip(reason="torch does not support subclassing")
-    def test_array_like_values(self):
-        # Similar to the above test, but use a memoryview instead
-        a = np.zeros((5, 5))
-        s = np.arange(25, dtype=np.float64).reshape(5, 5)
-
-        a[[0, 1, 2, 3, 4], :] = memoryview(s)
-        assert_array_equal(a, s)
-
-        a[:, [0, 1, 2, 3, 4]] = memoryview(s)
-        assert_array_equal(a, s)
-
-        a[...] = memoryview(s)
-        assert_array_equal(a, s)
-
     @pytest.mark.xfail(reason="XXX: recarray stuff is TBD")
     def test_subclass_writeable(self):
         d = np.rec.array([('NGC1001', 11), ('NGC1002', 1.), ('NGC1003', 1.)],
@@ -448,41 +389,6 @@ class TestIndexing:
         a = a.reshape(-1, 1)
         assert_(a[b, 0].flags.f_contiguous)
 
-    @pytest.mark.skip(reason="torch has no type distinct from a 0-d array")
-    def test_scalar_return_type(self):
-        # Full scalar indices should return scalars and object
-        # arrays should not call PyArray_Return on their items
-        class Zero:
-            # The most basic valid indexing
-            def __index__(self):
-                return 0
-
-        z = Zero()
-
-        class ArrayLike:
-            # Simple array, should behave like the array
-            def __array__(self):
-                return np.array(0)
-
-        a = np.zeros(())
-        assert_(isinstance(a[()], np.float_))
-        a = np.zeros(1)
-        assert_(isinstance(a[z], np.float_))
-        a = np.zeros((1, 1))
-        assert_(isinstance(a[z, np.array(0)], np.float_))
-        assert_(isinstance(a[z, ArrayLike()], np.float_))
-
-        # And object arrays do not call it too often:
-        b = np.array(0)
-        a = np.array(0, dtype=object)
-        a[()] = b
-        assert_(isinstance(a[()], np.ndarray))
-        a = np.array([b, None])
-        assert_(isinstance(a[z], np.ndarray))
-        a = np.array([[b, None]])
-        assert_(isinstance(a[z, np.array(0)], np.ndarray))
-        assert_(isinstance(a[z, ArrayLike()], np.ndarray))
-
     def test_small_regressions(self):
         # Reference count of intp for index checks
         a = np.array([0])
@@ -498,29 +404,6 @@ class TestIndexing:
 
         if HAS_REFCOUNT:
             assert_equal(sys.getrefcount(np.dtype(np.intp)), refcount)
-
-    @pytest.mark.skip(reason="torch does not support subclassing")
-    def test_unaligned(self):
-        v = (np.zeros(64, dtype=np.int8) + ord('a'))[1:-7]
-        d = v.view(np.dtype("S8"))
-        # unaligned source
-        x = (np.zeros(16, dtype=np.int8) + ord('a'))[1:-7]
-        x = x.view(np.dtype("S8"))
-        x[...] = np.array("b" * 8, dtype="S")
-        b = np.arange(d.size)
-        #trivial
-        assert_equal(d[b], d)
-        d[b] = x
-        # nontrivial
-        # unaligned index array
-        b = np.zeros(d.size + 1).view(np.int8)[1:-(np.intp(0).itemsize - 1)]
-        b = b.view(np.intp)[:d.size]
-        b[...] = np.arange(d.size)
-        assert_equal(d[b.astype(np.int16)], d)
-        d[b.astype(np.int16)] = x
-        # boolean
-        d[b % 2 == 0]
-        d[b % 2 == 0] = x[::2]
 
     def test_tuple_subclass(self):
         arr = np.ones((5, 5))
@@ -585,16 +468,6 @@ class TestIndexing:
         arr[slices] = 10
         assert_array_equal(arr, 10.)
 
-    @pytest.mark.skip(reason="torch does not support character/string dtypes")
-    def test_character_assignment(self):
-        # This is an example a function going through CopyObject which
-        # used to have an untested special path for scalars
-        # (the character special dtype case, should be deprecated probably)
-        arr = np.zeros((1, 5), dtype="c")
-        arr[0] = np.str_("asdfg")  # must assign as a sequence
-        assert_array_equal(arr[0], np.array("asdfg", dtype="c"))
-        assert arr[0, 1] == b"s"  # make sure not all were set to "a" for both
-
     @pytest.mark.parametrize("index",
             [True, False, np.array([0])])
     @pytest.mark.parametrize("num", [32, 40])
@@ -613,32 +486,6 @@ class TestIndexing:
             arr[(index,) * num] = 1.
 
 
-    @pytest.mark.skip(reason="torch does not support subclassing")
-    @pytest.mark.skipif(IS_WASM, reason="no threading")
-    def test_structured_advanced_indexing(self):
-        # Test that copyswap(n) used by integer array indexing is threadsafe
-        # for structured datatypes, see gh-15387. This test can behave randomly.
-        from concurrent.futures import ThreadPoolExecutor
-
-        # Create a deeply nested dtype to make a failure more likely:
-        dt = np.dtype([("", "f8")])
-        dt = np.dtype([("", dt)] * 2)
-        dt = np.dtype([("", dt)] * 2)
-        # The array should be large enough to likely run into threading issues
-        arr = np.random.uniform(size=(6000, 8)).view(dt)[:, 0]
-
-        rng = np.random.default_rng()
-        def func(arr):
-            indx = rng.integers(0, len(arr), size=6000, dtype=np.intp)
-            arr[indx]
-
-        tpe = ThreadPoolExecutor(max_workers=8)
-        futures = [tpe.submit(func, arr) for _ in range(10)]
-        for f in futures:
-            f.result()
-
-        assert arr.dtype is dt
-
     def test_nontuple_ndindex(self):
         a = np.arange(25).reshape((5, 5))
         assert_equal(a[[0, 1]], np.array([a[0], a[1]]))
@@ -650,16 +497,6 @@ class TestIndexing:
             "behaviour is just too niche to bother emulating."
         )
         assert_raises(IndexError, a.__getitem__, [slice(None)])
-
-
-class TestFieldIndexing:
-    @pytest.mark.skip(reason="torch has no type distinct from a 0-d array")
-    def test_scalar_return_type(self):
-        # Field access on an array should return an array, even if it
-        # is 0-d.
-        a = np.zeros((), [('a','f8')])
-        assert_(isinstance(a['a'], np.ndarray))
-        assert_(isinstance(a[['a']], np.ndarray))
 
 
 class TestBroadcastedAssignments:
@@ -732,71 +569,6 @@ class TestBroadcastedAssignments:
         assert_((a[::-1] == v).all())
 
 
-@pytest.mark.skip(reason="torch does not support subclassing")
-class TestSubclasses:
-    def test_basic(self):
-        # Test that indexing in various ways produces SubClass instances,
-        # and that the base is set up correctly: the original subclass
-        # instance for views, and a new ndarray for advanced/boolean indexing
-        # where a copy was made (latter a regression test for gh-11983).
-        class SubClass(np.ndarray):
-            pass
-
-        a = np.arange(5)
-        s = a.view(SubClass)
-        s_slice = s[:3]
-        assert_(type(s_slice) is SubClass)
-        assert_(s_slice.base is s)
-        assert_array_equal(s_slice, a[:3])
-
-        s_fancy = s[[0, 1, 2]]
-        assert_(type(s_fancy) is SubClass)
-        assert_(s_fancy.base is not s)
-        assert_(type(s_fancy.base) is np.ndarray)
-        assert_array_equal(s_fancy, a[[0, 1, 2]])
-        assert_array_equal(s_fancy.base, a[[0, 1, 2]])
-
-        s_bool = s[s > 0]
-        assert_(type(s_bool) is SubClass)
-        assert_(s_bool.base is not s)
-        assert_(type(s_bool.base) is np.ndarray)
-        assert_array_equal(s_bool, a[a > 0])
-        assert_array_equal(s_bool.base, a[a > 0])
-
-    def test_fancy_on_read_only(self):
-        # Test that fancy indexing on read-only SubClass does not make a
-        # read-only copy (gh-14132)
-        class SubClass(np.ndarray):
-            pass
-
-        a = np.arange(5)
-        s = a.view(SubClass)
-        s.flags.writeable = False
-        s_fancy = s[[0, 1, 2]]
-        assert_(s_fancy.flags.writeable)
-
-
-    def test_finalize_gets_full_info(self):
-        # Array finalize should be called on the filled array.
-        class SubClass(np.ndarray):
-            def __array_finalize__(self, old):
-                self.finalize_status = np.array(self)
-                self.old = old
-
-        s = np.arange(10).view(SubClass)
-        new_s = s[:3]
-        assert_array_equal(new_s.finalize_status, new_s)
-        assert_array_equal(new_s.old, s)
-
-        new_s = s[[0,1,2,3]]
-        assert_array_equal(new_s.finalize_status, new_s)
-        assert_array_equal(new_s.old, s)
-
-        new_s = s[s > 0]
-        assert_array_equal(new_s.finalize_status, new_s)
-        assert_array_equal(new_s.old, s)
-
-
 class TestFancyIndexingCast:
     @pytest.mark.xfail(
         reason="XXX: low-prio to support assigning complex values on floating arrays"
@@ -821,56 +593,6 @@ class TestFancyIndexingCast:
         assert_warns(np.ComplexWarning,
                      zero_array.__setitem__, bool_index, np.array([1j]))
         assert_equal(zero_array[0, 1], 0)
-
-class TestFancyIndexingEquivalence:
-    @pytest.mark.skip(reason="torch does not support object dtype")
-    def test_object_assign(self):
-        # Check that the field and object special case using copyto is active.
-        # The right hand side cannot be converted to an array here.
-        a = np.arange(5, dtype=object)
-        b = a.copy()
-        a[:3] = [1, (1,2), 3]
-        b[[0, 1, 2]] = [1, (1,2), 3]
-        assert_array_equal(a, b)
-
-        # test same for subspace fancy indexing
-        b = np.arange(5, dtype=object)[None, :]
-        b[[0], :3] = [[1, (1,2), 3]]
-        assert_array_equal(a, b[0])
-
-        # Check that swapping of axes works.
-        # There was a bug that made the later assignment throw a ValueError
-        # do to an incorrectly transposed temporary right hand side (gh-5714)
-        b = b.T
-        b[:3, [0]] = [[1], [(1,2)], [3]]
-        assert_array_equal(a, b[:, 0])
-
-        # Another test for the memory order of the subspace
-        arr = np.ones((3, 4, 5), dtype=object)
-        # Equivalent slicing assignment for comparison
-        cmp_arr = arr.copy()
-        cmp_arr[:1, ...] = [[[1], [2], [3], [4]]]
-        arr[[0], ...] = [[[1], [2], [3], [4]]]
-        assert_array_equal(arr, cmp_arr)
-        arr = arr.copy('F')
-        arr[[0], ...] = [[[1], [2], [3], [4]]]
-        assert_array_equal(arr, cmp_arr)
-
-    @pytest.mark.skip(reason="torch does not support character/string dtypes")
-    def test_cast_equivalence(self):
-        # Yes, normal slicing uses unsafe casting.
-        a = np.arange(5)
-        b = a.copy()
-
-        a[:3] = np.array(['2', '-3', '-1'])
-        b[[0, 2, 1]] = np.array(['2', '-1', '-3'])
-        assert_array_equal(a, b)
-
-        # test the same for subspace fancy indexing
-        b = np.arange(5)[None, :]
-        b[[0], :3] = np.array([['2', '-3', '-1']])
-        assert_array_equal(a, b[0])
-
 
 @pytest.mark.xfail(reason="XXX: requires broadcast() and broadcast_to()")
 class TestMultiIndexingAutomated:
@@ -1468,44 +1190,3 @@ class TestMultipleEllipsisError:
         assert_raises(IndexError, lambda: a[..., ...])
         assert_raises(IndexError, a.__getitem__, ((Ellipsis,) * 2,))
         assert_raises(IndexError, a.__getitem__, ((Ellipsis,) * 3,))
-
-
-class TestCApiAccess:
-    @pytest.mark.skip("no array_indexing() function")
-    def test_getitem(self):
-        subscript = functools.partial(array_indexing, 0)
-
-        # 0-d arrays don't work:
-        assert_raises(IndexError, subscript, np.ones(()), 0)
-        # Out of bound values:
-        assert_raises(IndexError, subscript, np.ones(10), 11)
-        assert_raises(IndexError, subscript, np.ones(10), -11)
-        assert_raises(IndexError, subscript, np.ones((10, 10)), 11)
-        assert_raises(IndexError, subscript, np.ones((10, 10)), -11)
-
-        a = np.arange(10)
-        assert_array_equal(a[4], subscript(a, 4))
-        a = a.reshape(5, 2)
-        assert_array_equal(a[-4], subscript(a, -4))
-
-    @pytest.mark.skip("no array_indexing() function")
-    def test_setitem(self):
-        assign = functools.partial(array_indexing, 1)
-
-        # Deletion is impossible:
-        assert_raises(ValueError, assign, np.ones(10), 0)
-        # 0-d arrays don't work:
-        assert_raises(IndexError, assign, np.ones(()), 0, 0)
-        # Out of bound values:
-        assert_raises(IndexError, assign, np.ones(10), 11, 0)
-        assert_raises(IndexError, assign, np.ones(10), -11, 0)
-        assert_raises(IndexError, assign, np.ones((10, 10)), 11, 0)
-        assert_raises(IndexError, assign, np.ones((10, 10)), -11, 0)
-
-        a = np.arange(10)
-        assign(a, 4, 10)
-        assert_(a[4] == 10)
-
-        a = a.reshape(5, 2)
-        assign(a, 4, 10)
-        assert_array_equal(a[-1], [10, 10])
