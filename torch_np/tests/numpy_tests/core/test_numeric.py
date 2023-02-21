@@ -163,7 +163,6 @@ class TestNonarrayArgs:
         tgt = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         assert_equal(np.ravel(a), tgt)
 
-    @pytest.mark.xfail(reason="TODO implement repeat(...)")
     def test_repeat(self):
         a = [1, 2, 3]
         tgt = [1, 1, 2, 2, 3, 3]

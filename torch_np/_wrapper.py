@@ -223,6 +223,11 @@ def tile(A, reps):
     return asarray(result)
 
 
+def repeat(a, repeats, axis=None):
+    arr = asarray(a)
+    return arr.repeat(repeats, axis)
+
+
 def vander(x, N=None, increasing=False):
     x_tensor = asarray(x).get()
     result = torch.vander(x_tensor, N, increasing)
@@ -929,12 +934,6 @@ def diff(a, n=1, axis=-1, prepend=NoValue, append=NoValue):
     return asarray(result)
 
 
-@asarray_replacer()
-def argsort(a, axis=-1, kind=None, order=None):
-    result = _impl.argsort(a, axis, kind, order)
-    return result
-
-
 ##### math functions
 
 
@@ -1049,6 +1048,37 @@ def nan_to_num():
 
 def asfarray():
     raise NotImplementedError
+
+
+# ### put/take_along_axis ###
+
+
+def take_along_axis(arr, indices, axis):
+    tensor, t_indices = _helpers.to_tensors(arr, indices)
+    result = _impl.take_along_dim(tensor, t_indices, axis)
+    return asarray(result)
+
+
+def put_along_axis(arr, indices, values, axis):
+    tensor, t_indices, t_values = _helpers.to_tensors(arr, indices, values)
+    # modify the argument in-place
+    arr._tensor = _impl.put_along_dim(tensor, t_indices, t_values, axis)
+    return None
+
+
+# ### sort and partition ###
+
+
+def sort(a, axis=-1, kind=None, order=None):
+    tensor = asarray(a).get()
+    result = _impl.sort(tensor, axis, kind, order)
+    return asarray(result)
+
+
+def argsort(a, axis=-1, kind=None, order=None):
+    tensor = asarray(a).get()
+    result = _impl.argsort(tensor, axis, kind, order)
+    return asarray(result)
 
 
 ###### mapping from numpy API objects to wrappers from this module ######

@@ -352,6 +352,12 @@ class ndarray:
         result = _impl.clip(tensor, t_min, t_max)
         return _helpers.result_or_out(result, out)
 
+    def repeat(self, repeats, axis=None):
+        t_repeats = asarray(repeats).get()  # XXX: scalar repeats
+        tensor = self._tensor
+        result = torch.repeat_interleave(tensor, t_repeats, axis)
+        return asarray(result)
+
     argmin = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmin))
     argmax = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmax))
 
@@ -384,6 +390,17 @@ class ndarray:
     def __setitem__(self, index, value):
         value = asarray(value).get()
         return self._tensor.__setitem__(index, value)
+
+    ### sorting ###
+
+    def sort(self, axis=-1, kind=None, order=None):
+        result = _impl.sort(self.tensor, axis, kind, order)
+        self._tensor = result
+        return None
+
+    def argsort(self, axis=-1, kind=None, order=None):
+        result = _impl.argsort(self.tensor, axis, kind, order)
+        return asarray(result)
 
 
 # This is the ideally the only place which talks to ndarray directly.

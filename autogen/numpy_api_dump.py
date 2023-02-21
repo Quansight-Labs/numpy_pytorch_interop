@@ -82,10 +82,6 @@ def argpartition(a, kth, axis=-1, kind="introselect", order=None):
     raise NotImplementedError
 
 
-def argsort(a, axis=-1, kind=None, order=None):
-    raise NotImplementedError
-
-
 def array2string(
     a,
     max_line_width=None,
@@ -696,10 +692,6 @@ def put(a, ind, v, mode="raise"):
     raise NotImplementedError
 
 
-def put_along_axis(arr, indices, values, axis):
-    raise NotImplementedError
-
-
 def putmask(a, mask, values):
     raise NotImplementedError
 
@@ -713,10 +705,6 @@ def recfromcsv(fname, **kwargs):
 
 
 def recfromtxt(fname, **kwargs):
-    raise NotImplementedError
-
-
-def repeat(a, repeats, axis=None):
     raise NotImplementedError
 
 
@@ -831,10 +819,6 @@ def sometrue(*args, **kwargs):
     raise NotImplementedError
 
 
-def sort(a, axis=-1, kind=None, order=None):
-    raise NotImplementedError
-
-
 def sort_complex(a):
     raise NotImplementedError
 
@@ -844,10 +828,6 @@ def swapaxes(a, axis1, axis2):
 
 
 def take(a, indices, axis=None, out=None, mode="raise"):
-    raise NotImplementedError
-
-
-def take_along_axis(arr, indices, axis):
     raise NotImplementedError
 
 
