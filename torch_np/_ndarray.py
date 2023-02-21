@@ -398,7 +398,7 @@ class ndarray:
     def __setitem__(self, index, value):
         index = _helpers.ndarrays_to_tensors(index)
         index = ndarray._upcast_int_indices(index)
-        value = asarray(value).get()
+        value = _helpers.ndarrays_to_tensors(value)
         return self._tensor.__setitem__(index, value)
 
     ### sorting ###
