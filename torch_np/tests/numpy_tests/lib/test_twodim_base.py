@@ -365,7 +365,6 @@ def test_mask_indices():
     assert_array_equal(a[iu1], array([1, 2, 5]))
 
 
-@pytest.mark.xfail(reason="TODO: fancy indexing")
 def test_tril_indices():
     # indices without and with offset
     il1 = tril_indices(4)
@@ -413,7 +412,6 @@ def test_tril_indices():
                               [-10, -10, -10, -10, -10]]))
 
 
-@pytest.mark.xfail(reason="TODO: fancy indexing")
 class TestTriuIndices:
     def test_triu_indices(self):
         iu1 = triu_indices(4)
