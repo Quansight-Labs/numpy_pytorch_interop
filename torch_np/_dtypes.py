@@ -254,10 +254,6 @@ def dtype(arg):
     return DType(arg)
 
 
-def torch_dtype_from(dtype_arg):
-    return dtype(dtype_arg).torch_dtype
-
-
 class DType:
     def __init__(self, arg):
         # a pytorch object?

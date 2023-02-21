@@ -12,6 +12,7 @@ from ._decorators import (
     emulate_out_arg,
 )
 from ._detail import _dtypes_impl, _flips, _reductions, _util
+from ._detail import implementations as _impl
 
 newaxis = None
 
@@ -138,17 +139,13 @@ class ndarray:
         self._tensor.imag = asarray(value).get()
 
     def round(self, decimals=0, out=None):
-        tensor = self._tensor
-        if torch.is_floating_point(tensor):
-            result = torch.round(tensor, decimals=decimals)
-        else:
-            result = tensor
+        result = _impl.round(self._tensor, decimals)
         return _helpers.result_or_out(result, out)
 
     # ctors
     def astype(self, dtype):
         newt = ndarray()
-        torch_dtype = _dtypes.torch_dtype_from(dtype)
+        torch_dtype = _dtypes.dtype(dtype).torch_dtype
         newt._tensor = self._tensor.to(torch_dtype)
         return newt
 
@@ -327,32 +324,16 @@ class ndarray:
     ### methods to match namespace functions
 
     def squeeze(self, axis=None):
-        if axis == ():
-            tensor = self._tensor
-        elif axis is None:
-            tensor = self._tensor.squeeze()
-        else:
-            tensor = self._tensor.squeeze(axis)
-        return ndarray._from_tensor_and_base(tensor, self)
+        result = _impl.squeeze(self._tensor, axis)
+        return ndarray._from_tensor_and_base(result, self)
 
     def reshape(self, *shape, order="C"):
-        newshape = shape[0] if len(shape) == 1 else shape
-        # if sh = (1, 2, 3), numpy allows both .reshape(sh) and .reshape(*sh)
-        if order != "C":
-            raise NotImplementedError
-        tensor = self._tensor.reshape(newshape)
-        return ndarray._from_tensor_and_base(tensor, self)
+        result = _impl.reshape(self._tensor, *shape, order=order)
+        return ndarray._from_tensor_and_base(result, self)
 
     def transpose(self, *axes):
-        # numpy allows both .reshape(sh) and .reshape(*sh)
-        axes = axes[0] if len(axes) == 1 else axes
-        if axes == () or axes is None:
-            axes = tuple(range(self.ndim))[::-1]
-        try:
-            tensor = self._tensor.permute(axes)
-        except RuntimeError:
-            raise ValueError("axes don't match array")
-        return ndarray._from_tensor_and_base(tensor, self)
+        result = _impl.transpose(self._tensor, *axes)
+        return ndarray._from_tensor_and_base(result, self)
 
     def swapaxes(self, axis1, axis2):
         return asarray(_flips.swapaxes(self._tensor, axis1, axis2))
@@ -367,24 +348,8 @@ class ndarray:
         return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
 
     def clip(self, min, max, out=None):
-        tensor = self._tensor
-        a_min, a_max = min, max
-
-        t_min = None
-        if a_min is not None:
-            t_min = asarray(a_min).get()
-            t_min = torch.broadcast_to(t_min, tensor.shape)
-
-        t_max = None
-        if a_max is not None:
-            t_max = asarray(a_max).get()
-            t_max = torch.broadcast_to(t_max, tensor.shape)
-
-        if t_min is None and t_max is None:
-            raise ValueError("One of max or min must be given")
-
-        result = tensor.clamp(t_min, t_max)
-
+        tensor, t_min, t_max = _helpers.to_tensors_or_none(self, min, max)
+        result = _impl.clip(tensor, t_min, t_max)
         return _helpers.result_or_out(result, out)
 
     argmin = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmin))
@@ -454,7 +419,7 @@ def array(obj, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=N
     # is a specific dtype requrested?
     torch_dtype = None
     if dtype is not None:
-        torch_dtype = _dtypes.torch_dtype_from(dtype)
+        torch_dtype = _dtypes.dtype(dtype).torch_dtype
         base = None
 
     tensor = _util._coerce_to_tensor(obj, torch_dtype, copy, ndmin)

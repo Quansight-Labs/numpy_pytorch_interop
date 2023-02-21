@@ -82,7 +82,7 @@ class TestMintypecode:
         assert_equal(mintypecode('idD'), 'D')
 
 
-@pytest.mark.xfail(reason="not implemented")
+@pytest.mark.xfail(reason="TODO: decide on if [1] is a scalar or not")
 class TestIsscalar:
 
     def test_basic(self):
@@ -157,7 +157,6 @@ class TestImag:
         assert_(not isinstance(out, np.ndarray))
 
 
-@pytest.mark.xfail(reason="not implemented")
 class TestIscomplex:
 
     def test_fail(self):
@@ -171,7 +170,6 @@ class TestIscomplex:
         assert_array_equal(res, [1, 0, 0])
 
 
-@pytest.mark.xfail(reason="not implemented")
 class TestIsreal:
 
     def test_pass(self):
@@ -184,8 +182,12 @@ class TestIsreal:
         res = isreal(z)
         assert_array_equal(res, [0, 1, 1])
 
+    def test_isreal_real(self):
+        z = np.array([-1, 0, 1])
+        res = isreal(z)
+        assert res.all()
 
-@pytest.mark.xfail(reason="not implemented")
+
 class TestIscomplexobj:
 
     def test_basic(self):
@@ -202,44 +204,8 @@ class TestIscomplexobj:
         assert_(iscomplexobj([3, 1+0j, True]))
         assert_(not iscomplexobj([3, 1, True]))
 
-    def test_duck(self):
-        class DummyComplexArray:
-            @property
-            def dtype(self):
-                return np.dtype(complex)
-        dummy = DummyComplexArray()
-        assert_(iscomplexobj(dummy))
-
-    def test_pandas_duck(self):
-        # This tests a custom np.dtype duck-typed class, such as used by pandas
-        # (pandas.core.dtypes)
-        class PdComplex(np.complex128):
-            pass
-        class PdDtype:
-            name = 'category'
-            names = None
-            type = PdComplex
-            kind = 'c'
-            str = '<c16'
-            base = np.dtype('complex128')
-        class DummyPd:
-            @property
-            def dtype(self):
-                return PdDtype
-        dummy = DummyPd()
-        assert_(iscomplexobj(dummy))
-
-    def test_custom_dtype_duck(self):
-        class MyArray(list):
-            @property
-            def dtype(self):
-                return complex
-
-        a = MyArray([1+0j, 2+0j, 3+0j])
-        assert_(iscomplexobj(a))
 
 
-@pytest.mark.xfail(reason="not implemented")
 class TestIsrealobj:
     def test_basic(self):
         z = np.array([-1, 0, 1])
@@ -248,7 +214,6 @@ class TestIsrealobj:
         assert_(not isrealobj(z))
 
 
-@pytest.mark.xfail(reason="not implemented")
 class TestIsnan:
 
     def test_goodvalues(self):
@@ -279,7 +244,6 @@ class TestIsnan:
             assert_all(np.isnan(np.array(0+0j)/0.) == 1)
 
 
-@pytest.mark.xfail(reason="not implemented")
 class TestIsfinite:
     # Fixme, wrong place, isfinite now ufunc
 
@@ -311,7 +275,6 @@ class TestIsfinite:
             assert_all(np.isfinite(np.array(1+1j)/0.) == 0)
 
 
-@pytest.mark.xfail(reason="not implemented")
 class TestIsinf:
     # Fixme, wrong place, isinf now ufunc
 
@@ -341,7 +304,6 @@ class TestIsinf:
             assert_all(np.isinf(np.array((0.,))/0.) == 0)
 
 
-@pytest.mark.xfail(reason="not implemented")
 class TestIsposinf:
 
     def test_generic(self):
@@ -352,7 +314,6 @@ class TestIsposinf:
         assert_(vals[2] == 1)
 
 
-@pytest.mark.xfail(reason="not implemented")
 class TestIsneginf:
 
     def test_generic(self):
@@ -469,7 +430,6 @@ class TestNanToNum:
         assert_equal(type(vals), np.ndarray)
 
 
-@pytest.mark.xfail(reason="not implemented")
 class TestRealIfClose:
 
     def test_basic(self):

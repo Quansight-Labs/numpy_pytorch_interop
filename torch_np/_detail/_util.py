@@ -34,6 +34,13 @@ class UFuncTypeError(TypeError, RuntimeError):
     pass
 
 
+def cast_if_needed(tensor, dtype):
+    # NB: no casting if dtype=None
+    if tensor.dtype != dtype:
+        tensor = tensor.to(dtype)
+    return tensor
+
+
 # a replica of the version in ./numpy/numpy/core/src/multiarray/common.h
 def normalize_axis_index(ax, ndim, argname=None):
     if not (-ndim <= ax < ndim):
@@ -156,10 +163,7 @@ def cast_dont_broadcast(tensors, target_dtype, casting):
                 f"Cannot cast array data from {tensor.dtype} to"
                 f" {target_dtype} according to the rule '{casting}'"
             )
-
-        # cast if needed
-        if tensor.dtype != target_dtype:
-            tensor = tensor.to(target_dtype)
+        tensor = cast_if_needed(tensor, target_dtype)
         cast_tensors.append(tensor)
 
     return tuple(cast_tensors)
@@ -200,8 +204,7 @@ def cast_and_broadcast(tensors, out_param, casting):
             )
 
         # cast arr if needed
-        if tensor.dtype != target_dtype:
-            tensor = tensor.to(target_dtype)
+        tensor = cast_if_needed(tensor, target_dtype)
 
         # `out` broadcasts `tensor`
         if tensor.shape != target_shape:
@@ -285,8 +288,7 @@ def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
         tensor = torch.as_tensor(obj, dtype=torch_dtype)
 
     # type cast if requested
-    if dtype is not None:
-        tensor = tensor.to(dtype)
+    tensor = cast_if_needed(tensor, dtype)
 
     # adjust ndim if needed
     ndim_extra = ndmin - tensor.ndim
