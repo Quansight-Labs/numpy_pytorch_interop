@@ -452,7 +452,6 @@ class TestBoolArray:
         assert_array_equal(self.im ^ False, self.im)
 
 
-@pytest.mark.xfail(reason="TODO: needs fancy indexing")
 class TestBoolCmp:
     def setup_method(self):
         self.f = np.ones(256, dtype=np.float32)
@@ -514,6 +513,7 @@ class TestBoolCmp:
             r3 = 0 != self.f[i:]
             assert_array_equal(r, r2)
             assert_array_equal(r, r3)
+
             # check bool == 0x1
             assert_array_equal(r.view(np.int8), r.astype(np.int8))
             assert_array_equal(r2.view(np.int8), r2.astype(np.int8))
@@ -540,6 +540,7 @@ class TestBoolCmp:
             r3 = 0 != self.d[i:]
             assert_array_equal(r, r2)
             assert_array_equal(r, r3)
+
             # check bool == 0x1
             assert_array_equal(r.view(np.int8), r.astype(np.int8))
             assert_array_equal(r2.view(np.int8), r2.astype(np.int8))

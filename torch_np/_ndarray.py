@@ -155,6 +155,13 @@ class ndarray:
         tensor = self._tensor.clone()
         return ndarray._from_tensor_and_base(tensor, None)
 
+    def view(self, dtype):
+        # XXX: 1) make dtype_to_torch decorator understand positional args
+        #      2) rid of .base and _from_tensor_and_base
+        torch_dtype = _dtypes.dtype(dtype).torch_dtype
+        tview = self._tensor.view(torch_dtype)
+        return ndarray._from_tensor_and_base(tview, self)
+
     def tolist(self):
         return self._tensor.tolist()
 
