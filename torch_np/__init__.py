@@ -1,6 +1,7 @@
 from ._wrapper import *  # isort: skip  # XXX: currently this prevents circular imports
 from . import random
 from ._binary_ufuncs import *
+from ._detail._index_tricks import *
 from ._detail._util import AxisError, UFuncTypeError
 from ._dtypes import *
 from ._getlimits import errstate, finfo, iinfo
@@ -15,9 +16,6 @@ sometrue = any
 inf = float("inf")
 nan = float("nan")
 from math import pi  # isort: skip
-
-from numpy import s_  # isort: skip
-from numpy import index_exp  # isort: skip
 
 False_ = asarray(False, bool_)
 True_ = asarray(True, bool_)
