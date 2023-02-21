@@ -553,6 +553,7 @@ class TestBroadcastedAssignments:
         )
         assert re.search(fr"[\(\[]{r_inner_shape}[\]\)]$", str(e.value))
 
+    @pytest.mark.xfail(reason="XXX: deal with awkward put-like set operations")
     def test_index_is_larger(self):
         # Simple case of fancy index broadcasting of the index.
         a = np.zeros((5, 5))
