@@ -36,12 +36,22 @@ def count_nonzero(a, axis=None):
 
 def argmax(tensor, axis=None):
     axis = _util.allow_only_single_axis(axis)
+
+    if tensor.dtype == torch.bool:
+        # RuntimeError: "argmax_cpu" not implemented for 'Bool'
+        tensor = tensor.to(torch.uint8)
+
     tensor = torch.argmax(tensor, axis)
     return tensor
 
 
 def argmin(tensor, axis=None):
     axis = _util.allow_only_single_axis(axis)
+
+    if tensor.dtype == torch.bool:
+        # RuntimeError: "argmin_cpu" not implemented for 'Bool'
+        tensor = tensor.to(torch.uint8)
+
     tensor = torch.argmin(tensor, axis)
     return tensor
 
