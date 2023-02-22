@@ -377,7 +377,6 @@ class TestIndexing:
         assert_(d[...].flags.writeable)
         assert_(d[0].flags.writeable)
 
-    @pytest.mark.xfail(reason="can't determine f-style contiguous in torch")
     def test_memory_order(self):
         # This is not necessary to preserve. Memory layouts for
         # more complex indices are not as simple.

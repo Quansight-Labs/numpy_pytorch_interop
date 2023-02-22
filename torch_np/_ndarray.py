@@ -112,7 +112,16 @@ class ndarray:
     @property
     def flags(self):
         # Note contiguous in torch is assumed C-style
-        return Flags({"C_CONTIGUOUS": self._tensor.is_contiguous()})
+
+        # check if F contiguous
+        from itertools import accumulate
+        f_strides = tuple(accumulate(list(self._tensor.shape), func=lambda x, y: x*y))
+        f_strides = (1,) + f_strides[:-1]
+        is_f_contiguous = f_strides == self._tensor.stride()
+
+        return Flags({"C_CONTIGUOUS": self._tensor.is_contiguous(),
+                      "F_CONTIGUOUS": is_f_contiguous,}
+        )
 
     @property
     def T(self):
