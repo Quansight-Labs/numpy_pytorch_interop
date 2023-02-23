@@ -395,6 +395,10 @@ class ndarray:
         axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumsum))
     )
 
+    def diagonal(self, offset=0, axis1=0, axis2=1):
+        result = torch.diagonal(self._tensor, offset, axis1, axis2)
+        return asarray(result)
+
     ### indexing ###
     @staticmethod
     def _upcast_int_indices(index):
@@ -425,6 +429,11 @@ class ndarray:
 
     def argsort(self, axis=-1, kind=None, order=None):
         result = _impl.argsort(self.tensor, axis, kind, order)
+        return asarray(result)
+
+    def searchsorted(self, v, side="left", sorter=None):
+        v_t, sorter_t = _helpers.to_tensors_or_none(v, sorter)
+        result = torch.searchsorted(self._tensor, v_t, side=side, sorter=sorter_t)
         return asarray(result)
 
 

@@ -125,7 +125,6 @@ class TestNonarrayArgs:
         A = [[1, 2, 3], [4, 5, 6]]
         assert_(np.all(np.cumproduct(A) == np.array([1, 2, 6, 24, 120, 720])))
 
-    @pytest.mark.xfail(reason="TODO implement diagonal(...)")
     def test_diagonal(self):
         a = [[0, 1, 2, 3],
              [4, 5, 6, 7],

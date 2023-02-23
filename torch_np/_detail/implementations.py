@@ -127,6 +127,22 @@ def triu_indices(n, k=0, m=None):
     return result
 
 
+def diag_indices(n, ndim=2):
+    idx = torch.arange(n)
+    return (idx,)*ndim
+
+
+def diag_indices_from(tensor):
+    if not tensor.ndim >= 2:
+        raise ValueError("input array must be at least 2-d")
+    # For more than d=2, the strided formula is only valid for arrays with
+    # all dimensions equal, so we check first.
+    s = tensor.shape
+    if any(s[1:] != s[:-1]):
+        raise ValueError("All dimensions of input must be of equal length")
+    return diag_indices(s[0], tensor.ndim)
+
+
 # ### splits ###
 
 
@@ -588,4 +604,19 @@ def sort(tensor, axis=-1, kind=None, order=None):
 def argsort(tensor, axis=-1, kind=None, order=None):
     tensor, axis, stable = _sort_helper(tensor, axis, kind, order)
     result = torch.argsort(tensor, dim=axis, stable=stable)
+    return result
+
+
+# ### logic and selection ###
+
+
+def where(condition, x, y):
+    selector = (x is None) == (y is None)
+    if not selector:
+        raise ValueError("either both or neither of x and y should be given")
+
+    if x is None and y is None:
+        result = torch.where(condition)
+    else:
+        result = torch.where(condition, x, y)
     return result

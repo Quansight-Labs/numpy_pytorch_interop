@@ -372,6 +372,28 @@ def diag(v, k=0):
     return asarray(result)
 
 
+def diagonal(a, offset=0, axis1=0, axis2=1):
+    arr = asarray(a)
+    return arr.diagonal(offset, axis1, axis2)
+
+
+def diagflat(v, k=0):
+    tensor = asarray(v).get()
+    result = torch.diagflat(tensor, k)
+    return result
+
+
+def diag_indices(n, ndim=2):
+    result = _impl.diag_indices(n, ndim)
+    return tuple(asarray(x) for x in result)
+
+
+def diag_indices_from(arr):
+    tensor = asarray(arr).get()
+    result = _impl.diag_indices_from(tensor)
+    return tuple(asarray(x) for x in result)
+
+
 ###### misc/unordered
 
 
@@ -446,17 +468,19 @@ def bincount(x, /, weights=None, minlength=0):
     return asarray(result)
 
 
-# YYY: pattern: sequence of arrays
 def where(condition, x=None, y=None, /):
-    selector = (x is None) == (y is None)
-    if not selector:
-        raise ValueError("either both or neither of x and y should be given")
-    condition = asarray(condition).get()
-    if x is None and y is None:
-        return tuple(asarray(_) for _ in torch.where(condition))
-    x = asarray(condition).get()
-    y = asarray(condition).get()
-    return asarray(torch.where(condition, x, y))
+    cond_t, x_t, y_t = _helpers.to_tensors_or_none(condition, x, y)
+    result = _impl.where(cond_t, x_t, y_t)
+    if isinstance(result, tuple):
+        # single-argument where(condition)
+        return tuple(asarray(x) for x in result)
+    else:
+        return asarray(result)
+
+
+def searchsorted(a, v, side="left", sorter=None):
+    arr = asarray(a)
+    return arr.searchsorted(v, side=side, sorter=sorter)
 
 
 ###### module-level queries of object properties
@@ -845,6 +869,18 @@ def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
     return quantile(
         a, 0.5, axis=axis, overwrite_input=overwrite_input, out=out, keepdims=keepdims
     )
+
+
+def inner(a, b, /):
+    a_t, b_t = _helpers.to_tensors(a, b)
+    result = torch.inner(a_t, b_t)
+    return asarray(result)
+
+
+def outer(a, b, out=None):
+    a_t, b_t = _helpers.to_tensors(a, b)
+    result = torch.outer(a_t, b_t)
+    return _helpers.result_or_out(result, out)
 
 
 @asarray_replacer()

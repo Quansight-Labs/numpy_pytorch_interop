@@ -216,22 +216,6 @@ def deprecate_with_doc(msg):
     raise NotImplementedError
 
 
-def diag_indices(n, ndim=2):
-    raise NotImplementedError
-
-
-def diag_indices_from(arr):
-    raise NotImplementedError
-
-
-def diagflat(v, k=0):
-    raise NotImplementedError
-
-
-def diagonal(a, offset=0, axis1=0, axis2=1):
-    raise NotImplementedError
-
-
 def digitize(x, bins, right=False):
     raise NotImplementedError
 
@@ -397,10 +381,6 @@ def indices(dimensions, dtype=int, sparse=False):
     raise NotImplementedError
 
 
-def inner(a, b, /):
-    raise NotImplementedError
-
-
 def insert(arr, obj, values, axis=None):
     raise NotImplementedError
 
@@ -417,10 +397,6 @@ def is_busday(dates, weekmask="1111100", holidays=None, busdaycal=None, out=None
     raise NotImplementedError
 
 
-def isclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
-    raise NotImplementedError
-
-
 def isfortran(a):
     raise NotImplementedError
 
@@ -434,14 +410,6 @@ def isscalar(element):
 
 
 def issctype(rep):
-    raise NotImplementedError
-
-
-def issubclass_(arg1, arg2):
-    raise NotImplementedError
-
-
-def issubdtype(arg1, arg2):
     raise NotImplementedError
 
 
@@ -624,10 +592,6 @@ def obj2sctype(rep, default=None):
     raise NotImplementedError
 
 
-def outer(a, b, out=None):
-    raise NotImplementedError
-
-
 def packbits(a, /, axis=None, bitorder="big"):
     raise NotImplementedError
 
@@ -696,10 +660,6 @@ def putmask(a, mask, values):
     raise NotImplementedError
 
 
-def ravel(a, order="C"):
-    raise NotImplementedError
-
-
 def recfromcsv(fname, **kwargs):
     raise NotImplementedError
 
@@ -751,10 +711,6 @@ def savez_compressed(file, *args, **kwds):
 
 
 def sctype2char(sctype):
-    raise NotImplementedError
-
-
-def searchsorted(a, v, side="left", sorter=None):
     raise NotImplementedError
 
 
@@ -810,20 +766,7 @@ def shares_memory(a, b, max_work=None):
 def show():
     raise NotImplementedError
 
-
-def sinc(x):
-    raise NotImplementedError
-
-
-def sometrue(*args, **kwargs):
-    raise NotImplementedError
-
-
 def sort_complex(a):
-    raise NotImplementedError
-
-
-def swapaxes(a, axis1, axis2):
     raise NotImplementedError
 
 
@@ -876,10 +819,6 @@ def unwrap(p, discont=None, axis=-1, *, period=6.283185307179586):
 
 
 def vdot(a, b, /):
-    raise NotImplementedError
-
-
-def where(condition, x, y, /):
     raise NotImplementedError
 
 
