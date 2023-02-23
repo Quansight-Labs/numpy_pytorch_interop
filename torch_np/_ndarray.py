@@ -381,14 +381,24 @@ class ndarray:
     )
 
     ### indexing ###
-    def __getitem__(self, *args, **kwds):
-        t_args = _helpers.ndarrays_to_tensors(*args)
-        return ndarray._from_tensor_and_base(
-            self._tensor.__getitem__(*t_args, **kwds), self
-        )
+    @staticmethod
+    def _upcast_int_indices(index):
+        if isinstance(index, torch.Tensor):
+            if index.dtype in (torch.int8, torch.int16, torch.int32, torch.uint8):
+                return index.to(torch.int64)
+        elif isinstance(index, tuple):
+            return tuple(ndarray._upcast_int_indices(i) for i in index)
+        return index
+
+    def __getitem__(self, index):
+        index = _helpers.ndarrays_to_tensors(index)
+        index = ndarray._upcast_int_indices(index)
+        return ndarray._from_tensor_and_base(self._tensor.__getitem__(index), self)
 
     def __setitem__(self, index, value):
-        value = asarray(value).get()
+        index = _helpers.ndarrays_to_tensors(index)
+        index = ndarray._upcast_int_indices(index)
+        value = _helpers.ndarrays_to_tensors(value)
         return self._tensor.__setitem__(index, value)
 
     ### sorting ###

@@ -1,5 +1,6 @@
 import torch
 
+from .. import _helpers
 from . import _dtypes_impl, _util
 
 # ### equality, equivalence, allclose ###
@@ -503,8 +504,10 @@ def reshape(tensor, *shape, order="C"):
     if order != "C":
         raise NotImplementedError
     newshape = shape[0] if len(shape) == 1 else shape
+    # convert any tnp.ndarray inputs into tensors before passing to torch.Tensor.reshape
+    t_newshape = _helpers.ndarrays_to_tensors(newshape)
     # if sh = (1, 2, 3), numpy allows both .reshape(sh) and .reshape(*sh)
-    result = tensor.reshape(newshape)
+    result = tensor.reshape(t_newshape)
     return result
 
 

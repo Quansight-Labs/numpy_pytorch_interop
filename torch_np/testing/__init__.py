@@ -1,4 +1,6 @@
 from .utils import (
+    HAS_REFCOUNT,
+    IS_WASM,
     _gen_alignment_data,
     assert_,
     assert_allclose,

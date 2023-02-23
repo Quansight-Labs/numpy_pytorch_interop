@@ -17,8 +17,6 @@ from io import StringIO
 from tempfile import mkdtemp, mkstemp
 from warnings import WarningMessage
 
-from pytest import raises as assert_raises
-
 import torch_np as np
 from torch_np import arange, array
 from torch_np import asarray as asanyarray
@@ -31,8 +29,8 @@ __all__ = [
     "assert_array_equal",
     "assert_array_less",
     "assert_string_equal",
+    "assert_",
     "assert_array_almost_equal",
-    "assert_raises",
     "build_err_msg",
     "decorate_methods",
     "print_assert_equal",
