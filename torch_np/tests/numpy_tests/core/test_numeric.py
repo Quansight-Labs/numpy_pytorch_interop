@@ -2194,7 +2194,7 @@ class TestCreationFuncs:
                        **fill_kwarg)
 
             assert_equal(arr.dtype, dtype)
-            # assert_(getattr(arr.flags, self.orders[order]))   # XXX: no ndarray.flags
+            assert_(getattr(arr.flags, self.orders[order]))
 
             if fill_value is not None:
                 val = fill_value

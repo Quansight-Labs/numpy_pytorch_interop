@@ -272,7 +272,7 @@ class TestCopy:
         assert_equal(a[0, 0], 1)
         assert_equal(a_copy[0, 0], 10)
 
-    @pytest.mark.xfail(reason="ndarray.flags not implemented")
+    @pytest.mark.xfail(reason="order='F' not implemented")
     def test_order(self):
         # It turns out that people rely on np.copy() preserving order by
         # default; changing this broke scikit-learn:
