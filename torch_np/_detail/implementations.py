@@ -138,7 +138,7 @@ def diag_indices_from(tensor):
     # For more than d=2, the strided formula is only valid for arrays with
     # all dimensions equal, so we check first.
     s = tensor.shape
-    if any(s[1:] != s[:-1]):
+    if s[1:] != s[:-1]:
         raise ValueError("All dimensions of input must be of equal length")
     return diag_indices(s[0], tensor.ndim)
 

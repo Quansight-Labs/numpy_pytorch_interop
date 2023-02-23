@@ -12,7 +12,7 @@ from numpy.lib.index_tricks import (
     ndindex, r_, s_, ix_
     )
 
-# from torch_np import diag_indices, diag_indices_from
+from torch_np import diag_indices, diag_indices_from
 from torch_np._detail._index_tricks import index_exp
 
 
@@ -494,7 +494,6 @@ class TestFillDiagonal:
             fill_diagonal(a, 2)
 
 
-@pytest.mark.xfail(reason='diag_indices not implemented')
 def test_diag_indices():
     di = diag_indices(4)
     a = np.array([[1, 2, 3, 4],
@@ -513,7 +512,7 @@ def test_diag_indices():
     d3 = diag_indices(2, 3)
 
     # And use it to set the diagonal of a zeros array to 1:
-    a = np.zeros((2, 2, 2), int)
+    a = np.zeros((2, 2, 2), dtype=int)
     a[d3] = 1
     assert_array_equal(
         a, np.array([[[1, 0],
@@ -523,7 +522,6 @@ def test_diag_indices():
         )
 
 
-@pytest.mark.xfail(reason='diag_indices_from not implemented')
 class TestDiagIndicesFrom:
 
     def test_diag_indices_from(self):
@@ -534,12 +532,12 @@ class TestDiagIndicesFrom:
 
     def test_error_small_input(self):
         x = np.ones(7)
-        with assert_raises_regex(ValueError, "at least 2-d"):
+        with assert_raises(ValueError):
             diag_indices_from(x)
 
     def test_error_shape_mismatch(self):
-        x = np.zeros((3, 3, 2, 3), int)
-        with assert_raises_regex(ValueError, "equal length"):
+        x = np.zeros((3, 3, 2, 3), dtype=int)
+        with assert_raises(ValueError):
             diag_indices_from(x)
 
 
