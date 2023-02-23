@@ -407,10 +407,8 @@ class TestArgmax:
         #      with suppress_warnings() as sup:
         #          sup.filter(RuntimeWarning,
         #                      "invalid value encountered in reduce")
-        if np.asarray(arr).dtype.kind in "cb":
-            pytest.xfail(
-                reason="'max_values_cpu' not implemented for 'ComplexDouble', 'Bool'"
-            )
+        if np.asarray(arr).dtype.kind in "c":
+            pytest.xfail(reason="'max_values_cpu' not implemented for 'ComplexDouble'")
 
         val = np.max(arr)
 
@@ -511,10 +509,8 @@ class TestArgmin:
     def test_combinations(self, data):
         arr, pos = data
 
-        if np.asarray(arr).dtype.kind in "cb":
-            pytest.xfail(
-                reason="'min_values_cpu' not implemented for 'ComplexDouble', 'Bool'"
-            )
+        if np.asarray(arr).dtype.kind in "c":
+            pytest.xfail(reason="'min_values_cpu' not implemented for 'ComplexDouble'")
 
         #        with suppress_warnings() as sup:
         #            sup.filter(RuntimeWarning, "invalid value encountered in reduce")
