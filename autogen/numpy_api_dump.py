@@ -172,10 +172,6 @@ def choose(a, choices, out=None, mode="raise"):
     raise NotImplementedError
 
 
-def clip(a, a_min, a_max, out=None, **kwargs):
-    raise NotImplementedError
-
-
 def common_type(*arrays):
     raise NotImplementedError
 
@@ -241,10 +237,6 @@ def einsum_path(*operands, optimize="greedy", einsum_call=False):
 
 
 def extract(condition, arr):
-    raise NotImplementedError
-
-
-def fill_diagonal(a, val, wrap=False):
     raise NotImplementedError
 
 
@@ -374,10 +366,6 @@ def histogramdd(sample, bins=10, range=None, normed=None, weights=None, density=
 
 
 def in1d(ar1, ar2, assume_unique=False, invert=False):
-    raise NotImplementedError
-
-
-def indices(dimensions, dtype=int, sparse=False):
     raise NotImplementedError
 
 
@@ -766,6 +754,7 @@ def shares_memory(a, b, max_work=None):
 def show():
     raise NotImplementedError
 
+
 def sort_complex(a):
     raise NotImplementedError
 
@@ -775,10 +764,6 @@ def take(a, indices, axis=None, out=None, mode="raise"):
 
 
 def tensordot(a, b, axes=2):
-    raise NotImplementedError
-
-
-def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None):
     raise NotImplementedError
 
 
@@ -815,10 +800,6 @@ def unpackbits(a, /, axis=None, count=None, bitorder="big"):
 
 
 def unwrap(p, discont=None, axis=-1, *, period=6.283185307179586):
-    raise NotImplementedError
-
-
-def vdot(a, b, /):
     raise NotImplementedError
 
 

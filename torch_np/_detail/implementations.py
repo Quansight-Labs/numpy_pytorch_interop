@@ -129,7 +129,7 @@ def triu_indices(n, k=0, m=None):
 
 def diag_indices(n, ndim=2):
     idx = torch.arange(n)
-    return (idx,)*ndim
+    return (idx,) * ndim
 
 
 def diag_indices_from(tensor):
@@ -141,6 +141,34 @@ def diag_indices_from(tensor):
     if s[1:] != s[:-1]:
         raise ValueError("All dimensions of input must be of equal length")
     return diag_indices(s[0], tensor.ndim)
+
+
+def fill_diagonal(tensor, t_val, wrap):
+    # torch.Tensor.fill_diagonal_ only accepts scalars. Thus vendor the numpy source,
+    # https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/index_tricks.py#L786-L917
+
+    if tensor.ndim < 2:
+        raise ValueError("array must be at least 2-d")
+    end = None
+    if tensor.ndim == 2:
+        # Explicit, fast formula for the common case.  For 2-d arrays, we
+        # accept rectangular ones.
+        step = tensor.shape[1] + 1
+        # This is needed to don't have tall matrix have the diagonal wrap.
+        if not wrap:
+            end = tensor.shape[1] * tensor.shape[1]
+    else:
+        # For more than d=2, the strided formula is only valid for arrays with
+        # all dimensions equal, so we check first.
+        s = tensor.shape
+        if s[1:] != s[:-1]:
+            raise ValueError("All dimensions of input must be of equal length")
+        sz = torch.as_tensor(tensor.shape[:-1])
+        step = 1 + (torch.cumprod(sz, 0)).sum()
+
+    # Write the value out into the diagonal.
+    tensor.ravel()[:end:step] = t_val
+    return tensor
 
 
 # ### splits ###
@@ -396,6 +424,26 @@ def meshgrid(*xi_tensors, copy=True, sparse=False, indexing="xy"):
     return output
 
 
+def indices(dimensions, dtype=int, sparse=False):
+    # https://github.com/numpy/numpy/blob/v1.24.0/numpy/core/numeric.py#L1691-L1791
+    dimensions = tuple(dimensions)
+    N = len(dimensions)
+    shape = (1,) * N
+    if sparse:
+        res = tuple()
+    else:
+        res = torch.empty((N,) + dimensions, dtype=dtype)
+    for i, dim in enumerate(dimensions):
+        idx = torch.arange(dim, dtype=dtype).reshape(
+            shape[:i] + (dim,) + shape[i + 1 :]
+        )
+        if sparse:
+            res = res + (idx,)
+        else:
+            res[i] = idx
+    return res
+
+
 def bincount(x_tensor, /, weights_tensor=None, minlength=0):
     int_dtype = _dtypes_impl.default_int_dtype
     (x_tensor,) = _util.cast_dont_broadcast((x_tensor,), int_dtype, casting="safe")
@@ -619,4 +667,17 @@ def where(condition, x, y):
         result = torch.where(condition)
     else:
         result = torch.where(condition, x, y)
+    return result
+
+
+# ### dot and other linalg ###
+
+def vdot(t_a, t_b, /):
+    # torch only accepts 1D arrays, numpy ravels
+    t_a, t_b = torch.atleast_1d(t_a, t_b)
+    if t_a.ndim > 1:
+        t_a = t_a.ravel()
+    if t_b.ndim > 1:
+        t_b = t_b.ravel()
+    result = torch.vdot(t_a, t_b)
     return result

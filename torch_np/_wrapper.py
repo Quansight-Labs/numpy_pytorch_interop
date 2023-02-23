@@ -394,6 +394,19 @@ def diag_indices_from(arr):
     return tuple(asarray(x) for x in result)
 
 
+def fill_diagonal(a, val, wrap=False):
+    tensor, t_val = _helpers.to_tensors(a, val)
+    result = _impl.fill_diagonal(tensor, t_val, wrap)
+    return asarray(result)
+
+
+@_decorators.dtype_to_torch
+def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None):
+    tensor = asarray(a).get()
+    result = torch.diagonal(tensor, offset, dim1=axis1, dim2=axis2).sum(-1, dtype=dtype)
+    return asarray(result)
+
+
 ###### misc/unordered
 
 
@@ -482,6 +495,11 @@ def searchsorted(a, v, side="left", sorter=None):
     arr = asarray(a)
     return arr.searchsorted(v, side=side, sorter=sorter)
 
+
+def vdot(a, b, /):
+    t_a, t_b = _helpers.to_tensors(a, b)
+    result = _impl.vdot(t_a, t_b)
+    return result.item()
 
 ###### module-level queries of object properties
 
@@ -613,6 +631,15 @@ def meshgrid(*xi, copy=True, sparse=False, indexing="xy"):
     xi_tensors = _helpers.to_tensors(*xi)
     output = _impl.meshgrid(*xi_tensors, copy=copy, sparse=sparse, indexing=indexing)
     return [asarray(t) for t in output]
+
+
+@_decorators.dtype_to_torch
+def indices(dimensions, dtype=int, sparse=False):
+    result = _impl.indices(dimensions, dtype=dtype, sparse=sparse)
+    if sparse:
+        return tuple(asarray(x) for x in result)
+    else:
+        return asarray(result)
 
 
 def nonzero(a):

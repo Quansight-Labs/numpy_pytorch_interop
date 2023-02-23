@@ -291,7 +291,6 @@ class TestNonarrayArgs:
         out = np.take(a, indices)
         assert_equal(out, tgt)
 
-    @pytest.mark.xfail(reason="TODO implement trace(...)")
     def test_trace(self):
         c = [[1, 2], [3, 4], [5, 6]]
         assert_equal(np.trace(c), 5)
@@ -2627,7 +2626,7 @@ class TestRollaxis:
         assert_raises(np.AxisError, np.rollaxis, a, 4, 0)
         assert_raises(np.AxisError, np.rollaxis, a, 0, 5)
 
-    @pytest.mark.xfail(reason="needs np.indices")
+    @pytest.mark.xfail(reason="needs fancy indexing")
     def test_results(self):
         a = np.arange(1*2*3*4).reshape(1, 2, 3, 4).copy()
         aind = np.indices(a.shape)
@@ -2833,7 +2832,6 @@ def test_outer_out_param():
     assert_equal(np.outer(arr2, arr3, out2), out2)
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestIndices:
 
     def test_simple(self):
