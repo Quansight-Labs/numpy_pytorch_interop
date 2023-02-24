@@ -21,22 +21,68 @@ import builtins
 from decimal import Decimal
 import mmap
 
-import numpy as np
+import torch_np as np
+
 import numpy.core._multiarray_tests as _multiarray_tests
-from numpy.core._rational_tests import rational
-from numpy.testing import (
-    assert_, assert_raises, assert_warns, assert_equal, assert_almost_equal,
+#from numpy.core._rational_tests import rational
+
+from torch_np.testing import (
+    assert_, assert_warns, assert_equal, assert_almost_equal,
     assert_array_equal, assert_raises_regex, assert_array_almost_equal,
-    assert_allclose, IS_PYPY, IS_PYSTON, HAS_REFCOUNT, assert_array_less,
-    runstring, temppath, suppress_warnings, break_cycles,
+    assert_allclose, # IS_PYPY, IS_PYSTON, HAS_REFCOUNT,
+    assert_array_less,
+    # runstring, temppath, 
+    suppress_warnings, # break_cycles,
     )
+from pytest import raises as assert_raises
+
+IS_PYPY = False
+IS_PYSTON = False
+HAS_REFCOUNT = True
+
 from numpy.testing._private.utils import requires_memory, _no_tracing
 from numpy.core.tests._locales import CommaDecimalPointLocale
 from numpy.lib.recfunctions import repack_fields
 from numpy.core.multiarray import _get_ndarray_c_version
 
 # Need to test an object that does not fully implement math interface
-from datetime import timedelta, datetime
+# from datetime import timedelta, datetime
+
+
+# #### stubs to make pytest pass the collections stage ####
+
+# defined in numpy/testing/_utils.py
+def runstring(astr, dict):
+    exec(astr, dict)
+
+@contextmanager
+def temppath(*args, **kwargs):
+    """Context manager for temporary files.
+
+    Context manager that returns the path to a closed temporary file. Its
+    parameters are the same as for tempfile.mkstemp and are passed directly
+    to that function. The underlying file is removed when the context is
+    exited, so it should be closed at that time.
+
+    Windows does not allow a temporary file to be opened if it is already
+    open, so the underlying file must be closed after opening before it
+    can be opened again.
+
+    """
+    fd, path = mkstemp(*args, **kwargs)
+    os.close(fd)
+    try:
+        yield path
+    finally:
+        os.remove(path)
+
+
+# FIXME
+np.asanyarray = np.asarray
+np.ascontiguousarray = np.asarray
+np.asfortranarray = np.asarray
+
+# #### end stubs
 
 
 def _aligned_zeros(shape, dtype=float, order="C", align=None):
@@ -75,6 +121,7 @@ def _aligned_zeros(shape, dtype=float, order="C", align=None):
     return data
 
 
+@pytest.mark.xfail(reason='TODO: flags')
 class TestFlags:
     def setup_method(self):
         self.a = np.arange(10)
@@ -1907,7 +1954,7 @@ class TestMethods:
         ba = [1, 2, 10, 11, 6, 5, 4]
         ba2 = [[1, 2, 3, 4], [5, 6, 7, 9], [10, 3, 4, 5]]
 
-        for ctype in [np.int16, np.uint16, np.int32, np.uint32,
+        for ctype in [np.int16, np.int32,
                       np.float32, np.float64, np.complex64, np.complex128]:
             a = np.array(ba, ctype)
             a2 = np.array(ba2, ctype)
@@ -2023,9 +2070,8 @@ class TestMethods:
     # algorithm because quick and merge sort fall over to insertion
     # sort for small arrays.
 
-    @pytest.mark.parametrize('dtype', [np.uint8, np.uint16, np.uint32, np.uint64,
-                                       np.float16, np.float32, np.float64,
-                                       np.longdouble])
+    @pytest.mark.parametrize('dtype', [np.uint8,
+                                       np.float16, np.float32, np.float64])
     def test_sort_unsigned(self, dtype):
         a = np.arange(101, dtype=dtype)
         b = a[::-1].copy()
@@ -2040,7 +2086,7 @@ class TestMethods:
 
     @pytest.mark.parametrize('dtype',
                              [np.int8, np.int16, np.int32, np.int64, np.float16,
-                              np.float32, np.float64, np.longdouble])
+                              np.float32, np.float64])
     def test_sort_signed(self, dtype):
         a = np.arange(-50, 51, dtype=dtype)
         b = a[::-1].copy()
@@ -2053,7 +2099,7 @@ class TestMethods:
             c.sort(kind=kind)
             assert_equal(c, a, msg)
 
-    @pytest.mark.parametrize('dtype', [np.float32, np.float64, np.longdouble])
+    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
     @pytest.mark.parametrize('part', ['real', 'imag'])
     def test_sort_complex(self, part, dtype):
         # test complex sorts. These use the same code as the scalars
@@ -2061,7 +2107,6 @@ class TestMethods:
         cdtype = {
             np.single: np.csingle,
             np.double: np.cdouble,
-            np.longdouble: np.clongdouble,
         }[dtype]
         a = np.arange(-50, 51, dtype=dtype)
         b = a[::-1].copy()
@@ -2088,20 +2133,6 @@ class TestMethods:
                 msg = 'byte-swapped complex sort, dtype={0}'.format(dt)
                 assert_equal(c, arr, msg)
 
-    @pytest.mark.parametrize('dtype', [np.bytes_, np.unicode_])
-    def test_sort_string(self, dtype):
-        # np.array will perform the encoding to bytes for us in the bytes test
-        a = np.array(['aaaaaaaa' + chr(i) for i in range(101)], dtype=dtype)
-        b = a[::-1].copy()
-        for kind in self.sort_kinds:
-            msg = "kind=%s" % kind
-            c = a.copy()
-            c.sort(kind=kind)
-            assert_equal(c, a, msg)
-            c = b.copy()
-            c.sort(kind=kind)
-            assert_equal(c, a, msg)
-
     def test_sort_object(self):
         # test object array sorts.
         a = np.empty((101,), dtype=object)
@@ -2120,20 +2151,6 @@ class TestMethods:
         # test record array sorts.
         dt = np.dtype([('f', float), ('i', int)])
         a = np.array([(i, i) for i in range(101)], dtype=dt)
-        b = a[::-1]
-        for kind in ['q', 'h', 'm']:
-            msg = "kind=%s" % kind
-            c = a.copy()
-            c.sort(kind=kind)
-            assert_equal(c, a, msg)
-            c = b.copy()
-            c.sort(kind=kind)
-            assert_equal(c, a, msg)
-
-    @pytest.mark.parametrize('dtype', ['datetime64[D]', 'timedelta64[D]'])
-    def test_sort_time(self, dtype):
-        # test datetime64 and timedelta64 sorts.
-        a = np.arange(0, 101, dtype=dtype)
         b = a[::-1]
         for kind in ['q', 'h', 'm']:
             msg = "kind=%s" % kind
@@ -2393,26 +2410,6 @@ class TestMethods:
             assert_equal(a.copy().argsort(kind=kind), r, msg)
             assert_equal(b.copy().argsort(kind=kind), rr, msg)
 
-        # test datetime64 argsorts.
-        a = np.arange(0, 101, dtype='datetime64[D]')
-        b = a[::-1]
-        r = np.arange(101)
-        rr = r[::-1]
-        for kind in ['q', 'h', 'm']:
-            msg = "datetime64 argsort, kind=%s" % kind
-            assert_equal(a.copy().argsort(kind=kind), r, msg)
-            assert_equal(b.copy().argsort(kind=kind), rr, msg)
-
-        # test timedelta64 argsorts.
-        a = np.arange(0, 101, dtype='timedelta64[D]')
-        b = a[::-1]
-        r = np.arange(101)
-        rr = r[::-1]
-        for kind in ['q', 'h', 'm']:
-            msg = "timedelta64 argsort, kind=%s" % kind
-            assert_equal(a.copy().argsort(kind=kind), r, msg)
-            assert_equal(b.copy().argsort(kind=kind), rr, msg)
-
         # check axis handling. This should be the same for all type
         # specific argsorts, so we only check it for one type and one kind
         a = np.array([[3, 2], [1, 0]])
@@ -2547,10 +2544,8 @@ class TestMethods:
     def test_searchsorted_type_specific(self):
         # Test all type specific binary search functions
         types = ''.join((np.typecodes['AllInteger'], np.typecodes['AllFloat'],
-                         np.typecodes['Datetime'], '?O'))
+                         '?'))
         for dt in types:
-            if dt == 'M':
-                dt = 'M8[D]'
             if dt == '?':
                 a = np.arange(2, dtype=dt)
                 out = np.arange(2)
@@ -2647,10 +2642,8 @@ class TestMethods:
 
         # Test all type specific indirect binary search functions
         types = ''.join((np.typecodes['AllInteger'], np.typecodes['AllFloat'],
-                         np.typecodes['Datetime'], '?O'))
+                         '?'))
         for dt in types:
-            if dt == 'M':
-                dt = 'M8[D]'
             if dt == '?':
                 a = np.array([1, 0], dtype=dt)
                 # We want the sorter array to be of a type that is different
@@ -4335,17 +4328,6 @@ class TestPickling:
         p = self._loads(s)
         assert_equal(a, p)
 
-    def test_datetime64_byteorder(self):
-        original = np.array([['2015-02-24T00:00:00.000000000']], dtype='datetime64[ns]')
-
-        original_byte_reversed = original.copy(order='K')
-        original_byte_reversed.dtype = original_byte_reversed.dtype.newbyteorder('S')
-        original_byte_reversed.byteswap(inplace=True)
-
-        new = pickle.loads(pickle.dumps(original_byte_reversed))
-
-        assert_equal(original.dtype, new.dtype)
-
 
 class TestFancyIndexing:
     def test_list(self):
@@ -4617,7 +4599,7 @@ class TestArgmax:
     ]
     darr = [(np.array(d[0], dtype=t), d[1]) for d, t in (
         itertools.product(usg_data, (
-            np.uint8, np.uint16, np.uint32, np.uint64
+            np.uint8,
         ))
     )]
     darr = darr + [(np.array(d[0], dtype=t), d[1]) for d, t in (
@@ -4656,44 +4638,6 @@ class TestArgmax:
         ([complex(0, 0), complex(0, 2), complex(0, 1)], 1),
         ([complex(1, 0), complex(0, 2), complex(0, 1)], 0),
         ([complex(1, 0), complex(0, 2), complex(1, 1)], 2),
-
-        ([np.datetime64('1923-04-14T12:43:12'),
-          np.datetime64('1994-06-21T14:43:15'),
-          np.datetime64('2001-10-15T04:10:32'),
-          np.datetime64('1995-11-25T16:02:16'),
-          np.datetime64('2005-01-04T03:14:12'),
-          np.datetime64('2041-12-03T14:05:03')], 5),
-        ([np.datetime64('1935-09-14T04:40:11'),
-          np.datetime64('1949-10-12T12:32:11'),
-          np.datetime64('2010-01-03T05:14:12'),
-          np.datetime64('2015-11-20T12:20:59'),
-          np.datetime64('1932-09-23T10:10:13'),
-          np.datetime64('2014-10-10T03:50:30')], 3),
-        # Assorted tests with NaTs
-        ([np.datetime64('NaT'),
-          np.datetime64('NaT'),
-          np.datetime64('2010-01-03T05:14:12'),
-          np.datetime64('NaT'),
-          np.datetime64('2015-09-23T10:10:13'),
-          np.datetime64('1932-10-10T03:50:30')], 0),
-        ([np.datetime64('2059-03-14T12:43:12'),
-          np.datetime64('1996-09-21T14:43:15'),
-          np.datetime64('NaT'),
-          np.datetime64('2022-12-25T16:02:16'),
-          np.datetime64('1963-10-04T03:14:12'),
-          np.datetime64('2013-05-08T18:15:23')], 2),
-        ([np.timedelta64(2, 's'),
-          np.timedelta64(1, 's'),
-          np.timedelta64('NaT', 's'),
-          np.timedelta64(3, 's')], 2),
-        ([np.timedelta64('NaT', 's')] * 3, 0),
-
-        ([timedelta(days=5, seconds=14), timedelta(days=2, seconds=35),
-          timedelta(days=-1, seconds=23)], 0),
-        ([timedelta(days=1, seconds=43), timedelta(days=10, seconds=5),
-          timedelta(days=5, seconds=14)], 1),
-        ([timedelta(days=10, seconds=24), timedelta(days=10, seconds=5),
-          timedelta(days=10, seconds=43)], 2),
 
         ([False, False, False, False, True], 4),
         ([False, False, False, True, False], 3),
@@ -4760,7 +4704,7 @@ class TestArgmin:
     ]
     darr = [(np.array(d[0], dtype=t), d[1]) for d, t in (
         itertools.product(usg_data, (
-            np.uint8, np.uint16, np.uint32, np.uint64
+            np.uint8,
         ))
     )]
     darr = darr + [(np.array(d[0], dtype=t), d[1]) for d, t in (
@@ -4799,44 +4743,6 @@ class TestArgmin:
         ([complex(0, 0), complex(0, 2), complex(0, 1)], 0),
         ([complex(1, 0), complex(0, 2), complex(0, 1)], 2),
         ([complex(1, 0), complex(0, 2), complex(1, 1)], 1),
-
-        ([np.datetime64('1923-04-14T12:43:12'),
-          np.datetime64('1994-06-21T14:43:15'),
-          np.datetime64('2001-10-15T04:10:32'),
-          np.datetime64('1995-11-25T16:02:16'),
-          np.datetime64('2005-01-04T03:14:12'),
-          np.datetime64('2041-12-03T14:05:03')], 0),
-        ([np.datetime64('1935-09-14T04:40:11'),
-          np.datetime64('1949-10-12T12:32:11'),
-          np.datetime64('2010-01-03T05:14:12'),
-          np.datetime64('2014-11-20T12:20:59'),
-          np.datetime64('2015-09-23T10:10:13'),
-          np.datetime64('1932-10-10T03:50:30')], 5),
-        # Assorted tests with NaTs
-        ([np.datetime64('NaT'),
-          np.datetime64('NaT'),
-          np.datetime64('2010-01-03T05:14:12'),
-          np.datetime64('NaT'),
-          np.datetime64('2015-09-23T10:10:13'),
-          np.datetime64('1932-10-10T03:50:30')], 0),
-        ([np.datetime64('2059-03-14T12:43:12'),
-          np.datetime64('1996-09-21T14:43:15'),
-          np.datetime64('NaT'),
-          np.datetime64('2022-12-25T16:02:16'),
-          np.datetime64('1963-10-04T03:14:12'),
-          np.datetime64('2013-05-08T18:15:23')], 2),
-        ([np.timedelta64(2, 's'),
-          np.timedelta64(1, 's'),
-          np.timedelta64('NaT', 's'),
-          np.timedelta64(3, 's')], 2),
-        ([np.timedelta64('NaT', 's')] * 3, 0),
-
-        ([timedelta(days=5, seconds=14), timedelta(days=2, seconds=35),
-          timedelta(days=-1, seconds=23)], 2),
-        ([timedelta(days=1, seconds=43), timedelta(days=10, seconds=5),
-          timedelta(days=5, seconds=14)], 0),
-        ([timedelta(days=10, seconds=24), timedelta(days=10, seconds=5),
-          timedelta(days=10, seconds=43)], 1),
 
         ([True, True, True, True, False], 4),
         ([True, True, True, False, True], 3),
@@ -5170,7 +5076,7 @@ class TestTake:
 
 class TestLexsort:
     @pytest.mark.parametrize('dtype',[
-        np.uint8, np.uint16, np.uint32, np.uint64,
+        np.uint8,
         np.int8, np.int16, np.int32, np.int64,
         np.float16, np.float32, np.float64
     ])
@@ -6282,7 +6188,6 @@ class TestStats:
     @pytest.mark.parametrize(('complex_dtype', 'ndec'), (
         ('complex64', 6),
         ('complex128', 7),
-        ('clongdouble', 7),
     ))
     def test_var_complex_values(self, complex_dtype, ndec):
         # Test fast-paths for every builtin complex type
@@ -7616,26 +7521,6 @@ class TestMinScalarType:
         wanted = np.dtype('uint8')
         assert_equal(wanted, dt)
 
-    def test_usigned_short(self):
-        dt = np.min_scalar_type(2**16-1)
-        wanted = np.dtype('uint16')
-        assert_equal(wanted, dt)
-
-    def test_usigned_int(self):
-        dt = np.min_scalar_type(2**32-1)
-        wanted = np.dtype('uint32')
-        assert_equal(wanted, dt)
-
-    def test_usigned_longlong(self):
-        dt = np.min_scalar_type(2**63-1)
-        wanted = np.dtype('uint64')
-        assert_equal(wanted, dt)
-
-    def test_object(self):
-        dt = np.min_scalar_type(2**64)
-        wanted = np.dtype('O')
-        assert_equal(wanted, dt)
-
 
 from numpy.core._internal import _dtype_from_pep3118
 
@@ -7882,14 +7767,6 @@ class TestNewBufferProtocol:
         # Issue #4015.
         self._check_roundtrip(0)
 
-    def test_invalid_buffer_format(self):
-        # datetime64 cannot be used fully in a buffer yet
-        # Should be fixed in the next Numpy major release
-        dt = np.dtype([('a', 'uint16'), ('b', 'M8[s]')])
-        a = np.empty(3, dt)
-        assert_raises((ValueError, BufferError), memoryview, a)
-        assert_raises((ValueError, BufferError), memoryview, np.array((3), 'M8[D]'))
-
     def test_export_simple_1d(self):
         x = np.array([1, 2, 3, 4, 5], dtype='i')
         y = memoryview(x)
@@ -7992,21 +7869,6 @@ class TestNewBufferProtocol:
         assert_raises(ValueError,
                       _multiarray_tests.get_buffer_info,
                        np.arange(5)[::2], ('SIMPLE',))
-
-    @pytest.mark.parametrize(["obj", "error"], [
-            pytest.param(np.array([1, 2], dtype=rational), ValueError, id="array"),
-            pytest.param(rational(1, 2), TypeError, id="scalar")])
-    def test_export_and_pickle_user_dtype(self, obj, error):
-        # User dtypes should export successfully when FORMAT was not requested.
-        with pytest.raises(error):
-            _multiarray_tests.get_buffer_info(obj, ("STRIDED_RO", "FORMAT"))
-
-        _multiarray_tests.get_buffer_info(obj, ("STRIDED_RO",))
-
-        # This is currently also necessary to implement pickling:
-        pickle_obj = pickle.dumps(obj)
-        res = pickle.loads(pickle_obj)
-        assert_array_equal(res, obj)
 
     def test_padding(self):
         for j in range(8):
@@ -8172,7 +8034,7 @@ class TestNewBufferProtocol:
         f.a = 3
         assert_equal(arr['a'], 3)
 
-    @pytest.mark.parametrize("obj", [np.ones(3), np.ones(1, dtype="i,i")[()]])
+    @pytest.mark.parametrize("obj", [np.ones(3)[()]])
     def test_error_if_stored_buffer_info_is_corrupted(self, obj):
         """
         If a user extends a NumPy array before 1.20 and then runs it
@@ -8219,8 +8081,11 @@ class TestArrayCreationCopyArgument(object):
         def __bool__(self):
             raise ValueError
 
-    true_vals = [True, np._CopyMode.ALWAYS, np.True_]
-    false_vals = [False, np._CopyMode.IF_NEEDED, np.False_]
+    # true_vals = [True, np._CopyMode.ALWAYS, np.True_]
+    # false_vals = [False, np._CopyMode.IF_NEEDED, np.False_]
+    true_vals = [True, 1, np.True_]
+    false_vals = [False, 0, np.False_]
+
 
     def test_scalars(self):
         # Test both numpy and python scalars
@@ -9122,97 +8987,6 @@ class TestFormat:
 
 from numpy.testing import IS_PYPY
 
-class TestCTypes:
-
-    def test_ctypes_is_available(self):
-        test_arr = np.array([[1, 2, 3], [4, 5, 6]])
-
-        assert_equal(ctypes, test_arr.ctypes._ctypes)
-        assert_equal(tuple(test_arr.ctypes.shape), (2, 3))
-
-    def test_ctypes_is_not_available(self):
-        from numpy.core import _internal
-        _internal.ctypes = None
-        try:
-            test_arr = np.array([[1, 2, 3], [4, 5, 6]])
-
-            assert_(isinstance(test_arr.ctypes._ctypes,
-                               _internal._missing_ctypes))
-            assert_equal(tuple(test_arr.ctypes.shape), (2, 3))
-        finally:
-            _internal.ctypes = ctypes
-
-    def _make_readonly(x):
-        x.flags.writeable = False
-        return x
-
-    @pytest.mark.parametrize('arr', [
-        np.array([1, 2, 3]),
-        np.array([['one', 'two'], ['three', 'four']]),
-        np.array((1, 2), dtype='i4,i4'),
-        np.zeros((2,), dtype=
-            np.dtype(dict(
-                formats=['<i4', '<i4'],
-                names=['a', 'b'],
-                offsets=[0, 2],
-                itemsize=6
-            ))
-        ),
-        np.array([None], dtype=object),
-        np.array([]),
-        np.empty((0, 0)),
-        _make_readonly(np.array([1, 2, 3])),
-    ], ids=[
-        '1d',
-        '2d',
-        'structured',
-        'overlapping',
-        'object',
-        'empty',
-        'empty-2d',
-        'readonly'
-    ])
-    def test_ctypes_data_as_holds_reference(self, arr):
-        # gh-9647
-        # create a copy to ensure that pytest does not mess with the refcounts
-        arr = arr.copy()
-
-        arr_ref = weakref.ref(arr)
-
-        ctypes_ptr = arr.ctypes.data_as(ctypes.c_void_p)
-
-        # `ctypes_ptr` should hold onto `arr`
-        del arr
-        break_cycles()
-        assert_(arr_ref() is not None, "ctypes pointer did not hold onto a reference")
-
-        # but when the `ctypes_ptr` object dies, so should `arr`
-        del ctypes_ptr
-        if IS_PYPY:
-            # Pypy does not recycle arr objects immediately. Trigger gc to
-            # release arr. Cpython uses refcounts. An explicit call to gc
-            # should not be needed here.
-            break_cycles()
-        assert_(arr_ref() is None, "unknowable whether ctypes pointer holds a reference")
-
-    def test_ctypes_as_parameter_holds_reference(self):
-        arr = np.array([None]).copy()
-
-        arr_ref = weakref.ref(arr)
-
-        ctypes_ptr = arr.ctypes._as_parameter_
-
-        # `ctypes_ptr` should hold onto `arr`
-        del arr
-        break_cycles()
-        assert_(arr_ref() is not None, "ctypes pointer did not hold onto a reference")
-
-        # but when the `ctypes_ptr` object dies, so should `arr`
-        del ctypes_ptr
-        if IS_PYPY:
-            break_cycles()
-        assert_(arr_ref() is None, "unknowable whether ctypes pointer holds a reference")
-
 
 class TestWritebackIfCopy:
     # all these tests use the WRITEBACKIFCOPY mechanism
@@ -9776,22 +9550,6 @@ class TestAlignment:
             xf64[::2] = xf64[::2].copy()
             xc64[::2] = xc64[::2].copy()
             xf128[::2] = xf128[::2].copy()
-
-def test_getfield():
-    a = np.arange(32, dtype='uint16')
-    if sys.byteorder == 'little':
-        i = 0
-        j = 1
-    else:
-        i = 1
-        j = 0
-    b = a.getfield('int8', i)
-    assert_equal(b, a)
-    b = a.getfield('int8', j)
-    assert_equal(b, 0)
-    pytest.raises(ValueError, a.getfield, 'uint8', -1)
-    pytest.raises(ValueError, a.getfield, 'uint8', 16)
-    pytest.raises(ValueError, a.getfield, 'uint64', 0)
 
 
 class TestViewDtype:

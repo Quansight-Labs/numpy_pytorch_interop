@@ -11,6 +11,7 @@ from .utils import (
     assert_raises_regex,
     assert_warns,
     suppress_warnings,
+    assert_array_less,
 )
 
 # from .testing import assert_allclose    # FIXME
