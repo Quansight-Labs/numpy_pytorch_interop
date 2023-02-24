@@ -400,11 +400,10 @@ def fill_diagonal(a, val, wrap=False):
     return asarray(result)
 
 
-@_decorators.dtype_to_torch
+
 def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None):
-    tensor = asarray(a).get()
-    result = torch.diagonal(tensor, offset, dim1=axis1, dim2=axis2).sum(-1, dtype=dtype)
-    return asarray(result)
+    arr = asarray(a)
+    return arr.trace(offset, axis1, axis2, dtype, out=out)
 
 
 ###### misc/unordered
@@ -899,8 +898,8 @@ def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
 
 
 def inner(a, b, /):
-    a_t, b_t = _helpers.to_tensors(a, b)
-    result = torch.inner(a_t, b_t)
+    t_a, t_b = _helpers.to_tensors(a, b)
+    result = _impl.inner(t_a, t_b)
     return asarray(result)
 
 

@@ -171,6 +171,21 @@ def fill_diagonal(tensor, t_val, wrap):
     return tensor
 
 
+def trace(tensor, offset=0, axis1=0, axis2=1, dtype=None, out=None):
+    result = torch.diagonal(tensor, offset, dim1=axis1, dim2=axis2).sum(-1, dtype=dtype)
+    return result
+
+
+def diagonal(tensor, offset=0, axis1=0, axis2=1):
+    axis1 = _util.normalize_axis_index(axis1, tensor.ndim)
+    axis2 = _util.normalize_axis_index(axis2, tensor.ndim)
+    if axis1 == axis2:
+        raise ValueError("axis1 and axis2 cannot be the same")
+    result = torch.diagonal(tensor, offset, axis1, axis2)
+    return result
+
+
+
 # ### splits ###
 
 
@@ -560,7 +575,12 @@ def squeeze(tensor, axis=None):
     elif axis is None:
         result = tensor.squeeze()
     else:
-        result = tensor.squeeze(axis)
+        if isinstance(axis, tuple):
+            result = tensor
+            for ax in axis:
+                result = result.squeeze(ax)
+        else:
+            result = tensor.squeeze(axis)
     return result
 
 
@@ -671,6 +691,31 @@ def where(condition, x, y):
 
 
 # ### dot and other linalg ###
+
+def inner(t_a, t_b):
+    is_half = t_a.dtype == torch.float16 or t_b.dtype == torch.float16
+    is_bool = t_a.dtype == torch.bool or t_b.dtype == torch.bool
+
+    dtype = None
+    if is_half:
+        # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
+        dtype = torch.float32
+    if is_bool:
+        dtype = torch.uint8
+
+    t_a = _util.cast_if_needed(t_a, dtype)
+    t_b = _util.cast_if_needed(t_b, dtype)
+
+    result = torch.inner(t_a, t_b)
+
+    if is_half:
+        result = result.to(torch.float16)
+    if is_bool:
+        result = result.to(torch.bool)
+
+    return result
+            
+
 
 def vdot(t_a, t_b, /):
     # torch only accepts 1D arrays, numpy ravels
