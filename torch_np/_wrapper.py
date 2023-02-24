@@ -678,7 +678,9 @@ around = round_
 round = round_
 
 
-def clip(a, a_min, a_max, out=None):
+def clip(a, a_min=None, a_max=None, out=None):
+    # np.clip requires both a_min and a_max not None, while ndarray.clip
+    # allows of then be None. Allow both here.
     arr = asarray(a)
     return arr.clip(a_min, a_max, out=out)
 

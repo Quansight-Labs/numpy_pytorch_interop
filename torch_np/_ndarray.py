@@ -376,7 +376,7 @@ class ndarray:
         tensor = self._tensor
         return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
 
-    def clip(self, min, max, out=None):
+    def clip(self, min=None, max=None, out=None):
         tensor, t_min, t_max = _helpers.to_tensors_or_none(self, min, max)
         result = _impl.clip(tensor, t_min, t_max)
         return _helpers.result_or_out(result, out)

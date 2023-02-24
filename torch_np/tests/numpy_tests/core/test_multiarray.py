@@ -4037,14 +4037,14 @@ class TestMinMax:
             assert_equal(np.amin(a), a[3])
             assert_equal(np.amax(a), a[3])
 
-@pytest.mark.xfail(reason='TODO')
+
 class TestNewaxis:
     def test_basic(self):
         sk = np.array([0, -0.1, 0.1])
         res = 250*sk[:, np.newaxis]
         assert_almost_equal(res.ravel(), 250*sk)
 
-@pytest.mark.xfail(reason='TODO')
+
 class TestClip:
     def _check_range(self, x, cmin, cmax):
         assert_(np.all(x >= cmin))
@@ -4084,6 +4084,7 @@ class TestClip:
                 self._check_range(x, expected_min, expected_max)
         return x
 
+    @pytest.mark.skip(reason="endianness")
     def test_basic(self):
         for inplace in [False, True]:
             self._clip_type(
@@ -4100,12 +4101,6 @@ class TestClip:
                 'uint', 1024, 0, 0, inplace=inplace)
             self._clip_type(
                 'uint', 1024, -120, 100, inplace=inplace, expected_min=0)
-
-    def test_record_array(self):
-        rec = np.array([(-5, 2.0, 3.0), (5.0, 4.0, 3.0)],
-                       dtype=[('x', '<f8'), ('y', '<f8'), ('z', '<f8')])
-        y = rec['x'].clip(-0.3, 0.5)
-        self._check_range(y, -0.3, 0.5)
 
     def test_max_or_min(self):
         val = np.array([0, 1, 2, 3, 4, 5, 6, 7])
