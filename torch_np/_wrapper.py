@@ -403,7 +403,7 @@ def fill_diagonal(a, val, wrap=False):
 
 def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None):
     arr = asarray(a)
-    return arr.trace(offset, axis1, axis2, dtype, out=out)
+    return arr.trace(offset, axis1, axis2, dtype=dtype, out=out)
 
 
 ###### misc/unordered
