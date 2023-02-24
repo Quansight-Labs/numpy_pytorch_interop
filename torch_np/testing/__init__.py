@@ -7,6 +7,7 @@ from .utils import (
     assert_almost_equal,
     assert_array_almost_equal,
     assert_array_equal,
+    assert_array_less,
     assert_equal,
     assert_raises_regex,
     assert_warns,

@@ -1036,6 +1036,10 @@ def array_equiv(a1, a2):
     return result
 
 
+def dot():
+    raise NotImplementedError
+
+
 def common_type():
     raise NotImplementedError
 
