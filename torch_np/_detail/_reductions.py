@@ -143,10 +143,17 @@ def mean(tensor, axis=None, dtype=None, *, where=NoValue):
 
     dtype = _atleast_float(dtype, tensor.dtype)
 
+    is_half = dtype == torch.float16
+    if is_half:
+        dtype=torch.float32
+
     if axis is None:
         result = tensor.mean(dtype=dtype)
     else:
         result = tensor.mean(dtype=dtype, dim=axis)
+
+    if is_half:
+        result = result.to(torch.float16)
 
     return result
 

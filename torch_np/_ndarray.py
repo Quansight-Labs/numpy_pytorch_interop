@@ -343,6 +343,9 @@ class ndarray:
     __pos__ = _unary_ufuncs.positive
     __neg__ = _unary_ufuncs.negative
 
+    conjugate = _unary_ufuncs.conjugate
+    conj = conjugate
+
     ### methods to match namespace functions
 
     def squeeze(self, axis=None):
