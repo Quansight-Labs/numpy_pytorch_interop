@@ -683,10 +683,16 @@ def where(condition, x, y):
     if not selector:
         raise ValueError("either both or neither of x and y should be given")
 
+    if condition.dtype != torch.bool:
+        condition = condition.to(torch.bool)
+
     if x is None and y is None:
         result = torch.where(condition)
     else:
-        result = torch.where(condition, x, y)
+        try:
+            result = torch.where(condition, x, y)
+        except RuntimeError as e:
+            raise ValueError(*e.args)
     return result
 
 

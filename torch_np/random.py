@@ -38,7 +38,7 @@ def array_or_scalar(values, py_type=float):
 
 def seed(seed=None):
     if seed is not None:
-        torch.random.manual_seed()
+        torch.random.manual_seed(seed)
 
 
 def random_sample(size=None):
