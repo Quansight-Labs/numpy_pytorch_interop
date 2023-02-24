@@ -5421,7 +5421,6 @@ class TestStats:
         assert_(res.info == dat.info)
 
 
-@pytest.mark.xfail(reason='TODO')
 class TestVdot:
     def test_basic(self):
         dt_numeric = np.typecodes['AllFloat'] + np.typecodes['AllInteger']
@@ -5429,7 +5428,7 @@ class TestVdot:
 
         # test real
         a = np.eye(3)
-        for dt in dt_numeric + 'O':
+        for dt in dt_numeric:
             b = a.astype(dt)
             res = np.vdot(b, b)
             assert_(np.isscalar(res))
@@ -5437,7 +5436,7 @@ class TestVdot:
 
         # test complex
         a = np.eye(3) * 1j
-        for dt in dt_complex + 'O':
+        for dt in dt_complex:
             b = a.astype(dt)
             res = np.vdot(b, b)
             assert_(np.isscalar(res))
@@ -5449,6 +5448,7 @@ class TestVdot:
         assert_(np.isscalar(res))
         assert_equal(np.vdot(b, b), True)
 
+    @pytest.mark.xfail(reason="implement order='F'")
     def test_vdot_array_order(self):
         a = np.array([[1, 2], [3, 4]], order='C')
         b = np.array([[1, 2], [3, 4]], order='F')
@@ -5476,6 +5476,20 @@ class TestVdot:
                          np.vdot(a.flatten(), b.flatten()))
             assert_equal(np.vdot(a.copy(), b),
                          np.vdot(a.flatten(), b.flatten()))
+
+    @pytest.mark.xfail(reason="implement order='F'")
+    def test_vdot_uncontiguous_2(self):
+        # test order='F' separately
+        for size in [2, 1000]:
+            # Different sizes match different branches in vdot.
+            a = np.zeros((size, 2, 2))
+            b = np.zeros((size, 2, 2))
+            a[:, 0, 0] = np.arange(size)
+            b[:, 0, 0] = np.arange(size) + 1
+            # Make a and b uncontiguous:
+            a = a[..., 0]
+            b = b[..., 0]
+
             assert_equal(np.vdot(a.copy('F'), b),
                          np.vdot(a.flatten(), b.flatten()))
             assert_equal(np.vdot(a, b.copy('F')),

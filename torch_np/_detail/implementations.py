@@ -692,11 +692,12 @@ def where(condition, x, y):
 
 # ### dot and other linalg ###
 
-def inner(t_a, t_b):
-    is_half = t_a.dtype == torch.float16 or t_b.dtype == torch.float16
-    is_bool = t_a.dtype == torch.bool or t_b.dtype == torch.bool
 
-    dtype = None
+def inner(t_a, t_b):
+    dtype = _dtypes_impl.result_type_impl((t_a.dtype, t_b.dtype))
+    is_half = dtype == torch.float16
+    is_bool = dtype == torch.bool
+
     if is_half:
         # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
         dtype = torch.float32
@@ -718,11 +719,32 @@ def inner(t_a, t_b):
 
 
 def vdot(t_a, t_b, /):
-    # torch only accepts 1D arrays, numpy ravels
+    # 1. torch only accepts 1D arrays, numpy ravels
+    # 2. torch requires matching dtype, while numpy casts (?)
     t_a, t_b = torch.atleast_1d(t_a, t_b)
     if t_a.ndim > 1:
         t_a = t_a.ravel()
     if t_b.ndim > 1:
         t_b = t_b.ravel()
+
+    dtype = _dtypes_impl.result_type_impl((t_a.dtype, t_b.dtype))
+    is_half = dtype == torch.float16
+    is_bool = dtype == torch.bool
+
+    # work around torch's "dot" not implemented for 'Half', 'Bool'
+    if is_half:
+        dtype = torch.float32
+    if is_bool:
+        dtype = torch.uint8
+
+    t_a = _util.cast_if_needed(t_a, dtype)
+    t_b = _util.cast_if_needed(t_b, dtype)
+
     result = torch.vdot(t_a, t_b)
+
+    if is_half:
+        result = result.to(torch.float16)
+    if is_bool:
+        result = result.to(torch.bool)
+
     return result
