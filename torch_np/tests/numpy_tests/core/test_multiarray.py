@@ -3627,7 +3627,6 @@ class TestFancyIndexing:
         assert_array_equal(x, np.array([[1, 10, 3, 4], [5, 6, 7, 8]]))
 
 
-@pytest.mark.xfail(reason='TODO')
 class TestArgmaxArgminCommon:
 
     sizes = [(), (3,), (3, 2), (2, 3),
