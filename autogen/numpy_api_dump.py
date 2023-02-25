@@ -779,18 +779,6 @@ def union1d(ar1, ar2):
     raise NotImplementedError
 
 
-def unique(
-    ar,
-    return_index=False,
-    return_inverse=False,
-    return_counts=False,
-    axis=None,
-    *,
-    equal_nan=True,
-):
-    raise NotImplementedError
-
-
 def unpackbits(a, /, axis=None, count=None, bitorder="big"):
     raise NotImplementedError
 

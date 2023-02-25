@@ -766,3 +766,40 @@ def dot(t_a, t_b):
     else:
         result = torch.matmul(t_a, t_b)
     return result
+
+
+# ### unique et al ###
+
+
+def unique(
+    tensor,
+    return_index=False,
+    return_inverse=False,
+    return_counts=False,
+    axis=None,
+    *,
+    equal_nan=True,
+):
+    if return_index or not equal_nan:
+        raise NotImplementedError
+
+    if axis is None:
+        tensor = tensor.ravel()
+        axis = 0
+    axis = _util.normalize_axis_index(axis, tensor.ndim)
+
+    is_half = tensor.dtype == torch.float16
+    if is_half:
+        tensor = tensor.to(torch.float32)
+
+    result = torch.unique(
+        tensor, return_inverse=return_inverse, return_counts=return_counts, dim=axis
+    )
+
+    if is_half:
+        if isinstance(result, tuple):
+            result = (result[0].to(torch.float16),) + result[1:]
+        else:
+            result = result.to(torch.float16)
+
+    return result

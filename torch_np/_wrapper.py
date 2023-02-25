@@ -1153,6 +1153,34 @@ def argsort(a, axis=-1, kind=None, order=None):
     return asarray(result)
 
 
+# ### unqiue et al ###
+
+
+def unique(
+    ar,
+    return_index=False,
+    return_inverse=False,
+    return_counts=False,
+    axis=None,
+    *,
+    equal_nan=True,
+):
+    tensor = asarray(ar).get()
+    result = _impl.unique(
+        tensor,
+        return_index=return_index,
+        return_inverse=return_inverse,
+        return_counts=return_counts,
+        axis=axis,
+        equal_nan=equal_nan,
+    )
+
+    if isinstance(result, tuple):
+        return tuple(asarray(x) for x in result)
+    else:
+        return asarray(result)
+
+
 ###### mapping from numpy API objects to wrappers from this module ######
 
 # All is in the mapping dict in _mapping.py
