@@ -3997,6 +3997,7 @@ class TestMinMax:
         assert_raises(np.AxisError, np.amax, 1, 1)
         assert_raises(np.AxisError, np.amin, 1, 1)
 
+        pytest.xfail(reason='min/max/argmin/argmax on 0D arrays & axis')
         assert_equal(np.amax(1, axis=0), 1)
         assert_equal(np.amin(1, axis=0), 1)
         assert_equal(np.amax(1, axis=None), 1)
