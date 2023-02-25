@@ -41,6 +41,9 @@ def cast_and_broadcast(tensors, out, casting):
     return tuple(tensors)
 
 
+# ### Return helpers: wrap a single tensor, a tuple of tensors, out= etc ###
+
+
 def result_or_out(result_tensor, out_array=None, promote_scalar=False):
     """A helper for returns with out= argument.
 
@@ -68,6 +71,21 @@ def result_or_out(result_tensor, out_array=None, promote_scalar=False):
         return out_array
     else:
         return asarray(result_tensor)
+
+
+def array_from(tensor):
+    from ._ndarray import ndarray
+
+    return ndarray._from_tensor_and_base(tensor, None)  # XXX: nuke .base
+
+
+def tuple_arrays_from(result):
+    from ._ndarray import asarray
+
+    return tuple(asarray(x) for x in result)
+
+
+# ### Various ways of converting array-likes to tensors ###
 
 
 def ndarrays_to_tensors(*inputs):

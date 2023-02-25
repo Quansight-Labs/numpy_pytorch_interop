@@ -3,25 +3,15 @@
 Things imported from here have numpy-compatible signatures but operate on
 pytorch tensors.
 """
-# import numpy as np
 
 import torch
 
+from . import _funcs
 from ._detail import _dtypes_impl, _flips, _reductions, _util
 from ._detail import implementations as _impl
-from ._ndarray import (
-    array,
-    asarray,
-    asarray_replacer,
-    can_cast,
-    maybe_set_base,
-    ndarray,
-    newaxis,
-    result_type,
-)
+from ._ndarray import array, asarray, asarray_replacer, maybe_set_base, ndarray, newaxis
 
 from . import _dtypes, _helpers, _decorators  # isort: skip  # XXX
-
 
 # Things to decide on (punt for now)
 #
@@ -223,11 +213,6 @@ def tile(A, reps):
     return asarray(result)
 
 
-def repeat(a, repeats, axis=None):
-    arr = asarray(a)
-    return arr.repeat(repeats, axis)
-
-
 def vander(x, N=None, increasing=False):
     x_tensor = asarray(x).get()
     result = torch.vander(x_tensor, N, increasing)
@@ -352,59 +337,6 @@ def zeros_like(a, dtype=None, order="K", subok=False, shape=None):
     return result
 
 
-@_decorators.dtype_to_torch
-def eye(N, M=None, k=0, dtype=float, order="C", *, like=None):
-    _util.subok_not_ok(like)
-    if order != "C":
-        raise NotImplementedError
-    result = _impl.eye(N, M, k, dtype)
-    return asarray(result)
-
-
-def identity(n, dtype=None, *, like=None):
-    _util.subok_not_ok(like)
-    return asarray(torch.eye(n, dtype=dtype))
-
-
-def diag(v, k=0):
-    v_tensor = asarray(v).get()
-    result = torch.diag(v_tensor, k)
-    return asarray(result)
-
-
-def diagonal(a, offset=0, axis1=0, axis2=1):
-    arr = asarray(a)
-    return arr.diagonal(offset, axis1, axis2)
-
-
-def diagflat(v, k=0):
-    tensor = asarray(v).get()
-    result = torch.diagflat(tensor, k)
-    return result
-
-
-def diag_indices(n, ndim=2):
-    result = _impl.diag_indices(n, ndim)
-    return tuple(asarray(x) for x in result)
-
-
-def diag_indices_from(arr):
-    tensor = asarray(arr).get()
-    result = _impl.diag_indices_from(tensor)
-    return tuple(asarray(x) for x in result)
-
-
-def fill_diagonal(a, val, wrap=False):
-    tensor, t_val = _helpers.to_tensors(a, val)
-    result = _impl.fill_diagonal(tensor, t_val, wrap)
-    return asarray(result)
-
-
-def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None):
-    arr = asarray(a)
-    return arr.trace(offset, axis1, axis2, dtype=dtype, out=out)
-
-
 ###### misc/unordered
 
 
@@ -487,11 +419,6 @@ def where(condition, x=None, y=None, /):
         return tuple(asarray(x) for x in result)
     else:
         return asarray(result)
-
-
-def searchsorted(a, v, side="left", sorter=None):
-    arr = asarray(a)
-    return arr.searchsorted(v, side=side, sorter=sorter)
 
 
 def vdot(a, b, /):
@@ -647,20 +574,9 @@ def indices(dimensions, dtype=int, sparse=False):
         return asarray(result)
 
 
-def nonzero(a):
-    arr = asarray(a)
-    return arr.nonzero()
-
-
 def flatnonzero(a):
     arr = asarray(a)
-    return nonzero(arr.ravel())[0]
-
-
-def argwhere(a):
-    tensor = asarray(a).get()
-    result = torch.argwhere(tensor)
-    return asarray(result)
+    return _funcs.nonzero(arr.ravel())[0]
 
 
 from ._decorators import emulate_out_arg
@@ -682,13 +598,6 @@ def round_(a, decimals=0, out=None):
 
 around = round_
 round = round_
-
-
-def clip(a, a_min=None, a_max=None, out=None):
-    # np.clip requires both a_min and a_max not None, while ndarray.clip
-    # allows of then be None. Allow both here.
-    arr = asarray(a)
-    return arr.clip(a_min, a_max, out=out)
 
 
 ###### tri{l, u} and related
@@ -1136,21 +1045,6 @@ def put_along_axis(arr, indices, values, axis):
     # modify the argument in-place
     arr._tensor = _impl.put_along_dim(tensor, t_indices, t_values, axis)
     return None
-
-
-# ### sort and partition ###
-
-
-def sort(a, axis=-1, kind=None, order=None):
-    tensor = asarray(a).get()
-    result = _impl.sort(tensor, axis, kind, order)
-    return asarray(result)
-
-
-def argsort(a, axis=-1, kind=None, order=None):
-    tensor = asarray(a).get()
-    result = _impl.argsort(tensor, axis, kind, order)
-    return asarray(result)
 
 
 # ### unqiue et al ###
