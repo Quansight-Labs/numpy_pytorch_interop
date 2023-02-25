@@ -400,7 +400,6 @@ def fill_diagonal(a, val, wrap=False):
     return asarray(result)
 
 
-
 def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None):
     arr = asarray(a)
     return arr.trace(offset, axis1, axis2, dtype=dtype, out=out)
@@ -499,6 +498,13 @@ def vdot(a, b, /):
     t_a, t_b = _helpers.to_tensors(a, b)
     result = _impl.vdot(t_a, t_b)
     return result.item()
+
+
+def dot(a, b, out=None):
+    t_a, t_b = _helpers.to_tensors(a, b)
+    result = _impl.dot(t_a, t_b)
+    return _helpers.result_or_out(result, out)
+
 
 ###### module-level queries of object properties
 
@@ -1098,10 +1104,6 @@ def array_equiv(a1, a2):
     a1_t, a2_t = _helpers.to_tensors(a1, a2)
     result = _impl.tensor_equiv(a1_t, a2_t)
     return result
-
-
-def dot():
-    raise NotImplementedError
 
 
 def common_type():

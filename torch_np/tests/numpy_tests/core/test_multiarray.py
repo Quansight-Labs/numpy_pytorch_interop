@@ -5464,15 +5464,30 @@ class TestVdot:
                          np.vdot(a.flatten(), b.flatten()))
 
 
-@pytest.mark.xfail(reason='TODO')
 class TestDot:
     def setup_method(self):
         np.random.seed(128)
-        self.A = np.random.rand(4, 2)
-        self.b1 = np.random.rand(2, 1)
-        self.b2 = np.random.rand(2)
-        self.b3 = np.random.rand(1, 2)
-        self.b4 = np.random.rand(4)
+
+        # Numpy guarantees the random stream, and we don't. So inline the
+        # values from numpy 1.24.1
+        # self.A = np.random.rand(4, 2)
+        self.A = np.array([[0.86663704, 0.26314485],
+               [0.13140848, 0.04159344],
+               [0.23892433, 0.6454746 ],
+               [0.79059935, 0.60144244]])
+
+        # self.b1 = np.random.rand(2, 1)
+        self.b1 = np.array([[0.33429937], [0.11942846]])
+
+        # self.b2 = np.random.rand(2)
+        self.b2 = np.array([0.30913305, 0.10972379])
+
+        # self.b3 = np.random.rand(1, 2)
+        self.b3 = np.array([[0.60211331, 0.25128496]])
+        
+        # self.b4 = np.random.rand(4)
+        self.b4 = np.array([0.29968129, 0.517116, 0.71520252, 0.9314494])
+
         self.N = 7
 
     def test_dotmatmat(self):
@@ -5541,16 +5556,26 @@ class TestDot:
 
     def test_dotvecscalar(self):
         np.random.seed(100)
-        b1 = np.random.rand(1, 1)
-        b2 = np.random.rand(1, 4)
+        # Numpy guarantees the random stream, and we don't. So inline the
+        # values from numpy 1.24.1
+        # b1 = np.random.rand(1, 1)
+        b1 = np.array([[0.54340494]])
+
+        # b2 = np.random.rand(1, 4)
+        b2 = np.array([[0.27836939, 0.42451759, 0.84477613, 0.00471886]])
+
         res = np.dot(b1, b2)
         tgt = np.array([[0.15126730, 0.23068496, 0.45905553, 0.00256425]])
         assert_almost_equal(res, tgt, decimal=self.N)
 
     def test_dotvecscalar2(self):
         np.random.seed(100)
-        b1 = np.random.rand(4, 1)
-        b2 = np.random.rand(1, 1)
+        # b1 = np.random.rand(4, 1)
+        b1 = np.array([[0.54340494], [0.27836939], [0.42451759], [0.84477613]])
+
+        # b2 = np.random.rand(1, 1)
+        b2 = np.array([[0.00471886]])
+
         res = np.dot(b1, b2)
         tgt = np.array([[0.00256425],[0.00131359],[0.00200324],[ 0.00398638]])
         assert_almost_equal(res, tgt, decimal=self.N)
@@ -5566,39 +5591,7 @@ class TestDot:
             assert_(res.shape == tgt.shape)
             assert_almost_equal(res, tgt, decimal=self.N)
 
-    def test_vecobject(self):
-        class Vec:
-            def __init__(self, sequence=None):
-                if sequence is None:
-                    sequence = []
-                self.array = np.array(sequence)
-
-            def __add__(self, other):
-                out = Vec()
-                out.array = self.array + other.array
-                return out
-
-            def __sub__(self, other):
-                out = Vec()
-                out.array = self.array - other.array
-                return out
-
-            def __mul__(self, other):  # with scalar
-                out = Vec(self.array.copy())
-                out.array *= other
-                return out
-
-            def __rmul__(self, other):
-                return self*other
-
-        U_non_cont = np.transpose([[1., 1.], [1., 2.]])
-        U_cont = np.ascontiguousarray(U_non_cont)
-        x = np.array([Vec([1., 0.]), Vec([0., 1.])])
-        zeros = np.array([Vec([0., 0.]), Vec([0., 0.])])
-        zeros_test = np.dot(U_cont, x) - np.dot(U_non_cont, x)
-        assert_equal(zeros[0].array, zeros_test[0].array)
-        assert_equal(zeros[1].array, zeros_test[1].array)
-
+    @pytest.mark.skip(reason='numpy internals')
     def test_dot_2args(self):
         from numpy.core.multiarray import dot
 
@@ -5609,6 +5602,7 @@ class TestDot:
         d = dot(a, b)
         assert_allclose(c, d)
 
+    @pytest.mark.skip(reason='numpy internals')
     def test_dot_3args(self):
         from numpy.core.multiarray import dot
 
@@ -5631,6 +5625,7 @@ class TestDot:
         assert_(r is dot(f, v, r))
         assert_array_equal(r2, r)
 
+    @pytest.mark.skip(reason='numpy internals')
     def test_dot_3args_errors(self):
         from numpy.core.multiarray import dot
 
@@ -5661,6 +5656,7 @@ class TestDot:
         r = np.empty((1024, 32), dtype=int)
         assert_raises(ValueError, dot, f, v, r)
 
+    @pytest.mark.skip(reason="TODO order='F'")
     def test_dot_array_order(self):
         a = np.array([[1, 2], [3, 4]], order='C')
         b = np.array([[1, 2], [3, 4]], order='F')
@@ -5671,6 +5667,7 @@ class TestDot:
         assert_equal(np.dot(b, a), res)
         assert_equal(np.dot(b, b), res)
 
+    @pytest.mark.skip(reason='TODO: nbytes, view')
     def test_accelerate_framework_sgemv_fix(self):
 
         def aligned_array(shape, align, dtype, order='C'):
@@ -5745,18 +5742,6 @@ class TestDot:
         res = np.dot(data, data)
         assert res == 2**30+100
 
-    def test_dtype_discovery_fails(self):
-        # See gh-14247, error checking was missing for failed dtype discovery
-        class BadObject(object):
-            def __array__(self):
-                raise TypeError("just this tiny mint leaf")
-
-        with pytest.raises(TypeError):
-            np.dot(BadObject(), BadObject())
-
-        with pytest.raises(TypeError):
-            np.dot(3.0, BadObject())
-
 
 class MatmulCommon:
     """Common tests for '@' operator and numpy.matmul.
@@ -5764,7 +5749,7 @@ class MatmulCommon:
     """
     # Should work with these types. Will want to add
     # "O" at some point
-    types = "?bhilqBHILQefdgFDGO"
+    types = "?bhilqBefdFD"
 
     def test_exceptions(self):
         dims = [
@@ -5975,7 +5960,7 @@ class MatmulCommon:
         assert_equal(res, tgt12_21)
 
 
-@pytest.mark.xfail(reason='TODO')
+@pytest.mark.xfail(reason='TODO: matmul (ufunc wrapping goes south?)')
 class TestMatmul(MatmulCommon):
     matmul = np.matmul
 

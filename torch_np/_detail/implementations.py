@@ -185,7 +185,6 @@ def diagonal(tensor, offset=0, axis1=0, axis2=1):
     return result
 
 
-
 # ### splits ###
 
 
@@ -721,7 +720,6 @@ def inner(t_a, t_b):
         result = result.to(torch.bool)
 
     return result
-            
 
 
 def vdot(t_a, t_b, /):
@@ -753,4 +751,18 @@ def vdot(t_a, t_b, /):
     if is_bool:
         result = result.to(torch.bool)
 
+    return result
+
+
+def dot(t_a, t_b):
+    if t_a.ndim == 0 or t_b.ndim == 0:
+        result = t_a * t_b
+    elif t_a.ndim == 1 and t_b.ndim == 1:
+        result = torch.dot(t_a, t_b)
+    elif t_a.ndim == 1:
+        result = torch.mv(t_b.T, t_a).T
+    elif t_b.ndim == 1:
+        result = torch.mv(t_a, t_b)
+    else:
+        result = torch.matmul(t_a, t_b)
     return result

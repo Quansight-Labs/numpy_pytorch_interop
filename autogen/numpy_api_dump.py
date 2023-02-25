@@ -220,10 +220,6 @@ def disp(mesg, device=None, linefeed=True):
     raise NotImplementedError
 
 
-def dot(a, b, out=None):
-    raise NotImplementedError
-
-
 def ediff1d(ary, to_end=None, to_begin=None):
     raise NotImplementedError
 
