@@ -348,31 +348,19 @@ class ndarray:
 
     ### methods to match namespace functions
 
-    def squeeze(self, axis=None):
-        result = _impl.squeeze(self._tensor, axis)
-        return ndarray._from_tensor_and_base(result, self)
-
-    def reshape(self, *shape, order="C"):
-        result = _impl.reshape(self._tensor, *shape, order=order)
-        return ndarray._from_tensor_and_base(result, self)
+    squeeze = _funcs.squeeze
+    swapaxes = _funcs.swapaxes
 
     def transpose(self, *axes):
-        result = _impl.transpose(self._tensor, *axes)
-        return ndarray._from_tensor_and_base(result, self)
+        # np.transpose(arr, axis=None) but arr.transpose(*axes)
+        return _funcs.transpose(self, axes)
 
-    def swapaxes(self, axis1, axis2):
-        return asarray(_flips.swapaxes(self._tensor, axis1, axis2))
+    def reshape(self, *shape, order="C"):
+        # arr.reshape(shape) and arr.reshape(*shape)
+        return _funcs.reshape(self, shape, order=order)
 
-    def ravel(self, order="C"):
-        if order != "C":
-            raise NotImplementedError
-        return ndarray._from_tensor_and_base(self._tensor.ravel(), self)
-
-    def flatten(self, order="C"):
-        if order != "C":
-            raise NotImplementedError
-        result = self._tensor.flatten()
-        return asarray(result)
+    ravel = _funcs.ravel
+    flatten = _funcs._flatten
 
     nonzero = _funcs.nonzero
     clip = _funcs.clip

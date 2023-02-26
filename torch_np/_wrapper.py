@@ -457,24 +457,9 @@ def size(a, axis=None):
 ###### shape manipulations and indexing
 
 
-def transpose(a, axes=None):
-    arr = asarray(a)
-    return arr.transpose(axes)
-
-
-def reshape(a, newshape, order="C"):
-    arr = asarray(a)
-    return arr.reshape(*newshape, order=order)
-
-
 def ravel(a, order="C"):
     arr = asarray(a)
     return arr.ravel(order=order)
-
-
-def squeeze(a, axis=None):
-    arr = asarray(a)
-    return arr.squeeze(axis)
 
 
 def expand_dims(a, axis):
@@ -519,23 +504,6 @@ def broadcast_arrays(*args, subok=False):
     tensors = _helpers.to_tensors(*args)
     res = torch.broadcast_tensors(*tensors)
     return tuple(asarray(_) for _ in res)
-
-
-@asarray_replacer()
-def moveaxis(a, source, destination):
-    source = _util.normalize_axis_tuple(source, a.ndim, "source")
-    destination = _util.normalize_axis_tuple(destination, a.ndim, "destination")
-    return asarray(torch.moveaxis(a, source, destination))
-
-
-def swapaxes(a, axis1, axis2):
-    arr = asarray(a)
-    return arr.swapaxes(axis1, axis2)
-
-
-@asarray_replacer()
-def rollaxis(a, axis, start=0):
-    return _flips.rollaxis(a, axis, start)
 
 
 def unravel_index(indices, shape, order="C"):
