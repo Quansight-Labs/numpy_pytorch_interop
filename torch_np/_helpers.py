@@ -75,6 +75,7 @@ def result_or_out(result_tensor, out_array=None, promote_scalar=False):
 
 def array_from(tensor, base=None):
     from ._ndarray import ndarray
+
     base = base if isinstance(base, ndarray) else None
     return ndarray._from_tensor_and_base(tensor, base)  # XXX: nuke .base
 

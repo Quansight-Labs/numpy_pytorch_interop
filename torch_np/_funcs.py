@@ -1,7 +1,7 @@
 import torch
 
 from . import _decorators, _helpers
-from ._detail import _util, _flips
+from ._detail import _flips, _util
 from ._detail import implementations as _impl
 
 
@@ -120,54 +120,52 @@ def searchsorted(a, v, side="left", sorter=None):
 
 
 def moveaxis(a, source, destination):
-    tensor, = _helpers.to_tensors(a)
+    (tensor,) = _helpers.to_tensors(a)
     result = _impl.moveaxis(tensor, source, destination)
     return _helpers.array_from(result)
 
 
 def swapaxes(a, axis1, axis2):
-    tensor, = _helpers.to_tensors(a)
+    (tensor,) = _helpers.to_tensors(a)
     result = _flips.swapaxes(tensor, axis1, axis2)
     return _helpers.array_from(result)
 
 
 def rollaxis(a, axis, start=0):
-    tensor, = _helpers.to_tensors(a)
+    (tensor,) = _helpers.to_tensors(a)
     result = _flips.rollaxis(a, axis, start)
     return _helpers.array_from(result)
 
 
 # ### shape manipulations ###
 
+
 def squeeze(a, axis=None):
-    tensor, = _helpers.to_tensors(a)
+    (tensor,) = _helpers.to_tensors(a)
     result = _impl.squeeze(tensor, axis)
     return _helpers.array_from(result, a)
 
 
 def reshape(a, newshape, order="C"):
-    tensor, = _helpers.to_tensors(a)    
+    (tensor,) = _helpers.to_tensors(a)
     result = _impl.reshape(tensor, newshape, order=order)
     return _helpers.array_from(result, a)
 
 
 def transpose(a, axes=None):
-    tensor, = _helpers.to_tensors(a)    
+    (tensor,) = _helpers.to_tensors(a)
     result = _impl.transpose(tensor, axes)
     return _helpers.array_from(result, a)
 
 
 def ravel(a, order="C"):
-    tensor, = _helpers.to_tensors(a)    
+    (tensor,) = _helpers.to_tensors(a)
     result = _impl.ravel(tensor)
-    return _helpers.array_from(result, a)  
+    return _helpers.array_from(result, a)
 
 
 # leading underscore since arr.flatten exists but np.flatten does not
 def _flatten(a, order="C"):
-    tensor, = _helpers.to_tensors(a)    
+    (tensor,) = _helpers.to_tensors(a)
     result = _impl._flatten(tensor)
-    return _helpers.array_from(result, a)  
-
-
-
+    return _helpers.array_from(result, a)

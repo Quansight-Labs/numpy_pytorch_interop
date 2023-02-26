@@ -110,8 +110,8 @@ def _concat_check(tup, dtype, out):
 
 @_decorators.dtype_to_torch
 def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
-    _concat_check(ar_tuple, dtype, out=out)
     tensors = _helpers.to_tensors(*ar_tuple)
+    _concat_check(tensors, dtype, out=out)
     result = _impl.concatenate(tensors, axis, out, dtype, casting)
     return _helpers.result_or_out(result, out)
 
