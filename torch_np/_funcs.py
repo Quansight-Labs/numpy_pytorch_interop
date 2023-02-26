@@ -1,13 +1,102 @@
+import typing
+
 import torch
 
 from . import _decorators, _helpers
 from ._detail import _dtypes_impl, _flips, _util
 from ._detail import implementations as _impl
 
+################################## normalizations
 
-def nonzero(a):
-    (tensor,) = _helpers.to_tensors(a)
-    result = tensor.nonzero(as_tuple=True)
+ArrayLike = typing.TypeVar("ArrayLike")
+DTypeLike = typing.TypeVar("DTypeLike")
+SubokLike = typing.TypeVar("SubokLike")
+
+
+import inspect
+
+from . import _dtypes
+
+
+def normalize_array_like(x, name=None):
+    (tensor,) = _helpers.to_tensors(x)
+    return tensor
+
+
+def normalize_dtype(dtype, name=None):
+    # cf _decorators.dtype_to_torch
+    torch_dtype = None
+    if dtype is not None:
+        dtype = _dtypes.dtype(dtype)
+        torch_dtype = dtype.torch_dtype
+    return torch_dtype
+
+
+def normalize_subok_like(arg, name):
+    if arg:
+        raise ValueError(f"'{name}' parameter is not supported.")
+
+
+normalizers = {
+    ArrayLike: normalize_array_like,
+    DTypeLike: normalize_dtype,
+    SubokLike: normalize_subok_like,
+}
+
+import functools
+
+
+def normalizer(func):
+    @functools.wraps(func)
+    def wrapped(*args, **kwds):
+        sig = inspect.signature(func)
+
+        dct = {}
+        # loop over positional parameters and actual arguments
+        for arg, (name, parm) in zip(args, sig.parameters.items()):
+            print(arg, name, parm.annotation)
+            normalizer = normalizers.get(parm.annotation, None)
+            if normalizer:
+                dct[name] = normalizer(arg, name)
+            else:
+                # untyped arguments pass through
+                dct[name] = arg
+
+        # normalize keyword arguments
+        for name, arg in kwds.items():
+            print("kw: ", name, sig.parameters[name].annotation)
+            parm = sig.parameters[name]
+            normalizer = normalizers.get(parm.annotation, None)
+            if normalizer:
+                dct[name] = normalizer(kwds[name], name)
+            else:
+                dct[name] = arg
+
+        ba = sig.bind(**dct)
+        ba.apply_defaults()
+
+        # TODO:
+        # 2. extra unknown args -- error out : nonzero([2, 0, 3], oops=42)
+        # 3. [LOOKS OK] optional (tensor_or_none) : untyped => pass through
+        # 4. [LOOKS OK] DTypeLike : positional or kw
+        # 5. axes : live in _impl or in types? several ways of handling them
+        # 6. keepdims : peel off, postprocess
+        # 7. OutLike : normal & keyword-only, peel off, postprocess
+
+        # finally, pass normalized arguments through
+        result = func(*ba.args)
+        return result
+
+    return wrapped
+
+
+##################################
+
+
+@normalizer
+def nonzero(a: ArrayLike):
+    #   (tensor,) = _helpers.to_tensors(a)
+    result = a.nonzero(as_tuple=True)
     return _helpers.tuple_arrays_from(result)
 
 
@@ -41,25 +130,25 @@ def diagonal(a, offset=0, axis1=0, axis2=1):
     return _helpers.array_from(result)
 
 
-@_decorators.dtype_to_torch
-def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None):
-    (tensor,) = _helpers.to_tensors(a)
-    result = _impl.trace(tensor, offset, axis1, axis2, dtype)
+@normalizer
+def trace(a: ArrayLike, offset=0, axis1=0, axis2=1, dtype: DTypeLike = None, out=None):
+    #    (tensor,) = _helpers.to_tensors(a)
+    result = _impl.trace(a, offset, axis1, axis2, dtype)
     return _helpers.result_or_out(result, out)
 
 
-@_decorators.dtype_to_torch
-def eye(N, M=None, k=0, dtype=float, order="C", *, like=None):
-    _util.subok_not_ok(like)
+@normalizer
+def eye(N, M=None, k=0, dtype: DTypeLike = float, order="C", *, like: SubokLike = None):
+    #    _util.subok_not_ok(like)
     if order != "C":
         raise NotImplementedError
     result = _impl.eye(N, M, k, dtype)
     return _helpers.array_from(result)
 
 
-@_decorators.dtype_to_torch
-def identity(n, dtype=None, *, like=None):
-    _util.subok_not_ok(like)
+@normalizer
+def identity(n, dtype: DTypeLike = None, *, like: SubokLike = None):
+    ##   _util.subok_not_ok(like)
     result = torch.eye(n, dtype=dtype)
     return _helpers.array_from(result)
 
