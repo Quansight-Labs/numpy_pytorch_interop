@@ -21,9 +21,8 @@ import pytest
 
 def get_mat(n):
     data = np.arange(n)
-#    data = np.add.outer(data, data)
-    from torch_np._helpers import _outer
-    data = _outer(data, data)
+    # data = np.add.outer(data, data)
+    data = data[:, None] + data[None, :]
     return data
 
 

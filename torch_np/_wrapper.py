@@ -457,11 +457,6 @@ def size(a, axis=None):
 ###### shape manipulations and indexing
 
 
-def ravel(a, order="C"):
-    arr = asarray(a)
-    return arr.ravel(order=order)
-
-
 def expand_dims(a, axis):
     a = asarray(a)
     shape = _util.expand_shape(a.shape, axis)
@@ -557,15 +552,6 @@ def roll(a, shift, axis=None):
     tensor = asarray(a).get()
     result = _impl.roll(tensor, shift, axis)
     return asarray(result)
-
-
-def round_(a, decimals=0, out=None):
-    arr = asarray(a)
-    return arr.round(decimals, out=out)
-
-
-around = round_
-round = round_
 
 
 ###### tri{l, u} and related
@@ -895,16 +881,6 @@ def angle(z, deg=False):
 @asarray_replacer()
 def sinc(x):
     return torch.sinc(x)
-
-
-def real(a):
-    arr = asarray(a)
-    return arr.real
-
-
-def imag(a):
-    arr = asarray(a)
-    return arr.imag
 
 
 @asarray_replacer()

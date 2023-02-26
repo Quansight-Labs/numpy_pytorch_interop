@@ -139,7 +139,7 @@ class ndarray:
 
     @property
     def real(self):
-        return asarray(self._tensor.real)
+        return _funcs.real(self)
 
     @real.setter
     def real(self, value):
@@ -147,19 +147,13 @@ class ndarray:
 
     @property
     def imag(self):
-        try:
-            return asarray(self._tensor.imag)
-        except RuntimeError:
-            zeros = torch.zeros_like(self._tensor)
-            return ndarray._from_tensor_and_base(zeros, None)
+        return _funcs.imag(self)
 
     @imag.setter
     def imag(self, value):
         self._tensor.imag = asarray(value).get()
 
-    def round(self, decimals=0, out=None):
-        result = _impl.round(self._tensor, decimals)
-        return _helpers.result_or_out(result, out)
+    round = _funcs.round
 
     # ctors
     def astype(self, dtype):

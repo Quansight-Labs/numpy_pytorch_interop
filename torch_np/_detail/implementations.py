@@ -644,6 +644,15 @@ def round(tensor, decimals=0):
     return result
 
 
+def imag(tensor):
+    try:
+        result = tensor.imag
+    except RuntimeError:
+        # RuntimeError: imag is not implemented for tensors with non-complex dtypes.
+        result = torch.zeros_like(tensor)
+    return result
+
+
 # ### put/take along axis ###
 
 

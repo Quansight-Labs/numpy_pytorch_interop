@@ -124,11 +124,3 @@ def to_tensors_or_none(*inputs):
     from ._ndarray import asarray, ndarray
 
     return tuple(None if value is None else asarray(value).get() for value in inputs)
-
-
-def _outer(x, y):
-    from ._ndarray import asarray
-
-    x_tensor, y_tensor = to_tensors(x, y)
-    result = torch.outer(x_tensor, y_tensor)
-    return asarray(result)

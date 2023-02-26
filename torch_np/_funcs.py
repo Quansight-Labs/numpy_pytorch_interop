@@ -169,3 +169,28 @@ def _flatten(a, order="C"):
     (tensor,) = _helpers.to_tensors(a)
     result = _impl._flatten(tensor)
     return _helpers.array_from(result, a)
+
+
+# ### Type/shape etc queries ###
+
+
+def real(a):
+    (tensor,) = _helpers.to_tensors(a)
+    result = torch.real(tensor)
+    return _helpers.array_from(result)
+
+
+def imag(a):
+    (tensor,) = _helpers.to_tensors(a)
+    result = _impl.imag(tensor)
+    return _helpers.array_from(result)
+
+
+def round_(a, decimals=0, out=None):
+    (tensor,) = _helpers.to_tensors(a)
+    result = _impl.round(tensor, decimals)
+    return _helpers.result_or_out(result, out)
+
+
+around = round_
+round = round_
