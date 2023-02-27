@@ -362,6 +362,7 @@ class ndarray:
 
     diagonal = _funcs.diagonal
     trace = _funcs.trace
+    dot = _funcs.dot
 
     ### sorting ###
 

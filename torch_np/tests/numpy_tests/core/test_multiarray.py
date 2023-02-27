@@ -2386,7 +2386,6 @@ class TestMethods:
         assert_equal(x1.flatten('F'), x1.T.flatten())
 
 
-    @pytest.mark.xfail(reason="TODO np.dot")
     @pytest.mark.parametrize('func', (np.dot, np.matmul))
     def test_arr_mult(self, func):
         a = np.array([[1, 0], [0, 1]])
@@ -2428,7 +2427,27 @@ class TestMethods:
             assert_equal(func(ebf.T, ebf), eaf)
             assert_equal(func(ebf, ebf.T), eaf)
             assert_equal(func(ebf.T, ebf.T), eaf)
+        # syrk - different shape
+        for et in [np.float32, np.float64, np.complex64, np.complex128]:
+            edf = d.astype(et)
+            eddtf = ddt.astype(et)
+            edtdf = dtd.astype(et)
+            assert_equal(func(edf, edf.T), eddtf)
+            assert_equal(func(edf.T, edf), edtdf)
 
+            assert_equal(
+                func(edf[:edf.shape[0] // 2, :], edf[::2, :].T),
+                func(edf[:edf.shape[0] // 2, :].copy(), edf[::2, :].T.copy())
+            )
+            assert_equal(
+                func(edf[::2, :], edf[:edf.shape[0] // 2, :].T),
+                func(edf[::2, :].copy(), edf[:edf.shape[0] // 2, :].T.copy())
+            )
+
+
+    @pytest.mark.skip(reason="dot/matmul with negative strides")
+    @pytest.mark.parametrize('func', (np.dot, np.matmul))
+    def test_arr_mult_2(self, func):
         # syrk - different shape, stride, and view validations
         for et in [np.float32, np.float64, np.complex64, np.complex128]:
             edf = d.astype(et)
@@ -2448,22 +2467,6 @@ class TestMethods:
                 func(edf, edf[:, ::-1].T),
                 func(edf, edf[:, ::-1].T.copy())
             )
-            assert_equal(
-                func(edf[:edf.shape[0] // 2, :], edf[::2, :].T),
-                func(edf[:edf.shape[0] // 2, :].copy(), edf[::2, :].T.copy())
-            )
-            assert_equal(
-                func(edf[::2, :], edf[:edf.shape[0] // 2, :].T),
-                func(edf[::2, :].copy(), edf[:edf.shape[0] // 2, :].T.copy())
-            )
-
-        # syrk - different shape
-        for et in [np.float32, np.float64, np.complex64, np.complex128]:
-            edf = d.astype(et)
-            eddtf = ddt.astype(et)
-            edtdf = dtd.astype(et)
-            assert_equal(func(edf, edf.T), eddtf)
-            assert_equal(func(edf.T, edf), edtdf)
 
     @pytest.mark.xfail(reason="TODO np.dot")
     @pytest.mark.parametrize('func', (np.dot, np.matmul))
@@ -2481,6 +2484,11 @@ class TestMethods:
         ret2 = func(b.T.copy(), a.T)
         assert_equal(ret1, ret2)
 
+
+    @pytest.mark.skip(reason="__array_interface__")
+    @pytest.mark.parametrize('func', (np.dot, np.matmul))
+    @pytest.mark.parametrize('dtype', 'ifdFD')
+    def test_no_dgemv_2(self, func, dtype):
         # check for unaligned data
         dt = np.dtype(dtype)
         a = np.zeros(8 * dt.itemsize // 2 + 1, dtype='int16')[1:].view(dtype)
@@ -2496,7 +2504,6 @@ class TestMethods:
         ret2 = func(b.T.copy(), a.T.copy())
         assert_equal(ret1, ret2)
 
-    @pytest.mark.xfail(reason="TODO np.dot")
     def test_dot(self):
         a = np.array([[1, 0], [0, 1]])
         b = np.array([[0, 1], [1, 0]])
@@ -2515,15 +2522,8 @@ class TestMethods:
         a.dot(b=b, out=c)
         assert_equal(c, np.dot(a, b))
 
-    @pytest.mark.xfail(reason="TODO np.dot")
-    def test_dot_type_mismatch(self):
-        c = 1.
-        A = np.array((1,1), dtype='i,i')
 
-        assert_raises(TypeError, np.dot, c, A)
-        assert_raises(TypeError, np.dot, A, c)
-
-    @pytest.mark.xfail(reason="TODO np.dot")
+    @pytest.mark.xfail(reason="_aligned_zeros")
     def test_dot_out_mem_overlap(self):
         np.random.seed(1)
 

@@ -93,7 +93,18 @@ def fill_diagonal(a, val, wrap=False):
     return _helpers.array_from(result)
 
 
-# ### sorting ###
+def vdot(a, b, /):
+    t_a, t_b = _helpers.to_tensors(a, b)
+    result = _impl.vdot(t_a, t_b)
+    return result.item()
+
+
+def dot(a, b, out=None):
+    t_a, t_b = _helpers.to_tensors(a, b)
+    result = _impl.dot(t_a, t_b)
+    return _helpers.result_or_out(result, out)
+
+
 
 # ### sort and partition ###
 
