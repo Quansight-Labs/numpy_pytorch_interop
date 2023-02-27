@@ -612,7 +612,7 @@ def _flatten(tensor, order="C"):
     if order != "C":
         raise NotImplementedError
     # return a copy
-    result = tensor.ravel().clone()
+    result = tensor.flatten()
     return result
 
 
@@ -645,10 +645,9 @@ def round(tensor, decimals=0):
 
 
 def imag(tensor):
-    try:
+    if tensor.is_complex():
         result = tensor.imag
-    except RuntimeError:
-        # RuntimeError: imag is not implemented for tensors with non-complex dtypes.
+    else:
         result = torch.zeros_like(tensor)
     return result
 
