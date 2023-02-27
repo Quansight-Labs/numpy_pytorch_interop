@@ -1,6 +1,7 @@
 import torch
 
 from . import _util
+from . import _dtypes_impl
 
 
 def deco_ufunc(torch_func):
@@ -70,7 +71,6 @@ logaddexp2 = deco_ufunc(torch.logaddexp2)
 logical_and = deco_ufunc(torch.logical_and)
 logical_or = deco_ufunc(torch.logical_or)
 logical_xor = deco_ufunc(torch.logical_xor)
-matmul = deco_ufunc(torch.matmul)
 maximum = deco_ufunc(torch.maximum)
 minimum = deco_ufunc(torch.minimum)
 remainder = deco_ufunc(torch.remainder)
@@ -143,7 +143,15 @@ def _absolute(x):
         return x
     return torch.absolute(x)
 
+def _matmul(x, y):
+    # work around RuntimeError: expected scalar type Int but found Double
+    dtype = _dtypes_impl.result_type_impl((x.dtype, y.dtype))
+    x = x.to(dtype)
+    y = y.to(dtype)
+    result = torch.matmul(x, y)
+    return result
 
 cbrt = deco_ufunc(_cbrt)
 positive = deco_ufunc(_positive)
 absolute = deco_ufunc(_absolute)
+matmul = deco_ufunc(_matmul)

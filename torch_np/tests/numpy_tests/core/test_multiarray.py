@@ -2468,7 +2468,6 @@ class TestMethods:
                 func(edf, edf[:, ::-1].T.copy())
             )
 
-    @pytest.mark.xfail(reason="TODO np.dot")
     @pytest.mark.parametrize('func', (np.dot, np.matmul))
     @pytest.mark.parametrize('dtype', 'ifdFD')
     def test_no_dgemv(self, func, dtype):

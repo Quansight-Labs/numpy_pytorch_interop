@@ -178,6 +178,8 @@ def trace(tensor, offset=0, axis1=0, axis2=1, dtype=None, out=None):
 def diagonal(tensor, offset=0, axis1=0, axis2=1):
     axis1 = _util.normalize_axis_index(axis1, tensor.ndim)
     axis2 = _util.normalize_axis_index(axis2, tensor.ndim)
+    if axis1 == axis2:
+        raise ValueError("axis1 and axis2 cannot be the same")
     result = torch.diagonal(tensor, offset, axis1, axis2)
     return result
 
@@ -492,17 +494,25 @@ def arange(start=None, stop=None, step=1, dtype=None):
     if start is None:
         start = 0
 
-    if dtype is None:
-        dt_list = [_util._coerce_to_tensor(x).dtype for x in (start, stop, step)]
-        dtype = _dtypes_impl.default_int_dtype
-        dt_list.append(dtype)
-        dtype = _dtypes_impl.result_type_impl(dt_list)
+#    if dtype is None:
+    dt_list = [_util._coerce_to_tensor(x).dtype for x in (start, stop, step)]
+    dtype = _dtypes_impl.default_int_dtype
+    dt_list.append(dtype)
+    dtype = _dtypes_impl.result_type_impl(dt_list)
 
+    # work around RuntimeError: "arange_cpu" not implemented for 'ComplexFloat'        
+    orig_dtype = dtype
+    is_complex = dtype is not None and dtype.is_complex
     try:
-        return torch.arange(start, stop, step, dtype=dtype)
+        if is_complex:
+            dtype = torch.float64
+        result = torch.arange(start, stop, step, dtype=orig_dtype)
+        if is_complex:
+            result  = result.to(dttype)
     except RuntimeError:
         raise ValueError("Maximum allowed size exceeded")
 
+    return result
 
 # ### empty/full et al ###
 
