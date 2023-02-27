@@ -145,6 +145,7 @@ def mean(tensor, axis=None, dtype=None, *, where=NoValue):
 
     is_half = dtype == torch.float16
     if is_half:
+        # XXX revisit when the pytorch version has pytorch/pytorch#95166
         dtype = torch.float32
 
     if axis is None:

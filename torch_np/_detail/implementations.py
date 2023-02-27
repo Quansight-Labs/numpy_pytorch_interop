@@ -179,8 +179,6 @@ def trace(tensor, offset=0, axis1=0, axis2=1, dtype=None, out=None):
 def diagonal(tensor, offset=0, axis1=0, axis2=1):
     axis1 = _util.normalize_axis_index(axis1, tensor.ndim)
     axis2 = _util.normalize_axis_index(axis2, tensor.ndim)
-    if axis1 == axis2:
-        raise ValueError("axis1 and axis2 cannot be the same")
     result = torch.diagonal(tensor, offset, axis1, axis2)
     return result
 

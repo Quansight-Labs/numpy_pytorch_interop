@@ -371,8 +371,7 @@ class ndarray:
     def flatten(self, order="C"):
         if order != "C":
             raise NotImplementedError
-        # return a copy
-        result = self._tensor.ravel().clone()
+        result = self._tensor.flatten()
         return asarray(result)
 
     def nonzero(self):

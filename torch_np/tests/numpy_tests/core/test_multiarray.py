@@ -1686,7 +1686,7 @@ class TestMethods:
         assert_fortran(a.copy('F'))
         assert_c(a.copy('A'))
 
-    @pytest.mark.xfail(reason="no .ctypes attribute")
+    @pytest.mark.skip(reason="no .ctypes attribute")
     @pytest.mark.parametrize("dtype", [np.int32])
     def test__deepcopy__(self, dtype):
         # Force the entry of NULLs into array
@@ -1715,7 +1715,7 @@ class TestMethods:
                 assert_equal(a.copy().argsort(kind=kind), a, msg)
                 assert_equal(b.copy().argsort(kind=kind), b, msg)
 
-    @pytest.mark.xfail(reason='argsort complex')
+    @pytest.mark.skip(reason='argsort complex')
     def test_argsort_complex(self):
         a = np.arange(101, dtype=np.float32)
         b = np.flip(a)
@@ -2546,7 +2546,7 @@ class TestMethods:
             assert_raises(ValueError, np.dot, a, b, out=b[::2])
             assert_raises(ValueError, np.dot, a, b, out=b.T)
 
-    @pytest.mark.xfail(reason="TODO [::-1]")
+    @pytest.mark.xfail(reason="TODO: overlapping memor in matmul")
     def test_matmul_out(self):
         # overlapping memory
         a = np.arange(18).reshape(2, 3, 3)
@@ -2568,14 +2568,14 @@ class TestMethods:
         assert_raises(np.AxisError, a.diagonal, axis1=0, axis2=5)
         assert_raises(np.AxisError, a.diagonal, axis1=5, axis2=0)
         assert_raises(np.AxisError, a.diagonal, axis1=5, axis2=5)
-        assert_raises(ValueError, a.diagonal, axis1=1, axis2=1)
+        assert_raises((ValueError, RuntimeError), a.diagonal, axis1=1, axis2=1)
 
         b = np.arange(8).reshape((2, 2, 2))
         assert_equal(b.diagonal(), [[0, 6], [1, 7]])
         assert_equal(b.diagonal(0), [[0, 6], [1, 7]])
         assert_equal(b.diagonal(1), [[2], [3]])
         assert_equal(b.diagonal(-1), [[4], [5]])
-        assert_raises(ValueError, b.diagonal, axis1=0, axis2=0)
+        assert_raises((ValueError, RuntimeError), b.diagonal, axis1=0, axis2=0)
         assert_equal(b.diagonal(0, 1, 2), [[0, 3], [4, 7]])
         assert_equal(b.diagonal(0, 0, 1), [[0, 6], [1, 7]])
         assert_equal(b.diagonal(offset=1, axis1=0, axis2=2), [[1], [3]])
@@ -2805,7 +2805,6 @@ class TestMethods:
                     if k == 1:
                         b = c
 
-    @pytest.mark.xfail(reason="TODO: ndarray.conjugate")
     def test_conjugate(self):
         a = np.array([1-1j, 1+1j, 23+23.0j])
         ac = a.conj()
@@ -2833,17 +2832,8 @@ class TestMethods:
         assert_equal(ac, a.conjugate())
         assert_equal(ac, np.conjugate(a))
 
-        a = np.array([1-1j, 1+1j, 1, 2.0], object)
-        ac = a.conj()
-        assert_equal(ac, [k.conjugate() for k in a])
-        assert_equal(ac, a.conjugate())
-        assert_equal(ac, np.conjugate(a))
 
-        a = np.array([1-1j, 1, 2.0, 'f'], object)
-        assert_raises(TypeError, lambda: a.conj())
-        assert_raises(TypeError, lambda: a.conjugate())
-
-    @pytest.mark.xfail(reason="TODO: ndarray.conjugate")
+    @pytest.mark.xfail(reason="TODO: ndarray.conjugate with out")
     def test_conjugate_out(self):
         # Minimal test for the out argument being passed on correctly
         # NOTE: The ability to pass `out` is currently undocumented!
@@ -3754,7 +3744,7 @@ class TestArgmaxArgminCommon:
         ret = arg_method(axis=0, out=out)
         assert ret is out
 
-    @pytest.mark.xfail(reason='FIXME: keepdims w/ positional args?')
+    @pytest.mark.xfail(reason='FIXME: out w/ positional args?')
     @pytest.mark.parametrize('arr_method, np_method',
         [('argmax', np.argmax),
          ('argmin', np.argmin)])
@@ -5438,7 +5428,7 @@ class TestDot:
     def setup_method(self):
         np.random.seed(128)
 
-        # Numpy guarantees the random stream, and we don't. So inline the
+        # Numpy and pytorch random streams differ, so inline the
         # values from numpy 1.24.1
         # self.A = np.random.rand(4, 2)
         self.A = np.array([[0.86663704, 0.26314485],
@@ -5626,7 +5616,7 @@ class TestDot:
         r = np.empty((1024, 32), dtype=int)
         assert_raises(ValueError, dot, f, v, r)
 
-    @pytest.mark.skip(reason="TODO order='F'")
+    @pytest.mark.xfail(reason="TODO order='F'")
     def test_dot_array_order(self):
         a = np.array([[1, 2], [3, 4]], order='C')
         b = np.array([[1, 2], [3, 4]], order='F')

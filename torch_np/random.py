@@ -29,8 +29,8 @@ __all__ = [
 ]
 
 
-def array_or_scalar(values, py_type=float, size=None):
-    if size is None:
+def array_or_scalar(values, py_type=float, return_scalar=False):
+    if return_scalar:
         return py_type(values.item())
     else:
         return asarray(values)
@@ -45,7 +45,7 @@ def random_sample(size=None):
     if size is None:
         size = ()
     values = torch.empty(size, dtype=_default_dtype).uniform_()
-    return array_or_scalar(values, size=size)
+    return array_or_scalar(values, return_scalar=size is None)
 
 
 def rand(*size):
@@ -60,19 +60,19 @@ def uniform(low=0.0, high=1.0, size=None):
     if size is None:
         size = ()
     values = torch.empty(size, dtype=_default_dtype).uniform_(low, high)
-    return array_or_scalar(values, size=size)
+    return array_or_scalar(values, return_scalar=size is None)
 
 
 def randn(*size):
     values = torch.randn(size, dtype=_default_dtype)
-    return array_or_scalar(values, size=size)
+    return array_or_scalar(values, return_scalar=size is None)
 
 
 def normal(loc=0.0, scale=1.0, size=None):
     if size is None:
         size = ()
     values = torch.empty(size, dtype=_default_dtype).normal_(loc, scale)
-    return array_or_scalar(values, size=size)
+    return array_or_scalar(values, return_scalar=size is None)
 
 
 def shuffle(x):
@@ -90,7 +90,7 @@ def randint(low, high=None, size=None):
     if high is None:
         low, high = 0, low
     values = torch.randint(low, high, size=size)
-    return array_or_scalar(values, int, size=size)
+    return array_or_scalar(values, int, return_scalar=size is None)
 
 
 def choice(a, size=None, replace=True, p=None):
