@@ -29,11 +29,11 @@ from numpy.lib import (
     bartlett, blackman,
     delete, digitize, extract, gradient, hamming, hanning,
     insert, interp, kaiser, msort, piecewise, place,
-    select, setxor1d, trapz, trim_zeros, unique, unwrap, vectorize
+    select, setxor1d, trapz, trim_zeros, unwrap, vectorize
     )
 from torch_np._detail._util import normalize_axis_tuple
 
-from torch_np import corrcoef, cov, i0, angle, sinc, diff, meshgrid 
+from torch_np import corrcoef, cov, i0, angle, sinc, diff, meshgrid, unique
 
 def get_mat(n):
     data = np.arange(n)
@@ -1864,15 +1864,16 @@ class TestSinc:
         assert_array_equal(y1, y3)
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestUnique:
 
     def test_simple(self):
         x = np.array([4, 3, 2, 1, 1, 2, 3, 4, 0])
         assert_(np.all(unique(x) == [0, 1, 2, 3, 4]))
+
         assert_(unique(np.array([1, 1, 1, 1, 1])) == np.array([1]))
-        x = ['widget', 'ham', 'foo', 'bar', 'foo', 'ham']
-        assert_(np.all(unique(x) == ['bar', 'foo', 'ham', 'widget']))
+
+    @pytest.mark.xfail(reason="unique not implemented for 'ComplexDouble'")
+    def test_simple_complex(self):
         x = np.array([5 + 6j, 1 + 1j, 1 + 10j, 10, 5 + 6j])
         assert_(np.all(unique(x) == [1 + 1j, 1 + 10j, 5 + 6j, 10]))
 

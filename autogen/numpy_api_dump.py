@@ -172,10 +172,6 @@ def choose(a, choices, out=None, mode="raise"):
     raise NotImplementedError
 
 
-def clip(a, a_min, a_max, out=None, **kwargs):
-    raise NotImplementedError
-
-
 def common_type(*arrays):
     raise NotImplementedError
 
@@ -216,31 +212,11 @@ def deprecate_with_doc(msg):
     raise NotImplementedError
 
 
-def diag_indices(n, ndim=2):
-    raise NotImplementedError
-
-
-def diag_indices_from(arr):
-    raise NotImplementedError
-
-
-def diagflat(v, k=0):
-    raise NotImplementedError
-
-
-def diagonal(a, offset=0, axis1=0, axis2=1):
-    raise NotImplementedError
-
-
 def digitize(x, bins, right=False):
     raise NotImplementedError
 
 
 def disp(mesg, device=None, linefeed=True):
-    raise NotImplementedError
-
-
-def dot(a, b, out=None):
     raise NotImplementedError
 
 
@@ -257,10 +233,6 @@ def einsum_path(*operands, optimize="greedy", einsum_call=False):
 
 
 def extract(condition, arr):
-    raise NotImplementedError
-
-
-def fill_diagonal(a, val, wrap=False):
     raise NotImplementedError
 
 
@@ -393,14 +365,6 @@ def in1d(ar1, ar2, assume_unique=False, invert=False):
     raise NotImplementedError
 
 
-def indices(dimensions, dtype=int, sparse=False):
-    raise NotImplementedError
-
-
-def inner(a, b, /):
-    raise NotImplementedError
-
-
 def insert(arr, obj, values, axis=None):
     raise NotImplementedError
 
@@ -417,10 +381,6 @@ def is_busday(dates, weekmask="1111100", holidays=None, busdaycal=None, out=None
     raise NotImplementedError
 
 
-def isclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
-    raise NotImplementedError
-
-
 def isfortran(a):
     raise NotImplementedError
 
@@ -434,14 +394,6 @@ def isscalar(element):
 
 
 def issctype(rep):
-    raise NotImplementedError
-
-
-def issubclass_(arg1, arg2):
-    raise NotImplementedError
-
-
-def issubdtype(arg1, arg2):
     raise NotImplementedError
 
 
@@ -624,10 +576,6 @@ def obj2sctype(rep, default=None):
     raise NotImplementedError
 
 
-def outer(a, b, out=None):
-    raise NotImplementedError
-
-
 def packbits(a, /, axis=None, bitorder="big"):
     raise NotImplementedError
 
@@ -696,10 +644,6 @@ def putmask(a, mask, values):
     raise NotImplementedError
 
 
-def ravel(a, order="C"):
-    raise NotImplementedError
-
-
 def recfromcsv(fname, **kwargs):
     raise NotImplementedError
 
@@ -751,10 +695,6 @@ def savez_compressed(file, *args, **kwds):
 
 
 def sctype2char(sctype):
-    raise NotImplementedError
-
-
-def searchsorted(a, v, side="left", sorter=None):
     raise NotImplementedError
 
 
@@ -811,19 +751,7 @@ def show():
     raise NotImplementedError
 
 
-def sinc(x):
-    raise NotImplementedError
-
-
-def sometrue(*args, **kwargs):
-    raise NotImplementedError
-
-
 def sort_complex(a):
-    raise NotImplementedError
-
-
-def swapaxes(a, axis1, axis2):
     raise NotImplementedError
 
 
@@ -832,10 +760,6 @@ def take(a, indices, axis=None, out=None, mode="raise"):
 
 
 def tensordot(a, b, axes=2):
-    raise NotImplementedError
-
-
-def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None):
     raise NotImplementedError
 
 
@@ -855,31 +779,11 @@ def union1d(ar1, ar2):
     raise NotImplementedError
 
 
-def unique(
-    ar,
-    return_index=False,
-    return_inverse=False,
-    return_counts=False,
-    axis=None,
-    *,
-    equal_nan=True,
-):
-    raise NotImplementedError
-
-
 def unpackbits(a, /, axis=None, count=None, bitorder="big"):
     raise NotImplementedError
 
 
 def unwrap(p, discont=None, axis=-1, *, period=6.283185307179586):
-    raise NotImplementedError
-
-
-def vdot(a, b, /):
-    raise NotImplementedError
-
-
-def where(condition, x, y, /):
     raise NotImplementedError
 
 

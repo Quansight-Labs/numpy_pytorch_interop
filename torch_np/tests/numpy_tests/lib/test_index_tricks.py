@@ -8,12 +8,12 @@ from torch_np.testing import (
 from pytest import raises as assert_raises #, assert_raises_regex,
 
 from numpy.lib.index_tricks import (
-    mgrid, ogrid, ndenumerate, fill_diagonal,
-    ndindex, r_, s_, ix_
+    mgrid, ogrid, ndenumerate,
+    ndindex, r_, ix_
     )
 
-# from torch_np import diag_indices, diag_indices_from
-from torch_np._detail._index_tricks import index_exp
+from torch_np import diag_indices, diag_indices_from, fill_diagonal
+from torch_np._detail._index_tricks import index_exp, s_
 
 
 @pytest.mark.xfail(reason='unravel_index not implemented')
@@ -358,7 +358,6 @@ class TestNdenumerate:
                      [((0, 0), 1), ((0, 1), 2), ((1, 0), 3), ((1, 1), 4)])
 
 
-@pytest.mark.xfail(reason='s_ not implemented')
 class TestIndexExpression:
     def test_regression_1(self):
         # ticket #1196
@@ -422,10 +421,9 @@ def test_c_():
     assert_equal(a, [[1, 2, 3, 0, 0, 4, 5, 6]])
 
 
-@pytest.mark.xfail(reason='fill_diagonal not implemented')
 class TestFillDiagonal:
     def test_basic(self):
-        a = np.zeros((3, 3), int)
+        a = np.zeros((3, 3), dtype=int)
         fill_diagonal(a, 5)
         assert_array_equal(
             a, np.array([[5, 0, 0],
@@ -434,7 +432,7 @@ class TestFillDiagonal:
             )
 
     def test_tall_matrix(self):
-        a = np.zeros((10, 3), int)
+        a = np.zeros((10, 3), dtype=int)
         fill_diagonal(a, 5)
         assert_array_equal(
             a, np.array([[5, 0, 0],
@@ -450,7 +448,7 @@ class TestFillDiagonal:
             )
 
     def test_tall_matrix_wrap(self):
-        a = np.zeros((10, 3), int)
+        a = np.zeros((10, 3), dtype=int)
         fill_diagonal(a, 5, True)
         assert_array_equal(
             a, np.array([[5, 0, 0],
@@ -466,7 +464,7 @@ class TestFillDiagonal:
             )
 
     def test_wide_matrix(self):
-        a = np.zeros((3, 10), int)
+        a = np.zeros((3, 10), dtype=int)
         fill_diagonal(a, 5)
         assert_array_equal(
             a, np.array([[5, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -475,26 +473,25 @@ class TestFillDiagonal:
             )
 
     def test_operate_4d_array(self):
-        a = np.zeros((3, 3, 3, 3), int)
+        a = np.zeros((3, 3, 3, 3), dtype=int)
         fill_diagonal(a, 4)
         i = np.array([0, 1, 2])
         assert_equal(np.where(a != 0), (i, i, i, i))
 
     def test_low_dim_handling(self):
         # raise error with low dimensionality
-        a = np.zeros(3, int)
-        with assert_raises_regex(ValueError, "at least 2-d"):
+        a = np.zeros(3, dtype=int)
+        with assert_raises(ValueError):
             fill_diagonal(a, 5)
 
     def test_hetero_shape_handling(self):
         # raise error with high dimensionality and
         # shape mismatch
-        a = np.zeros((3,3,7,3), int)
-        with assert_raises_regex(ValueError, "equal length"):
+        a = np.zeros((3,3,7,3), dtype=int)
+        with assert_raises(ValueError):
             fill_diagonal(a, 2)
 
 
-@pytest.mark.xfail(reason='diag_indices not implemented')
 def test_diag_indices():
     di = diag_indices(4)
     a = np.array([[1, 2, 3, 4],
@@ -513,7 +510,7 @@ def test_diag_indices():
     d3 = diag_indices(2, 3)
 
     # And use it to set the diagonal of a zeros array to 1:
-    a = np.zeros((2, 2, 2), int)
+    a = np.zeros((2, 2, 2), dtype=int)
     a[d3] = 1
     assert_array_equal(
         a, np.array([[[1, 0],
@@ -523,7 +520,6 @@ def test_diag_indices():
         )
 
 
-@pytest.mark.xfail(reason='diag_indices_from not implemented')
 class TestDiagIndicesFrom:
 
     def test_diag_indices_from(self):
@@ -534,12 +530,12 @@ class TestDiagIndicesFrom:
 
     def test_error_small_input(self):
         x = np.ones(7)
-        with assert_raises_regex(ValueError, "at least 2-d"):
+        with assert_raises(ValueError):
             diag_indices_from(x)
 
     def test_error_shape_mismatch(self):
-        x = np.zeros((3, 3, 2, 3), int)
-        with assert_raises_regex(ValueError, "equal length"):
+        x = np.zeros((3, 3, 2, 3), dtype=int)
+        with assert_raises(ValueError):
             diag_indices_from(x)
 
 

@@ -29,6 +29,8 @@ def rot90(m_tensor, k=1, axes=(0, 1)):
 
 
 def swapaxes(tensor, axis1, axis2):
+    axis1 = _util.normalize_axis_index(axis1, tensor.ndim)
+    axis2 = _util.normalize_axis_index(axis2, tensor.ndim)
     return torch.swapaxes(tensor, axis1, axis2)
 
 

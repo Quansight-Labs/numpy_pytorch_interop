@@ -372,6 +372,39 @@ def diag(v, k=0):
     return asarray(result)
 
 
+def diagonal(a, offset=0, axis1=0, axis2=1):
+    arr = asarray(a)
+    return arr.diagonal(offset, axis1, axis2)
+
+
+def diagflat(v, k=0):
+    tensor = asarray(v).get()
+    result = torch.diagflat(tensor, k)
+    return result
+
+
+def diag_indices(n, ndim=2):
+    result = _impl.diag_indices(n, ndim)
+    return tuple(asarray(x) for x in result)
+
+
+def diag_indices_from(arr):
+    tensor = asarray(arr).get()
+    result = _impl.diag_indices_from(tensor)
+    return tuple(asarray(x) for x in result)
+
+
+def fill_diagonal(a, val, wrap=False):
+    tensor, t_val = _helpers.to_tensors(a, val)
+    result = _impl.fill_diagonal(tensor, t_val, wrap)
+    return asarray(result)
+
+
+def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None):
+    arr = asarray(a)
+    return arr.trace(offset, axis1, axis2, dtype=dtype, out=out)
+
+
 ###### misc/unordered
 
 
@@ -446,17 +479,31 @@ def bincount(x, /, weights=None, minlength=0):
     return asarray(result)
 
 
-# YYY: pattern: sequence of arrays
 def where(condition, x=None, y=None, /):
-    selector = (x is None) == (y is None)
-    if not selector:
-        raise ValueError("either both or neither of x and y should be given")
-    condition = asarray(condition).get()
-    if x is None and y is None:
-        return tuple(asarray(_) for _ in torch.where(condition))
-    x = asarray(condition).get()
-    y = asarray(condition).get()
-    return asarray(torch.where(condition, x, y))
+    cond_t, x_t, y_t = _helpers.to_tensors_or_none(condition, x, y)
+    result = _impl.where(cond_t, x_t, y_t)
+    if isinstance(result, tuple):
+        # single-argument where(condition)
+        return tuple(asarray(x) for x in result)
+    else:
+        return asarray(result)
+
+
+def searchsorted(a, v, side="left", sorter=None):
+    arr = asarray(a)
+    return arr.searchsorted(v, side=side, sorter=sorter)
+
+
+def vdot(a, b, /):
+    t_a, t_b = _helpers.to_tensors(a, b)
+    result = _impl.vdot(t_a, t_b)
+    return result.item()
+
+
+def dot(a, b, out=None):
+    t_a, t_b = _helpers.to_tensors(a, b)
+    result = _impl.dot(t_a, t_b)
+    return _helpers.result_or_out(result, out)
 
 
 ###### module-level queries of object properties
@@ -591,6 +638,15 @@ def meshgrid(*xi, copy=True, sparse=False, indexing="xy"):
     return [asarray(t) for t in output]
 
 
+@_decorators.dtype_to_torch
+def indices(dimensions, dtype=int, sparse=False):
+    result = _impl.indices(dimensions, dtype=dtype, sparse=sparse)
+    if sparse:
+        return tuple(asarray(x) for x in result)
+    else:
+        return asarray(result)
+
+
 def nonzero(a):
     arr = asarray(a)
     return arr.nonzero()
@@ -628,7 +684,9 @@ around = round_
 round = round_
 
 
-def clip(a, a_min, a_max, out=None):
+def clip(a, a_min=None, a_max=None, out=None):
+    # np.clip requires both a_min and a_max not None, while ndarray.clip
+    # allows of then be None. Allow both here.
     arr = asarray(a)
     return arr.clip(a_min, a_max, out=out)
 
@@ -847,6 +905,18 @@ def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
     )
 
 
+def inner(a, b, /):
+    t_a, t_b = _helpers.to_tensors(a, b)
+    result = _impl.inner(t_a, t_b)
+    return asarray(result)
+
+
+def outer(a, b, out=None):
+    a_t, b_t = _helpers.to_tensors(a, b)
+    result = torch.outer(a_t, b_t)
+    return _helpers.result_or_out(result, out)
+
+
 @asarray_replacer()
 def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
     if where is not NoValue:
@@ -1036,10 +1106,6 @@ def array_equiv(a1, a2):
     return result
 
 
-def dot():
-    raise NotImplementedError
-
-
 def common_type():
     raise NotImplementedError
 
@@ -1085,6 +1151,34 @@ def argsort(a, axis=-1, kind=None, order=None):
     tensor = asarray(a).get()
     result = _impl.argsort(tensor, axis, kind, order)
     return asarray(result)
+
+
+# ### unqiue et al ###
+
+
+def unique(
+    ar,
+    return_index=False,
+    return_inverse=False,
+    return_counts=False,
+    axis=None,
+    *,
+    equal_nan=True,
+):
+    tensor = asarray(ar).get()
+    result = _impl.unique(
+        tensor,
+        return_index=return_index,
+        return_inverse=return_inverse,
+        return_counts=return_counts,
+        axis=axis,
+        equal_nan=equal_nan,
+    )
+
+    if isinstance(result, tuple):
+        return tuple(asarray(x) for x in result)
+    else:
+        return asarray(result)
 
 
 ###### mapping from numpy API objects to wrappers from this module ######

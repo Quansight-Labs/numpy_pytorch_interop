@@ -106,6 +106,10 @@ class ndarray:
         return tuple(stride * elsize for stride in self._tensor.stride())
 
     @property
+    def itemsize(self):
+        return self._tensor.element_size()
+
+    @property
     def base(self):
         return self._base
 
@@ -225,7 +229,10 @@ class ndarray:
         return float(self._tensor)
 
     def __complex__(self):
-        return complex(self._tensor)
+        try:
+            return complex(self._tensor)
+        except ValueError as e:
+            raise TypeError(*e.args)
 
     def __int__(self):
         return int(self._tensor)
@@ -336,6 +343,9 @@ class ndarray:
     __pos__ = _unary_ufuncs.positive
     __neg__ = _unary_ufuncs.negative
 
+    conjugate = _unary_ufuncs.conjugate
+    conj = conjugate
+
     ### methods to match namespace functions
 
     def squeeze(self, axis=None):
@@ -358,11 +368,17 @@ class ndarray:
             raise NotImplementedError
         return ndarray._from_tensor_and_base(self._tensor.ravel(), self)
 
+    def flatten(self, order="C"):
+        if order != "C":
+            raise NotImplementedError
+        result = self._tensor.flatten()
+        return asarray(result)
+
     def nonzero(self):
         tensor = self._tensor
         return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
 
-    def clip(self, min, max, out=None):
+    def clip(self, min=None, max=None, out=None):
         tensor, t_min, t_max = _helpers.to_tensors_or_none(self, min, max)
         result = _impl.clip(tensor, t_min, t_max)
         return _helpers.result_or_out(result, out)
@@ -395,6 +411,16 @@ class ndarray:
         axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumsum))
     )
 
+    def diagonal(self, offset=0, axis1=0, axis2=1):
+        result = _impl.diagonal(self._tensor, offset, axis1, axis2)
+        return asarray(result)
+
+    @dtype_to_torch
+    def trace(self, offset=0, axis1=0, axis2=1, dtype=None, out=None):
+        tensor = self._tensor
+        result = _impl.trace(tensor, offset, axis1, axis2, dtype)
+        return _helpers.result_or_out(result, out)
+
     ### indexing ###
     @staticmethod
     def _upcast_int_indices(index):
@@ -419,12 +445,17 @@ class ndarray:
     ### sorting ###
 
     def sort(self, axis=-1, kind=None, order=None):
-        result = _impl.sort(self.tensor, axis, kind, order)
+        # ndarray.sort works in-place
+        result = _impl.sort(self._tensor, axis, kind, order)
         self._tensor = result
-        return None
 
     def argsort(self, axis=-1, kind=None, order=None):
-        result = _impl.argsort(self.tensor, axis, kind, order)
+        result = _impl.argsort(self._tensor, axis, kind, order)
+        return asarray(result)
+
+    def searchsorted(self, v, side="left", sorter=None):
+        v_t, sorter_t = _helpers.to_tensors_or_none(v, sorter)
+        result = torch.searchsorted(self._tensor, v_t, side=side, sorter=sorter_t)
         return asarray(result)
 
 

@@ -127,6 +127,62 @@ def triu_indices(n, k=0, m=None):
     return result
 
 
+def diag_indices(n, ndim=2):
+    idx = torch.arange(n)
+    return (idx,) * ndim
+
+
+def diag_indices_from(tensor):
+    if not tensor.ndim >= 2:
+        raise ValueError("input array must be at least 2-d")
+    # For more than d=2, the strided formula is only valid for arrays with
+    # all dimensions equal, so we check first.
+    s = tensor.shape
+    if s[1:] != s[:-1]:
+        raise ValueError("All dimensions of input must be of equal length")
+    return diag_indices(s[0], tensor.ndim)
+
+
+def fill_diagonal(tensor, t_val, wrap):
+    # torch.Tensor.fill_diagonal_ only accepts scalars. Thus vendor the numpy source,
+    # https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/index_tricks.py#L786-L917
+
+    if tensor.ndim < 2:
+        raise ValueError("array must be at least 2-d")
+    end = None
+    if tensor.ndim == 2:
+        # Explicit, fast formula for the common case.  For 2-d arrays, we
+        # accept rectangular ones.
+        step = tensor.shape[1] + 1
+        # This is needed to don't have tall matrix have the diagonal wrap.
+        if not wrap:
+            end = tensor.shape[1] * tensor.shape[1]
+    else:
+        # For more than d=2, the strided formula is only valid for arrays with
+        # all dimensions equal, so we check first.
+        s = tensor.shape
+        if s[1:] != s[:-1]:
+            raise ValueError("All dimensions of input must be of equal length")
+        sz = torch.as_tensor(tensor.shape[:-1])
+        step = 1 + (torch.cumprod(sz, 0)).sum()
+
+    # Write the value out into the diagonal.
+    tensor.ravel()[:end:step] = t_val
+    return tensor
+
+
+def trace(tensor, offset=0, axis1=0, axis2=1, dtype=None, out=None):
+    result = torch.diagonal(tensor, offset, dim1=axis1, dim2=axis2).sum(-1, dtype=dtype)
+    return result
+
+
+def diagonal(tensor, offset=0, axis1=0, axis2=1):
+    axis1 = _util.normalize_axis_index(axis1, tensor.ndim)
+    axis2 = _util.normalize_axis_index(axis2, tensor.ndim)
+    result = torch.diagonal(tensor, offset, axis1, axis2)
+    return result
+
+
 # ### splits ###
 
 
@@ -380,6 +436,26 @@ def meshgrid(*xi_tensors, copy=True, sparse=False, indexing="xy"):
     return output
 
 
+def indices(dimensions, dtype=int, sparse=False):
+    # https://github.com/numpy/numpy/blob/v1.24.0/numpy/core/numeric.py#L1691-L1791
+    dimensions = tuple(dimensions)
+    N = len(dimensions)
+    shape = (1,) * N
+    if sparse:
+        res = tuple()
+    else:
+        res = torch.empty((N,) + dimensions, dtype=dtype)
+    for i, dim in enumerate(dimensions):
+        idx = torch.arange(dim, dtype=dtype).reshape(
+            shape[:i] + (dim,) + shape[i + 1 :]
+        )
+        if sparse:
+            res = res + (idx,)
+        else:
+            res[i] = idx
+    return res
+
+
 def bincount(x_tensor, /, weights_tensor=None, minlength=0):
     int_dtype = _dtypes_impl.default_int_dtype
     (x_tensor,) = _util.cast_dont_broadcast((x_tensor,), int_dtype, casting="safe")
@@ -496,7 +572,12 @@ def squeeze(tensor, axis=None):
     elif axis is None:
         result = tensor.squeeze()
     else:
-        result = tensor.squeeze(axis)
+        if isinstance(axis, tuple):
+            result = tensor
+            for ax in axis:
+                result = result.squeeze(ax)
+        else:
+            result = tensor.squeeze(axis)
     return result
 
 
@@ -588,4 +669,135 @@ def sort(tensor, axis=-1, kind=None, order=None):
 def argsort(tensor, axis=-1, kind=None, order=None):
     tensor, axis, stable = _sort_helper(tensor, axis, kind, order)
     result = torch.argsort(tensor, dim=axis, stable=stable)
+    return result
+
+
+# ### logic and selection ###
+
+
+def where(condition, x, y):
+    selector = (x is None) == (y is None)
+    if not selector:
+        raise ValueError("either both or neither of x and y should be given")
+
+    if condition.dtype != torch.bool:
+        condition = condition.to(torch.bool)
+
+    if x is None and y is None:
+        result = torch.where(condition)
+    else:
+        try:
+            result = torch.where(condition, x, y)
+        except RuntimeError as e:
+            raise ValueError(*e.args)
+    return result
+
+
+# ### dot and other linalg ###
+
+
+def inner(t_a, t_b):
+    dtype = _dtypes_impl.result_type_impl((t_a.dtype, t_b.dtype))
+    is_half = dtype == torch.float16
+    is_bool = dtype == torch.bool
+
+    if is_half:
+        # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
+        dtype = torch.float32
+    if is_bool:
+        dtype = torch.uint8
+
+    t_a = _util.cast_if_needed(t_a, dtype)
+    t_b = _util.cast_if_needed(t_b, dtype)
+
+    result = torch.inner(t_a, t_b)
+
+    if is_half:
+        result = result.to(torch.float16)
+    if is_bool:
+        result = result.to(torch.bool)
+
+    return result
+
+
+def vdot(t_a, t_b, /):
+    # 1. torch only accepts 1D arrays, numpy ravels
+    # 2. torch requires matching dtype, while numpy casts (?)
+    t_a, t_b = torch.atleast_1d(t_a, t_b)
+    if t_a.ndim > 1:
+        t_a = t_a.ravel()
+    if t_b.ndim > 1:
+        t_b = t_b.ravel()
+
+    dtype = _dtypes_impl.result_type_impl((t_a.dtype, t_b.dtype))
+    is_half = dtype == torch.float16
+    is_bool = dtype == torch.bool
+
+    # work around torch's "dot" not implemented for 'Half', 'Bool'
+    if is_half:
+        dtype = torch.float32
+    if is_bool:
+        dtype = torch.uint8
+
+    t_a = _util.cast_if_needed(t_a, dtype)
+    t_b = _util.cast_if_needed(t_b, dtype)
+
+    result = torch.vdot(t_a, t_b)
+
+    if is_half:
+        result = result.to(torch.float16)
+    if is_bool:
+        result = result.to(torch.bool)
+
+    return result
+
+
+def dot(t_a, t_b):
+    if t_a.ndim == 0 or t_b.ndim == 0:
+        result = t_a * t_b
+    elif t_a.ndim == 1 and t_b.ndim == 1:
+        result = torch.dot(t_a, t_b)
+    elif t_a.ndim == 1:
+        result = torch.mv(t_b.T, t_a).T
+    elif t_b.ndim == 1:
+        result = torch.mv(t_a, t_b)
+    else:
+        result = torch.matmul(t_a, t_b)
+    return result
+
+
+# ### unique et al ###
+
+
+def unique(
+    tensor,
+    return_index=False,
+    return_inverse=False,
+    return_counts=False,
+    axis=None,
+    *,
+    equal_nan=True,
+):
+    if return_index or not equal_nan:
+        raise NotImplementedError
+
+    if axis is None:
+        tensor = tensor.ravel()
+        axis = 0
+    axis = _util.normalize_axis_index(axis, tensor.ndim)
+
+    is_half = tensor.dtype == torch.float16
+    if is_half:
+        tensor = tensor.to(torch.float32)
+
+    result = torch.unique(
+        tensor, return_inverse=return_inverse, return_counts=return_counts, dim=axis
+    )
+
+    if is_half:
+        if isinstance(result, tuple):
+            result = (result[0].to(torch.float16),) + result[1:]
+        else:
+            result = result.to(torch.float16)
+
     return result
