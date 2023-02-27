@@ -46,5 +46,5 @@ jobs:
           ls -l
       - name: Run tests
         run: |
-          pytest torch_np/ -v -s -n 2
+          pytest torch_np/ -v -s -n 2 --runslow
 
