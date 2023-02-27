@@ -1,6 +1,5 @@
 import torch
 
-from .. import _helpers
 from . import _dtypes_impl, _util
 
 # ### equality, equivalence, allclose ###
@@ -581,26 +580,49 @@ def squeeze(tensor, axis=None):
     return result
 
 
-def reshape(tensor, *shape, order="C"):
+def reshape(tensor, shape, order="C"):
     if order != "C":
         raise NotImplementedError
-    newshape = shape[0] if len(shape) == 1 else shape
-    # convert any tnp.ndarray inputs into tensors before passing to torch.Tensor.reshape
-    t_newshape = _helpers.ndarrays_to_tensors(newshape)
     # if sh = (1, 2, 3), numpy allows both .reshape(sh) and .reshape(*sh)
-    result = tensor.reshape(t_newshape)
+    newshape = shape[0] if len(shape) == 1 else shape
+    result = tensor.reshape(newshape)
     return result
 
 
-def transpose(tensor, *axes):
-    # numpy allows both .reshape(sh) and .reshape(*sh)
-    axes = axes[0] if len(axes) == 1 else axes
-    if axes == () or axes is None:
+def transpose(tensor, axes=None):
+    # numpy allows both .tranpose(sh) and .transpose(*sh)
+    if axes in [(), None, (None,)]:
         axes = tuple(range(tensor.ndim))[::-1]
     try:
         result = tensor.permute(axes)
     except RuntimeError:
         raise ValueError("axes don't match array")
+    return result
+
+
+def ravel(tensor, order="C"):
+    if order != "C":
+        raise NotImplementedError
+    result = tensor.ravel()
+    return result
+
+
+# leading underscore since arr.flatten exists but np.flatten does not
+def _flatten(tensor, order="C"):
+    if order != "C":
+        raise NotImplementedError
+    # return a copy
+    result = tensor.flatten()
+    return result
+
+
+# ### swap/move/roll axis ###
+
+
+def moveaxis(tensor, source, destination):
+    source = _util.normalize_axis_tuple(source, tensor.ndim, "source")
+    destination = _util.normalize_axis_tuple(destination, tensor.ndim, "destination")
+    result = torch.moveaxis(tensor, source, destination)
     return result
 
 
@@ -619,6 +641,14 @@ def round(tensor, decimals=0):
     else:
         # RuntimeError: "round_cpu" not implemented for 'int'
         result = tensor
+    return result
+
+
+def imag(tensor):
+    if tensor.is_complex():
+        result = tensor.imag
+    else:
+        result = torch.zeros_like(tensor)
     return result
 
 

@@ -3,7 +3,7 @@ import operator
 
 import torch
 
-from . import _binary_ufuncs, _dtypes, _helpers, _unary_ufuncs
+from . import _binary_ufuncs, _dtypes, _funcs, _helpers, _unary_ufuncs
 from ._decorators import (
     NoValue,
     axis_keepdims_wrapper,
@@ -139,7 +139,7 @@ class ndarray:
 
     @property
     def real(self):
-        return asarray(self._tensor.real)
+        return _funcs.real(self)
 
     @real.setter
     def real(self, value):
@@ -147,19 +147,13 @@ class ndarray:
 
     @property
     def imag(self):
-        try:
-            return asarray(self._tensor.imag)
-        except RuntimeError:
-            zeros = torch.zeros_like(self._tensor)
-            return ndarray._from_tensor_and_base(zeros, None)
+        return _funcs.imag(self)
 
     @imag.setter
     def imag(self, value):
         self._tensor.imag = asarray(value).get()
 
-    def round(self, decimals=0, out=None):
-        result = _impl.round(self._tensor, decimals)
-        return _helpers.result_or_out(result, out)
+    round = _funcs.round
 
     # ctors
     def astype(self, dtype):
@@ -348,46 +342,38 @@ class ndarray:
 
     ### methods to match namespace functions
 
-    def squeeze(self, axis=None):
-        result = _impl.squeeze(self._tensor, axis)
-        return ndarray._from_tensor_and_base(result, self)
-
-    def reshape(self, *shape, order="C"):
-        result = _impl.reshape(self._tensor, *shape, order=order)
-        return ndarray._from_tensor_and_base(result, self)
+    squeeze = _funcs.squeeze
+    swapaxes = _funcs.swapaxes
 
     def transpose(self, *axes):
-        result = _impl.transpose(self._tensor, *axes)
-        return ndarray._from_tensor_and_base(result, self)
+        # np.transpose(arr, axis=None) but arr.transpose(*axes)
+        return _funcs.transpose(self, axes)
 
-    def swapaxes(self, axis1, axis2):
-        return asarray(_flips.swapaxes(self._tensor, axis1, axis2))
+    def reshape(self, *shape, order="C"):
+        # arr.reshape(shape) and arr.reshape(*shape)
+        return _funcs.reshape(self, shape, order=order)
 
-    def ravel(self, order="C"):
-        if order != "C":
-            raise NotImplementedError
-        return ndarray._from_tensor_and_base(self._tensor.ravel(), self)
+    ravel = _funcs.ravel
+    flatten = _funcs._flatten
 
-    def flatten(self, order="C"):
-        if order != "C":
-            raise NotImplementedError
-        result = self._tensor.flatten()
-        return asarray(result)
+    nonzero = _funcs.nonzero
+    clip = _funcs.clip
+    repeat = _funcs.repeat
 
-    def nonzero(self):
-        tensor = self._tensor
-        return tuple(asarray(_) for _ in tensor.nonzero(as_tuple=True))
+    diagonal = _funcs.diagonal
+    trace = _funcs.trace
 
-    def clip(self, min=None, max=None, out=None):
-        tensor, t_min, t_max = _helpers.to_tensors_or_none(self, min, max)
-        result = _impl.clip(tensor, t_min, t_max)
-        return _helpers.result_or_out(result, out)
+    ### sorting ###
 
-    def repeat(self, repeats, axis=None):
-        t_repeats = asarray(repeats).get()  # XXX: scalar repeats
-        tensor = self._tensor
-        result = torch.repeat_interleave(tensor, t_repeats, axis)
-        return asarray(result)
+    def sort(self, axis=-1, kind=None, order=None):
+        # ndarray.sort works in-place
+        result = _impl.sort(self._tensor, axis, kind, order)
+        self._tensor = result
+
+    argsort = _funcs.argsort
+    searchsorted = _funcs.searchsorted
+
+    ### reductions ###
 
     argmin = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmin))
     argmax = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmax))
@@ -411,16 +397,6 @@ class ndarray:
         axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumsum))
     )
 
-    def diagonal(self, offset=0, axis1=0, axis2=1):
-        result = _impl.diagonal(self._tensor, offset, axis1, axis2)
-        return asarray(result)
-
-    @dtype_to_torch
-    def trace(self, offset=0, axis1=0, axis2=1, dtype=None, out=None):
-        tensor = self._tensor
-        result = _impl.trace(tensor, offset, axis1, axis2, dtype)
-        return _helpers.result_or_out(result, out)
-
     ### indexing ###
     @staticmethod
     def _upcast_int_indices(index):
@@ -441,22 +417,6 @@ class ndarray:
         index = ndarray._upcast_int_indices(index)
         value = _helpers.ndarrays_to_tensors(value)
         return self._tensor.__setitem__(index, value)
-
-    ### sorting ###
-
-    def sort(self, axis=-1, kind=None, order=None):
-        # ndarray.sort works in-place
-        result = _impl.sort(self._tensor, axis, kind, order)
-        self._tensor = result
-
-    def argsort(self, axis=-1, kind=None, order=None):
-        result = _impl.argsort(self._tensor, axis, kind, order)
-        return asarray(result)
-
-    def searchsorted(self, v, side="left", sorter=None):
-        v_t, sorter_t = _helpers.to_tensors_or_none(v, sorter)
-        result = torch.searchsorted(self._tensor, v_t, side=side, sorter=sorter_t)
-        return asarray(result)
 
 
 # This is the ideally the only place which talks to ndarray directly.
