@@ -146,8 +146,8 @@ def _absolute(x):
 def _matmul(x, y):
     # work around RuntimeError: expected scalar type Int but found Double
     dtype = _dtypes_impl.result_type_impl((x.dtype, y.dtype))
-    x = x.to(dtype)
-    y = y.to(dtype)
+    x = _util.cast_if_needed(x, dtype)
+    y = _util.cast_if_needed(y, dtype)
     result = torch.matmul(x, y)
     return result
 

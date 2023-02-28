@@ -101,9 +101,6 @@ def vdot(a, b, /):
 
 def dot(a, b, out=None):
     t_a, t_b = _helpers.to_tensors(a, b)
-    dtype = _dtypes_impl.result_type_impl((t_a.dtype, t_b.dtype))
-    t_a = t_a.to(dtype)
-    t_b = t_b.to(dtype)
     result = _impl.dot(t_a, t_b)
     return _helpers.result_or_out(result, out)
 

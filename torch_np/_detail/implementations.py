@@ -507,7 +507,7 @@ def arange(start=None, stop=None, step=1, dtype=None):
 
     if (step > 0 and start > stop) or (step < 0 and start < stop):
         # empty range
-        return torch.empty(0, dtype=target_type)
+        return torch.empty(0, dtype=target_dtype)
 
     try:
         result = torch.arange(start, stop, step, dtype=work_dtype)
@@ -797,6 +797,10 @@ def vdot(t_a, t_b, /):
 
 
 def dot(t_a, t_b):
+    dtype = _dtypes_impl.result_type_impl((t_a.dtype, t_b.dtype))
+    t_a = _util.cast_if_needed(t_a, dtype)
+    t_b = _util.cast_if_needed(t_b, dtype)
+
     if t_a.ndim == 0 or t_b.ndim == 0:
         result = t_a * t_b
     elif t_a.ndim == 1 and t_b.ndim == 1:
