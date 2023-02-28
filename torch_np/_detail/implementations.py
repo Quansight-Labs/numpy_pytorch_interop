@@ -492,16 +492,30 @@ def arange(start=None, stop=None, step=1, dtype=None):
     if start is None:
         start = 0
 
+    # the dtype of the result
     if dtype is None:
-        dt_list = [_util._coerce_to_tensor(x).dtype for x in (start, stop, step)]
         dtype = _dtypes_impl.default_int_dtype
-        dt_list.append(dtype)
-        dtype = _dtypes_impl.result_type_impl(dt_list)
+    dt_list = [_util._coerce_to_tensor(x).dtype for x in (start, stop, step)]
+    dt_list.append(dtype)
+    dtype = _dtypes_impl.result_type_impl(dt_list)
+
+    # work around RuntimeError: "arange_cpu" not implemented for 'ComplexFloat'
+    if dtype.is_complex:
+        work_dtype, target_dtype = torch.float64, dtype
+    else:
+        work_dtype, target_dtype = dtype, dtype
+
+    if (step > 0 and start > stop) or (step < 0 and start < stop):
+        # empty range
+        return torch.empty(0, dtype=target_dtype)
 
     try:
-        return torch.arange(start, stop, step, dtype=dtype)
+        result = torch.arange(start, stop, step, dtype=work_dtype)
+        result = _util.cast_if_needed(result, target_dtype)
     except RuntimeError:
         raise ValueError("Maximum allowed size exceeded")
+
+    return result
 
 
 # ### empty/full et al ###
@@ -783,6 +797,10 @@ def vdot(t_a, t_b, /):
 
 
 def dot(t_a, t_b):
+    dtype = _dtypes_impl.result_type_impl((t_a.dtype, t_b.dtype))
+    t_a = _util.cast_if_needed(t_a, dtype)
+    t_b = _util.cast_if_needed(t_b, dtype)
+
     if t_a.ndim == 0 or t_b.ndim == 0:
         result = t_a * t_b
     elif t_a.ndim == 1 and t_b.ndim == 1:
