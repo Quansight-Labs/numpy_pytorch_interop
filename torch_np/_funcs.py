@@ -64,6 +64,12 @@ def normalizer(func):
 
         # normalize keyword arguments
         for name, arg in kwds.items():
+            if not name in sig.parameters:
+                # unknown kwarg, bail out
+                raise TypeError(
+                    f"{func.__name__}() got an unexpected keyword argument '{name}'."
+                )
+
             print("kw: ", name, sig.parameters[name].annotation)
             parm = sig.parameters[name]
             normalizer = normalizers.get(parm.annotation, None)
@@ -75,8 +81,16 @@ def normalizer(func):
         ba = sig.bind(**dct)
         ba.apply_defaults()
 
+        # Now that all parameters have been consumed, check:
+        # Anything that has not been bound is unexpected positional arg => raise.
+        # If there are too few actual arguments, this fill fail in func(*ba.args) below
+        if len(args) > len(ba.args):
+            raise TypeError(
+                f"{func.__name__}() takes {len(ba.args)} positional argument but {len(args)} were given."
+            )
+
         # TODO:
-        # 2. extra unknown args -- error out : nonzero([2, 0, 3], oops=42)
+        # 2. [LOOKS OK] extra unknown args -- error out : nonzero([2, 0, 3], oops=42)
         # 3. [LOOKS OK] optional (tensor_or_none) : untyped => pass through
         # 4. [LOOKS OK] DTypeLike : positional or kw
         # 5. axes : live in _impl or in types? several ways of handling them

@@ -1,8 +1,9 @@
 import functools
 
-import numpy as np
+import numpy as _np
 import pytest
 import torch
+from pytest import raises as assert_raises
 
 import torch_np as w
 import torch_np._unary_ufuncs as _unary_ufuncs
@@ -211,7 +212,7 @@ class TestOneArrAndShape:
         assert ta.shape == self.shape
 
 
-one_arg_scalar_funcs = [(w.size, np.size), (w.shape, np.shape), (w.ndim, np.ndim)]
+one_arg_scalar_funcs = [(w.size, _np.size), (w.shape, _np.shape), (w.ndim, _np.ndim)]
 
 
 @pytest.mark.parametrize("func, np_func", one_arg_scalar_funcs)
@@ -221,7 +222,7 @@ class TestOneArrToScalar:
     def test_tensor(self, func, np_func):
         t = torch.Tensor([[1, 2, 3], [4, 5, 6]])
         ta = func(t)
-        tn = np_func(np.asarray(t))
+        tn = np_func(_np.asarray(t))
 
         assert not isinstance(ta, w.ndarray)
         assert ta == tn
@@ -384,3 +385,27 @@ class TestPythonArgsToArray:
     def test_simple(self, func, args):
         a = func(*args)
         assert isinstance(a, w.ndarray)
+
+
+class TestNormalizations:
+    """Smoke test generic problems with normalizations."""
+
+    def test_unknown_args(self):
+        # Check that unknown args to decorated functions fail
+        a = w.arange(7) % 2 == 0
+
+        # unknown positional args
+        with assert_raises(TypeError):
+            w.nonzero(a, "kaboom")
+
+        # unknown kwarg
+        with assert_raises(TypeError):
+            w.nonzero(a, oops="ouch")
+
+    def test_unknown_args_with_defaults(self):
+        # check a function 5 arguments and 4 defaults: this should work
+        w.eye(3)
+
+        # five arguments, four defaults: this should fail
+        with assert_raises(TypeError):
+            w.eye()
