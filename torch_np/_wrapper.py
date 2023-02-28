@@ -421,7 +421,6 @@ def where(condition, x=None, y=None, /):
         return asarray(result)
 
 
-
 ###### module-level queries of object properties
 
 

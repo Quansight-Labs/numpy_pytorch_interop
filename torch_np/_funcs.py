@@ -1,7 +1,7 @@
 import torch
 
 from . import _decorators, _helpers
-from ._detail import _flips, _util, _dtypes_impl
+from ._detail import _dtypes_impl, _flips, _util
 from ._detail import implementations as _impl
 
 
@@ -106,7 +106,6 @@ def dot(a, b, out=None):
     t_b = t_b.to(dtype)
     result = _impl.dot(t_a, t_b)
     return _helpers.result_or_out(result, out)
-
 
 
 # ### sort and partition ###

@@ -1,7 +1,6 @@
 import torch
 
-from . import _util
-from . import _dtypes_impl
+from . import _dtypes_impl, _util
 
 
 def deco_ufunc(torch_func):
@@ -143,6 +142,7 @@ def _absolute(x):
         return x
     return torch.absolute(x)
 
+
 def _matmul(x, y):
     # work around RuntimeError: expected scalar type Int but found Double
     dtype = _dtypes_impl.result_type_impl((x.dtype, y.dtype))
@@ -150,6 +150,7 @@ def _matmul(x, y):
     y = y.to(dtype)
     result = torch.matmul(x, y)
     return result
+
 
 cbrt = deco_ufunc(_cbrt)
 positive = deco_ufunc(_positive)
