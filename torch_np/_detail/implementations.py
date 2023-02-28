@@ -507,7 +507,7 @@ def arange(start=None, stop=None, step=1, dtype=None):
 
     if (step > 0 and start > stop) or (step < 0 and start < stop):
         # empty range
-        return torch.as_tensor([], dtype=target_dtype)
+        return torch.empty(0, dtype=target_type)
 
     try:
         result = torch.arange(start, stop, step, dtype=work_dtype)
