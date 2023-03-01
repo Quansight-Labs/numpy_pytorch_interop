@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "numpy_pytorch_interop"
+dependencies = [
+    "numpy",
+    "torch",
+]
+version = "0.1.0"
+[tool.setuptools.packages.find]
+include = ["torch_np.*"]  # ["*"] by default
