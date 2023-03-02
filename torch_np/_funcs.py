@@ -90,6 +90,7 @@ def normalizer(func):
             )
 
         # TODO:
+        # 1. [LOOKS OK] kw-only parameters : see vstack
         # 2. [LOOKS OK] extra unknown args -- error out : nonzero([2, 0, 3], oops=42)
         # 3. [LOOKS OK] optional (tensor_or_none) : untyped => pass through
         # 4. [LOOKS OK] DTypeLike : positional or kw
@@ -98,7 +99,7 @@ def normalizer(func):
         # 7. OutLike : normal & keyword-only, peel off, postprocess
 
         # finally, pass normalized arguments through
-        result = func(*ba.args)
+        result = func(*ba.args, **ba.kwargs)
         return result
 
     return wrapped

@@ -108,16 +108,19 @@ def _concat_check(tup, dtype, out):
             )
 
 
-@_decorators.dtype_to_torch
-def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
+### XXX: order the imports DAG
+from . _funcs import normalizer, DTypeLike
+
+@normalizer
+def concatenate(ar_tuple, axis=0, out=None, dtype: DTypeLike=None, casting="same_kind"):
     tensors = _helpers.to_tensors(*ar_tuple)
     _concat_check(tensors, dtype, out=out)
     result = _impl.concatenate(tensors, axis, out, dtype, casting)
     return _helpers.result_or_out(result, out)
 
 
-@_decorators.dtype_to_torch
-def vstack(tup, *, dtype=None, casting="same_kind"):
+@normalizer
+def vstack(tup, *, dtype : DTypeLike=None, casting="same_kind"):
     tensors = _helpers.to_tensors(*tup)
     _concat_check(tensors, dtype, out=None)
     result = _impl.vstack(tensors, dtype=dtype, casting=casting)
@@ -127,16 +130,16 @@ def vstack(tup, *, dtype=None, casting="same_kind"):
 row_stack = vstack
 
 
-@_decorators.dtype_to_torch
-def hstack(tup, *, dtype=None, casting="same_kind"):
+@normalizer
+def hstack(tup, *, dtype : DTypeLike=None, casting="same_kind"):
     tensors = _helpers.to_tensors(*tup)
     _concat_check(tensors, dtype, out=None)
     result = _impl.hstack(tensors, dtype=dtype, casting=casting)
     return asarray(result)
 
 
-@_decorators.dtype_to_torch
-def dstack(tup, *, dtype=None, casting="same_kind"):
+@normalizer
+def dstack(tup, *, dtype : DTypeLike=None, casting="same_kind"):
     # XXX: in numpy 1.24 dstack does not have dtype and casting keywords
     # but {h,v}stack do.  Hence add them here for consistency.
     tensors = _helpers.to_tensors(*tup)
@@ -144,8 +147,8 @@ def dstack(tup, *, dtype=None, casting="same_kind"):
     return asarray(result)
 
 
-@_decorators.dtype_to_torch
-def column_stack(tup, *, dtype=None, casting="same_kind"):
+@normalizer
+def column_stack(tup, *, dtype : DTypeLike=None, casting="same_kind"):
     # XXX: in numpy 1.24 column_stack does not have dtype and casting keywords
     # but row_stack does. (because row_stack is an alias for vstack, really).
     # Hence add these keywords here for consistency.
@@ -155,8 +158,8 @@ def column_stack(tup, *, dtype=None, casting="same_kind"):
     return asarray(result)
 
 
-@_decorators.dtype_to_torch
-def stack(arrays, axis=0, out=None, *, dtype=None, casting="same_kind"):
+@normalizer
+def stack(arrays, axis=0, out=None, *, dtype : DTypeLike=None, casting="same_kind"):
     tensors = _helpers.to_tensors(*arrays)
     _concat_check(tensors, dtype, out=out)
     result = _impl.stack(tensors, axis=axis, out=out, dtype=dtype, casting=casting)
