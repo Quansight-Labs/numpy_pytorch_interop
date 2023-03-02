@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 
@@ -7,6 +9,17 @@ def pytest_configure(config):
 
 def pytest_addoption(parser):
     parser.addoption("--runslow", action="store_true", help="run slow tests")
+    parser.addoption("--nonp", action="store_true", help="error when NumPy is accessed")
+
+
+def pytest_sessionstart(session):
+    if session.config.getoption("--nonp"):
+
+        class Inaccessible:
+            def __getattribute__(self, attr):
+                raise RuntimeError(f"Using --nonp but accessed np.{attr}")
+
+        sys.modules["numpy"] = Inaccessible()
 
 
 def pytest_collection_modifyitems(config, items):
