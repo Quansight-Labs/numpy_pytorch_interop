@@ -1,4 +1,5 @@
 import typing
+from typing import Optional
 
 import torch
 
@@ -23,6 +24,12 @@ def normalize_array_like(x, name=None):
     return tensor
 
 
+def normalize_optional_array_like(x, name=None):
+    # This explicit normalizer is needed because otherwise normalize_array_like
+    # does not run for a parameter annotated as Optional[ArrayLike]
+    return None if x is None else normalize_array_like(x, name)
+
+
 def normalize_dtype(dtype, name=None):
     # cf _decorators.dtype_to_torch
     torch_dtype = None
@@ -39,6 +46,7 @@ def normalize_subok_like(arg, name):
 
 normalizers = {
     ArrayLike: normalize_array_like,
+    Optional[ArrayLike]: normalize_optional_array_like,
     DTypeLike: normalize_dtype,
     SubokLike: normalize_subok_like,
 }
@@ -121,12 +129,11 @@ def argwhere(a):
     return _helpers.array_from(result)
 
 
-def clip(a, min=None, max=None, out=None):
+@normalizer
+def clip(a : ArrayLike, min : Optional[ArrayLike]=None, max : Optional[ArrayLike]=None, out=None):
     # np.clip requires both a_min and a_max not None, while ndarray.clip allows
     # one of them to be None. Follow the more lax version.
-    # Also min/max as arg names: follow numpy naming.
-    tensor, t_min, t_max = _helpers.to_tensors_or_none(a, min, max)
-    result = _impl.clip(tensor, t_min, t_max)
+    result = _impl.clip(a, min, max)
     return _helpers.result_or_out(result, out)
 
 
