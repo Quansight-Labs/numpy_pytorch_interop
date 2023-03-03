@@ -118,9 +118,3 @@ def to_tensors(*inputs):
 
     return tuple(asarray(value).get() for value in inputs)
 
-
-def to_tensors_or_none(*inputs):
-    """Convert all array_likes from `inputs` to tensors. Nones pass through"""
-    from ._ndarray import asarray, ndarray
-
-    return tuple(None if value is None else asarray(value).get() for value in inputs)

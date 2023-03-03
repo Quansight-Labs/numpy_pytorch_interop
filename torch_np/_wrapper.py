@@ -109,7 +109,8 @@ def _concat_check(tup, dtype, out):
 
 
 ### XXX: order the imports DAG
-from . _funcs import normalizer, DTypeLike
+from . _funcs import normalizer, DTypeLike, ArrayLike
+from typing import Optional
 
 @normalizer
 def concatenate(ar_tuple, axis=0, out=None, dtype: DTypeLike=None, casting="same_kind"):
@@ -368,55 +369,46 @@ def _xy_helper_corrcoef(x_tensor, y_tensor=None, rowvar=True):
     return x_tensor
 
 
-@_decorators.dtype_to_torch
-def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
+#@_decorators.dtype_to_torch
+@normalizer
+def corrcoef(x : ArrayLike, y : Optional[ArrayLike]=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype : DTypeLike=None):
     if bias is not None or ddof is not None:
         # deprecated in NumPy
         raise NotImplementedError
-
-    x_tensor, y_tensor = _helpers.to_tensors_or_none(x, y)
-    tensor = _xy_helper_corrcoef(x_tensor, y_tensor, rowvar)
+    tensor = _xy_helper_corrcoef(x, y, rowvar)
     result = _impl.corrcoef(tensor, dtype=dtype)
     return asarray(result)
 
 
-@_decorators.dtype_to_torch
+@normalizer
 def cov(
-    m,
-    y=None,
+    m : ArrayLike,
+    y : Optional[ArrayLike]=None,
     rowvar=True,
     bias=False,
     ddof=None,
-    fweights=None,
-    aweights=None,
+    fweights : Optional[ArrayLike]=None,
+    aweights : Optional[ArrayLike]=None,
     *,
-    dtype=None,
+    dtype : DTypeLike=None,
 ):
-
-    m_tensor, y_tensor, fweights_tensor, aweights_tensor = _helpers.to_tensors_or_none(
-        m, y, fweights, aweights
-    )
-    m_tensor = _xy_helper_corrcoef(m_tensor, y_tensor, rowvar)
-
-    result = _impl.cov(
-        m_tensor, bias, ddof, fweights_tensor, aweights_tensor, dtype=dtype
-    )
+    m = _xy_helper_corrcoef(m, y, rowvar)
+    result = _impl.cov(m, bias, ddof, fweights, aweights, dtype=dtype)
     return asarray(result)
 
 
-def bincount(x, /, weights=None, minlength=0):
-    if not isinstance(x, ndarray) and x == []:
+@normalizer
+def bincount(x : ArrayLike, /, weights : Optional[ArrayLike]=None, minlength=0):
+    if x.numel() == 0:
         # edge case allowed by numpy
-        x = asarray([], dtype=int)
-
-    x_tensor, weights_tensor = _helpers.to_tensors_or_none(x, weights)
-    result = _impl.bincount(x_tensor, weights_tensor, minlength)
+        x = torch.as_tensor([], dtype=int)
+    result = _impl.bincount(x, weights, minlength)
     return asarray(result)
 
 
-def where(condition, x=None, y=None, /):
-    cond_t, x_t, y_t = _helpers.to_tensors_or_none(condition, x, y)
-    result = _impl.where(cond_t, x_t, y_t)
+@normalizer
+def where(condition : ArrayLike, x : Optional[ArrayLike]=None, y: Optional[ArrayLike]=None, /):
+    result = _impl.where(condition, x, y)
     if isinstance(result, tuple):
         # single-argument where(condition)
         return tuple(asarray(x) for x in result)
@@ -840,22 +832,19 @@ def nanpercentile():
     raise NotImplementedError
 
 
-def diff(a, n=1, axis=-1, prepend=NoValue, append=NoValue):
+@normalizer
+def diff(a : ArrayLike, n=1, axis=-1, prepend : Optional[ArrayLike]=NoValue, append : Optional[ArrayLike]=NoValue):
 
     if n == 0:
         # match numpy and return the input immediately
-        return a
-
-    a_tensor, prepend_tensor, append_tensor = _helpers.to_tensors_or_none(
-        a, prepend, append
-    )
+        return asarray(a)
 
     result = _impl.diff(
-        a_tensor,
+        a,
         n=n,
         axis=axis,
-        prepend_tensor=prepend_tensor,
-        append_tensor=append_tensor,
+        prepend_tensor=prepend,
+        append_tensor=append,
     )
     return asarray(result)
 
