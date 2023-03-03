@@ -137,31 +137,29 @@ def clip(a : ArrayLike, min : Optional[ArrayLike]=None, max : Optional[ArrayLike
     return _helpers.result_or_out(result, out)
 
 
-def repeat(a, repeats, axis=None):
-    tensor, t_repeats = _helpers.to_tensors(a, repeats)  # XXX: scalar repeats
-    result = torch.repeat_interleave(tensor, t_repeats, axis)
+@normalizer
+def repeat(a : ArrayLike, repeats: ArrayLike, axis=None):
+    # XXX: scalar repeats; ArrayLikeOrScalar ?
+    result = torch.repeat_interleave(a, repeats, axis)
     return _helpers.array_from(result)
 
 
 # ### diag et al ###
 
-
-def diagonal(a, offset=0, axis1=0, axis2=1):
-    (tensor,) = _helpers.to_tensors(a)
-    result = _impl.diagonal(tensor, offset, axis1, axis2)
+@normalizer
+def diagonal(a : ArrayLike, offset=0, axis1=0, axis2=1):
+    result = _impl.diagonal(a, offset, axis1, axis2)
     return _helpers.array_from(result)
 
 
 @normalizer
 def trace(a: ArrayLike, offset=0, axis1=0, axis2=1, dtype: DTypeLike = None, out=None):
-    #    (tensor,) = _helpers.to_tensors(a)
     result = _impl.trace(a, offset, axis1, axis2, dtype)
     return _helpers.result_or_out(result, out)
 
 
 @normalizer
 def eye(N, M=None, k=0, dtype: DTypeLike = float, order="C", *, like: SubokLike = None):
-    #    _util.subok_not_ok(like)
     if order != "C":
         raise NotImplementedError
     result = _impl.eye(N, M, k, dtype)
@@ -170,20 +168,19 @@ def eye(N, M=None, k=0, dtype: DTypeLike = float, order="C", *, like: SubokLike 
 
 @normalizer
 def identity(n, dtype: DTypeLike = None, *, like: SubokLike = None):
-    ##   _util.subok_not_ok(like)
     result = torch.eye(n, dtype=dtype)
     return _helpers.array_from(result)
 
 
-def diag(v, k=0):
-    (tensor,) = _helpers.to_tensors(v)
-    result = torch.diag(tensor, k)
+@normalizer
+def diag(v : ArrayLike, k=0):
+    result = torch.diag(v, k)
     return _helpers.array_from(result)
 
 
-def diagflat(v, k=0):
-    (tensor,) = _helpers.to_tensors(v)
-    result = torch.diagflat(tensor, k)
+@normalizer
+def diagflat(v : ArrayLike, k=0):
+    result = torch.diagflat(v, k)
     return _helpers.array_from(result)
 
 
@@ -192,68 +189,70 @@ def diag_indices(n, ndim=2):
     return _helpers.tuple_arrays_from(result)
 
 
-def diag_indices_from(arr):
-    (tensor,) = _helpers.to_tensors(arr)
-    result = _impl.diag_indices_from(tensor)
+@normalizer
+def diag_indices_from(arr : ArrayLike):
+    result = _impl.diag_indices_from(arr)
     return _helpers.tuple_arrays_from(result)
 
 
-def fill_diagonal(a, val, wrap=False):
-    tensor, t_val = _helpers.to_tensors(a, val)
-    result = _impl.fill_diagonal(tensor, t_val, wrap)
+@normalizer
+def fill_diagonal(a : ArrayLike, val : ArrayLike, wrap=False):
+    result = _impl.fill_diagonal(a, val, wrap)
     return _helpers.array_from(result)
 
 
-def vdot(a, b, /):
-    t_a, t_b = _helpers.to_tensors(a, b)
-    result = _impl.vdot(t_a, t_b)
+@normalizer
+def vdot(a : ArrayLike, b : ArrayLike, /):
+#    t_a, t_b = _helpers.to_tensors(a, b)
+    result = _impl.vdot(a, b)
     return result.item()
 
 
-def dot(a, b, out=None):
-    t_a, t_b = _helpers.to_tensors(a, b)
-    result = _impl.dot(t_a, t_b)
+@normalizer
+def dot(a : ArrayLike, b : ArrayLike, out=None):
+#    t_a, t_b = _helpers.to_tensors(a, b)
+    result = _impl.dot(a, b)
     return _helpers.result_or_out(result, out)
 
 
 # ### sort and partition ###
 
 
-def sort(a, axis=-1, kind=None, order=None):
-    (tensor,) = _helpers.to_tensors(a)
-    result = _impl.sort(tensor, axis, kind, order)
+@normalizer
+def sort(a : ArrayLike, axis=-1, kind=None, order=None):
+    result = _impl.sort(a, axis, kind, order)
     return _helpers.array_from(result)
 
 
-def argsort(a, axis=-1, kind=None, order=None):
-    (tensor,) = _helpers.to_tensors(a)
-    result = _impl.argsort(tensor, axis, kind, order)
+@normalizer
+def argsort(a : ArrayLike, axis=-1, kind=None, order=None):
+    result = _impl.argsort(a, axis, kind, order)
     return _helpers.array_from(result)
 
 
-def searchsorted(a, v, side="left", sorter=None):
-    a_t, v_t, sorter_t = _helpers.to_tensors_or_none(a, v, sorter)
-    result = torch.searchsorted(a_t, v_t, side=side, sorter=sorter_t)
+@normalizer
+def searchsorted(a : ArrayLike, v : ArrayLike, side="left", sorter : Optional[ArrayLike]=None):
+    result = torch.searchsorted(a, v, side=side, sorter=sorter)
     return _helpers.array_from(result)
 
 
 # ### swap/move/roll axis ###
 
 
-def moveaxis(a, source, destination):
-    (tensor,) = _helpers.to_tensors(a)
-    result = _impl.moveaxis(tensor, source, destination)
+@normalizer
+def moveaxis(a : ArrayLike, source, destination):
+    result = _impl.moveaxis(a, source, destination)
     return _helpers.array_from(result)
 
 
-def swapaxes(a, axis1, axis2):
-    (tensor,) = _helpers.to_tensors(a)
-    result = _flips.swapaxes(tensor, axis1, axis2)
+@normalizer
+def swapaxes(a : ArrayLike, axis1, axis2):
+    result = _flips.swapaxes(a, axis1, axis2)
     return _helpers.array_from(result)
 
 
-def rollaxis(a, axis, start=0):
-    (tensor,) = _helpers.to_tensors(a)
+@normalizer
+def rollaxis(a : ArrayLike, axis, start=0):
     result = _flips.rollaxis(a, axis, start)
     return _helpers.array_from(result)
 
@@ -261,55 +260,55 @@ def rollaxis(a, axis, start=0):
 # ### shape manipulations ###
 
 
-def squeeze(a, axis=None):
-    (tensor,) = _helpers.to_tensors(a)
-    result = _impl.squeeze(tensor, axis)
+@normalizer
+def squeeze(a : ArrayLike, axis=None):
+    result = _impl.squeeze(a, axis)
     return _helpers.array_from(result, a)
 
 
-def reshape(a, newshape, order="C"):
-    (tensor,) = _helpers.to_tensors(a)
-    result = _impl.reshape(tensor, newshape, order=order)
+@normalizer
+def reshape(a : ArrayLike, newshape, order="C"):
+    result = _impl.reshape(a, newshape, order=order)
     return _helpers.array_from(result, a)
 
 
-def transpose(a, axes=None):
-    (tensor,) = _helpers.to_tensors(a)
-    result = _impl.transpose(tensor, axes)
+@normalizer
+def transpose(a : ArrayLike, axes=None):
+    result = _impl.transpose(a, axes)
     return _helpers.array_from(result, a)
 
 
-def ravel(a, order="C"):
-    (tensor,) = _helpers.to_tensors(a)
-    result = _impl.ravel(tensor)
+@normalizer
+def ravel(a : ArrayLike, order="C"):
+    result = _impl.ravel(a)
     return _helpers.array_from(result, a)
 
 
 # leading underscore since arr.flatten exists but np.flatten does not
-def _flatten(a, order="C"):
-    (tensor,) = _helpers.to_tensors(a)
-    result = _impl._flatten(tensor)
+@normalizer
+def _flatten(a : ArrayLike, order="C"):
+    result = _impl._flatten(a)
     return _helpers.array_from(result, a)
 
 
 # ### Type/shape etc queries ###
 
 
-def real(a):
-    (tensor,) = _helpers.to_tensors(a)
-    result = torch.real(tensor)
+@normalizer
+def real(a : ArrayLike):
+    result = torch.real(a)
     return _helpers.array_from(result)
 
 
-def imag(a):
-    (tensor,) = _helpers.to_tensors(a)
-    result = _impl.imag(tensor)
+@normalizer
+def imag(a: ArrayLike):
+    result = _impl.imag(a)
     return _helpers.array_from(result)
 
 
-def round_(a, decimals=0, out=None):
-    (tensor,) = _helpers.to_tensors(a)
-    result = _impl.round(tensor, decimals)
+@normalizer
+def round_(a : ArrayLike, decimals=0, out=None):
+    result = _impl.round(a, decimals)
     return _helpers.result_or_out(result, out)
 
 
