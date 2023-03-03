@@ -597,7 +597,7 @@ class TestSqueeze:
         assert type(res) is np.ndarray
 
         aa = np.ones((3, 1, 4, 1, 1))
-        assert aa.squeeze().base is aa
+        assert aa.squeeze().get()._base is aa.get()
 
     def test_squeeze_axis(self):
         A = [[[1, 1, 1], [2, 2, 2], [3, 3, 3]]]

@@ -59,16 +59,18 @@ def normalizer(func):
     def wrapped(*args, **kwds):
         sig = inspect.signature(func)
 
-        dct = {}
+        lst, dct = [], {}
         # loop over positional parameters and actual arguments
         for arg, (name, parm) in zip(args, sig.parameters.items()):
             print(arg, name, parm.annotation)
             normalizer = normalizers.get(parm.annotation, None)
             if normalizer:
-                dct[name] = normalizer(arg, name)
+                # dct[name] = normalizer(arg, name)
+                lst.append(normalizer(arg))
             else:
                 # untyped arguments pass through
-                dct[name] = arg
+                # dct[name] = arg
+                lst.append(arg)
 
         # normalize keyword arguments
         for name, arg in kwds.items():
@@ -86,7 +88,7 @@ def normalizer(func):
             else:
                 dct[name] = arg
 
-        ba = sig.bind(**dct)
+        ba = sig.bind(*lst, **dct)
         ba.apply_defaults()
 
         # Now that all parameters have been consumed, check:
