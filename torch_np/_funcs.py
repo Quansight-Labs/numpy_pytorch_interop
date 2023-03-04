@@ -56,7 +56,7 @@ normalizers = {
     ArrayLike: normalize_array_like,
     Optional[ArrayLike]: normalize_optional_array_like,
     Sequence[ArrayLike]: normalize_seq_array_like,
-    UnpackedSeqArrayLike: normalize_seq_array_like,   # cf handling in normalize
+    UnpackedSeqArrayLike: normalize_seq_array_like,  # cf handling in normalize
     DTypeLike: normalize_dtype,
     SubokLike: normalize_subok_like,
 }
@@ -98,7 +98,6 @@ def normalizer(func):
         for arg, (name, parm) in zip(args, sig.parameters.items()):
             print(arg, name, parm.annotation)
             lst.append(normalize_this(arg, parm))
-
 
         # normalize keyword arguments
         for name, arg in kwds.items():
@@ -156,7 +155,12 @@ def argwhere(a):
 
 
 @normalizer
-def clip(a : ArrayLike, min : Optional[ArrayLike]=None, max : Optional[ArrayLike]=None, out=None):
+def clip(
+    a: ArrayLike,
+    min: Optional[ArrayLike] = None,
+    max: Optional[ArrayLike] = None,
+    out=None,
+):
     # np.clip requires both a_min and a_max not None, while ndarray.clip allows
     # one of them to be None. Follow the more lax version.
     result = _impl.clip(a, min, max)
@@ -164,7 +168,7 @@ def clip(a : ArrayLike, min : Optional[ArrayLike]=None, max : Optional[ArrayLike
 
 
 @normalizer
-def repeat(a : ArrayLike, repeats: ArrayLike, axis=None):
+def repeat(a: ArrayLike, repeats: ArrayLike, axis=None):
     # XXX: scalar repeats; ArrayLikeOrScalar ?
     result = torch.repeat_interleave(a, repeats, axis)
     return _helpers.array_from(result)
@@ -172,8 +176,9 @@ def repeat(a : ArrayLike, repeats: ArrayLike, axis=None):
 
 # ### diag et al ###
 
+
 @normalizer
-def diagonal(a : ArrayLike, offset=0, axis1=0, axis2=1):
+def diagonal(a: ArrayLike, offset=0, axis1=0, axis2=1):
     result = _impl.diagonal(a, offset, axis1, axis2)
     return _helpers.array_from(result)
 
@@ -199,13 +204,13 @@ def identity(n, dtype: DTypeLike = None, *, like: SubokLike = None):
 
 
 @normalizer
-def diag(v : ArrayLike, k=0):
+def diag(v: ArrayLike, k=0):
     result = torch.diag(v, k)
     return _helpers.array_from(result)
 
 
 @normalizer
-def diagflat(v : ArrayLike, k=0):
+def diagflat(v: ArrayLike, k=0):
     result = torch.diagflat(v, k)
     return _helpers.array_from(result)
 
@@ -216,27 +221,25 @@ def diag_indices(n, ndim=2):
 
 
 @normalizer
-def diag_indices_from(arr : ArrayLike):
+def diag_indices_from(arr: ArrayLike):
     result = _impl.diag_indices_from(arr)
     return _helpers.tuple_arrays_from(result)
 
 
 @normalizer
-def fill_diagonal(a : ArrayLike, val : ArrayLike, wrap=False):
+def fill_diagonal(a: ArrayLike, val: ArrayLike, wrap=False):
     result = _impl.fill_diagonal(a, val, wrap)
     return _helpers.array_from(result)
 
 
 @normalizer
-def vdot(a : ArrayLike, b : ArrayLike, /):
-#    t_a, t_b = _helpers.to_tensors(a, b)
+def vdot(a: ArrayLike, b: ArrayLike, /):
     result = _impl.vdot(a, b)
     return result.item()
 
 
 @normalizer
-def dot(a : ArrayLike, b : ArrayLike, out=None):
-#    t_a, t_b = _helpers.to_tensors(a, b)
+def dot(a: ArrayLike, b: ArrayLike, out=None):
     result = _impl.dot(a, b)
     return _helpers.result_or_out(result, out)
 
@@ -245,19 +248,21 @@ def dot(a : ArrayLike, b : ArrayLike, out=None):
 
 
 @normalizer
-def sort(a : ArrayLike, axis=-1, kind=None, order=None):
+def sort(a: ArrayLike, axis=-1, kind=None, order=None):
     result = _impl.sort(a, axis, kind, order)
     return _helpers.array_from(result)
 
 
 @normalizer
-def argsort(a : ArrayLike, axis=-1, kind=None, order=None):
+def argsort(a: ArrayLike, axis=-1, kind=None, order=None):
     result = _impl.argsort(a, axis, kind, order)
     return _helpers.array_from(result)
 
 
 @normalizer
-def searchsorted(a : ArrayLike, v : ArrayLike, side="left", sorter : Optional[ArrayLike]=None):
+def searchsorted(
+    a: ArrayLike, v: ArrayLike, side="left", sorter: Optional[ArrayLike] = None
+):
     result = torch.searchsorted(a, v, side=side, sorter=sorter)
     return _helpers.array_from(result)
 
@@ -266,19 +271,19 @@ def searchsorted(a : ArrayLike, v : ArrayLike, side="left", sorter : Optional[Ar
 
 
 @normalizer
-def moveaxis(a : ArrayLike, source, destination):
+def moveaxis(a: ArrayLike, source, destination):
     result = _impl.moveaxis(a, source, destination)
     return _helpers.array_from(result)
 
 
 @normalizer
-def swapaxes(a : ArrayLike, axis1, axis2):
+def swapaxes(a: ArrayLike, axis1, axis2):
     result = _flips.swapaxes(a, axis1, axis2)
     return _helpers.array_from(result)
 
 
 @normalizer
-def rollaxis(a : ArrayLike, axis, start=0):
+def rollaxis(a: ArrayLike, axis, start=0):
     result = _flips.rollaxis(a, axis, start)
     return _helpers.array_from(result)
 
@@ -287,32 +292,32 @@ def rollaxis(a : ArrayLike, axis, start=0):
 
 
 @normalizer
-def squeeze(a : ArrayLike, axis=None):
+def squeeze(a: ArrayLike, axis=None):
     result = _impl.squeeze(a, axis)
     return _helpers.array_from(result, a)
 
 
 @normalizer
-def reshape(a : ArrayLike, newshape, order="C"):
+def reshape(a: ArrayLike, newshape, order="C"):
     result = _impl.reshape(a, newshape, order=order)
     return _helpers.array_from(result, a)
 
 
 @normalizer
-def transpose(a : ArrayLike, axes=None):
+def transpose(a: ArrayLike, axes=None):
     result = _impl.transpose(a, axes)
     return _helpers.array_from(result, a)
 
 
 @normalizer
-def ravel(a : ArrayLike, order="C"):
+def ravel(a: ArrayLike, order="C"):
     result = _impl.ravel(a)
     return _helpers.array_from(result, a)
 
 
 # leading underscore since arr.flatten exists but np.flatten does not
 @normalizer
-def _flatten(a : ArrayLike, order="C"):
+def _flatten(a: ArrayLike, order="C"):
     result = _impl._flatten(a)
     return _helpers.array_from(result, a)
 
@@ -321,7 +326,7 @@ def _flatten(a : ArrayLike, order="C"):
 
 
 @normalizer
-def real(a : ArrayLike):
+def real(a: ArrayLike):
     result = torch.real(a)
     return _helpers.array_from(result)
 
@@ -333,7 +338,7 @@ def imag(a: ArrayLike):
 
 
 @normalizer
-def round_(a : ArrayLike, decimals=0, out=None):
+def round_(a: ArrayLike, decimals=0, out=None):
     result = _impl.round(a, decimals)
     return _helpers.result_or_out(result, out)
 

@@ -117,4 +117,3 @@ def to_tensors(*inputs):
     from ._ndarray import asarray, ndarray
 
     return tuple(asarray(value).get() for value in inputs)
-
