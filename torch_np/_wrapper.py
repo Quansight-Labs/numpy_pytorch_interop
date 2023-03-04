@@ -13,6 +13,11 @@ from ._ndarray import array, asarray, asarray_replacer, maybe_set_base, ndarray,
 
 from . import _dtypes, _helpers, _decorators  # isort: skip  # XXX
 
+### XXX: order the imports DAG
+from . _funcs import normalizer, DTypeLike, ArrayLike, UnpackedSeqArrayLike
+from typing import Optional, Sequence
+
+
 # Things to decide on (punt for now)
 #
 # 1. Q: What are the return types of wrapper functions: plain torch.Tensors or
@@ -63,27 +68,27 @@ def copy(a, order="K", subok=False):
     return a.copy(order="C")
 
 
-def atleast_1d(*arys):
-    tensors = _helpers.to_tensors(*arys)
-    res = torch.atleast_1d(tensors)
+@normalizer
+def atleast_1d(*arys : UnpackedSeqArrayLike):
+    res = torch.atleast_1d(*arys)
     if len(res) == 1:
         return asarray(res[0])
     else:
         return list(asarray(_) for _ in res)
 
 
-def atleast_2d(*arys):
-    tensors = _helpers.to_tensors(*arys)
-    res = torch.atleast_2d(tensors)
+@normalizer
+def atleast_2d(*arys : UnpackedSeqArrayLike):
+    res = torch.atleast_2d(*arys)
     if len(res) == 1:
         return asarray(res[0])
     else:
         return list(asarray(_) for _ in res)
 
 
-def atleast_3d(*arys):
-    tensors = _helpers.to_tensors(*arys)
-    res = torch.atleast_3d(tensors)
+@normalizer
+def atleast_3d(*arys : UnpackedSeqArrayLike):
+    res = torch.atleast_3d(*arys)
     if len(res) == 1:
         return asarray(res[0])
     else:
@@ -107,10 +112,6 @@ def _concat_check(tup, dtype, out):
                 "argument, but both were provided."
             )
 
-
-### XXX: order the imports DAG
-from . _funcs import normalizer, DTypeLike, ArrayLike
-from typing import Optional, Sequence
 
 @normalizer
 def concatenate(ar_tuple : Sequence[ArrayLike], axis=0, out=None, dtype: DTypeLike=None, casting="same_kind"):

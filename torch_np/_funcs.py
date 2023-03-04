@@ -13,6 +13,9 @@ ArrayLike = typing.TypeVar("ArrayLike")
 DTypeLike = typing.TypeVar("DTypeLike")
 SubokLike = typing.TypeVar("SubokLike")
 
+# annotate e.g. atleast_1d(*arys)
+UnpackedSeqArrayLike = typing.TypeVar("UnpackedSeqArrayLike")
+
 
 import inspect
 
@@ -53,6 +56,7 @@ normalizers = {
     ArrayLike: normalize_array_like,
     Optional[ArrayLike]: normalize_optional_array_like,
     Sequence[ArrayLike]: normalize_seq_array_like,
+    UnpackedSeqArrayLike: normalize_seq_array_like,   # cf handling in normalize
     DTypeLike: normalize_dtype,
     SubokLike: normalize_subok_like,
 }
@@ -60,23 +64,41 @@ normalizers = {
 import functools
 
 
+def normalize_this(arg, parm):
+    """Normalize arg if a normalizer is registred."""
+    normalizer = normalizers.get(parm.annotation, None)
+    if normalizer:
+        return normalizer(arg)
+    else:
+        # untyped arguments pass through
+        return arg
+
+
 def normalizer(func):
     @functools.wraps(func)
     def wrapped(*args, **kwds):
         sig = inspect.signature(func)
 
-        lst, dct = [], {}
+        # first, check for *args in positional parameters. Case in point:
+        # atleast_1d(*arys: UnpackedSequenceArrayLike)
+        # if found,  consume all args into a tuple to normalize as a whole
+        for j, param in enumerate(sig.parameters.values()):
+            if param.annotation == UnpackedSeqArrayLike:
+                if j == 0:
+                    args = (args,)
+                else:
+                    # args = args[:j] + (args[j:],) would likely work
+                    # not present in numpy codebase, so do not bother just yet.
+                    # NB: branching on j ==0 is to avoid the empty tuple, args[:j]
+                    raise NotImplementedError
+                break
+
         # loop over positional parameters and actual arguments
+        lst, dct = [], {}
         for arg, (name, parm) in zip(args, sig.parameters.items()):
             print(arg, name, parm.annotation)
-            normalizer = normalizers.get(parm.annotation, None)
-            if normalizer:
-                # dct[name] = normalizer(arg, name)
-                lst.append(normalizer(arg))
-            else:
-                # untyped arguments pass through
-                # dct[name] = arg
-                lst.append(arg)
+            lst.append(normalize_this(arg, parm))
+
 
         # normalize keyword arguments
         for name, arg in kwds.items():
@@ -88,11 +110,7 @@ def normalizer(func):
 
             print("kw: ", name, sig.parameters[name].annotation)
             parm = sig.parameters[name]
-            normalizer = normalizers.get(parm.annotation, None)
-            if normalizer:
-                dct[name] = normalizer(kwds[name], name)
-            else:
-                dct[name] = arg
+            dct[name] = normalize_this(arg, parm)
 
         ba = sig.bind(*lst, **dct)
         ba.apply_defaults()
@@ -113,6 +131,7 @@ def normalizer(func):
         # 5. axes : live in _impl or in types? several ways of handling them
         # 6. keepdims : peel off, postprocess
         # 7. OutLike : normal & keyword-only, peel off, postprocess
+        # 8. *args
 
         # finally, pass normalized arguments through
         result = func(*ba.args, **ba.kwargs)
