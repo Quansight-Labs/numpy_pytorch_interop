@@ -110,21 +110,19 @@ def _concat_check(tup, dtype, out):
 
 ### XXX: order the imports DAG
 from . _funcs import normalizer, DTypeLike, ArrayLike
-from typing import Optional
+from typing import Optional, Sequence
 
 @normalizer
-def concatenate(ar_tuple, axis=0, out=None, dtype: DTypeLike=None, casting="same_kind"):
-    tensors = _helpers.to_tensors(*ar_tuple)
-    _concat_check(tensors, dtype, out=out)
-    result = _impl.concatenate(tensors, axis, out, dtype, casting)
+def concatenate(ar_tuple : Sequence[ArrayLike], axis=0, out=None, dtype: DTypeLike=None, casting="same_kind"):
+    _concat_check(ar_tuple, dtype, out=out)
+    result = _impl.concatenate(ar_tuple, axis, out, dtype, casting)
     return _helpers.result_or_out(result, out)
 
 
 @normalizer
-def vstack(tup, *, dtype : DTypeLike=None, casting="same_kind"):
-    tensors = _helpers.to_tensors(*tup)
-    _concat_check(tensors, dtype, out=None)
-    result = _impl.vstack(tensors, dtype=dtype, casting=casting)
+def vstack(tup : Sequence[ArrayLike], *, dtype : DTypeLike=None, casting="same_kind"):
+    _concat_check(tup, dtype, out=None)
+    result = _impl.vstack(tup, dtype=dtype, casting=casting)
     return asarray(result)
 
 
@@ -132,38 +130,34 @@ row_stack = vstack
 
 
 @normalizer
-def hstack(tup, *, dtype : DTypeLike=None, casting="same_kind"):
-    tensors = _helpers.to_tensors(*tup)
-    _concat_check(tensors, dtype, out=None)
-    result = _impl.hstack(tensors, dtype=dtype, casting=casting)
+def hstack(tup: Sequence[ArrayLike], *, dtype : DTypeLike=None, casting="same_kind"):
+    _concat_check(tup, dtype, out=None)
+    result = _impl.hstack(tup, dtype=dtype, casting=casting)
     return asarray(result)
 
 
 @normalizer
-def dstack(tup, *, dtype : DTypeLike=None, casting="same_kind"):
+def dstack(tup: Sequence[ArrayLike], *, dtype : DTypeLike=None, casting="same_kind"):
     # XXX: in numpy 1.24 dstack does not have dtype and casting keywords
     # but {h,v}stack do.  Hence add them here for consistency.
-    tensors = _helpers.to_tensors(*tup)
-    result = _impl.dstack(tensors, dtype=dtype, casting=casting)
+    result = _impl.dstack(tup, dtype=dtype, casting=casting)
     return asarray(result)
 
 
 @normalizer
-def column_stack(tup, *, dtype : DTypeLike=None, casting="same_kind"):
+def column_stack(tup : Sequence[ArrayLike], *, dtype : DTypeLike=None, casting="same_kind"):
     # XXX: in numpy 1.24 column_stack does not have dtype and casting keywords
     # but row_stack does. (because row_stack is an alias for vstack, really).
     # Hence add these keywords here for consistency.
-    tensors = _helpers.to_tensors(*tup)
-    _concat_check(tensors, dtype, out=None)
-    result = _impl.column_stack(tensors, dtype=dtype, casting=casting)
+    _concat_check(tup, dtype, out=None)
+    result = _impl.column_stack(tup, dtype=dtype, casting=casting)
     return asarray(result)
 
 
 @normalizer
-def stack(arrays, axis=0, out=None, *, dtype : DTypeLike=None, casting="same_kind"):
-    tensors = _helpers.to_tensors(*arrays)
-    _concat_check(tensors, dtype, out=out)
-    result = _impl.stack(tensors, axis=axis, out=out, dtype=dtype, casting=casting)
+def stack(arrays : Sequence[ArrayLike], axis=0, out=None, *, dtype : DTypeLike=None, casting="same_kind"):
+    _concat_check(arrays, dtype, out=out)
+    result = _impl.stack(arrays, axis=axis, out=out, dtype=dtype, casting=casting)
     return _helpers.result_or_out(result, out)
 
 

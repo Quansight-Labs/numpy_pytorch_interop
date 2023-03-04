@@ -1,5 +1,5 @@
 import typing
-from typing import Optional
+from typing import Optional, Sequence
 
 import torch
 
@@ -30,6 +30,11 @@ def normalize_optional_array_like(x, name=None):
     return None if x is None else normalize_array_like(x, name)
 
 
+def normalize_seq_array_like(x, name=None):
+    tensors = _helpers.to_tensors(*x)
+    return tensors
+
+
 def normalize_dtype(dtype, name=None):
     # cf _decorators.dtype_to_torch
     torch_dtype = None
@@ -47,6 +52,7 @@ def normalize_subok_like(arg, name):
 normalizers = {
     ArrayLike: normalize_array_like,
     Optional[ArrayLike]: normalize_optional_array_like,
+    Sequence[ArrayLike]: normalize_seq_array_like,
     DTypeLike: normalize_dtype,
     SubokLike: normalize_subok_like,
 }
