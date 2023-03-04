@@ -131,7 +131,7 @@ def normalizer(func):
         # 5. axes : live in _impl or in types? several ways of handling them
         # 6. keepdims : peel off, postprocess
         # 7. OutLike : normal & keyword-only, peel off, postprocess
-        # 8. *args
+        # 8. [LOOKS OK] *args
 
         # finally, pass normalized arguments through
         result = func(*ba.args, **ba.kwargs)
@@ -145,7 +145,6 @@ def normalizer(func):
 
 @normalizer
 def nonzero(a: ArrayLike):
-    #   (tensor,) = _helpers.to_tensors(a)
     result = a.nonzero(as_tuple=True)
     return _helpers.tuple_arrays_from(result)
 

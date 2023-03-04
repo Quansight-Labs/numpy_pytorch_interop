@@ -470,25 +470,6 @@ def maybe_set_base(tensor, base):
     return ndarray._from_tensor_and_base(tensor, base)
 
 
-class asarray_replacer:
-    def __init__(self, dispatch="one"):
-        if dispatch not in ["one", "two"]:
-            raise ValueError("ararray_replacer: unknown dispatch %s" % dispatch)
-        self._dispatch = dispatch
-
-    def __call__(self, func):
-        if self._dispatch == "one":
-
-            @functools.wraps(func)
-            def wrapped(x, *args, **kwds):
-                x_tensor = asarray(x).get()
-                return asarray(func(x_tensor, *args, **kwds))
-
-            return wrapped
-        else:
-            raise ValueError
-
-
 ###### dtype routines
 
 
