@@ -636,14 +636,6 @@ def tri(N, M=None, k=0, dtype: DTypeLike = float, *, like: SubokLike = None):
 
 
 ###### reductions
-def argmax(a, axis=None, out=None, *, keepdims=NoValue):
-    arr = asarray(a)
-    return arr.argmax(axis=axis, out=out, keepdims=keepdims)
-
-
-def argmin(a, axis=None, out=None, *, keepdims=NoValue):
-    arr = asarray(a)
-    return arr.argmin(axis=axis, out=out, keepdims=keepdims)
 
 
 def amax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
@@ -677,34 +669,6 @@ def any(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
     return arr.any(axis=axis, out=out, keepdims=keepdims, where=where)
 
 
-def mean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
-    arr = asarray(a)
-    return arr.mean(axis=axis, dtype=dtype, out=out, keepdims=keepdims, where=where)
-
-
-# YYY: pattern: initial=...
-
-
-def sum(
-    a, axis=None, dtype=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue
-):
-    arr = asarray(a)
-    return arr.sum(
-        axis=axis, dtype=dtype, out=out, keepdims=keepdims, initial=initial, where=where
-    )
-
-
-def prod(
-    a, axis=None, dtype=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue
-):
-    arr = asarray(a)
-    return arr.prod(
-        axis=axis, dtype=dtype, out=out, keepdims=keepdims, initial=initial, where=where
-    )
-
-
-product = prod
-
 
 def cumprod(a, axis=None, dtype=None, out=None):
     arr = asarray(a)
@@ -719,27 +683,12 @@ def cumsum(a, axis=None, dtype=None, out=None):
     return arr.cumsum(axis=axis, dtype=dtype, out=out)
 
 
-# YYY: pattern : ddof
-
-
-def std(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
-    arr = asarray(a)
-    return arr.std(
-        axis=axis, dtype=dtype, out=out, ddof=ddof, keepdims=keepdims, where=where
-    )
-
-
-def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
-    arr = asarray(a)
-    return arr.var(
-        axis=axis, dtype=dtype, out=out, ddof=ddof, keepdims=keepdims, where=where
-    )
 
 
 def average(a, axis=None, weights=None, returned=False, *, keepdims=NoValue):
 
     if weights is None:
-        result = mean(a, axis=axis, keepdims=keepdims)
+        result = _funcs.mean(a, axis=axis, keepdims=keepdims)
         if returned:
             scl = result.dtype.type(a.size / result.size)
             return result, scl

@@ -1,10 +1,11 @@
+import operator
 import typing
 from typing import Optional, Sequence
 
 import torch
 
 from . import _decorators, _helpers
-from ._detail import _dtypes_impl, _flips, _util
+from ._detail import _dtypes_impl, _flips, _util, _reductions
 from ._detail import implementations as _impl
 
 ################################## normalizations
@@ -12,6 +13,7 @@ from ._detail import implementations as _impl
 ArrayLike = typing.TypeVar("ArrayLike")
 DTypeLike = typing.TypeVar("DTypeLike")
 SubokLike = typing.TypeVar("SubokLike")
+AxisLike = typing.TypeVar("AxisLike")
 
 # annotate e.g. atleast_1d(*arys)
 UnpackedSeqArrayLike = typing.TypeVar("UnpackedSeqArrayLike")
@@ -52,6 +54,14 @@ def normalize_subok_like(arg, name):
         raise ValueError(f"'{name}' parameter is not supported.")
 
 
+def normalize_axis_like(arg, name=None):
+    from ._ndarray import ndarray
+
+    if isinstance(arg, ndarray):
+        arg = operator.index(arg)
+    return arg
+
+
 normalizers = {
     ArrayLike: normalize_array_like,
     Optional[ArrayLike]: normalize_optional_array_like,
@@ -59,6 +69,7 @@ normalizers = {
     UnpackedSeqArrayLike: normalize_seq_array_like,  # cf handling in normalize
     DTypeLike: normalize_dtype,
     SubokLike: normalize_subok_like,
+    AxisLike: normalize_axis_like,
 }
 
 import functools
@@ -345,3 +356,83 @@ def round_(a: ArrayLike, decimals=0, out=None):
 
 around = round_
 round = round_
+
+
+# ### reductions ###
+
+
+NoValue = None   # FIXME
+
+@normalizer
+def sum(a : ArrayLike, axis: AxisLike=None, dtype : DTypeLike=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
+    result = _reductions.sum(a, axis=axis, dtype=dtype, initial=NoValue, where=NoValue)
+
+    if keepdims:
+        result = _util.apply_keepdims(result, axis, a.ndim)
+
+    return _helpers.result_or_out(result, out)
+
+
+@normalizer
+def prod(a : ArrayLike, axis: AxisLike=None, dtype : DTypeLike=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
+    result = _reductions.prod(a, axis=axis, dtype=dtype, initial=NoValue, where=NoValue)
+
+    if keepdims:
+        result = _util.apply_keepdims(result, axis, a.ndim)
+
+    return _helpers.result_or_out(result, out)
+
+
+product = prod
+
+
+@normalizer
+def mean(a : ArrayLike, axis: AxisLike=None, dtype : DTypeLike=None, out=None, keepdims=NoValue,  *, where=NoValue):
+    result = _reductions.mean(a, axis=axis, dtype=dtype, where=NoValue)
+
+    if keepdims:
+        result = _util.apply_keepdims(result, axis, a.ndim)
+
+    return _helpers.result_or_out(result, out)
+
+
+@normalizer
+def var(a: ArrayLike, axis: AxisLike=None, dtype : DTypeLike=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
+    result = _reductions.var(a, axis=axis, dtype=dtype, ddof=ddof, where=NoValue)
+
+    if keepdims:
+        result = _util.apply_keepdims(result, axis, a.ndim)
+
+    return _helpers.result_or_out(result, out)
+
+
+@normalizer
+def std(a: ArrayLike, axis: AxisLike=None, dtype : DTypeLike=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
+    result = _reductions.std(a, axis=axis, dtype=dtype, ddof=ddof, where=NoValue)
+
+    if keepdims:
+        result = _util.apply_keepdims(result, axis, a.ndim)
+
+    return _helpers.result_or_out(result, out)
+
+
+
+@normalizer
+def argmin(a: ArrayLike, axis: AxisLike=None, out=None, *, keepdims=NoValue):
+    result = _reductions.argmin(a, axis=axis)
+
+    if keepdims:
+        result = _util.apply_keepdims(result, axis, a.ndim)
+
+    return _helpers.result_or_out(result, out)
+
+
+@normalizer
+def argmax(a: ArrayLike, axis: AxisLike=None, out=None, *, keepdims=NoValue):
+    result = _reductions.argmax(a, axis=axis)
+
+    if keepdims:
+        result = _util.apply_keepdims(result, axis, a.ndim)
+
+    return _helpers.result_or_out(result, out)
+

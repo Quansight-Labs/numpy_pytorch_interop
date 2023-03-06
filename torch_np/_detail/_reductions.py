@@ -11,6 +11,38 @@ from . import _dtypes_impl, _util
 NoValue = None
 
 
+import functools
+
+
+############# XXX
+### From _util.axis_expand_func
+
+
+def deco_axis_expand(func):
+    """Generically handle axis arguments in reductions."""
+    @functools.wraps(func)
+    def wrapped(tensor, axis, *args, **kwds):
+
+        if axis is not None:
+            if not isinstance(axis, (list, tuple)):
+                axis = (axis,)
+            axis = _util.normalize_axis_tuple(axis, tensor.ndim)
+
+        if axis == ():
+            newshape = _util.expand_shape(tensor.shape, axis=0)
+            tensor = tensor.reshape(newshape)
+            axis = (0,)
+
+        result = func(tensor, axis=axis, *args, **kwds)
+        return result
+
+    return wrapped
+
+
+
+##################################3
+
+
 def _atleast_float(dtype, other_dtype):
     """Return a dtype that is real or complex floating-point.
 
@@ -34,6 +66,7 @@ def count_nonzero(a, axis=None):
     return tensor
 
 
+@deco_axis_expand
 def argmax(tensor, axis=None):
     axis = _util.allow_only_single_axis(axis)
 
@@ -45,6 +78,7 @@ def argmax(tensor, axis=None):
     return tensor
 
 
+@deco_axis_expand
 def argmin(tensor, axis=None):
     axis = _util.allow_only_single_axis(axis)
 
@@ -103,6 +137,7 @@ def ptp(tensor, axis=None):
     return result
 
 
+@deco_axis_expand
 def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     if initial is not NoValue or where is not NoValue:
         raise NotImplementedError
@@ -120,6 +155,7 @@ def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     return result
 
 
+@deco_axis_expand
 def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     if initial is not NoValue or where is not NoValue:
         raise NotImplementedError
@@ -137,6 +173,7 @@ def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     return result
 
 
+@deco_axis_expand
 def mean(tensor, axis=None, dtype=None, *, where=NoValue):
     if where is not NoValue:
         raise NotImplementedError
@@ -159,6 +196,7 @@ def mean(tensor, axis=None, dtype=None, *, where=NoValue):
     return result
 
 
+@deco_axis_expand
 def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
     if where is not NoValue:
         raise NotImplementedError
@@ -170,6 +208,7 @@ def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
     return result
 
 
+@deco_axis_expand
 def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
     if where is not NoValue:
         raise NotImplementedError

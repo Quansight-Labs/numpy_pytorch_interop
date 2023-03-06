@@ -375,8 +375,11 @@ class ndarray:
 
     ### reductions ###
 
-    argmin = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmin))
-    argmax = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmax))
+    ##argmin = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmin))
+    ##argmax = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmax))
+
+    argmax = _funcs.argmax
+    argmin = _funcs.argmin
 
     any = emulate_out_arg(axis_keepdims_wrapper(_reductions.any))
     all = emulate_out_arg(axis_keepdims_wrapper(_reductions.all))
@@ -384,11 +387,11 @@ class ndarray:
     min = emulate_out_arg(axis_keepdims_wrapper(_reductions.min))
     ptp = emulate_out_arg(axis_keepdims_wrapper(_reductions.ptp))
 
-    sum = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.sum)))
-    prod = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.prod)))
-    mean = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.mean)))
-    var = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.var)))
-    std = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.std)))
+    sum = _funcs.sum
+    prod = _funcs.prod
+    mean = _funcs.mean
+    var = _funcs.var
+    std = _funcs.std
 
     cumprod = emulate_out_arg(
         axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumprod))
