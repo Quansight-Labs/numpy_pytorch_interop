@@ -638,38 +638,6 @@ def tri(N, M=None, k=0, dtype: DTypeLike = float, *, like: SubokLike = None):
 ###### reductions
 
 
-def amax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    arr = asarray(a)
-    return arr.max(axis=axis, out=out, keepdims=keepdims, initial=initial, where=where)
-
-
-max = amax
-
-
-def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    arr = asarray(a)
-    return arr.min(axis=axis, out=out, keepdims=keepdims, initial=initial, where=where)
-
-
-min = amin
-
-
-def ptp(a, axis=None, out=None, keepdims=NoValue):
-    arr = asarray(a)
-    return arr.ptp(axis=axis, out=out, keepdims=keepdims)
-
-
-def all(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-    arr = asarray(a)
-    return arr.all(axis=axis, out=out, keepdims=keepdims, where=where)
-
-
-def any(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-    arr = asarray(a)
-    return arr.any(axis=axis, out=out, keepdims=keepdims, where=where)
-
-
-
 def cumprod(a, axis=None, dtype=None, out=None):
     arr = asarray(a)
     return arr.cumprod(axis=axis, dtype=dtype, out=out)
@@ -681,8 +649,6 @@ cumproduct = cumprod
 def cumsum(a, axis=None, dtype=None, out=None):
     arr = asarray(a)
     return arr.cumsum(axis=axis, dtype=dtype, out=out)
-
-
 
 
 def average(a, axis=None, weights=None, returned=False, *, keepdims=NoValue):

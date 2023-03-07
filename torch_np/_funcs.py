@@ -365,21 +365,13 @@ NoValue = None   # FIXME
 
 @normalizer
 def sum(a : ArrayLike, axis: AxisLike=None, dtype : DTypeLike=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    result = _reductions.sum(a, axis=axis, dtype=dtype, initial=NoValue, where=NoValue)
-
-    if keepdims:
-        result = _util.apply_keepdims(result, axis, a.ndim)
-
+    result = _reductions.sum(a, axis=axis, dtype=dtype, initial=initial, where=where, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
 @normalizer
 def prod(a : ArrayLike, axis: AxisLike=None, dtype : DTypeLike=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    result = _reductions.prod(a, axis=axis, dtype=dtype, initial=NoValue, where=NoValue)
-
-    if keepdims:
-        result = _util.apply_keepdims(result, axis, a.ndim)
-
+    result = _reductions.prod(a, axis=axis, dtype=dtype, initial=initial, where=where, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
@@ -388,51 +380,65 @@ product = prod
 
 @normalizer
 def mean(a : ArrayLike, axis: AxisLike=None, dtype : DTypeLike=None, out=None, keepdims=NoValue,  *, where=NoValue):
-    result = _reductions.mean(a, axis=axis, dtype=dtype, where=NoValue)
-
-    if keepdims:
-        result = _util.apply_keepdims(result, axis, a.ndim)
-
+    result = _reductions.mean(a, axis=axis, dtype=dtype, where=NoValue, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
 @normalizer
 def var(a: ArrayLike, axis: AxisLike=None, dtype : DTypeLike=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
-    result = _reductions.var(a, axis=axis, dtype=dtype, ddof=ddof, where=NoValue)
-
-    if keepdims:
-        result = _util.apply_keepdims(result, axis, a.ndim)
-
+    result = _reductions.var(a, axis=axis, dtype=dtype, ddof=ddof, where=where, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
 @normalizer
 def std(a: ArrayLike, axis: AxisLike=None, dtype : DTypeLike=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
-    result = _reductions.std(a, axis=axis, dtype=dtype, ddof=ddof, where=NoValue)
-
-    if keepdims:
-        result = _util.apply_keepdims(result, axis, a.ndim)
-
+    result = _reductions.std(a, axis=axis, dtype=dtype, ddof=ddof, where=where, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
-
 
 
 @normalizer
 def argmin(a: ArrayLike, axis: AxisLike=None, out=None, *, keepdims=NoValue):
-    result = _reductions.argmin(a, axis=axis)
-
-    if keepdims:
-        result = _util.apply_keepdims(result, axis, a.ndim)
-
+    result = _reductions.argmin(a, axis=axis, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
 @normalizer
 def argmax(a: ArrayLike, axis: AxisLike=None, out=None, *, keepdims=NoValue):
-    result = _reductions.argmax(a, axis=axis)
+    result = _reductions.argmax(a, axis=axis, keepdims=keepdims)
+    return _helpers.result_or_out(result, out)
 
-    if keepdims:
-        result = _util.apply_keepdims(result, axis, a.ndim)
 
+@normalizer
+def amax(a : ArrayLike, axis : AxisLike=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
+    result = _reductions.max(a, axis=axis, initial=initial, where=where, keepdims=keepdims)
+    return _helpers.result_or_out(result, out)
+
+
+max = amax
+
+
+@normalizer
+def amin(a: ArrayLike, axis: AxisLike=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
+    result = _reductions.min(a, axis=axis, initial=initial, where=where, keepdims=keepdims)
+    return _helpers.result_or_out(result, out)
+
+min = amin
+
+
+@normalizer
+def ptp(a: ArrayLike, axis: AxisLike=None, out=None, keepdims=NoValue):
+    result = _reductions.ptp(a, axis=axis, keepdims=keepdims)
+    return _helpers.result_or_out(result, out)
+
+
+@normalizer
+def all(a: ArrayLike, axis: AxisLike=None, out=None, keepdims=NoValue, *, where=NoValue):
+    result = _reductions.all(a, axis=axis, where=where, keepdims=keepdims)
+    return _helpers.result_or_out(result, out)
+
+
+@normalizer
+def any(a: ArrayLike, axis: AxisLike=None, out=None, keepdims=NoValue, *, where=NoValue):
+    result = _reductions.any(a, axis=axis, where=where, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 

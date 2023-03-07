@@ -374,18 +374,14 @@ class ndarray:
     searchsorted = _funcs.searchsorted
 
     ### reductions ###
-
-    ##argmin = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmin))
-    ##argmax = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmax))
-
     argmax = _funcs.argmax
     argmin = _funcs.argmin
 
-    any = emulate_out_arg(axis_keepdims_wrapper(_reductions.any))
-    all = emulate_out_arg(axis_keepdims_wrapper(_reductions.all))
-    max = emulate_out_arg(axis_keepdims_wrapper(_reductions.max))
-    min = emulate_out_arg(axis_keepdims_wrapper(_reductions.min))
-    ptp = emulate_out_arg(axis_keepdims_wrapper(_reductions.ptp))
+    any = _funcs.any
+    all = _funcs.all
+    max = _funcs.max
+    min = _funcs.min
+    ptp = _funcs.ptp
 
     sum = _funcs.sum
     prod = _funcs.prod

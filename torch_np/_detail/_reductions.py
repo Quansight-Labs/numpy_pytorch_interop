@@ -39,6 +39,14 @@ def deco_axis_expand(func):
     return wrapped
 
 
+def emulate_keepdims(func):
+    @functools.wraps(func)
+    def wrapped(tensor, axis=None, keepdims=NoValue, *args, **kwds):
+        result = func(tensor, axis=axis, *args, **kwds)
+        if keepdims:
+            result = _util.apply_keepdims(result, axis, tensor.ndim)
+        return result
+    return wrapped
 
 ##################################3
 
@@ -66,6 +74,7 @@ def count_nonzero(a, axis=None):
     return tensor
 
 
+@emulate_keepdims
 @deco_axis_expand
 def argmax(tensor, axis=None):
     axis = _util.allow_only_single_axis(axis)
@@ -78,6 +87,7 @@ def argmax(tensor, axis=None):
     return tensor
 
 
+@emulate_keepdims
 @deco_axis_expand
 def argmin(tensor, axis=None):
     axis = _util.allow_only_single_axis(axis)
@@ -90,6 +100,8 @@ def argmin(tensor, axis=None):
     return tensor
 
 
+@emulate_keepdims
+@deco_axis_expand
 def any(tensor, axis=None, *, where=NoValue):
     if where is not NoValue:
         raise NotImplementedError
@@ -103,6 +115,8 @@ def any(tensor, axis=None, *, where=NoValue):
     return result
 
 
+@emulate_keepdims
+@deco_axis_expand
 def all(tensor, axis=None, *, where=NoValue):
     if where is not NoValue:
         raise NotImplementedError
@@ -116,6 +130,8 @@ def all(tensor, axis=None, *, where=NoValue):
     return result
 
 
+@emulate_keepdims
+@deco_axis_expand
 def max(tensor, axis=None, initial=NoValue, where=NoValue):
     if initial is not NoValue or where is not NoValue:
         raise NotImplementedError
@@ -124,6 +140,8 @@ def max(tensor, axis=None, initial=NoValue, where=NoValue):
     return result
 
 
+@emulate_keepdims
+@deco_axis_expand
 def min(tensor, axis=None, initial=NoValue, where=NoValue):
     if initial is not NoValue or where is not NoValue:
         raise NotImplementedError
@@ -132,11 +150,14 @@ def min(tensor, axis=None, initial=NoValue, where=NoValue):
     return result
 
 
+@emulate_keepdims
+@deco_axis_expand
 def ptp(tensor, axis=None):
     result = tensor.amax(axis) - tensor.amin(axis)
     return result
 
 
+@emulate_keepdims
 @deco_axis_expand
 def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     if initial is not NoValue or where is not NoValue:
@@ -155,6 +176,7 @@ def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     return result
 
 
+@emulate_keepdims
 @deco_axis_expand
 def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     if initial is not NoValue or where is not NoValue:
@@ -173,6 +195,7 @@ def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     return result
 
 
+@emulate_keepdims
 @deco_axis_expand
 def mean(tensor, axis=None, dtype=None, *, where=NoValue):
     if where is not NoValue:
@@ -196,6 +219,7 @@ def mean(tensor, axis=None, dtype=None, *, where=NoValue):
     return result
 
 
+@emulate_keepdims
 @deco_axis_expand
 def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
     if where is not NoValue:
@@ -208,6 +232,7 @@ def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
     return result
 
 
+@emulate_keepdims
 @deco_axis_expand
 def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
     if where is not NoValue:
