@@ -459,3 +459,22 @@ def cumsum(a: ArrayLike, axis: AxisLike = None, dtype: DTypeLike = None, out=Non
 def cumprod(a: ArrayLike, axis: AxisLike = None, dtype: DTypeLike = None, out=None):
     result = _reductions.cumprod(a, axis=axis, dtype=dtype)
     return _helpers.result_or_out(result, out)
+
+
+@normalizer
+def quantile(
+    a : ArrayLike,
+    q : ArrayLike,
+    axis: AxisLike=None,
+    out=None,
+    overwrite_input=False,
+    method="linear",
+    keepdims=False,
+    *,
+    interpolation=None,
+):
+    if interpolation is not None:
+        raise ValueError("'interpolation' argument is deprecated; use 'method' instead")
+
+    result = _reductions.quantile(a, q, axis, method=method, keepdims=keepdims)
+    return _helpers.result_or_out(result, out, promote_scalar=True)

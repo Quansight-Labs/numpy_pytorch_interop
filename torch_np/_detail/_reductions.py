@@ -337,7 +337,7 @@ def average(a_tensor, axis, w_tensor):
     return result, denominator
 
 
-def quantile(a_tensor, q_tensor, axis, method):
+def quantile(a_tensor, q_tensor, axis, method, keepdims=False):
 
     if (0 > q_tensor).any() or (q_tensor > 1).any():
         raise ValueError("Quantiles must be in range [0, 1], got %s" % q_tensor)
@@ -350,6 +350,7 @@ def quantile(a_tensor, q_tensor, axis, method):
     if a_tensor.dtype == torch.float16:
         a_tensor = a_tensor.to(torch.float32)
 
+    # TODO: consider moving this normalize_axis_tuple dance to normalize axis? Across the board if at all.
     # axis
     if axis is not None:
         axis = _util.normalize_axis_tuple(axis, a_tensor.ndim)
@@ -357,8 +358,16 @@ def quantile(a_tensor, q_tensor, axis, method):
 
     q_tensor = _util.cast_if_needed(q_tensor, a_tensor.dtype)
 
+
+    # axis=None ravels, so store the originals to reuse with keepdims=True below
+    ax, ndim = axis, a_tensor.ndim
     (a_tensor, q_tensor), axis = _util.axis_none_ravel(a_tensor, q_tensor, axis=axis)
 
     result = torch.quantile(a_tensor, q_tensor, axis=axis, interpolation=method)
 
+    # NB: not using @emulate_keepdims here because the signature is (a, q, axis, ...)
+    # while the decorator expects (a, axis, ...)
+    # this can be fixed, of course, but the cure seems worse then the desease
+    if keepdims:
+        result = _util.apply_keepdims(result, ax, ndim)
     return result

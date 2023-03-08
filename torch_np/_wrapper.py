@@ -674,6 +674,7 @@ def average(a, axis=None, weights=None, returned=False, *, keepdims=NoValue):
         return _helpers.array_from(result)
 
 
+# Normalizations (ArrayLike et al) are done in quantile.
 def percentile(
     a,
     q,
@@ -685,36 +686,14 @@ def percentile(
     *,
     interpolation=None,
 ):
-    return quantile(
+    return _funcs.quantile(
         a, asarray(q) / 100.0, axis, out, overwrite_input, method, keepdims=keepdims
     )
 
 
-def quantile(
-    a,
-    q,
-    axis=None,
-    out=None,
-    overwrite_input=False,
-    method="linear",
-    keepdims=False,
-    *,
-    interpolation=None,
-):
-    if interpolation is not None:
-        raise ValueError("'interpolation' argument is deprecated; use 'method' instead")
-
-    a_tensor, q_tensor = _helpers.to_tensors(a, q)
-    result = _reductions.quantile(a_tensor, q_tensor, axis, method)
-
-    # keepdims
-    if keepdims:
-        result = _util.apply_keepdims(result, axis, a_tensor.ndim)
-    return _helpers.result_or_out(result, out, promote_scalar=True)
-
 
 def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
-    return quantile(
+    return _funcs.quantile(
         a, 0.5, axis=axis, overwrite_input=overwrite_input, out=out, keepdims=keepdims
     )
 
