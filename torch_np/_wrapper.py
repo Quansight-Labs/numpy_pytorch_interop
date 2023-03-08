@@ -307,13 +307,12 @@ def empty_like(
 
 @normalizer
 def full(
-    shape, fill_value, dtype: DTypeLike = None, order="C", *, like: SubokLike = None
+    shape, fill_value: ArrayLike, dtype: DTypeLike = None, order="C", *, like: SubokLike = None
 ):
     if isinstance(shape, int):
         shape = (shape,)
     if order != "C":
         raise NotImplementedError
-    fill_value = asarray(fill_value).get()
     result = _impl.full(shape, fill_value, dtype=dtype)
     return _helpers.array_from(result)
 
@@ -471,18 +470,18 @@ def where(
 ###### module-level queries of object properties
 
 
-def ndim(a):
-    a = asarray(a).get()
+@normalizer
+def ndim(a : ArrayLike):
     return a.ndim
 
 
-def shape(a):
-    a = asarray(a).get()
+@normalizer
+def shape(a: ArrayLike):
     return tuple(a.shape)
 
 
-def size(a, axis=None):
-    a = asarray(a).get()
+@normalizer
+def size(a: ArrayLike, axis=None):
     if axis is None:
         return a.numel()
     else:
