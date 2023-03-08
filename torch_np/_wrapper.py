@@ -582,12 +582,6 @@ def flatnonzero(a):
     return _funcs.nonzero(arr.ravel())[0]
 
 
-from ._decorators import emulate_out_arg
-from ._ndarray import axis_keepdims_wrapper
-
-count_nonzero = emulate_out_arg(axis_keepdims_wrapper(_reductions.count_nonzero))
-
-
 @normalizer
 def roll(a: ArrayLike, shift, axis=None):
     result = _impl.roll(a, shift, axis)

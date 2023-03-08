@@ -442,3 +442,9 @@ def any(a: ArrayLike, axis: AxisLike=None, out=None, keepdims=NoValue, *, where=
     result = _reductions.any(a, axis=axis, where=where, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
+
+@normalizer
+def count_nonzero(a: ArrayLike, axis: AxisLike=None, *, keepdims=False):
+    result = _reductions.count_nonzero(a, axis=axis, keepdims=keepdims)
+    return _helpers.array_from(result)
+

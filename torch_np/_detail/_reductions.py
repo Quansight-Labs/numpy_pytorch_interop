@@ -65,6 +65,8 @@ def _atleast_float(dtype, other_dtype):
     return dtype
 
 
+@emulate_keepdims
+@deco_axis_expand
 def count_nonzero(a, axis=None):
     # XXX: this all should probably be generalized to a sum(a != 0, dtype=bool)
     try:
