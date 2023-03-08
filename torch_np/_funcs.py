@@ -448,3 +448,14 @@ def count_nonzero(a: ArrayLike, axis: AxisLike=None, *, keepdims=False):
     result = _reductions.count_nonzero(a, axis=axis, keepdims=keepdims)
     return _helpers.array_from(result)
 
+
+@normalizer
+def cumsum(a: ArrayLike, axis: AxisLike = None, dtype: DTypeLike = None, out=None):
+    result = _reductions.cumsum(a, axis=axis, dtype=dtype)
+    return _helpers.result_or_out(result, out)
+
+
+@normalizer
+def cumprod(a: ArrayLike, axis: AxisLike = None, dtype: DTypeLike = None, out=None):
+    result = _reductions.cumprod(a, axis=axis, dtype=dtype)
+    return _helpers.result_or_out(result, out)

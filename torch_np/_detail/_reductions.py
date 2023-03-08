@@ -48,6 +48,22 @@ def emulate_keepdims(func):
         return result
     return wrapped
 
+
+def deco_axis_ravel(func):
+    """Generically handle 'axis=None ravels' behavior."""
+    @functools.wraps(func)
+    def wrapped(tensor, axis, *args, **kwds):
+        if axis is not None:
+            axis = _util.normalize_axis_index(axis, tensor.ndim)
+
+        tensors, axis = _util.axis_none_ravel(tensor, axis=axis)  # XXX: inline
+        tensor = tensors[0]
+
+        result = func(tensor, axis=axis, *args, **kwds)
+        return result
+    return wrapped
+
+
 ##################################3
 
 
@@ -252,6 +268,7 @@ def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
 #   2. axis=None ravels (cf concatenate)
 
 
+@deco_axis_ravel
 def cumprod(tensor, axis, dtype=None):
     if dtype == torch.bool:
         dtype = _dtypes_impl.default_int_dtype
@@ -263,6 +280,7 @@ def cumprod(tensor, axis, dtype=None):
     return result
 
 
+@deco_axis_ravel
 def cumsum(tensor, axis, dtype=None):
     if dtype == torch.bool:
         dtype = _dtypes_impl.default_int_dtype

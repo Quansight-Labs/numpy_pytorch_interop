@@ -3,13 +3,6 @@ import operator
 import torch
 
 from . import _binary_ufuncs, _dtypes, _funcs, _helpers, _unary_ufuncs
-from ._decorators import (
-    NoValue,
-    axis_keepdims_wrapper,
-    axis_none_ravel_wrapper,
-    dtype_to_torch,
-    emulate_out_arg,
-)
 from ._detail import _dtypes_impl, _flips, _reductions, _util
 from ._detail import implementations as _impl
 
@@ -389,12 +382,8 @@ class ndarray:
     var = _funcs.var
     std = _funcs.std
 
-    cumprod = emulate_out_arg(
-        axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumprod))
-    )
-    cumsum = emulate_out_arg(
-        axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumsum))
-    )
+    cumsum = _funcs.cumsum
+    cumprod = _funcs.cumprod
 
     ### indexing ###
     @staticmethod
