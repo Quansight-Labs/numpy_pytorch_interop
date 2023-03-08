@@ -461,6 +461,9 @@ def cumprod(a: ArrayLike, axis: AxisLike = None, dtype: DTypeLike = None, out=No
     return _helpers.result_or_out(result, out)
 
 
+cumproduct = cumprod
+
+
 @normalizer
 def quantile(
     a : ArrayLike,

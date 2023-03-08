@@ -631,50 +631,16 @@ def tri(N, M=None, k=0, dtype: DTypeLike = float, *, like: SubokLike = None):
 
 ###### reductions
 
-
-def cumprod(a, axis=None, dtype=None, out=None):
-    arr = asarray(a)
-    return arr.cumprod(axis=axis, dtype=dtype, out=out)
-
-
-cumproduct = cumprod
-
-
-def cumsum(a, axis=None, dtype=None, out=None):
-    arr = asarray(a)
-    return arr.cumsum(axis=axis, dtype=dtype, out=out)
-
-
-def average(a, axis=None, weights=None, returned=False, *, keepdims=NoValue):
-
-    if weights is None:
-        result = _funcs.mean(a, axis=axis, keepdims=keepdims)
-        if returned:
-            scl = result.dtype.type(a.size / result.size)
-            return result, scl
-        return result
-
-    a_tensor, w_tensor = _helpers.to_tensors(a, weights)
-
-    result, wsum = _reductions.average(a_tensor, axis, w_tensor)
-
-    # keepdims
-    if keepdims:
-        result = _util.apply_keepdims(result, axis, a_tensor.ndim)
-
-    # returned
+@normalizer
+def average(a: ArrayLike, axis=None, weights: ArrayLike=None, returned=False, *, keepdims=NoValue):
+    result, wsum = _reductions.average(a, axis, weights, returned=returned, keepdims=keepdims)
     if returned:
-        scl = wsum
-        if scl.shape != result.shape:
-            scl = torch.broadcast_to(scl, result.shape).clone()
-
-        return _helpers.array_from(result), _helpers.array_from(scl)
-
+        return _helpers.tuple_arrays_from((result, wsum))
     else:
         return _helpers.array_from(result)
 
 
-# Normalizations (ArrayLike et al) are done in quantile.
+# Normalizations (ArrayLike et al) in percentile and median are done in `_funcs.py/quantile`.
 def percentile(
     a,
     q,
@@ -709,6 +675,8 @@ def outer(a: ArrayLike, b: ArrayLike, out=None):
     result = torch.outer(a, b)
     return _helpers.result_or_out(result, out)
 
+
+# ### FIXME: this is a stub
 
 @normalizer
 def nanmean(

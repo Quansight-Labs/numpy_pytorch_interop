@@ -292,7 +292,26 @@ def cumsum(tensor, axis, dtype=None):
     return result
 
 
-def average(a_tensor, axis, w_tensor):
+
+def average(a, axis, weights, returned=False, keepdims=False):
+    if weights is None:
+        result, wsum = average_noweights(a, axis, keepdims=keepdims)
+    else:
+        result, wsum = average_weights(a, axis, weights, keepdims=keepdims)
+
+    if returned:
+        if wsum.shape != result.shape:
+            wsum = torch.broadcast_to(wsum, result.shape).clone()
+    return result, wsum
+
+
+def average_noweights(a_tensor, axis, keepdims=False):
+    result = mean(a_tensor, axis=axis, keepdims=keepdims)
+    scl = torch.as_tensor(a_tensor.numel() / result.numel(), dtype=result.dtype)
+    return result, scl
+
+
+def average_weights(a_tensor, axis, w_tensor, keepdims=False):
 
     # dtype
     # FIXME: 1. use result_type
@@ -305,6 +324,9 @@ def average(a_tensor, axis, w_tensor):
 
     a_tensor = _util.cast_if_needed(a_tensor, result_dtype)
     w_tensor = _util.cast_if_needed(w_tensor, result_dtype)
+
+    # axis=None ravels, so store the originals to reuse with keepdims=True below
+    ax, ndim = axis, a_tensor.ndim
 
     # axis
     if axis is None:
@@ -333,6 +355,10 @@ def average(a_tensor, axis, w_tensor):
     numerator = torch.mul(a_tensor, w_tensor).sum(axis)
     denominator = w_tensor.sum(axis)
     result = numerator / denominator
+
+    # keepdims
+    if keepdims:
+        result = _util.apply_keepdims(result, ax, ndim)
 
     return result, denominator
 
