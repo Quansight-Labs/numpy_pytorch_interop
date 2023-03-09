@@ -43,9 +43,10 @@ one_arg_funcs = [
     w.flatnonzero,
 ]
 
+ufunc_names = _unary_ufuncs.__all__
+ufunc_names.remove('invert')     # torch: bitwise_not_cpu not implemented for 'Float'
 
-one_arg_funcs += [getattr(_unary_ufuncs, name) for name in _unary_ufuncs.__all__]
-one_arg_funcs = one_arg_funcs[:-1]  # FIXME: remove np.invert
+one_arg_funcs += [getattr(_unary_ufuncs, name) for name in ufunc_names]
 
 
 @pytest.mark.parametrize("func", one_arg_funcs)

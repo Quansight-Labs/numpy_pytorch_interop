@@ -139,9 +139,12 @@ def normalizer(func):
         # 3. [LOOKS OK] optional (tensor_or_none) : untyped => pass through
         # 4. [LOOKS OK] DTypeLike : positional or kw
         # 5. axes : live in _impl or in types? several ways of handling them
-        # 6. keepdims : peel off, postprocess
+        # 6. [OK, NOT HERE] keepdims : peel off, postprocess
         # 7. OutLike : normal & keyword-only, peel off, postprocess
         # 8. [LOOKS OK] *args
+        # 9. consolidate normalizations (_funcs, _wrapper)
+        # 10. consolidate decorators (_{unary,binary}_ufuncs)
+        # 11. out= arg : validate it's an ndarray
 
         # finally, pass normalized arguments through
         result = func(*ba.args, **ba.kwargs)
