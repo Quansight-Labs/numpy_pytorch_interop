@@ -41,6 +41,26 @@ def cast_and_broadcast(tensors, out, casting):
     return tuple(tensors)
 
 
+def ufunc_preprocess(
+    tensors, out, where, casting, order, dtype, subok, signature, extobj
+):
+    # internal preprocessing or args in ufuncs (cf _unary_ufuncs, _binary_ufuncs)
+    if order != "K" or not where or signature or extobj:
+        raise NotImplementedError
+
+    # XXX: dtype=... parameter
+    if dtype is not None:
+        raise NotImplementedError
+
+    out_shape_dtype = None
+    if out is not None:
+        out_shape_dtype = (out.get().dtype, out.get().shape)
+
+    tensors = _util.cast_and_broadcast(tensors, out_shape_dtype, casting)
+
+    return tensors
+
+
 # ### Return helpers: wrap a single tensor, a tuple of tensors, out= etc ###
 
 

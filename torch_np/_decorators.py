@@ -5,8 +5,6 @@ import torch
 from . import _dtypes, _helpers
 from ._detail import _util
 
-NoValue = None
-
 
 def out_shape_dtype(func):
     """Handle out=... kwarg for ufuncs.

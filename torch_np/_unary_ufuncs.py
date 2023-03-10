@@ -2,20 +2,13 @@
 # from ._detail import _ufunc_impl
 
 
+from . import _helpers
 from ._detail import _unary_ufuncs
+from ._normalizations import ArrayLike, DTypeLike, SubokLike, normalizer
 
 __all__ = [
     name for name in dir(_unary_ufuncs) if not name.startswith("_") and name != "torch"
 ]
-
-
-from . import _helpers
-from ._detail import _util
-
-# TODO: consolidate normalizations
-from ._funcs import ArrayLike, DTypeLike, SubokLike, normalizer
-
-# import torch
 
 
 def deco_unary_ufunc(torch_func):
@@ -38,19 +31,9 @@ def deco_unary_ufunc(torch_func):
         signature=None,
         extobj=None,
     ):
-        if order != "K" or not where or signature or extobj:
-            raise NotImplementedError
-
-        # XXX: dtype=... parameter
-        if dtype is not None:
-            raise NotImplementedError
-
-        out_shape_dtype = None
-        if out is not None:
-            out_shape_dtype = (out.get().dtype, out.get().shape)
-
-        tensors = _util.cast_and_broadcast((x,), out_shape_dtype, casting)
-
+        tensors = _helpers.ufunc_preprocess(
+            (x,), out, where, casting, order, dtype, subok, signature, extobj
+        )
         result = torch_func(*tensors)
         return _helpers.result_or_out(result, out)
 

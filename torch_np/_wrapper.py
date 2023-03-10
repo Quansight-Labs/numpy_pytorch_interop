@@ -11,10 +11,16 @@ import torch
 from . import _funcs
 from ._detail import _dtypes_impl, _flips, _reductions, _util
 from ._detail import implementations as _impl
+from ._ndarray import array, asarray, maybe_set_base, ndarray
 
 ### XXX: order the imports DAG
-from ._funcs import ArrayLike, DTypeLike, SubokLike, UnpackedSeqArrayLike, normalizer
-from ._ndarray import array, asarray, maybe_set_base, ndarray
+from ._normalizations import (
+    ArrayLike,
+    DTypeLike,
+    SubokLike,
+    UnpackedSeqArrayLike,
+    normalizer,
+)
 
 from . import _dtypes, _helpers, _decorators  # isort: skip  # XXX
 
