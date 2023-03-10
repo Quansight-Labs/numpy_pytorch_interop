@@ -13,14 +13,15 @@ from ._detail import _dtypes_impl, _flips, _reductions, _util
 from ._detail import implementations as _impl
 from ._ndarray import array, asarray, maybe_set_base, ndarray
 
-### XXX: order the imports DAG
 from ._normalizations import (
     ArrayLike,
     DTypeLike,
     SubokLike,
     UnpackedSeqArrayLike,
+    NDArray,
     normalizer,
 )
+from typing import Optional
 
 from . import _dtypes, _helpers, _decorators  # isort: skip  # XXX
 
@@ -108,9 +109,6 @@ def _concat_check(tup, dtype, out):
         raise ValueError("need at least one array to concatenate")
 
     if out is not None:
-        if not isinstance(out, ndarray):
-            raise ValueError("'out' must be an array")
-
         if dtype is not None:
             # mimic numpy
             raise TypeError(
@@ -123,7 +121,7 @@ def _concat_check(tup, dtype, out):
 def concatenate(
     ar_tuple: Sequence[ArrayLike],
     axis=0,
-    out=None,
+    out: Optional[NDArray]=None,
     dtype: DTypeLike = None,
     casting="same_kind",
 ):
@@ -173,7 +171,7 @@ def column_stack(
 def stack(
     arrays: Sequence[ArrayLike],
     axis=0,
-    out=None,
+    out:  Optional[NDArray] = None,
     *,
     dtype: DTypeLike = None,
     casting="same_kind",
@@ -666,7 +664,7 @@ def percentile(
     a,
     q,
     axis=None,
-    out=None,
+    out:  Optional[NDArray] = None,
     overwrite_input=False,
     method="linear",
     keepdims=False,
@@ -678,7 +676,7 @@ def percentile(
     )
 
 
-def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
+def median(a, axis=None, out:  Optional[NDArray] = None, overwrite_input=False, keepdims=False):
     return _funcs.quantile(
         a, 0.5, axis=axis, overwrite_input=overwrite_input, out=out, keepdims=keepdims
     )
@@ -691,7 +689,7 @@ def inner(a: ArrayLike, b: ArrayLike, /):
 
 
 @normalizer
-def outer(a: ArrayLike, b: ArrayLike, out=None):
+def outer(a: ArrayLike, b: ArrayLike, out:  Optional[NDArray] = None):
     result = torch.outer(a, b)
     return _helpers.result_or_out(result, out)
 
@@ -704,7 +702,7 @@ def nanmean(
     a: ArrayLike,
     axis=None,
     dtype: DTypeLike = None,
-    out=None,
+    out:  Optional[NDArray] = None,
     keepdims=NoValue,
     *,
     where=NoValue,
@@ -847,13 +845,13 @@ def isrealobj(x: ArrayLike):
 
 
 @normalizer
-def isneginf(x: ArrayLike, out=None):
+def isneginf(x: ArrayLike, out:  Optional[NDArray] = None):
     result = torch.isneginf(x, out=out)
     return _helpers.array_from(result)
 
 
 @normalizer
-def isposinf(x: ArrayLike, out=None):
+def isposinf(x: ArrayLike, out:  Optional[NDArray] = None):
     result = torch.isposinf(x, out=out)
     return _helpers.array_from(result)
 

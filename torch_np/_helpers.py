@@ -29,11 +29,6 @@ def cast_and_broadcast(tensors, out, casting):
     if out is None:
         return tensors
     else:
-        from ._ndarray import asarray, ndarray
-
-        if not isinstance(out, ndarray):
-            raise TypeError("Return arrays must be of ArrayType")
-
         tensors = _util.cast_and_broadcast(
             tensors, out.dtype.type.torch_dtype, out.shape, casting
         )
@@ -72,11 +67,7 @@ def result_or_out(result_tensor, out_array=None, promote_scalar=False):
             result_tensor is placed into the out array.
     This weirdness is used e.g. in `np.percentile`
     """
-    from ._ndarray import asarray, ndarray
-
     if out_array is not None:
-        if not isinstance(out_array, ndarray):
-            raise TypeError("Return arrays must be of ArrayType")
         if result_tensor.shape != out_array.shape:
             can_fit = result_tensor.numel() == 1 and out_array.ndim == 0
             if promote_scalar and can_fit:
@@ -90,7 +81,7 @@ def result_or_out(result_tensor, out_array=None, promote_scalar=False):
         out_tensor.copy_(result_tensor)
         return out_array
     else:
-        return asarray(result_tensor)
+        return array_from(result_tensor)
 
 
 def array_from(tensor, base=None):

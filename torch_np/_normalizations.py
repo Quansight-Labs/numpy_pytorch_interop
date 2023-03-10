@@ -12,6 +12,7 @@ ArrayLike = typing.TypeVar("ArrayLike")
 DTypeLike = typing.TypeVar("DTypeLike")
 SubokLike = typing.TypeVar("SubokLike")
 AxisLike = typing.TypeVar("AxisLike")
+NDArray = typing.TypeVar("NDarray")
 
 # annotate e.g. atleast_1d(*arys)
 UnpackedSeqArrayLike = typing.TypeVar("UnpackedSeqArrayLike")
@@ -60,11 +61,24 @@ def normalize_axis_like(arg, name=None):
     return arg
 
 
+def normalize_ndarray(arg, name=None):
+    if arg is None:
+        return arg
+
+    from ._ndarray import ndarray
+
+    if not isinstance(arg, ndarray):
+        raise TypeError("'out' must be an array")
+    return arg
+
+
+
 normalizers = {
     ArrayLike: normalize_array_like,
     Optional[ArrayLike]: normalize_optional_array_like,
     Sequence[ArrayLike]: normalize_seq_array_like,
     UnpackedSeqArrayLike: normalize_seq_array_like,  # cf handling in normalize
+    Optional[NDArray]: normalize_ndarray,
     DTypeLike: normalize_dtype,
     SubokLike: normalize_subok_like,
     AxisLike: normalize_axis_like,

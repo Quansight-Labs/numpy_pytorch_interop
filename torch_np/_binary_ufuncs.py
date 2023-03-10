@@ -1,6 +1,8 @@
 from . import _helpers
 from ._detail import _binary_ufuncs
-from ._normalizations import ArrayLike, DTypeLike, SubokLike, normalizer
+from ._normalizations import ArrayLike, DTypeLike, SubokLike, NDArray, normalizer
+from typing import Optional
+
 
 __all__ = [
     name for name in dir(_binary_ufuncs) if not name.startswith("_") and name != "torch"
@@ -18,7 +20,7 @@ def deco_binary_ufunc(torch_func):
         x1: ArrayLike,
         x2: ArrayLike,
         /,
-        out=None,
+        out: Optional[NDArray] = None,
         *,
         where=True,
         casting="same_kind",

@@ -9,10 +9,12 @@ from ._normalizations import (
     ArrayLike,
     AxisLike,
     DTypeLike,
+    NDArray,
     SubokLike,
     UnpackedSeqArrayLike,
     normalizer,
 )
+from typing import Optional
 
 
 @normalizer
@@ -32,7 +34,7 @@ def clip(
     a: ArrayLike,
     min: Optional[ArrayLike] = None,
     max: Optional[ArrayLike] = None,
-    out=None,
+    out: Optional[NDArray] = None,
 ):
     # np.clip requires both a_min and a_max not None, while ndarray.clip allows
     # one of them to be None. Follow the more lax version.
@@ -57,7 +59,7 @@ def diagonal(a: ArrayLike, offset=0, axis1=0, axis2=1):
 
 
 @normalizer
-def trace(a: ArrayLike, offset=0, axis1=0, axis2=1, dtype: DTypeLike = None, out=None):
+def trace(a: ArrayLike, offset=0, axis1=0, axis2=1, dtype: DTypeLike = None, out: Optional[NDArray] = None):
     result = _impl.trace(a, offset, axis1, axis2, dtype)
     return _helpers.result_or_out(result, out)
 
@@ -112,7 +114,7 @@ def vdot(a: ArrayLike, b: ArrayLike, /):
 
 
 @normalizer
-def dot(a: ArrayLike, b: ArrayLike, out=None):
+def dot(a: ArrayLike, b: ArrayLike, out: Optional[NDArray] = None):
     result = _impl.dot(a, b)
     return _helpers.result_or_out(result, out)
 
@@ -211,7 +213,7 @@ def imag(a: ArrayLike):
 
 
 @normalizer
-def round_(a: ArrayLike, decimals=0, out=None):
+def round_(a: ArrayLike, decimals=0, out: Optional[NDArray]=None):
     result = _impl.round(a, decimals)
     return _helpers.result_or_out(result, out)
 
@@ -231,7 +233,7 @@ def sum(
     a: ArrayLike,
     axis: AxisLike = None,
     dtype: DTypeLike = None,
-    out=None,
+    out: Optional[NDArray]=None,
     keepdims=NoValue,
     initial=NoValue,
     where=NoValue,
@@ -247,7 +249,7 @@ def prod(
     a: ArrayLike,
     axis: AxisLike = None,
     dtype: DTypeLike = None,
-    out=None,
+    out: Optional[NDArray]=None,
     keepdims=NoValue,
     initial=NoValue,
     where=NoValue,
@@ -266,7 +268,7 @@ def mean(
     a: ArrayLike,
     axis: AxisLike = None,
     dtype: DTypeLike = None,
-    out=None,
+    out: Optional[NDArray]=None,
     keepdims=NoValue,
     *,
     where=NoValue,
@@ -282,7 +284,7 @@ def var(
     a: ArrayLike,
     axis: AxisLike = None,
     dtype: DTypeLike = None,
-    out=None,
+    out: Optional[NDArray]=None,
     ddof=0,
     keepdims=NoValue,
     *,
@@ -299,7 +301,7 @@ def std(
     a: ArrayLike,
     axis: AxisLike = None,
     dtype: DTypeLike = None,
-    out=None,
+    out: Optional[NDArray]=None,
     ddof=0,
     keepdims=NoValue,
     *,
@@ -312,13 +314,13 @@ def std(
 
 
 @normalizer
-def argmin(a: ArrayLike, axis: AxisLike = None, out=None, *, keepdims=NoValue):
+def argmin(a: ArrayLike, axis: AxisLike = None, out: Optional[NDArray] = None, *, keepdims=NoValue):
     result = _reductions.argmin(a, axis=axis, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
 @normalizer
-def argmax(a: ArrayLike, axis: AxisLike = None, out=None, *, keepdims=NoValue):
+def argmax(a: ArrayLike, axis: AxisLike = None, out: Optional[NDArray] = None, *, keepdims=NoValue):
     result = _reductions.argmax(a, axis=axis, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
@@ -327,7 +329,7 @@ def argmax(a: ArrayLike, axis: AxisLike = None, out=None, *, keepdims=NoValue):
 def amax(
     a: ArrayLike,
     axis: AxisLike = None,
-    out=None,
+    out: Optional[NDArray] = None,
     keepdims=NoValue,
     initial=NoValue,
     where=NoValue,
@@ -345,7 +347,7 @@ max = amax
 def amin(
     a: ArrayLike,
     axis: AxisLike = None,
-    out=None,
+    out: Optional[NDArray] = None,
     keepdims=NoValue,
     initial=NoValue,
     where=NoValue,
@@ -360,14 +362,14 @@ min = amin
 
 
 @normalizer
-def ptp(a: ArrayLike, axis: AxisLike = None, out=None, keepdims=NoValue):
+def ptp(a: ArrayLike, axis: AxisLike = None, out: Optional[NDArray] = None, keepdims=NoValue):
     result = _reductions.ptp(a, axis=axis, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
 @normalizer
 def all(
-    a: ArrayLike, axis: AxisLike = None, out=None, keepdims=NoValue, *, where=NoValue
+    a: ArrayLike, axis: AxisLike = None, out: Optional[NDArray] = None, keepdims=NoValue, *, where=NoValue
 ):
     result = _reductions.all(a, axis=axis, where=where, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
@@ -375,7 +377,7 @@ def all(
 
 @normalizer
 def any(
-    a: ArrayLike, axis: AxisLike = None, out=None, keepdims=NoValue, *, where=NoValue
+    a: ArrayLike, axis: AxisLike = None, out: Optional[NDArray] = None, keepdims=NoValue, *, where=NoValue
 ):
     result = _reductions.any(a, axis=axis, where=where, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
@@ -388,13 +390,13 @@ def count_nonzero(a: ArrayLike, axis: AxisLike = None, *, keepdims=False):
 
 
 @normalizer
-def cumsum(a: ArrayLike, axis: AxisLike = None, dtype: DTypeLike = None, out=None):
+def cumsum(a: ArrayLike, axis: AxisLike = None, dtype: DTypeLike = None, out: Optional[NDArray] = None):
     result = _reductions.cumsum(a, axis=axis, dtype=dtype)
     return _helpers.result_or_out(result, out)
 
 
 @normalizer
-def cumprod(a: ArrayLike, axis: AxisLike = None, dtype: DTypeLike = None, out=None):
+def cumprod(a: ArrayLike, axis: AxisLike = None, dtype: DTypeLike = None, out: Optional[NDArray] = None):
     result = _reductions.cumprod(a, axis=axis, dtype=dtype)
     return _helpers.result_or_out(result, out)
 
@@ -407,7 +409,7 @@ def quantile(
     a: ArrayLike,
     q: ArrayLike,
     axis: AxisLike = None,
-    out=None,
+    out: Optional[NDArray] = None,
     overwrite_input=False,
     method="linear",
     keepdims=False,
