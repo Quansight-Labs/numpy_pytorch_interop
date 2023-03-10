@@ -4,15 +4,36 @@ This listing is further exported to public symbols in the `torch_np/_unary_ufunc
 
 import torch
 
-from torch import (arccos, arccosh, arcsin, arcsinh, arctan, arctanh, ceil,
-    cos, cosh, deg2rad, exp, exp2, expm1,
-    floor, isfinite, isinf, isnan, log, log10, log1p, log2, logical_not,
-    negative, rad2deg, reciprocal, sign, signbit,
-    sin, sinh, sqrt, square, tan, tanh, trunc)
-
 # renames
-from torch import (conj_physical as conjugate, round as rint, bitwise_not as invert, rad2deg as degrees,
-    deg2rad as radians, absolute as fabs, )
+from torch import absolute as fabs
+from torch import arccos, arccosh, arcsin, arcsinh, arctan, arctanh
+from torch import bitwise_not as invert
+from torch import ceil
+from torch import conj_physical as conjugate
+from torch import cos, cosh
+from torch import deg2rad
+from torch import deg2rad as radians
+from torch import (
+    exp,
+    exp2,
+    expm1,
+    floor,
+    isfinite,
+    isinf,
+    isnan,
+    log,
+    log1p,
+    log2,
+    log10,
+    logical_not,
+    negative,
+)
+from torch import rad2deg
+from torch import rad2deg as degrees
+from torch import reciprocal
+from torch import round as rint
+from torch import sign, signbit, sin, sinh, sqrt, square, tan, tanh, trunc
+
 
 # special cases: torch does not export these names
 def cbrt(x):
@@ -32,4 +53,3 @@ def absolute(x):
 
 abs = absolute
 conj = conjugate
-

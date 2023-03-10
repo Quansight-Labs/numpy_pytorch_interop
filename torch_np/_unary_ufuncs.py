@@ -1,17 +1,21 @@
-#from ._decorators import deco_unary_ufunc_from_impl
-#from ._detail import _ufunc_impl
+# from ._decorators import deco_unary_ufunc_from_impl
+# from ._detail import _ufunc_impl
 
 
 from ._detail import _unary_ufuncs
 
-__all__ = [name for name in dir(_unary_ufuncs) if not name.startswith("_") and name != "torch"]
+__all__ = [
+    name for name in dir(_unary_ufuncs) if not name.startswith("_") and name != "torch"
+]
 
+
+from . import _helpers
+from ._detail import _util
 
 # TODO: consolidate normalizations
-from ._funcs import normalizer, ArrayLike, SubokLike, DTypeLike
-from ._detail import _util
-from . import _helpers
-#import torch
+from ._funcs import ArrayLike, DTypeLike, SubokLike, normalizer
+
+# import torch
 
 
 def deco_unary_ufunc(torch_func):
@@ -20,18 +24,19 @@ def deco_unary_ufunc(torch_func):
     Normalize arguments, sort out type casting, broadcasting and delegate to
     the pytorch functions for the actual work.
     """
+
     def wrapped(
-        x : ArrayLike,
+        x: ArrayLike,
         /,
         out=None,
         *,
         where=True,
         casting="same_kind",
         order="K",
-        dtype: DTypeLike=None,
-        subok: SubokLike=False,
+        dtype: DTypeLike = None,
+        subok: SubokLike = False,
         signature=None,
-        extobj=None
+        extobj=None,
     ):
         if order != "K" or not where or signature or extobj:
             raise NotImplementedError
@@ -51,6 +56,7 @@ def deco_unary_ufunc(torch_func):
 
     return wrapped
 
+
 #
 # For each torch ufunc implementation, decorate and attach the decorated name
 # to this module. Its contents is then exported to the public namespace in __init__.py
@@ -59,6 +65,6 @@ for name in __all__:
     ufunc = getattr(_unary_ufuncs, name)
     decorated = normalizer(deco_unary_ufunc(ufunc))
 
-    decorated.__qualname__ = name    # XXX: is this really correct?
+    decorated.__qualname__ = name  # XXX: is this really correct?
     decorated.__name__ = name
     vars()[name] = decorated

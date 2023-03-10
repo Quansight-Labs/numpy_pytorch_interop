@@ -1,5 +1,4 @@
 import functools
-import operator
 
 import torch
 
@@ -7,7 +6,6 @@ from . import _dtypes, _helpers
 from ._detail import _util
 
 NoValue = None
-
 
 
 def out_shape_dtype(func):
@@ -26,5 +24,3 @@ def out_shape_dtype(func):
         return _helpers.result_or_out(result_tensor, out)
 
     return wrapped
-
-

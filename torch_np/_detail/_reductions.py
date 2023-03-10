@@ -13,13 +13,13 @@ NoValue = None
 
 import functools
 
-
 ############# XXX
 ### From _util.axis_expand_func
 
 
 def deco_axis_expand(func):
     """Generically handle axis arguments in reductions."""
+
     @functools.wraps(func)
     def wrapped(tensor, axis, *args, **kwds):
 
@@ -46,11 +46,13 @@ def emulate_keepdims(func):
         if keepdims:
             result = _util.apply_keepdims(result, axis, tensor.ndim)
         return result
+
     return wrapped
 
 
 def deco_axis_ravel(func):
     """Generically handle 'axis=None ravels' behavior."""
+
     @functools.wraps(func)
     def wrapped(tensor, axis, *args, **kwds):
         if axis is not None:
@@ -61,6 +63,7 @@ def deco_axis_ravel(func):
 
         result = func(tensor, axis=axis, *args, **kwds)
         return result
+
     return wrapped
 
 
@@ -292,7 +295,6 @@ def cumsum(tensor, axis, dtype=None):
     return result
 
 
-
 def average(a, axis, weights, returned=False, keepdims=False):
     if weights is None:
         result, wsum = average_noweights(a, axis, keepdims=keepdims)
@@ -383,7 +385,6 @@ def quantile(a_tensor, q_tensor, axis, method, keepdims=False):
     axis = _util.allow_only_single_axis(axis)
 
     q_tensor = _util.cast_if_needed(q_tensor, a_tensor.dtype)
-
 
     # axis=None ravels, so store the originals to reuse with keepdims=True below
     ax, ndim = axis, a_tensor.ndim

@@ -133,7 +133,6 @@ def vstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_k
     return _helpers.array_from(result)
 
 
-
 row_stack = vstack
 
 
@@ -227,6 +226,7 @@ def tile(A: ArrayLike, reps):
     result = torch.tile(A, reps)
     return _helpers.array_from(result)
 
+
 @normalizer
 def vander(x: ArrayLike, N=None, increasing=False):
     result = torch.vander(x, N, increasing)
@@ -307,7 +307,12 @@ def empty_like(
 
 @normalizer
 def full(
-    shape, fill_value: ArrayLike, dtype: DTypeLike = None, order="C", *, like: SubokLike = None
+    shape,
+    fill_value: ArrayLike,
+    dtype: DTypeLike = None,
+    order="C",
+    *,
+    like: SubokLike = None,
 ):
     if isinstance(shape, int):
         shape = (shape,)
@@ -471,7 +476,7 @@ def where(
 
 
 @normalizer
-def ndim(a : ArrayLike):
+def ndim(a: ArrayLike):
     return a.ndim
 
 
@@ -521,6 +526,7 @@ def rot90(m: ArrayLike, k=1, axes=(0, 1)):
     result = _flips.rot90(m, k, axes)
     return _helpers.array_from(result)
 
+
 @normalizer
 def broadcast_to(array: ArrayLike, shape, subok: SubokLike = False):
     result = torch.broadcast_to(array, size=shape)
@@ -564,7 +570,7 @@ def meshgrid(*xi: UnpackedSeqArrayLike, copy=True, sparse=False, indexing="xy"):
     xi = xi[0]  # undo the *xi wrapping in normalizer
     output = _impl.meshgrid(*xi, copy=copy, sparse=sparse, indexing=indexing)
     outp = _helpers.tuple_arrays_from(output)
-    return list(outp)    # match numpy, return a list
+    return list(outp)  # match numpy, return a list
 
 
 @normalizer
@@ -630,9 +636,19 @@ def tri(N, M=None, k=0, dtype: DTypeLike = float, *, like: SubokLike = None):
 
 ###### reductions
 
+
 @normalizer
-def average(a: ArrayLike, axis=None, weights: ArrayLike=None, returned=False, *, keepdims=NoValue):
-    result, wsum = _reductions.average(a, axis, weights, returned=returned, keepdims=keepdims)
+def average(
+    a: ArrayLike,
+    axis=None,
+    weights: ArrayLike = None,
+    returned=False,
+    *,
+    keepdims=NoValue,
+):
+    result, wsum = _reductions.average(
+        a, axis, weights, returned=returned, keepdims=keepdims
+    )
     if returned:
         return _helpers.tuple_arrays_from((result, wsum))
     else:
@@ -656,7 +672,6 @@ def percentile(
     )
 
 
-
 def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
     return _funcs.quantile(
         a, 0.5, axis=axis, overwrite_input=overwrite_input, out=out, keepdims=keepdims
@@ -676,6 +691,7 @@ def outer(a: ArrayLike, b: ArrayLike, out=None):
 
 
 # ### FIXME: this is a stub
+
 
 @normalizer
 def nanmean(
@@ -934,7 +950,6 @@ def unique(
         return _helpers.tuple_arrays_from(result)
     else:
         return _helpers.array_from(result)
-
 
 
 ###### mapping from numpy API objects to wrappers from this module ######
