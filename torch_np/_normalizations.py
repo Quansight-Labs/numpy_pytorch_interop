@@ -72,7 +72,6 @@ def normalize_ndarray(arg, name=None):
     return arg
 
 
-
 normalizers = {
     ArrayLike: normalize_array_like,
     Optional[ArrayLike]: normalize_optional_array_like,
