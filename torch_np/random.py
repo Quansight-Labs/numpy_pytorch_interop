@@ -9,8 +9,10 @@ from math import sqrt
 
 import torch
 
-from . import asarray
 from ._detail import _dtypes_impl, _util
+from . import _helpers
+from ._normalizations import normalizer, ArrayLike
+from typing import Optional
 
 _default_dtype = _dtypes_impl.default_float_dtype
 
@@ -33,7 +35,7 @@ def array_or_scalar(values, py_type=float, return_scalar=False):
     if return_scalar:
         return py_type(values.item())
     else:
-        return asarray(values)
+        return _helpers.array_from(values)
 
 
 def seed(seed=None):
@@ -75,11 +77,11 @@ def normal(loc=0.0, scale=1.0, size=None):
     return array_or_scalar(values, return_scalar=size is None)
 
 
-def shuffle(x):
-    x_tensor = asarray(x).get()
-    perm = torch.randperm(x_tensor.shape[0])
-    xp = x_tensor[perm]
-    x_tensor.copy_(xp)
+@normalizer
+def shuffle(x: ArrayLike):
+    perm = torch.randperm(x.shape[0])
+    xp = x[perm]
+    x.copy_(xp)
 
 
 def randint(low, high=None, size=None):
@@ -93,12 +95,14 @@ def randint(low, high=None, size=None):
     return array_or_scalar(values, int, return_scalar=size is None)
 
 
-def choice(a, size=None, replace=True, p=None):
+@normalizer
+def choice(a: ArrayLike, size=None, replace=True, p: Optional[ArrayLike]=None):
+
     # https://stackoverflow.com/questions/59461811/random-choice-with-pytorch
-    if isinstance(a, int):
-        a_tensor = torch.arange(a)
-    else:
-        a_tensor = asarray(a).get()
+    if a.numel() == 1:
+        a = torch.arange(a)
+
+    # TODO: check a.dtype is integer -- cf np.random.choice(3.4) which raises
 
     # number of draws
     if size is None:
@@ -112,21 +116,19 @@ def choice(a, size=None, replace=True, p=None):
 
     # prepare the probabilities
     if p is None:
-        p_tensor = torch.ones_like(a_tensor) / a_tensor.shape[0]
-    else:
-        p_tensor = asarray(p, dtype=float).get()
+        p = torch.ones_like(a) / a.shape[0]
 
     # cf https://github.com/numpy/numpy/blob/main/numpy/random/mtrand.pyx#L973
     atol = sqrt(torch.finfo(torch.float64).eps)
-    if abs(p_tensor.sum() - 1.0) > atol:
+    if abs(p.sum() - 1.0) > atol:
         raise ValueError("probabilities do not sum to 1.")
 
     # actually sample
-    indices = torch.multinomial(p_tensor, num_el, replacement=replace)
+    indices = torch.multinomial(p, num_el, replacement=replace)
 
     if _util.is_sequence(size):
         indices = indices.reshape(size)
 
-    samples = a_tensor[indices]
+    samples = a[indices]
 
-    return asarray(samples)
+    return _helpers.array_from(samples)
