@@ -25,6 +25,8 @@ def deco_axis_expand(func):
 
         if axis is not None:
             if not isinstance(axis, (list, tuple)):
+                if not isinstance(axis, typing.SupportsIndex):
+                    raise TypeError(f"{type(axis)=}, but should be a list/tuple or support operator.index()")
                 axis = (axis,)
             axis = _util.normalize_axis_tuple(axis, tensor.ndim)
 
