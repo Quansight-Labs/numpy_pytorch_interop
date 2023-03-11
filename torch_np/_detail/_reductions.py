@@ -317,55 +317,51 @@ def average(a, axis, weights, returned=False, keepdims=False):
     return result, wsum
 
 
-def average_noweights(a_tensor, axis, keepdims=False):
-    result = mean(a_tensor, axis=axis, keepdims=keepdims)
-    scl = torch.as_tensor(a_tensor.numel() / result.numel(), dtype=result.dtype)
+def average_noweights(a, axis, keepdims=False):
+    result = mean(a, axis=axis, keepdims=keepdims)
+    scl = torch.as_tensor(a.numel() / result.numel(), dtype=result.dtype)
     return result, scl
 
 
-def average_weights(a_tensor, axis, w_tensor, keepdims=False):
+def average_weights(a, axis, w, keepdims=False):
 
     # dtype
     # FIXME: 1. use result_type
     #        2. actually implement multiply w/dtype
-    if not a_tensor.dtype.is_floating_point:
+    if not a.dtype.is_floating_point:
         result_dtype = torch.float64
-        a_tensor = a_tensor.to(result_dtype)
+        a = a.to(result_dtype)
 
-    result_dtype = _dtypes_impl.result_type_impl([a_tensor.dtype, w_tensor.dtype])
+    result_dtype = _dtypes_impl.result_type_impl([a.dtype, w.dtype])
 
-    a_tensor = _util.cast_if_needed(a_tensor, result_dtype)
-    w_tensor = _util.cast_if_needed(w_tensor, result_dtype)
+    a = _util.cast_if_needed(a, result_dtype)
+    w = _util.cast_if_needed(w, result_dtype)
 
     # axis=None ravels, so store the originals to reuse with keepdims=True below
-    ax, ndim = axis, a_tensor.ndim
+    ax, ndim = axis, a.ndim
 
     # axis
     if axis is None:
-        (a_tensor, w_tensor), axis = _util.axis_none_ravel(
-            a_tensor, w_tensor, axis=axis
-        )
+        (a, w), axis = _util.axis_none_ravel(a, w, axis=axis)
 
     # axis & weights
-    if a_tensor.shape != w_tensor.shape:
+    if a.shape != w.shape:
         if axis is None:
             raise TypeError(
                 "Axis must be specified when shapes of a and weights " "differ."
             )
-        if w_tensor.ndim != 1:
+        if w.ndim != 1:
             raise TypeError("1D weights expected when shapes of a and weights differ.")
-        if w_tensor.shape[0] != a_tensor.shape[axis]:
+        if w.shape[0] != a.shape[axis]:
             raise ValueError("Length of weights not compatible with specified axis.")
 
         # setup weight to broadcast along axis
-        w_tensor = torch.broadcast_to(
-            w_tensor, (a_tensor.ndim - 1) * (1,) + w_tensor.shape
-        )
-        w_tensor = w_tensor.swapaxes(-1, axis)
+        w = torch.broadcast_to(w, (a.ndim - 1) * (1,) + w.shape)
+        w = w.swapaxes(-1, axis)
 
     # do the work
-    numerator = torch.mul(a_tensor, w_tensor).sum(axis)
-    denominator = w_tensor.sum(axis)
+    numerator = torch.mul(a, w).sum(axis)
+    denominator = w.sum(axis)
     result = numerator / denominator
 
     # keepdims
@@ -376,8 +372,8 @@ def average_weights(a_tensor, axis, w_tensor, keepdims=False):
 
 
 def quantile(
-    a_tensor,
-    q_tensor,
+    a,
+    q,
     axis,
     overwrite_input,
     method,
@@ -394,30 +390,30 @@ def quantile(
     if interpolation is not None:
         raise ValueError("'interpolation' argument is deprecated; use 'method' instead")
 
-    if (0 > q_tensor).any() or (q_tensor > 1).any():
-        raise ValueError("Quantiles must be in range [0, 1], got %s" % q_tensor)
+    if (0 > q).any() or (q > 1).any():
+        raise ValueError("Quantiles must be in range [0, 1], got %s" % q)
 
-    if not a_tensor.dtype.is_floating_point:
+    if not a.dtype.is_floating_point:
         dtype = _dtypes_impl.default_float_dtype
-        a_tensor = a_tensor.to(dtype)
+        a = a.to(dtype)
 
     # edge case: torch.quantile only supports float32 and float64
-    if a_tensor.dtype == torch.float16:
-        a_tensor = a_tensor.to(torch.float32)
+    if a.dtype == torch.float16:
+        a = a.to(torch.float32)
 
     # TODO: consider moving this normalize_axis_tuple dance to normalize axis? Across the board if at all.
     # axis
     if axis is not None:
-        axis = _util.normalize_axis_tuple(axis, a_tensor.ndim)
+        axis = _util.normalize_axis_tuple(axis, a.ndim)
     axis = _util.allow_only_single_axis(axis)
 
-    q_tensor = _util.cast_if_needed(q_tensor, a_tensor.dtype)
+    q = _util.cast_if_needed(q, a.dtype)
 
     # axis=None ravels, so store the originals to reuse with keepdims=True below
-    ax, ndim = axis, a_tensor.ndim
-    (a_tensor, q_tensor), axis = _util.axis_none_ravel(a_tensor, q_tensor, axis=axis)
+    ax, ndim = axis, a.ndim
+    (a, q), axis = _util.axis_none_ravel(a, q, axis=axis)
 
-    result = torch.quantile(a_tensor, q_tensor, axis=axis, interpolation=method)
+    result = torch.quantile(a, q, axis=axis, interpolation=method)
 
     # NB: not using @emulate_keepdims here because the signature is (a, q, axis, ...)
     # while the decorator expects (a, axis, ...)
@@ -428,8 +424,8 @@ def quantile(
 
 
 def percentile(
-    a_tensor,
-    q_tensor,
+    a,
+    q,
     axis,
     overwrite_input,
     method,
@@ -437,8 +433,8 @@ def percentile(
     interpolation=None,
 ):
     return quantile(
-        a_tensor,
-        q_tensor / 100.0,
+        a,
+        q / 100.0,
         axis=axis,
         overwrite_input=overwrite_input,
         method=method,
