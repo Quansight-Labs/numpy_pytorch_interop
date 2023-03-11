@@ -8,11 +8,17 @@ from typing import Optional, Sequence
 
 import torch
 
-from . import _decorators, _dtypes, _funcs, _helpers
+from . import _funcs, _helpers
 from ._detail import _dtypes_impl, _flips, _reductions, _util
 from ._detail import implementations as _impl
-from ._ndarray import array, asarray, maybe_set_base, ndarray
-from ._normalizations import ArrayLike, DTypeLike, NDArray, SubokLike, normalizer
+from ._ndarray import asarray
+from ._normalizations import (
+    ArrayLike,
+    DTypeLike,
+    NDArray,
+    SubokLike,
+    normalizer,
+)
 
 # Things to decide on (punt for now)
 #
@@ -169,39 +175,34 @@ def stack(
     return _helpers.result_or_out(result, out)
 
 
-def array_split(ary, indices_or_sections, axis=0):
-    tensor = asarray(ary).get()
-    base = ary if isinstance(ary, ndarray) else None
-    result = _impl.split_helper(tensor, indices_or_sections, axis)
-    return tuple(maybe_set_base(x, base) for x in result)
+@normalizer
+def array_split(ary: ArrayLike, indices_or_sections, axis=0):
+    result = _impl.split_helper(ary, indices_or_sections, axis)
+    return _helpers.tuple_arrays_from(result)
 
 
-def split(ary, indices_or_sections, axis=0):
-    tensor = asarray(ary).get()
-    base = ary if isinstance(ary, ndarray) else None
-    result = _impl.split_helper(tensor, indices_or_sections, axis, strict=True)
-    return tuple(maybe_set_base(x, base) for x in result)
+@normalizer
+def split(ary: ArrayLike, indices_or_sections, axis=0):
+    result = _impl.split_helper(ary, indices_or_sections, axis, strict=True)
+    return _helpers.tuple_arrays_from(result)
 
 
-def hsplit(ary, indices_or_sections):
-    tensor = asarray(ary).get()
-    base = ary if isinstance(ary, ndarray) else None
-    result = _impl.hsplit(tensor, indices_or_sections)
-    return tuple(maybe_set_base(x, base) for x in result)
+@normalizer
+def hsplit(ary: ArrayLike, indices_or_sections):
+    result = _impl.hsplit(ary, indices_or_sections)
+    return _helpers.tuple_arrays_from(result)
 
 
-def vsplit(ary, indices_or_sections):
-    tensor = asarray(ary).get()
-    base = ary if isinstance(ary, ndarray) else None
-    result = _impl.vsplit(tensor, indices_or_sections)
-    return tuple(maybe_set_base(x, base) for x in result)
+@normalizer
+def vsplit(ary: ArrayLike, indices_or_sections):
+    result = _impl.vsplit(ary, indices_or_sections)
+    return _helpers.tuple_arrays_from(result)
 
 
-def dsplit(ary, indices_or_sections):
-    tensor = asarray(ary).get()
-    base = ary if isinstance(ary, ndarray) else None
-    result = _impl.dsplit(tensor, indices_or_sections)
-    return tuple(maybe_set_base(x, base) for x in result)
+@normalizer
+def dsplit(ary: ArrayLike, indices_or_sections):
+    result = _impl.dsplit(ary, indices_or_sections)
+    return _helpers.tuple_arrays_from(result)
 
 
 @normalizer

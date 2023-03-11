@@ -64,13 +64,11 @@ class Flags:
 class ndarray:
     def __init__(self):
         self._tensor = torch.Tensor()
-        self._base = None
 
     @classmethod
-    def _from_tensor_and_base(cls, tensor, base):
+    def _from_tensor(cls, tensor):
         self = cls()
         self._tensor = tensor
-        self._base = base
         return self
 
     def get(self):
@@ -100,10 +98,6 @@ class ndarray:
     @property
     def itemsize(self):
         return self._tensor.element_size()
-
-    @property
-    def base(self):
-        return self._base
 
     @property
     def flags(self):
@@ -158,7 +152,7 @@ class ndarray:
         if order != "C":
             raise NotImplementedError
         tensor = self._tensor.clone()
-        return ndarray._from_tensor_and_base(tensor, None)
+        return ndarray._from_tensor(tensor)
 
     def tolist(self):
         return self._tensor.tolist()
@@ -398,7 +392,7 @@ class ndarray:
     def __getitem__(self, index):
         index = _helpers.ndarrays_to_tensors(index)
         index = ndarray._upcast_int_indices(index)
-        return ndarray._from_tensor_and_base(self._tensor.__getitem__(index), self)
+        return ndarray._from_tensor(self._tensor.__getitem__(index))
 
     def __setitem__(self, index, value):
         index = _helpers.ndarrays_to_tensors(index)
@@ -432,29 +426,22 @@ def array(obj, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=N
         obj = a1
 
     # is obj an ndarray already?
-    base = None
     if isinstance(obj, ndarray):
-        obj = obj._tensor
-        base = obj
+        obj = obj.get()
 
     # is a specific dtype requrested?
     torch_dtype = None
     if dtype is not None:
         torch_dtype = _dtypes.dtype(dtype).torch_dtype
-        base = None
 
     tensor = _util._coerce_to_tensor(obj, torch_dtype, copy, ndmin)
-    return ndarray._from_tensor_and_base(tensor, base)
+    return ndarray._from_tensor(tensor)
 
 
 def asarray(a, dtype=None, order=None, *, like=None):
     if order is None:
         order = "K"
     return array(a, dtype=dtype, order=order, like=like, copy=False, ndmin=0)
-
-
-def maybe_set_base(tensor, base):
-    return ndarray._from_tensor_and_base(tensor, base)
 
 
 ###### dtype routines

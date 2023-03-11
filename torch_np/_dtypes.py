@@ -49,7 +49,7 @@ class generic(abc.ABC):
         # and here we follow the second approach and create a new object
         # *for all inputs*.
         #
-        return _ndarray.ndarray._from_tensor_and_base(tensor, None)
+        return _ndarray.ndarray._from_tensor(tensor)
 
 
 ##### these are abstract types
