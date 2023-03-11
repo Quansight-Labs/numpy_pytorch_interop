@@ -86,6 +86,7 @@ def result_or_out(result_tensor, out_array=None, promote_scalar=False):
 
 def array_from(tensor, base=None):
     from ._ndarray import ndarray
+
     return ndarray(tensor)
 
 
