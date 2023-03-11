@@ -23,9 +23,15 @@ def nonzero(a: ArrayLike):
     return _helpers.tuple_arrays_from(result)
 
 
-def argwhere(a):
-    (tensor,) = _helpers.to_tensors(a)
-    result = torch.argwhere(tensor)
+@normalizer
+def argwhere(a: ArrayLike):
+    result = torch.argwhere(a)
+    return _helpers.array_from(result)
+
+
+@normalizer
+def flatnonzero(a: ArrayLike):
+    result = a.ravel().nonzero(as_tuple=True)[0]
     return _helpers.array_from(result)
 
 
@@ -46,6 +52,12 @@ def clip(
 def repeat(a: ArrayLike, repeats: ArrayLike, axis=None):
     # XXX: scalar repeats; ArrayLikeOrScalar ?
     result = torch.repeat_interleave(a, repeats, axis)
+    return _helpers.array_from(result)
+
+
+@normalizer
+def tile(A: ArrayLike, reps):
+    result = _impl.tile(A, reps)
     return _helpers.array_from(result)
 
 
@@ -448,8 +460,45 @@ def quantile(
     *,
     interpolation=None,
 ):
-    if interpolation is not None:
-        raise ValueError("'interpolation' argument is deprecated; use 'method' instead")
-
-    result = _impl.quantile(a, q, axis, method=method, keepdims=keepdims)
+    result = _impl.quantile(
+        a,
+        q,
+        axis,
+        overwrite_input=overwrite_input,
+        method=method,
+        keepdims=keepdims,
+        interpolation=interpolation,
+    )
     return _helpers.result_or_out(result, out, promote_scalar=True)
+
+
+@normalizer
+def percentile(
+    a: ArrayLike,
+    q: ArrayLike,
+    axis: AxisLike = None,
+    out: Optional[NDArray] = None,
+    overwrite_input=False,
+    method="linear",
+    keepdims=False,
+    *,
+    interpolation=None,
+):
+    result = _impl.percentile(
+        a,
+        q,
+        axis,
+        overwrite_input=overwrite_input,
+        method=method,
+        keepdims=keepdims,
+        interpolation=interpolation,
+    )
+    return _helpers.result_or_out(result, out, promote_scalar=True)
+
+
+def median(
+    a, axis=None, out: Optional[NDArray] = None, overwrite_input=False, keepdims=False
+):
+    return quantile(
+        a, 0.5, axis=axis, overwrite_input=overwrite_input, out=out, keepdims=keepdims
+    )
