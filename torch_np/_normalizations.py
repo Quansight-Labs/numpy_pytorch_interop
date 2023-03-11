@@ -81,35 +81,49 @@ normalizers = {
 
 import functools
 
+_sentinel = object()
 
-def maybe_normalize(arg, parm):
+
+def maybe_normalize(arg, parm, return_on_failure=_sentinel):
     """Normalize arg if a normalizer is registred."""
     normalizer = normalizers.get(parm.annotation, None)
-    return normalizer(arg) if normalizer else arg
-
-
-def normalizer(func):
-    @functools.wraps(func)
-    def wrapped(*args, **kwds):
-        params = inspect.signature(func).parameters
-        first_param = next(iter(params.values()))
-        # NumPy's API does not have positional args before variadic positional args
-        if first_param.kind == inspect.Parameter.VAR_POSITIONAL:
-            args = [maybe_normalize(arg, first_param) for arg in args]
+    try:
+        return normalizer(arg) if normalizer else arg
+    except Exception as exc:
+        if return_on_failure is not _sentinel:
+            return return_on_failure
         else:
-            # NB: extra unknown arguments: pass through, will raise in func(*args) below
-            args = (
-                tuple(
-                    maybe_normalize(arg, parm)
-                    for arg, parm in zip(args, params.values())
+            raise exc from None
+
+
+def normalizer(_func=None, *, return_on_failure=_sentinel):
+    def normalizer_inner(func):
+        @functools.wraps(func)
+        def wrapped(*args, **kwds):
+            params = inspect.signature(func).parameters
+            first_param = next(iter(params.values()))
+            # NumPy's API does not have positional args before variadic positional args
+            if first_param.kind == inspect.Parameter.VAR_POSITIONAL:
+                args = [maybe_normalize(arg, first_param, return_on_failure) for arg in args]
+            else:
+                # NB: extra unknown arguments: pass through, will raise in func(*args) below
+                args = (
+                    tuple(
+                        maybe_normalize(arg, parm, return_on_failure)
+                        for arg, parm in zip(args, params.values())
+                    )
+                    + args[len(params.values()) :]
                 )
-                + args[len(params.values()) :]
-            )
 
-        kwds = {
-            name: maybe_normalize(arg, params[name]) if name in params else arg
-            for name, arg in kwds.items()
-        }
-        return func(*args, **kwds)
+            kwds = {
+                name: maybe_normalize(arg, params[name]) if name in params else arg
+                for name, arg in kwds.items()
+            }
+            return func(*args, **kwds)
+        return wrapped
 
-    return wrapped
+    if _func is None:
+        return normalizer_inner
+    else:
+        return normalizer_inner(_func)
+

@@ -775,15 +775,12 @@ def i0(x: ArrayLike):
     return _helpers.array_from(result)
 
 
-def isscalar(a):
+@normalizer(return_on_failure=False)
+def isscalar(a: ArrayLike):
     # XXX: this is a stub
-    try:
-        from ._ndarray import asarray
-
-        t = asarray(a).get()
-        return t.numel() == 1
-    except Exception:
-        return False
+    if a is False:
+        return a
+    return a.numel() == 1
 
 
 @normalizer
