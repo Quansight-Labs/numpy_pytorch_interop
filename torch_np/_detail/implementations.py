@@ -461,15 +461,15 @@ def indices(dimensions, dtype=int, sparse=False):
     return res
 
 
-def bincount(x_tensor, /, weights_tensor=None, minlength=0):
-    if x_tensor.numel() == 0:
+def bincount(x, /, weights=None, minlength=0):
+    if x.numel() == 0:
         # edge case allowed by numpy
-        x_tensor = torch.as_tensor([], dtype=int)
+        x = x.new_empty(0, dtype=int)
 
     int_dtype = _dtypes_impl.default_int_dtype
-    (x_tensor,) = _util.cast_dont_broadcast((x_tensor,), int_dtype, casting="safe")
+    (x,) = _util.cast_dont_broadcast((x,), int_dtype, casting="safe")
 
-    result = torch.bincount(x_tensor, weights_tensor, minlength)
+    result = torch.bincount(x, weights, minlength)
     return result
 
 
