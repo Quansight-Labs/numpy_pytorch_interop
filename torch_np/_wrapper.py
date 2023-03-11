@@ -8,11 +8,9 @@ from typing import Optional, Sequence
 
 import torch
 
-from . import _decorators
 from . import _detail as _impl
 from . import _dtypes, _funcs, _helpers
 from ._detail import _dtypes_impl, _util
-from ._ndarray import asarray
 from ._normalizations import (
     ArrayLike,
     DTypeLike,
@@ -213,25 +211,22 @@ def kron(a: ArrayLike, b: ArrayLike):
 
 
 @normalizer
-def tile(A: ArrayLike, reps):
-    if isinstance(reps, int):
-        reps = (reps,)
-
-    result = torch.tile(A, reps)
-    return _helpers.array_from(result)
-
-
-@normalizer
 def vander(x: ArrayLike, N=None, increasing=False):
     result = torch.vander(x, N, increasing)
     return _helpers.array_from(result)
 
 
-def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None, axis=0):
-    if axis != 0 or retstep or not endpoint:
-        raise NotImplementedError
-    # XXX: raises TypeError if start or stop are not scalars
-    result = torch.linspace(start, stop, num, dtype=dtype)
+@normalizer
+def linspace(
+    start: ArrayLike,
+    stop: ArrayLike,
+    num=50,
+    endpoint=True,
+    retstep=False,
+    dtype: DTypeLike = None,
+    axis=0,
+):
+    result = _impl.linspace(start, stop, num, endpoint, retstep, dtype, axis)
     return _helpers.array_from(result)
 
 
@@ -244,8 +239,6 @@ def geomspace(
     dtype: DTypeLike = None,
     axis=0,
 ):
-    if axis != 0 or not endpoint:
-        raise NotImplementedError
     result = _impl.geomspace(start, stop, num, endpoint, dtype, axis)
     return _helpers.array_from(result)
 
@@ -254,9 +247,7 @@ def geomspace(
 def logspace(
     start, stop, num=50, endpoint=True, base=10.0, dtype: DTypeLike = None, axis=0
 ):
-    if axis != 0 or not endpoint:
-        raise NotImplementedError
-    result = torch.logspace(start, stop, num, base=base, dtype=dtype)
+    result = _impl.logspace(start, stop, num, endpoint, base, dtype, axis)
     return _helpers.array_from(result)
 
 
@@ -275,11 +266,7 @@ def arange(
 
 @normalizer
 def empty(shape, dtype: DTypeLike = float, order="C", *, like: SubokLike = None):
-    if order != "C":
-        raise NotImplementedError
-    if dtype is None:
-        dtype = _dtypes_impl.default_float_dtype
-    result = torch.empty(shape, dtype=dtype)
+    result = _impl.empty(shape, dtype, order)
     return _helpers.array_from(result)
 
 
@@ -293,8 +280,6 @@ def empty_like(
     subok: SubokLike = False,
     shape=None,
 ):
-    if order != "K":
-        raise NotImplementedError
     result = _impl.empty_like(prototype, dtype=dtype, shape=shape)
     return _helpers.array_from(result)
 
@@ -308,11 +293,7 @@ def full(
     *,
     like: SubokLike = None,
 ):
-    if isinstance(shape, int):
-        shape = (shape,)
-    if order != "C":
-        raise NotImplementedError
-    result = _impl.full(shape, fill_value, dtype=dtype)
+    result = _impl.full(shape, fill_value, dtype=dtype, order=order)
     return _helpers.array_from(result)
 
 
@@ -325,19 +306,13 @@ def full_like(
     subok: SubokLike = False,
     shape=None,
 ):
-    if order != "K":
-        raise NotImplementedError
-    result = _impl.full_like(a, fill_value, dtype=dtype, shape=shape)
+    result = _impl.full_like(a, fill_value, dtype=dtype, shape=shape, order=order)
     return _helpers.array_from(result)
 
 
 @normalizer
 def ones(shape, dtype: DTypeLike = None, order="C", *, like: SubokLike = None):
-    if order != "C":
-        raise NotImplementedError
-    if dtype is None:
-        dtype = _dtypes_impl.default_float_dtype
-    result = torch.ones(shape, dtype=dtype)
+    result = _impl.ones(shape, dtype, order)
     return _helpers.array_from(result)
 
 
@@ -349,19 +324,13 @@ def ones_like(
     subok: SubokLike = False,
     shape=None,
 ):
-    if order != "K":
-        raise NotImplementedError
-    result = _impl.ones_like(a, dtype=dtype, shape=shape)
+    result = _impl.ones_like(a, dtype=dtype, shape=shape, order=order)
     return _helpers.array_from(result)
 
 
 @normalizer
 def zeros(shape, dtype: DTypeLike = None, order="C", *, like: SubokLike = None):
-    if order != "C":
-        raise NotImplementedError
-    if dtype is None:
-        dtype = _dtypes_impl.default_float_dtype
-    result = torch.zeros(shape, dtype=dtype)
+    result = _impl.zeros(shape, dtype, order)
     return _helpers.array_from(result)
 
 
@@ -373,9 +342,7 @@ def zeros_like(
     subok: SubokLike = False,
     shape=None,
 ):
-    if order != "K":
-        raise NotImplementedError
-    result = _impl.zeros_like(a, dtype=dtype, shape=shape)
+    result = _impl.zeros_like(a, dtype=dtype, shape=shape, order=order)
     return _helpers.array_from(result)
 
 
@@ -444,9 +411,6 @@ def cov(
 
 @normalizer
 def bincount(x: ArrayLike, /, weights: Optional[ArrayLike] = None, minlength=0):
-    if x.numel() == 0:
-        # edge case allowed by numpy
-        x = torch.as_tensor([], dtype=int)
     result = _impl.bincount(x, weights, minlength)
     return _helpers.array_from(result)
 
@@ -576,11 +540,6 @@ def indices(dimensions, dtype: DTypeLike = int, sparse=False):
         return _helpers.array_from(result)
 
 
-def flatnonzero(a):
-    arr = asarray(a)
-    return _funcs.nonzero(arr.ravel())[0]
-
-
 @normalizer
 def roll(a: ArrayLike, shift, axis=None):
     result = _impl.roll(a, shift, axis)
@@ -645,31 +604,6 @@ def average(
         return _helpers.tuple_arrays_from((result, wsum))
     else:
         return _helpers.array_from(result)
-
-
-# Normalizations (ArrayLike et al) in percentile and median are done in `_funcs.py/quantile`.
-def percentile(
-    a,
-    q,
-    axis=None,
-    out: Optional[NDArray] = None,
-    overwrite_input=False,
-    method="linear",
-    keepdims=False,
-    *,
-    interpolation=None,
-):
-    return _funcs.quantile(
-        a, asarray(q) / 100.0, axis, out, overwrite_input, method, keepdims=keepdims
-    )
-
-
-def median(
-    a, axis=None, out: Optional[NDArray] = None, overwrite_input=False, keepdims=False
-):
-    return _funcs.quantile(
-        a, 0.5, axis=axis, overwrite_input=overwrite_input, out=out, keepdims=keepdims
-    )
 
 
 @normalizer
@@ -773,11 +707,6 @@ def diff(
     prepend: Optional[ArrayLike] = NoValue,
     append: Optional[ArrayLike] = NoValue,
 ):
-
-    if n == 0:
-        # match numpy and return the input immediately
-        return _helpers.array_from(result)
-
     result = _impl.diff(
         a,
         n=n,
@@ -855,8 +784,10 @@ def i0(x: ArrayLike):
 def isscalar(a):
     # XXX: this is a stub
     try:
-        arr = asarray(a)
-        return arr.size == 1
+        from ._ndarray import asarray
+
+        t = asarray(a).get()
+        return t.numel() == 1
     except Exception:
         return False
 

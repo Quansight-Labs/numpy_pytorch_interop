@@ -274,6 +274,10 @@ def diff(a_tensor, n=1, axis=-1, prepend_tensor=None, append_tensor=None):
     if n < 0:
         raise ValueError(f"order must be non-negative but got {n}")
 
+    if n == 0:
+        # match numpy and return the input immediately
+        return a_tensor
+
     if prepend_tensor is not None:
         shape = list(a_tensor.shape)
         shape[axis] = prepend_tensor.shape[axis] if prepend_tensor.ndim > 0 else 1
@@ -354,6 +358,14 @@ def hstack(tensors, *, dtype=None, casting="same_kind"):
 def vstack(tensors, *, dtype=None, casting="same_kind"):
     tensors = _concat_cast_helper(tensors, dtype=dtype, casting=casting)
     result = torch.vstack(tensors)
+    return result
+
+
+def tile(tensor, reps):
+    if isinstance(reps, int):
+        reps = (reps,)
+
+    result = torch.tile(tensor, reps)
     return result
 
 
@@ -450,6 +462,10 @@ def indices(dimensions, dtype=int, sparse=False):
 
 
 def bincount(x_tensor, /, weights_tensor=None, minlength=0):
+    if x_tensor.numel() == 0:
+        # edge case allowed by numpy
+        x_tensor = torch.as_tensor([], dtype=int)
+
     int_dtype = _dtypes_impl.default_int_dtype
     (x_tensor,) = _util.cast_dont_broadcast((x_tensor,), int_dtype, casting="safe")
 
@@ -458,6 +474,14 @@ def bincount(x_tensor, /, weights_tensor=None, minlength=0):
 
 
 # ### linspace, geomspace, logspace and arange ###
+
+
+def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None, axis=0):
+    if axis != 0 or retstep or not endpoint:
+        raise NotImplementedError
+    # XXX: raises TypeError if start or stop are not scalars
+    result = torch.linspace(start, stop, num, dtype=dtype)
+    return result
 
 
 def geomspace(start, stop, num=50, endpoint=True, dtype=None, axis=0):
@@ -471,6 +495,13 @@ def geomspace(start, stop, num=50, endpoint=True, dtype=None, axis=0):
         num,
         base=base,
     )
+    return result
+
+
+def logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0):
+    if axis != 0 or not endpoint:
+        raise NotImplementedError
+    result = torch.logspace(start, stop, num, base=base, dtype=dtype)
     return result
 
 
@@ -523,21 +554,45 @@ def eye(N, M=None, k=0, dtype=float):
     return z
 
 
-def zeros_like(a, dtype=None, shape=None):
+def zeros(shape, dtype=None, order="C"):
+    if order != "C":
+        raise NotImplementedError
+    if dtype is None:
+        dtype = _dtypes_impl.default_float_dtype
+    result = torch.zeros(shape, dtype=dtype)
+    return result
+
+
+def zeros_like(a, dtype=None, shape=None, order="K"):
+    if order != "K":
+        raise NotImplementedError
     result = torch.zeros_like(a, dtype=dtype)
     if shape is not None:
         result = result.reshape(shape)
     return result
 
 
-def ones_like(a, dtype=None, shape=None):
+def ones(shape, dtype=None, order="C"):
+    if order != "C":
+        raise NotImplementedError
+    if dtype is None:
+        dtype = _dtypes_impl.default_float_dtype
+    result = torch.ones(shape, dtype=dtype)
+    return result
+
+
+def ones_like(a, dtype=None, shape=None, order="K"):
+    if order != "K":
+        raise NotImplementedError
     result = torch.ones_like(a, dtype=dtype)
     if shape is not None:
         result = result.reshape(shape)
     return result
 
 
-def full_like(a, fill_value, dtype=None, shape=None):
+def full_like(a, fill_value, dtype=None, shape=None, order="K"):
+    if order != "K":
+        raise NotImplementedError
     # XXX: fill_value broadcasts
     result = torch.full_like(a, fill_value, dtype=dtype)
     if shape is not None:
@@ -545,14 +600,29 @@ def full_like(a, fill_value, dtype=None, shape=None):
     return result
 
 
-def empty_like(prototype, dtype=None, shape=None):
+def empty(shape, dtype=None, order="C"):
+    if order != "C":
+        raise NotImplementedError
+    if dtype is None:
+        dtype = _dtypes_impl.default_float_dtype
+    result = torch.empty(shape, dtype=dtype)
+    return result
+
+
+def empty_like(prototype, dtype=None, shape=None, order="K"):
+    if order != "K":
+        raise NotImplementedError
     result = torch.empty_like(prototype, dtype=dtype)
     if shape is not None:
         result = result.reshape(shape)
     return result
 
 
-def full(shape, fill_value, dtype=None):
+def full(shape, fill_value, dtype=None, order="C"):
+    if isinstance(shape, int):
+        shape = (shape,)
+    if order != "C":
+        raise NotImplementedError
     if dtype is None:
         dtype = fill_value.dtype
     if not isinstance(shape, (tuple, list)):

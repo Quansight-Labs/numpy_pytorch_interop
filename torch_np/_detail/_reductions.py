@@ -371,7 +371,24 @@ def average_weights(a_tensor, axis, w_tensor, keepdims=False):
     return result, denominator
 
 
-def quantile(a_tensor, q_tensor, axis, method, keepdims=False):
+def quantile(
+    a_tensor,
+    q_tensor,
+    axis,
+    overwrite_input,
+    method,
+    keepdims=False,
+    interpolation=None,
+):
+    if overwrite_input:
+        # raise NotImplementedError("overwrite_input in quantile not implemented.")
+        # NumPy documents that `overwrite_input` MAY modify inputs:
+        # https://numpy.org/doc/stable/reference/generated/numpy.percentile.html#numpy-percentile
+        # Here we choose to work out-of-place because why not.
+        pass
+
+    if interpolation is not None:
+        raise ValueError("'interpolation' argument is deprecated; use 'method' instead")
 
     if (0 > q_tensor).any() or (q_tensor > 1).any():
         raise ValueError("Quantiles must be in range [0, 1], got %s" % q_tensor)
@@ -404,3 +421,23 @@ def quantile(a_tensor, q_tensor, axis, method, keepdims=False):
     if keepdims:
         result = _util.apply_keepdims(result, ax, ndim)
     return result
+
+
+def percentile(
+    a_tensor,
+    q_tensor,
+    axis,
+    overwrite_input,
+    method,
+    keepdims=False,
+    interpolation=None,
+):
+    return quantile(
+        a_tensor,
+        q_tensor / 100.0,
+        axis=axis,
+        overwrite_input=overwrite_input,
+        method=method,
+        keepdims=keepdims,
+        interpolation=interpolation,
+    )
