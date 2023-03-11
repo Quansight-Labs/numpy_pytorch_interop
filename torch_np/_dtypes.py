@@ -51,7 +51,6 @@ class generic(abc.ABC):
         #
         return _ndarray.ndarray(tensor)
 
-
 ##### these are abstract types
 
 

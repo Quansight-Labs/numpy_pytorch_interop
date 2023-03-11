@@ -93,6 +93,7 @@ class ndarray:
     def itemsize(self):
         return self.tensor.element_size()
 
+
     @property
     def flags(self):
         # Note contiguous in torch is assumed C-style
@@ -423,6 +424,7 @@ def array(obj, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=N
     if isinstance(obj, ndarray):
         obj = obj.tensor
 
+
     # is a specific dtype requrested?
     torch_dtype = None
     if dtype is not None:
@@ -430,6 +432,7 @@ def array(obj, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=N
 
     tensor = _util._coerce_to_tensor(obj, torch_dtype, copy, ndmin)
     return ndarray(tensor)
+
 
 
 def asarray(a, dtype=None, order=None, *, like=None):
