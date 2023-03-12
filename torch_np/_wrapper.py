@@ -12,13 +12,7 @@ from . import _funcs, _helpers
 from ._detail import _dtypes_impl, _flips, _reductions, _util
 from ._detail import implementations as _impl
 from ._ndarray import asarray
-from ._normalizations import (
-    ArrayLike,
-    DTypeLike,
-    NDArray,
-    SubokLike,
-    normalizer,
-)
+from ._normalizations import ArrayLike, DTypeLike, NDArray, SubokLike, normalizer
 
 # Things to decide on (punt for now)
 #
