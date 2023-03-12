@@ -127,7 +127,6 @@ def normalizer(_func=None, *, return_on_failure=_sentinel):
             # loop over positional parameters and actual arguments
             lst, dct = [], {}
             for arg, (name, parm) in zip(args, sig.parameters.items()):
-                print(arg, name, parm.annotation)
                 lst.append(normalize_this(arg, parm, return_on_failure))
 
             # normalize keyword arguments
@@ -138,7 +137,6 @@ def normalizer(_func=None, *, return_on_failure=_sentinel):
                         f"{func.__name__}() got an unexpected keyword argument '{name}'."
                     )
 
-                print("kw: ", name, sig.parameters[name].annotation)
                 parm = sig.parameters[name]
                 dct[name] = normalize_this(arg, parm, return_on_failure)
 
@@ -152,20 +150,6 @@ def normalizer(_func=None, *, return_on_failure=_sentinel):
                 raise TypeError(
                     f"{func.__name__}() takes {len(ba.args)} positional argument but {len(args)} were given."
                 )
-
-            # TODO:
-            # 1. [LOOKS OK] kw-only parameters : see vstack
-            # 2. [LOOKS OK] extra unknown args -- error out : nonzero([2, 0, 3], oops=42)
-            # 3. [LOOKS OK] optional (tensor_or_none) : untyped => pass through
-            # 4. [LOOKS OK] DTypeLike : positional or kw
-            # 5. axes : live in _impl or in types? several ways of handling them
-            # 6. [OK, NOT HERE] keepdims : peel off, postprocess
-            # 7. OutLike : normal & keyword-only, peel off, postprocess
-            # 8. [LOOKS OK] *args
-            # 9. [LOOKS OK] consolidate normalizations (_funcs, _wrapper)
-            # 10. [LOOKS OK] consolidate decorators (_{unary,binary}_ufuncs)
-            # 11. out= arg : validate it's an ndarray
-
             # finally, pass normalized arguments through
             result = func(*ba.args, **ba.kwargs)
             return result
