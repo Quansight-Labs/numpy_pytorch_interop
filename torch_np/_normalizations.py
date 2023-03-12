@@ -152,7 +152,15 @@ def normalizer(_func=None, *, return_on_failure=_sentinel):
                 )
             # finally, pass normalized arguments through
             result = func(*ba.args, **ba.kwargs)
-            return result
+
+            # handle returns
+            return_annotation = sig.return_annotation
+            if return_annotation == NDArray:
+                return _helpers.array_from(result)
+            elif return_annotation ==  inspect._empty:
+                return result
+            else:
+                raise ValueError(f"Unknown return annotation {return_annotation}")
 
         return wrapped
 

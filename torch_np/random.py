@@ -12,7 +12,7 @@ import torch
 
 from . import _helpers
 from ._detail import _dtypes_impl, _util
-from ._normalizations import ArrayLike, normalizer
+from ._normalizations import ArrayLike, normalizer, NDArray
 
 _default_dtype = _dtypes_impl.default_float_dtype
 
@@ -96,7 +96,7 @@ def randint(low, high=None, size=None):
 
 
 @normalizer
-def choice(a: ArrayLike, size=None, replace=True, p: Optional[ArrayLike] = None):
+def choice(a: ArrayLike, size=None, replace=True, p: Optional[ArrayLike] = None) -> NDArray:
 
     # https://stackoverflow.com/questions/59461811/random-choice-with-pytorch
     if a.numel() == 1:
@@ -131,4 +131,4 @@ def choice(a: ArrayLike, size=None, replace=True, p: Optional[ArrayLike] = None)
 
     samples = a[indices]
 
-    return _helpers.array_from(samples)
+    return samples

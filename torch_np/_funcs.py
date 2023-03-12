@@ -25,15 +25,14 @@ def nonzero(a: ArrayLike):
 
 
 @normalizer
-def argwhere(a: ArrayLike):
+def argwhere(a: ArrayLike) -> NDArray:
     result = torch.argwhere(a)
-    return _helpers.array_from(result)
-
+    return result
 
 @normalizer
-def flatnonzero(a: ArrayLike):
+def flatnonzero(a: ArrayLike) -> NDArray:
     result = a.ravel().nonzero(as_tuple=True)[0]
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -50,25 +49,24 @@ def clip(
 
 
 @normalizer
-def repeat(a: ArrayLike, repeats: ArrayLike, axis=None):
-    # XXX: scalar repeats; ArrayLikeOrScalar ?
+def repeat(a: ArrayLike, repeats: ArrayLike, axis=None) -> NDArray:
     result = torch.repeat_interleave(a, repeats, axis)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
-def tile(A: ArrayLike, reps):
+def tile(A: ArrayLike, reps) -> NDArray:
     result = _impl.tile(A, reps)
-    return _helpers.array_from(result)
+    return result
 
 
 # ### diag et al ###
 
 
 @normalizer
-def diagonal(a: ArrayLike, offset=0, axis1=0, axis2=1):
+def diagonal(a: ArrayLike, offset=0, axis1=0, axis2=1) -> NDArray:
     result = _impl.diagonal(a, offset, axis1, axis2)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -85,29 +83,29 @@ def trace(
 
 
 @normalizer
-def eye(N, M=None, k=0, dtype: DTypeLike = float, order="C", *, like: SubokLike = None):
+def eye(N, M=None, k=0, dtype: DTypeLike = float, order="C", *, like: SubokLike = None) -> NDArray:
     if order != "C":
         raise NotImplementedError
     result = _impl.eye(N, M, k, dtype)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
-def identity(n, dtype: DTypeLike = None, *, like: SubokLike = None):
+def identity(n, dtype: DTypeLike = None, *, like: SubokLike = None) -> NDArray:
     result = torch.eye(n, dtype=dtype)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
-def diag(v: ArrayLike, k=0):
+def diag(v: ArrayLike, k=0)  -> NDArray:
     result = torch.diag(v, k)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
-def diagflat(v: ArrayLike, k=0):
+def diagflat(v: ArrayLike, k=0)  -> NDArray:
     result = torch.diagflat(v, k)
-    return _helpers.array_from(result)
+    return result
 
 
 def diag_indices(n, ndim=2):
@@ -122,9 +120,9 @@ def diag_indices_from(arr: ArrayLike):
 
 
 @normalizer
-def fill_diagonal(a: ArrayLike, val: ArrayLike, wrap=False):
+def fill_diagonal(a: ArrayLike, val: ArrayLike, wrap=False) -> NDArray:
     result = _impl.fill_diagonal(a, val, wrap)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -143,93 +141,93 @@ def dot(a: ArrayLike, b: ArrayLike, out: Optional[NDArray] = None):
 
 
 @normalizer
-def sort(a: ArrayLike, axis=-1, kind=None, order=None):
+def sort(a: ArrayLike, axis=-1, kind=None, order=None) -> NDArray:
     result = _impl.sort(a, axis, kind, order)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
-def argsort(a: ArrayLike, axis=-1, kind=None, order=None):
+def argsort(a: ArrayLike, axis=-1, kind=None, order=None) -> NDArray:
     result = _impl.argsort(a, axis, kind, order)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def searchsorted(
     a: ArrayLike, v: ArrayLike, side="left", sorter: Optional[ArrayLike] = None
-):
+)  -> NDArray:
     result = torch.searchsorted(a, v, side=side, sorter=sorter)
-    return _helpers.array_from(result)
+    return result
 
 
 # ### swap/move/roll axis ###
 
 
 @normalizer
-def moveaxis(a: ArrayLike, source, destination):
+def moveaxis(a: ArrayLike, source, destination) -> NDArray:
     result = _impl.moveaxis(a, source, destination)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
-def swapaxes(a: ArrayLike, axis1, axis2):
+def swapaxes(a: ArrayLike, axis1, axis2) -> NDArray:
     result = _impl.swapaxes(a, axis1, axis2)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
-def rollaxis(a: ArrayLike, axis, start=0):
+def rollaxis(a: ArrayLike, axis, start=0)  -> NDArray:
     result = _impl.rollaxis(a, axis, start)
-    return _helpers.array_from(result)
+    return result
 
 
 # ### shape manipulations ###
 
 
 @normalizer
-def squeeze(a: ArrayLike, axis=None):
+def squeeze(a: ArrayLike, axis=None)  -> NDArray:
     result = _impl.squeeze(a, axis)
-    return _helpers.array_from(result, a)
+    return result
 
 
 @normalizer
-def reshape(a: ArrayLike, newshape, order="C"):
+def reshape(a: ArrayLike, newshape, order="C")  -> NDArray:
     result = _impl.reshape(a, newshape, order=order)
-    return _helpers.array_from(result, a)
+    return result
 
 
 @normalizer
-def transpose(a: ArrayLike, axes=None):
+def transpose(a: ArrayLike, axes=None)  -> NDArray:
     result = _impl.transpose(a, axes)
-    return _helpers.array_from(result, a)
+    return result
 
 
 @normalizer
-def ravel(a: ArrayLike, order="C"):
+def ravel(a: ArrayLike, order="C")  -> NDArray:
     result = _impl.ravel(a)
-    return _helpers.array_from(result, a)
+    return result
 
 
 # leading underscore since arr.flatten exists but np.flatten does not
 @normalizer
-def _flatten(a: ArrayLike, order="C"):
+def _flatten(a: ArrayLike, order="C") -> NDArray:
     result = _impl._flatten(a)
-    return _helpers.array_from(result, a)
+    return result
 
 
 # ### Type/shape etc queries ###
 
 
 @normalizer
-def real(a: ArrayLike):
+def real(a: ArrayLike)  -> NDArray:
     result = torch.real(a)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
-def imag(a: ArrayLike):
+def imag(a: ArrayLike) -> NDArray:
     result = _impl.imag(a)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -419,9 +417,9 @@ def any(
 
 
 @normalizer
-def count_nonzero(a: ArrayLike, axis: AxisLike = None, *, keepdims=False):
+def count_nonzero(a: ArrayLike, axis: AxisLike = None, *, keepdims=False) -> NDArray:
     result = _impl.count_nonzero(a, axis=axis, keepdims=keepdims)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
