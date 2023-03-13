@@ -15,19 +15,21 @@ from ._normalizations import (
     normalizer,
 )
 
+
 NoValue = _util.NoValue
 
 
 @normalizer
-def nonzero(a: ArrayLike):
+def nonzero(a: ArrayLike) -> tuple[NDArray]:
     result = a.nonzero(as_tuple=True)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
 def argwhere(a: ArrayLike) -> NDArray:
     result = torch.argwhere(a)
     return result
+
 
 @normalizer
 def flatnonzero(a: ArrayLike) -> NDArray:
@@ -83,7 +85,9 @@ def trace(
 
 
 @normalizer
-def eye(N, M=None, k=0, dtype: DTypeLike = float, order="C", *, like: SubokLike = None) -> NDArray:
+def eye(
+    N, M=None, k=0, dtype: DTypeLike = float, order="C", *, like: SubokLike = None
+) -> NDArray:
     if order != "C":
         raise NotImplementedError
     result = _impl.eye(N, M, k, dtype)
@@ -108,15 +112,16 @@ def diagflat(v: ArrayLike, k=0)  -> NDArray:
     return result
 
 
-def diag_indices(n, ndim=2):
+@normalizer
+def diag_indices(n, ndim=2) -> tuple[NDArray]:
     result = _impl.diag_indices(n, ndim)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
-def diag_indices_from(arr: ArrayLike):
+def diag_indices_from(arr: ArrayLike) -> tuple[NDArray]:
     result = _impl.diag_indices_from(arr)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer

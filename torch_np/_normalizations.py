@@ -2,7 +2,7 @@
 """
 import operator
 import typing
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Union
 
 import torch
 
@@ -16,6 +16,10 @@ NDArray = typing.TypeVar("NDarray")
 
 # annotate e.g. atleast_1d(*arys)
 UnpackedSeqArrayLike = typing.TypeVar("UnpackedSeqArrayLike")
+
+
+# return value of atleast_1d et al: single array of a list/tuple of arrays
+NDArrayOrSequence = Union[NDArray, Sequence[NDArray]]
 
 
 import inspect
@@ -154,11 +158,23 @@ def normalizer(_func=None, *, return_on_failure=_sentinel):
             result = func(*ba.args, **ba.kwargs)
 
             # handle returns
-            return_annotation = sig.return_annotation
-            if return_annotation == NDArray:
+            r = sig.return_annotation
+            if r == NDArray:
                 return _helpers.array_from(result)
-            elif return_annotation ==  inspect._empty:
+            elif r == inspect._empty:
                 return result
+            elif hasattr(r, "__origin__") and r.__origin__ in (list, tuple):
+                # this is tuple[NDArray] or list[NDArray]
+                # XXX: change to separate tuple and list normalizers?
+                return r.__origin__(_helpers.tuple_arrays_from(result))
+            elif r == NDArrayOrSequence:
+                # this is a single NDArray or tuple/list of NDArrays, e.g. atleast_1d
+                if isinstance(result, (tuple, list)):
+                    seq = type(result)
+                    return seq(_helpers.tuple_arrays_from(result))
+                else:
+                    return _helpers.array_from(result)
+
             else:
                 raise ValueError(f"Unknown return annotation {return_annotation}")
 

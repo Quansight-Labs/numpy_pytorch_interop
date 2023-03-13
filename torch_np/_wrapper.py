@@ -17,6 +17,7 @@ from ._normalizations import (
     NDArray,
     SubokLike,
     UnpackedSeqArrayLike,
+    NDArrayOrSequence,
     normalizer,
 )
 
@@ -69,30 +70,21 @@ def copy(a: ArrayLike, order="K", subok: SubokLike = False) -> NDArray:
 
 
 @normalizer
-def atleast_1d(*arys: UnpackedSeqArrayLike):
-    res = torch.atleast_1d(*arys)
-    if len(res) == 1:
-        return _helpers.array_from(res[0])
-    else:
-        return list(_helpers.tuple_arrays_from(res))
+def atleast_1d(*arys: UnpackedSeqArrayLike) -> NDArrayOrSequence:
+    result = _impl.atleast_1d(*arys)
+    return result
 
 
 @normalizer
-def atleast_2d(*arys: UnpackedSeqArrayLike):
-    res = torch.atleast_2d(*arys)
-    if len(res) == 1:
-        return _helpers.array_from(res[0])
-    else:
-        return list(_helpers.tuple_arrays_from(res))
+def atleast_2d(*arys: UnpackedSeqArrayLike) -> NDArrayOrSequence:
+    result = _impl.atleast_2d(*arys)
+    return result
 
 
 @normalizer
-def atleast_3d(*arys: UnpackedSeqArrayLike):
-    res = torch.atleast_3d(*arys)
-    if len(res) == 1:
-        return _helpers.array_from(res[0])
-    else:
-        return list(_helpers.tuple_arrays_from(res))
+def atleast_3d(*arys: UnpackedSeqArrayLike) -> NDArrayOrSequence:
+    result = _impl.atleast_3d(*arys)
+    return result
 
 
 def _concat_check(tup, dtype, out):
@@ -175,33 +167,33 @@ def stack(
 
 
 @normalizer
-def array_split(ary: ArrayLike, indices_or_sections, axis=0):
+def array_split(ary: ArrayLike, indices_or_sections, axis=0) -> tuple[NDArray]:
     result = _impl.split_helper(ary, indices_or_sections, axis)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
-def split(ary: ArrayLike, indices_or_sections, axis=0):
+def split(ary: ArrayLike, indices_or_sections, axis=0) -> tuple[NDArray]:
     result = _impl.split_helper(ary, indices_or_sections, axis, strict=True)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
-def hsplit(ary: ArrayLike, indices_or_sections):
+def hsplit(ary: ArrayLike, indices_or_sections) -> tuple[NDArray]:
     result = _impl.hsplit(ary, indices_or_sections)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
-def vsplit(ary: ArrayLike, indices_or_sections):
+def vsplit(ary: ArrayLike, indices_or_sections) -> tuple[NDArray]:
     result = _impl.vsplit(ary, indices_or_sections)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
-def dsplit(ary: ArrayLike, indices_or_sections):
+def dsplit(ary: ArrayLike, indices_or_sections) -> tuple[NDArray]:
     result = _impl.dsplit(ary, indices_or_sections)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
@@ -421,13 +413,9 @@ def where(
     x: Optional[ArrayLike] = None,
     y: Optional[ArrayLike] = None,
     /,
-):
+) -> NDArrayOrSequence:
     result = _impl.where(condition, x, y)
-    if isinstance(result, tuple):
-        # single-argument where(condition)
-        return _helpers.tuple_arrays_from(result)
-    else:
-        return _helpers.array_from(result)
+    return result
 
 
 ###### module-level queries of object properties
@@ -496,10 +484,12 @@ from torch import broadcast_shapes
 
 # YYY: pattern: tuple of arrays as input, tuple of arrays as output; cf nonzero
 @normalizer
-def broadcast_arrays(*args: UnpackedSeqArrayLike, subok: SubokLike = False):
+def broadcast_arrays(
+    *args: UnpackedSeqArrayLike, subok: SubokLike = False
+) -> tuple[NDArray]:
     args = args[0]  # undo the *args wrapping in normalizer
     res = torch.broadcast_tensors(*args)
-    return _helpers.tuple_arrays_from(res)
+    return res
 
 
 def unravel_index(indices, shape, order="C"):
@@ -524,11 +514,12 @@ def ravel_multi_index(multi_index, dims, mode="raise", order="C"):
 
 
 @normalizer
-def meshgrid(*xi: UnpackedSeqArrayLike, copy=True, sparse=False, indexing="xy"):
+def meshgrid(
+    *xi: UnpackedSeqArrayLike, copy=True, sparse=False, indexing="xy"
+) -> list[NDArray]:
     xi = xi[0]  # undo the *xi wrapping in normalizer
     output = _impl.meshgrid(*xi, copy=copy, sparse=sparse, indexing=indexing)
-    outp = _helpers.tuple_arrays_from(output)
-    return list(outp)  # match numpy, return a list
+    return output
 
 
 @normalizer
@@ -559,26 +550,26 @@ def triu(m: ArrayLike, k=0) -> NDArray:
     return result
 
 
-def tril_indices(n, k=0, m=None):
+def tril_indices(n, k=0, m=None) -> tuple[NDArray]:
     result = _impl.tril_indices(n, k, m)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
-def triu_indices(n, k=0, m=None):
+def triu_indices(n, k=0, m=None) -> tuple[NDArray]:
     result = _impl.triu_indices(n, k, m)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
-def tril_indices_from(arr: ArrayLike, k=0):
+def tril_indices_from(arr: ArrayLike, k=0) -> tuple[NDArray]:
     result = _impl.tril_indices_from(arr, k)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
-def triu_indices_from(arr: ArrayLike, k=0):
+def triu_indices_from(arr: ArrayLike, k=0) -> tuple[NDArray]:
     result = _impl.triu_indices_from(arr, k)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
@@ -859,7 +850,7 @@ def unique(
     axis=None,
     *,
     equal_nan=True,
-):
+) -> NDArrayOrSequence:
     result = _impl.unique(
         ar,
         return_index=return_index,
@@ -868,11 +859,7 @@ def unique(
         axis=axis,
         equal_nan=equal_nan,
     )
-
-    if isinstance(result, tuple):
-        return _helpers.tuple_arrays_from(result)
-    else:
-        return _helpers.array_from(result)
+    return result
 
 
 ###### mapping from numpy API objects to wrappers from this module ######

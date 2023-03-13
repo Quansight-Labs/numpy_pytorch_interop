@@ -369,6 +369,36 @@ def tile(tensor, reps):
     return result
 
 
+def atleast_1d(tensors):
+    result = torch.atleast_1d(*tensors)
+
+    # match numpy: return a list not tuple; 
+    # >>> np.atleast_2d(np.arange(3))
+    # array([[0, 1, 2]])          # a single 2D array
+    # >>> torch.atleast_2d([torch.arange(3)])
+    # (tensor([[0, 1, 2]]), )     # 1-element tuple of a 2D tensor
+    if isinstance(result, tuple):
+        return list(result)
+    else:
+        return result
+
+
+def atleast_2d(tensors):
+    result = torch.atleast_2d(*tensors)
+    if isinstance(result, tuple):
+        return list(result)
+    else:
+        return result
+
+
+def atleast_3d(tensors):
+    result = torch.atleast_3d(*tensors)
+    if isinstance(result, tuple):
+        return list(result)
+    else:
+        return result
+
+
 # #### cov & corrcoef
 
 
