@@ -10,6 +10,7 @@ from ._normalizations import (
     AxisLike,
     DTypeLike,
     NDArray,
+    OutArray,
     SubokLike,
     UnpackedSeqArrayLike,
     normalizer,
@@ -42,11 +43,11 @@ def clip(
     min: Optional[ArrayLike] = None,
     max: Optional[ArrayLike] = None,
     out: Optional[NDArray] = None,
-):
+) -> OutArray:
     # np.clip requires both a_min and a_max not None, while ndarray.clip allows
     # one of them to be None. Follow the more lax version.
     result = _impl.clip(a, min, max)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 @normalizer
@@ -78,9 +79,9 @@ def trace(
     axis2=1,
     dtype: DTypeLike = None,
     out: Optional[NDArray] = None,
-):
+) -> OutArray:
     result = _impl.trace(a, offset, axis1, axis2, dtype)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 @normalizer
@@ -100,13 +101,13 @@ def identity(n, dtype: DTypeLike = None, *, like: SubokLike = None) -> NDArray:
 
 
 @normalizer
-def diag(v: ArrayLike, k=0)  -> NDArray:
+def diag(v: ArrayLike, k=0) -> NDArray:
     result = torch.diag(v, k)
     return result
 
 
 @normalizer
-def diagflat(v: ArrayLike, k=0)  -> NDArray:
+def diagflat(v: ArrayLike, k=0) -> NDArray:
     result = torch.diagflat(v, k)
     return result
 
@@ -136,9 +137,9 @@ def vdot(a: ArrayLike, b: ArrayLike, /):
 
 
 @normalizer
-def dot(a: ArrayLike, b: ArrayLike, out: Optional[NDArray] = None):
+def dot(a: ArrayLike, b: ArrayLike, out: Optional[NDArray] = None) -> OutArray:
     result = _impl.dot(a, b)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 # ### sort and partition ###
@@ -159,7 +160,7 @@ def argsort(a: ArrayLike, axis=-1, kind=None, order=None) -> NDArray:
 @normalizer
 def searchsorted(
     a: ArrayLike, v: ArrayLike, side="left", sorter: Optional[ArrayLike] = None
-)  -> NDArray:
+) -> NDArray:
     result = torch.searchsorted(a, v, side=side, sorter=sorter)
     return result
 
@@ -180,7 +181,7 @@ def swapaxes(a: ArrayLike, axis1, axis2) -> NDArray:
 
 
 @normalizer
-def rollaxis(a: ArrayLike, axis, start=0)  -> NDArray:
+def rollaxis(a: ArrayLike, axis, start=0) -> NDArray:
     result = _impl.rollaxis(a, axis, start)
     return result
 
@@ -189,25 +190,25 @@ def rollaxis(a: ArrayLike, axis, start=0)  -> NDArray:
 
 
 @normalizer
-def squeeze(a: ArrayLike, axis=None)  -> NDArray:
+def squeeze(a: ArrayLike, axis=None) -> NDArray:
     result = _impl.squeeze(a, axis)
     return result
 
 
 @normalizer
-def reshape(a: ArrayLike, newshape, order="C")  -> NDArray:
+def reshape(a: ArrayLike, newshape, order="C") -> NDArray:
     result = _impl.reshape(a, newshape, order=order)
     return result
 
 
 @normalizer
-def transpose(a: ArrayLike, axes=None)  -> NDArray:
+def transpose(a: ArrayLike, axes=None) -> NDArray:
     result = _impl.transpose(a, axes)
     return result
 
 
 @normalizer
-def ravel(a: ArrayLike, order="C")  -> NDArray:
+def ravel(a: ArrayLike, order="C") -> NDArray:
     result = _impl.ravel(a)
     return result
 
@@ -223,7 +224,7 @@ def _flatten(a: ArrayLike, order="C") -> NDArray:
 
 
 @normalizer
-def real(a: ArrayLike)  -> NDArray:
+def real(a: ArrayLike) -> NDArray:
     result = torch.real(a)
     return result
 
@@ -235,9 +236,9 @@ def imag(a: ArrayLike) -> NDArray:
 
 
 @normalizer
-def round_(a: ArrayLike, decimals=0, out: Optional[NDArray] = None):
+def round_(a: ArrayLike, decimals=0, out: Optional[NDArray] = None) -> OutArray:
     result = _impl.round(a, decimals)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 around = round_
@@ -256,11 +257,11 @@ def sum(
     keepdims=NoValue,
     initial=NoValue,
     where=NoValue,
-):
+) -> OutArray:
     result = _impl.sum(
         a, axis=axis, dtype=dtype, initial=initial, where=where, keepdims=keepdims
     )
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 @normalizer
@@ -272,11 +273,11 @@ def prod(
     keepdims=NoValue,
     initial=NoValue,
     where=NoValue,
-):
+) -> OutArray:
     result = _impl.prod(
         a, axis=axis, dtype=dtype, initial=initial, where=where, keepdims=keepdims
     )
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 product = prod
@@ -291,9 +292,9 @@ def mean(
     keepdims=NoValue,
     *,
     where=NoValue,
-):
+) -> OutArray:
     result = _impl.mean(a, axis=axis, dtype=dtype, where=NoValue, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 @normalizer
@@ -306,11 +307,11 @@ def var(
     keepdims=NoValue,
     *,
     where=NoValue,
-):
+) -> OutArray:
     result = _impl.var(
         a, axis=axis, dtype=dtype, ddof=ddof, where=where, keepdims=keepdims
     )
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 @normalizer
@@ -323,11 +324,11 @@ def std(
     keepdims=NoValue,
     *,
     where=NoValue,
-):
+) -> OutArray:
     result = _impl.std(
         a, axis=axis, dtype=dtype, ddof=ddof, where=where, keepdims=keepdims
     )
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 @normalizer
@@ -337,9 +338,9 @@ def argmin(
     out: Optional[NDArray] = None,
     *,
     keepdims=NoValue,
-):
+) -> OutArray:
     result = _impl.argmin(a, axis=axis, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 @normalizer
@@ -349,9 +350,9 @@ def argmax(
     out: Optional[NDArray] = None,
     *,
     keepdims=NoValue,
-):
+) -> OutArray:
     result = _impl.argmax(a, axis=axis, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 @normalizer
@@ -362,9 +363,9 @@ def amax(
     keepdims=NoValue,
     initial=NoValue,
     where=NoValue,
-):
+) -> OutArray:
     result = _impl.max(a, axis=axis, initial=initial, where=where, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 max = amax
@@ -378,9 +379,9 @@ def amin(
     keepdims=NoValue,
     initial=NoValue,
     where=NoValue,
-):
+) -> OutArray:
     result = _impl.min(a, axis=axis, initial=initial, where=where, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 min = amin
@@ -389,9 +390,9 @@ min = amin
 @normalizer
 def ptp(
     a: ArrayLike, axis: AxisLike = None, out: Optional[NDArray] = None, keepdims=NoValue
-):
+) -> OutArray:
     result = _impl.ptp(a, axis=axis, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 @normalizer
@@ -402,9 +403,9 @@ def all(
     keepdims=NoValue,
     *,
     where=NoValue,
-):
+) -> OutArray:
     result = _impl.all(a, axis=axis, where=where, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 @normalizer
@@ -415,9 +416,9 @@ def any(
     keepdims=NoValue,
     *,
     where=NoValue,
-):
+) -> OutArray:
     result = _impl.any(a, axis=axis, where=where, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 @normalizer
@@ -432,9 +433,9 @@ def cumsum(
     axis: AxisLike = None,
     dtype: DTypeLike = None,
     out: Optional[NDArray] = None,
-):
+) -> OutArray:
     result = _impl.cumsum(a, axis=axis, dtype=dtype)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 @normalizer
@@ -443,15 +444,15 @@ def cumprod(
     axis: AxisLike = None,
     dtype: DTypeLike = None,
     out: Optional[NDArray] = None,
-):
+) -> OutArray:
     result = _impl.cumprod(a, axis=axis, dtype=dtype)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 cumproduct = cumprod
 
 
-@normalizer
+@normalizer(promote_scalar_out=True)
 def quantile(
     a: ArrayLike,
     q: ArrayLike,
@@ -462,7 +463,7 @@ def quantile(
     keepdims=False,
     *,
     interpolation=None,
-):
+) -> OutArray:
     result = _impl.quantile(
         a,
         q,
@@ -472,10 +473,10 @@ def quantile(
         keepdims=keepdims,
         interpolation=interpolation,
     )
-    return _helpers.result_or_out(result, out, promote_scalar=True)
+    return result, out
 
 
-@normalizer
+@normalizer(promote_scalar_out=True)
 def percentile(
     a: ArrayLike,
     q: ArrayLike,
@@ -486,7 +487,7 @@ def percentile(
     keepdims=False,
     *,
     interpolation=None,
-):
+) -> OutArray:
     result = _impl.percentile(
         a,
         q,
@@ -496,7 +497,7 @@ def percentile(
         keepdims=keepdims,
         interpolation=interpolation,
     )
-    return _helpers.result_or_out(result, out, promote_scalar=True)
+    return result, out
 
 
 def median(

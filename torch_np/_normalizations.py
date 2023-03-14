@@ -20,7 +20,7 @@ UnpackedSeqArrayLike = typing.TypeVar("UnpackedSeqArrayLike")
 
 # return value of atleast_1d et al: single array of a list/tuple of arrays
 NDArrayOrSequence = Union[NDArray, Sequence[NDArray]]
-
+OutArray = typing.TypeVar("OutArray")
 
 import inspect
 
@@ -108,7 +108,7 @@ def normalize_this(arg, parm, return_on_failure=_sentinel):
         return arg
 
 
-def normalizer(_func=None, *, return_on_failure=_sentinel):
+def normalizer(_func=None, *, return_on_failure=_sentinel, promote_scalar_out=False):
     def normalizer_inner(func):
         @functools.wraps(func)
         def wrapped(*args, **kwds):
@@ -174,7 +174,11 @@ def normalizer(_func=None, *, return_on_failure=_sentinel):
                     return seq(_helpers.tuple_arrays_from(result))
                 else:
                     return _helpers.array_from(result)
-
+            elif r == OutArray:
+                result, out = result
+                return _helpers.result_or_out(
+                    result, out, promote_scalar=promote_scalar_out
+                )
             else:
                 raise ValueError(f"Unknown return annotation {return_annotation}")
 

@@ -16,6 +16,7 @@ from ._normalizations import (
     DTypeLike,
     NDArray,
     NDArrayOrSequence,
+    OutArray,
     SubokLike,
     UnpackedSeqArrayLike,
     normalizer,
@@ -109,14 +110,16 @@ def concatenate(
     out: Optional[NDArray] = None,
     dtype: DTypeLike = None,
     casting="same_kind",
-):
+) -> OutArray:
     _concat_check(ar_tuple, dtype, out=out)
     result = _impl.concatenate(ar_tuple, axis, out, dtype, casting)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 @normalizer
-def vstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind") -> NDArray:
+def vstack(
+    tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"
+) -> NDArray:
     _concat_check(tup, dtype, out=None)
     result = _impl.vstack(tup, dtype=dtype, casting=casting)
     return result
@@ -126,14 +129,18 @@ row_stack = vstack
 
 
 @normalizer
-def hstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind")  -> NDArray:
+def hstack(
+    tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"
+) -> NDArray:
     _concat_check(tup, dtype, out=None)
     result = _impl.hstack(tup, dtype=dtype, casting=casting)
     return result
 
 
 @normalizer
-def dstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind") -> NDArray:
+def dstack(
+    tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"
+) -> NDArray:
     # XXX: in numpy 1.24 dstack does not have dtype and casting keywords
     # but {h,v}stack do.  Hence add them here for consistency.
     result = _impl.dstack(tup, dtype=dtype, casting=casting)
@@ -160,10 +167,10 @@ def stack(
     *,
     dtype: DTypeLike = None,
     casting="same_kind",
-):
+) -> OutArray:
     _concat_check(arrays, dtype, out=out)
     result = _impl.stack(arrays, axis=axis, out=out, dtype=dtype, casting=casting)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 @normalizer
@@ -197,13 +204,13 @@ def dsplit(ary: ArrayLike, indices_or_sections) -> tuple[NDArray]:
 
 
 @normalizer
-def kron(a: ArrayLike, b: ArrayLike)  -> NDArray:
+def kron(a: ArrayLike, b: ArrayLike) -> NDArray:
     result = torch.kron(a, b)
     return result
 
 
 @normalizer
-def vander(x: ArrayLike, N=None, increasing=False)  -> NDArray:
+def vander(x: ArrayLike, N=None, increasing=False) -> NDArray:
     result = torch.vander(x, N, increasing)
     return result
 
@@ -257,7 +264,9 @@ def arange(
 
 
 @normalizer
-def empty(shape, dtype: DTypeLike = float, order="C", *, like: SubokLike = None)  -> NDArray:
+def empty(
+    shape, dtype: DTypeLike = float, order="C", *, like: SubokLike = None
+) -> NDArray:
     result = _impl.empty(shape, dtype, order)
     return result
 
@@ -271,7 +280,7 @@ def empty_like(
     order="K",
     subok: SubokLike = False,
     shape=None,
-)  -> NDArray:
+) -> NDArray:
     result = _impl.empty_like(prototype, dtype=dtype, shape=shape)
     return result
 
@@ -297,13 +306,15 @@ def full_like(
     order="K",
     subok: SubokLike = False,
     shape=None,
-)  -> NDArray:
+) -> NDArray:
     result = _impl.full_like(a, fill_value, dtype=dtype, shape=shape, order=order)
     return result
 
 
 @normalizer
-def ones(shape, dtype: DTypeLike = None, order="C", *, like: SubokLike = None) -> NDArray:
+def ones(
+    shape, dtype: DTypeLike = None, order="C", *, like: SubokLike = None
+) -> NDArray:
     result = _impl.ones(shape, dtype, order)
     return result
 
@@ -315,13 +326,15 @@ def ones_like(
     order="K",
     subok: SubokLike = False,
     shape=None,
-)  -> NDArray:
+) -> NDArray:
     result = _impl.ones_like(a, dtype=dtype, shape=shape, order=order)
     return result
 
 
 @normalizer
-def zeros(shape, dtype: DTypeLike = None, order="C", *, like: SubokLike = None) -> NDArray:
+def zeros(
+    shape, dtype: DTypeLike = None, order="C", *, like: SubokLike = None
+) -> NDArray:
     result = _impl.zeros(shape, dtype, order)
     return result
 
@@ -375,7 +388,7 @@ def corrcoef(
     ddof=NoValue,
     *,
     dtype: DTypeLike = None,
-)  -> NDArray:
+) -> NDArray:
     if bias is not None or ddof is not None:
         # deprecated in NumPy
         raise NotImplementedError
@@ -395,14 +408,16 @@ def cov(
     aweights: Optional[ArrayLike] = None,
     *,
     dtype: DTypeLike = None,
-)  -> NDArray:
+) -> NDArray:
     m = _xy_helper_corrcoef(m, y, rowvar)
     result = _impl.cov(m, bias, ddof, fweights, aweights, dtype=dtype)
     return result
 
 
 @normalizer
-def bincount(x: ArrayLike, /, weights: Optional[ArrayLike] = None, minlength=0) -> NDArray:
+def bincount(
+    x: ArrayLike, /, weights: Optional[ArrayLike] = None, minlength=0
+) -> NDArray:
     result = _impl.bincount(x, weights, minlength)
     return result
 
@@ -456,7 +471,7 @@ def flip(m: ArrayLike, axis=None) -> NDArray:
 
 
 @normalizer
-def flipud(m: ArrayLike)  -> NDArray:
+def flipud(m: ArrayLike) -> NDArray:
     result = _impl.flipud(m)
     return result
 
@@ -637,9 +652,9 @@ def inner(a: ArrayLike, b: ArrayLike, /) -> NDArray:
 
 
 @normalizer
-def outer(a: ArrayLike, b: ArrayLike, out: Optional[NDArray] = None):
+def outer(a: ArrayLike, b: ArrayLike, out: Optional[NDArray] = None) -> OutArray:
     result = torch.outer(a, b)
-    return _helpers.result_or_out(result, out)
+    return result, out
 
 
 # ### FIXME: this is a stub
@@ -730,7 +745,7 @@ def diff(
     axis=-1,
     prepend: Optional[ArrayLike] = NoValue,
     append: Optional[ArrayLike] = NoValue,
-)  -> NDArray:
+) -> NDArray:
     result = _impl.diff(
         a,
         n=n,
@@ -745,7 +760,7 @@ def diff(
 
 
 @normalizer
-def angle(z: ArrayLike, deg=False)  -> NDArray:
+def angle(z: ArrayLike, deg=False) -> NDArray:
     result = _impl.angle(z, deg)
     return result
 
@@ -757,7 +772,7 @@ def sinc(x: ArrayLike) -> NDArray:
 
 
 @normalizer
-def real_if_close(a: ArrayLike, tol=100)  -> NDArray:
+def real_if_close(a: ArrayLike, tol=100) -> NDArray:
     result = _impl.real_if_close(a, tol=tol)
     return result
 
@@ -788,7 +803,7 @@ def isrealobj(x: ArrayLike):
 
 
 @normalizer
-def isneginf(x: ArrayLike, out: Optional[NDArray] = None)  -> NDArray:
+def isneginf(x: ArrayLike, out: Optional[NDArray] = None) -> NDArray:
     # XXX non-standard out= handling, make uniform?
     result = torch.isneginf(x, out=out)
     return result
@@ -815,7 +830,9 @@ def isscalar(a: ArrayLike):
 
 
 @normalizer
-def isclose(a: ArrayLike, b: ArrayLike, rtol=1.0e-5, atol=1.0e-8, equal_nan=False) -> NDArray:
+def isclose(
+    a: ArrayLike, b: ArrayLike, rtol=1.0e-5, atol=1.0e-8, equal_nan=False
+) -> NDArray:
     result = _impl.isclose(a, b, rtol, atol, equal_nan=equal_nan)
     return result
 

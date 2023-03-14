@@ -2,7 +2,14 @@ from typing import Optional
 
 from . import _helpers
 from ._detail import _binary_ufuncs
-from ._normalizations import ArrayLike, DTypeLike, NDArray, SubokLike, normalizer
+from ._normalizations import (
+    ArrayLike,
+    DTypeLike,
+    NDArray,
+    OutArray,
+    SubokLike,
+    normalizer,
+)
 
 __all__ = [
     name for name in dir(_binary_ufuncs) if not name.startswith("_") and name != "torch"
@@ -29,12 +36,12 @@ def deco_binary_ufunc(torch_func):
         subok: SubokLike = False,
         signature=None,
         extobj=None,
-    ):
+    ) -> OutArray:
         tensors = _helpers.ufunc_preprocess(
             (x1, x2), out, where, casting, order, dtype, subok, signature, extobj
         )
         result = torch_func(*tensors)
-        return _helpers.result_or_out(result, out)
+        return result, out
 
     return wrapped
 
