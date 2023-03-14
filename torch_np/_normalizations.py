@@ -1,12 +1,14 @@
 """ "Normalize" arguments: convert array_likes to tensors, dtypes to torch dtypes and so on.
 """
+import functools
+import inspect
 import operator
 import typing
 from typing import Optional, Sequence, Union
 
 import torch
 
-from . import _helpers
+from . import _dtypes, _helpers
 
 ArrayLike = typing.TypeVar("ArrayLike")
 DTypeLike = typing.TypeVar("DTypeLike")
@@ -21,10 +23,6 @@ UnpackedSeqArrayLike = typing.TypeVar("UnpackedSeqArrayLike")
 # return value of atleast_1d et al: single array of a list/tuple of arrays
 NDArrayOrSequence = Union[NDArray, Sequence[NDArray]]
 OutArray = typing.TypeVar("OutArray")
-
-import inspect
-
-from . import _dtypes
 
 
 def normalize_array_like(x, name=None):
@@ -87,7 +85,6 @@ normalizers = {
     AxisLike: normalize_axis_like,
 }
 
-import functools
 
 _sentinel = object()
 
@@ -106,6 +103,44 @@ def normalize_this(arg, parm, return_on_failure=_sentinel):
     else:
         # untyped arguments pass through
         return arg
+
+
+# postprocess return values
+
+
+def postprocess_ndarray(result, **kwds):
+    return _helpers.array_from(result)
+
+
+def postprocess_out(result, **kwds):
+    result, out = result
+    return _helpers.result_or_out(result, out, **kwds)
+
+
+def postprocess_tuple(result, **kwds):
+    return _helpers.tuple_arrays_from(result)
+
+
+def postprocess_list(result, **kwds):
+    return list(_helpers.tuple_arrays_from(result))
+
+
+def postprocess_variadic(result, **kwds):
+    # a variadic return: a single NDArray or tuple/list of NDArrays, e.g. atleast_1d
+    if isinstance(result, (tuple, list)):
+        seq = type(result)
+        return seq(_helpers.tuple_arrays_from(result))
+    else:
+        return _helpers.array_from(result)
+
+
+postprocessors = {
+    NDArray: postprocess_ndarray,
+    OutArray: postprocess_out,
+    NDArrayOrSequence: postprocess_variadic,
+    tuple[NDArray]: postprocess_tuple,
+    list[NDArray]: postprocess_list,
+}
 
 
 def normalizer(_func=None, *, return_on_failure=_sentinel, promote_scalar_out=False):
@@ -154,33 +189,17 @@ def normalizer(_func=None, *, return_on_failure=_sentinel, promote_scalar_out=Fa
                 raise TypeError(
                     f"{func.__name__}() takes {len(ba.args)} positional argument but {len(args)} were given."
                 )
+
             # finally, pass normalized arguments through
             result = func(*ba.args, **ba.kwargs)
 
             # handle returns
             r = sig.return_annotation
-            if r == NDArray:
-                return _helpers.array_from(result)
-            elif r == inspect._empty:
-                return result
-            elif hasattr(r, "__origin__") and r.__origin__ in (list, tuple):
-                # this is tuple[NDArray] or list[NDArray]
-                # XXX: change to separate tuple and list normalizers?
-                return r.__origin__(_helpers.tuple_arrays_from(result))
-            elif r == NDArrayOrSequence:
-                # a variadic return: a single NDArray or tuple/list of NDArrays, e.g. atleast_1d
-                if isinstance(result, (tuple, list)):
-                    seq = type(result)
-                    return seq(_helpers.tuple_arrays_from(result))
-                else:
-                    return _helpers.array_from(result)
-            elif r == OutArray:
-                result, out = result
-                return _helpers.result_or_out(
-                    result, out, promote_scalar=promote_scalar_out
-                )
-            else:
-                raise ValueError(f"Unknown return annotation {return_annotation}")
+            postprocess = postprocessors.get(r, None)
+            if postprocess:
+                kwds = {"promote_scalar": promote_scalar_out}
+                result = postprocess(result, **kwds)
+            return result
 
         return wrapped
 
