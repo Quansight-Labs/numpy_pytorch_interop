@@ -15,9 +15,9 @@ from ._normalizations import (
     ArrayLike,
     DTypeLike,
     NDArray,
+    NDArrayOrSequence,
     SubokLike,
     UnpackedSeqArrayLike,
-    NDArrayOrSequence,
     normalizer,
 )
 
@@ -522,13 +522,23 @@ def meshgrid(
     return output
 
 
-@normalizer
-def indices(dimensions, dtype: DTypeLike = int, sparse=False):
-    result = _impl.indices(dimensions, dtype=dtype, sparse=sparse)
+def indices(dimensions, dtype=int, sparse=False):
     if sparse:
-        return _helpers.tuple_arrays_from(result)
+        return _indices_sparse(dimensions, dtype)
     else:
-        return _helpers.array_from(result)
+        return _indices_full(dimensions, dtype)
+
+
+@normalizer
+def _indices_sparse(dimensions, dtype: DTypeLike = int) -> tuple[NDArray]:
+    result = _impl.indices(dimensions, dtype=dtype, sparse=True)
+    return result
+
+
+@normalizer
+def _indices_full(dimensions, dtype: DTypeLike = int) -> NDArray:
+    result = _impl.indices(dimensions, dtype=dtype, sparse=False)
+    return result
 
 
 @normalizer
@@ -581,20 +591,43 @@ def tri(N, M=None, k=0, dtype: DTypeLike = float, *, like: SubokLike = None) -> 
 ###### reductions
 
 
+def average(a, axis=None, weights=None, returned=False, keepdims=NoValue):
+    if returned:
+        return _average_with_ret(
+            a, axis=axis, weights=weights, returned=True, keepdims=keepdims
+        )
+    else:
+        return _average_without_ret(
+            a, axis=axis, weights=weights, returned=False, keepdims=keepdims
+        )
+
+
 @normalizer
-def average(
+def _average_with_ret(
     a: ArrayLike,
     axis=None,
-    weights: ArrayLike = None,
+    weights: Optional[ArrayLike] = None,
+    returned=True,
+    *,
+    keepdims=NoValue,
+) -> tuple[NDArray]:
+    assert returned
+    result, wsum = _impl.average(a, axis, weights, returned=True, keepdims=keepdims)
+    return result, wsum
+
+
+@normalizer
+def _average_without_ret(
+    a: ArrayLike,
+    axis=None,
+    weights: Optional[ArrayLike] = None,
     returned=False,
     *,
     keepdims=NoValue,
-):
-    result, wsum = _impl.average(a, axis, weights, returned=returned, keepdims=keepdims)
-    if returned:
-        return _helpers.tuple_arrays_from((result, wsum))
-    else:
-        return _helpers.array_from(result)
+) -> NDArray:
+    assert not returned
+    result, wsum = _impl.average(a, axis, weights, returned=False, keepdims=keepdims)
+    return result
 
 
 @normalizer

@@ -15,7 +15,6 @@ from ._normalizations import (
     normalizer,
 )
 
-
 NoValue = _util.NoValue
 
 

@@ -372,7 +372,7 @@ def tile(tensor, reps):
 def atleast_1d(tensors):
     result = torch.atleast_1d(*tensors)
 
-    # match numpy: return a list not tuple; 
+    # match numpy: return a list not tuple;
     # >>> np.atleast_2d(np.arange(3))
     # array([[0, 1, 2]])          # a single 2D array
     # >>> torch.atleast_2d([torch.arange(3)])

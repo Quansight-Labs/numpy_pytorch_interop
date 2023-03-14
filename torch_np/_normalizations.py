@@ -168,7 +168,7 @@ def normalizer(_func=None, *, return_on_failure=_sentinel):
                 # XXX: change to separate tuple and list normalizers?
                 return r.__origin__(_helpers.tuple_arrays_from(result))
             elif r == NDArrayOrSequence:
-                # this is a single NDArray or tuple/list of NDArrays, e.g. atleast_1d
+                # a variadic return: a single NDArray or tuple/list of NDArrays, e.g. atleast_1d
                 if isinstance(result, (tuple, list)):
                     seq = type(result)
                     return seq(_helpers.tuple_arrays_from(result))
