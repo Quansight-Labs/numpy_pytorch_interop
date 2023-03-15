@@ -2900,10 +2900,10 @@ class TestPercentile:
     def test_exception(self):
         assert_raises((RuntimeError, ValueError), np.percentile, [1, 2], 56,
                       method='foobar')
-        assert_raises(ValueError, np.percentile, [1], 101)
-        assert_raises(ValueError, np.percentile, [1], -1)
-        assert_raises(ValueError, np.percentile, [1], list(range(50)) + [101])
-        assert_raises(ValueError, np.percentile, [1], list(range(50)) + [-0.1])
+        assert_raises((RuntimeError, ValueError), np.percentile, [1], 101)
+        assert_raises((RuntimeError, ValueError), np.percentile, [1], -1)
+        assert_raises((RuntimeError, ValueError), np.percentile, [1], list(range(50)) + [101])
+        assert_raises((RuntimeError, ValueError), np.percentile, [1], list(range(50)) + [-0.1])
 
     def test_percentile_list(self):
         assert_equal(np.percentile([1, 2, 3], 0), 1)

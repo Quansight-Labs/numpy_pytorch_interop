@@ -390,9 +390,6 @@ def quantile(
     if interpolation is not None:
         raise ValueError("'interpolation' argument is deprecated; use 'method' instead")
 
-    if (0 > q).any() or (q > 1).any():
-        raise ValueError("Quantiles must be in range [0, 1], got %s" % q)
-
     if not a.dtype.is_floating_point:
         dtype = _dtypes_impl.default_float_dtype
         a = a.to(dtype)
