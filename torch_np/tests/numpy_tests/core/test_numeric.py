@@ -2486,7 +2486,6 @@ class TestConvolve:
 
 class TestDtypePositional:
 
-    @pytest.mark.xfail(reason='TODO: restore dtypes as positional args')
     def test_dtype_positional(self):
         np.empty((2,), bool)
 

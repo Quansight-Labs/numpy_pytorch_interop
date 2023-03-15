@@ -323,7 +323,6 @@ class TestArgmaxArgminCommon:
         assert_equal(arg_method(out=out1, axis=0), np_method(a, out=out2, axis=0))
         assert_equal(out1, out2)
 
-    @pytest.mark.xfail(reason="out=... as a positional arg")
     @pytest.mark.parametrize(
         "arr_method, np_method", [("argmax", np.argmax), ("argmin", np.argmin)]
     )
