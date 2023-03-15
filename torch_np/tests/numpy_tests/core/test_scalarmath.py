@@ -262,10 +262,6 @@ class TestModulus:
     def test_modulus_basic(self):
         dt = np.typecodes['AllInteger'] + np.typecodes['Float']
         for op in [floordiv_and_mod, divmod]:
-
-            if op == divmod:
-                pytest.xfail(reason="__divmod__ not implemented")
-
             for dt1, dt2 in itertools.product(dt, dt):
                 for sg1, sg2 in itertools.product(_signs(dt1), _signs(dt2)):
                     fmt = 'op: %s, dt1: %s, dt2: %s, sg1: %s, sg2: %s'
@@ -279,7 +275,7 @@ class TestModulus:
                     else:
                         assert_(b > rem >= 0, msg)
 
-    @pytest.mark.xfail(reason='divmod not implemented')
+    @pytest.mark.slow
     def test_float_modulus_exact(self):
         # test that float results are exact for small integers. This also
         # holds for the same integers scaled by powers of two.
@@ -311,10 +307,6 @@ class TestModulus:
         # gh-6127
         dt = np.typecodes['Float']
         for op in [floordiv_and_mod, divmod]:
-
-            if op == divmod:
-                pytest.xfail(reason="__divmod__ not implemented")
-
             for dt1, dt2 in itertools.product(dt, dt):
                 for sg1, sg2 in itertools.product((+1, -1), (+1, -1)):
                     fmt = 'op: %s, dt1: %s, dt2: %s, sg1: %s, sg2: %s'
@@ -329,41 +321,42 @@ class TestModulus:
                     else:
                         assert_(b > rem >= 0, msg)
 
-    @pytest.mark.skip(reason='float16 on cpu is incomplete in pytorch')
-    def test_float_modulus_corner_cases(self):
-        # Check remainder magnitude.
-        for dt in np.typecodes['Float']:
-            b = np.array(1.0, dtype=dt)
-            a = np.nextafter(np.array(0.0, dtype=dt), -b)
-            rem = operator.mod(a, b)
-            assert_(rem <= b, 'dt: %s' % dt)
-            rem = operator.mod(-a, -b)
-            assert_(rem >= -b, 'dt: %s' % dt)
+    @pytest.mark.parametrize('dt', np.typecodes['Float'])
+    def test_float_modulus_corner_cases(self, dt):
+        if dt == 'e':
+            pytest.xfail(reason="RuntimeError: 'nextafter_cpu' not implemented for 'Half'")
+
+        b = np.array(1.0, dtype=dt)
+        a = np.nextafter(np.array(0.0, dtype=dt), -b)
+        rem = operator.mod(a, b)
+        assert_(rem <= b, 'dt: %s' % dt)
+        rem = operator.mod(-a, -b)
+        assert_(rem >= -b, 'dt: %s' % dt)
 
         # Check nans, inf
-        with suppress_warnings() as sup:
-            sup.filter(RuntimeWarning, "invalid value encountered in remainder")
-            sup.filter(RuntimeWarning, "divide by zero encountered in remainder")
-            sup.filter(RuntimeWarning, "divide by zero encountered in floor_divide")
-            sup.filter(RuntimeWarning, "divide by zero encountered in divmod")
-            sup.filter(RuntimeWarning, "invalid value encountered in divmod")
-            for dt in np.typecodes['Float']:
-                fone = np.array(1.0, dtype=dt)
-                fzer = np.array(0.0, dtype=dt)
-                finf = np.array(np.inf, dtype=dt)
-                fnan = np.array(np.nan, dtype=dt)
-                rem = operator.mod(fone, fzer)
-                assert_(np.isnan(rem), 'dt: %s' % dt)
-                # MSVC 2008 returns NaN here, so disable the check.
-                #rem = operator.mod(fone, finf)
-                #assert_(rem == fone, 'dt: %s' % dt)
-                rem = operator.mod(fone, fnan)
-                assert_(np.isnan(rem), 'dt: %s' % dt)
-                rem = operator.mod(finf, fone)
-                assert_(np.isnan(rem), 'dt: %s' % dt)
-                for op in [floordiv_and_mod, divmod]:
-                    div, mod = op(fone, fzer)
-                    assert_(np.isinf(div)) and assert_(np.isnan(mod))
+   #     with suppress_warnings() as sup:
+   #         sup.filter(RuntimeWarning, "invalid value encountered in remainder")
+   #         sup.filter(RuntimeWarning, "divide by zero encountered in remainder")
+   #         sup.filter(RuntimeWarning, "divide by zero encountered in floor_divide")
+   #         sup.filter(RuntimeWarning, "divide by zero encountered in divmod")
+   #         sup.filter(RuntimeWarning, "invalid value encountered in divmod")
+        for dt in np.typecodes['Float']:
+            fone = np.array(1.0, dtype=dt)
+            fzer = np.array(0.0, dtype=dt)
+            finf = np.array(np.inf, dtype=dt)
+            fnan = np.array(np.nan, dtype=dt)
+            rem = operator.mod(fone, fzer)
+            assert_(np.isnan(rem), 'dt: %s' % dt)
+            # MSVC 2008 returns NaN here, so disable the check.
+            #rem = operator.mod(fone, finf)
+            #assert_(rem == fone, 'dt: %s' % dt)
+            rem = operator.mod(fone, fnan)
+            assert_(np.isnan(rem), 'dt: %s' % dt)
+            rem = operator.mod(finf, fone)
+            assert_(np.isnan(rem), 'dt: %s' % dt)
+            for op in [floordiv_and_mod, divmod]:
+                div, mod = op(fone, fzer)
+                assert_(np.isinf(div)) and assert_(np.isnan(mod))
 
 
 class TestComplexDivision:

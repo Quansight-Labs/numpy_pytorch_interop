@@ -45,7 +45,7 @@ def normalize_dtype(dtype, name=None):
     return torch_dtype
 
 
-def normalize_subok_like(arg, name):
+def normalize_subok_like(arg, name="subok"):
     if arg:
         raise ValueError(f"'{name}' parameter is not supported.")
 
@@ -88,7 +88,7 @@ def maybe_normalize(arg, parm, return_on_failure=_sentinel):
     """Normalize arg if a normalizer is registred."""
     normalizer = normalizers.get(parm.annotation, None)
     try:
-        return normalizer(arg) if normalizer else arg
+        return normalizer(arg, parm.name) if normalizer else arg
     except Exception as exc:
         if return_on_failure is not _sentinel:
             return return_on_failure

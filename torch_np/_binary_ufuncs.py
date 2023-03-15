@@ -50,3 +50,58 @@ for name in __all__:
     decorated.__qualname__ = name  # XXX: is this really correct?
     decorated.__name__ = name
     vars()[name] = decorated
+
+
+# a stub implementation of divmod, should be improved after
+# https://github.com/pytorch/pytorch/issues/90820 is fixed in pytorch
+#
+# Implementation details: we just call two ufuncs which have been created
+# just above, for x1 // x2 and x1 % x2.
+# This means we are normalizing x1, x2 in each of the ufuncs --- note that there
+# is no @normalizer on divmod.
+
+
+def divmod(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok: SubokLike = False,
+    signature=None,
+    extobj=None,
+):
+    out1, out2 = None, None
+    if out is not None:
+        out1, out2 = out
+
+    kwds = dict(
+        where=where,
+        casting=casting,
+        order=order,
+        dtype=dtype,
+        subok=subok,
+        signature=signature,
+        extobj=extobj,
+    )
+
+    # NB: use local names for
+    quot = floor_divide(x1, x2, out=out1, **kwds)
+    rem = remainder(x1, x2, out=out2, **kwds)
+
+    quot = _helpers.result_or_out(quot.tensor, out1)
+    rem = _helpers.result_or_out(rem.tensor, out2)
+
+    return quot, rem
+
+
+def modf(x, /, *args, **kwds):
+    quot, rem = divmod(x, 1, *args, **kwds)
+    return rem, quot
+
+
+__all__ = __all__ + ["divmod", "modf"]
