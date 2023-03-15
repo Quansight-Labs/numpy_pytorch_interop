@@ -272,6 +272,8 @@ class ndarray:
     def __ifloordiv__(self, other):
         return _binary_ufuncs.floor_divide(self, other, out=self)
 
+    __divmod__ = _binary_ufuncs.divmod
+
     # power, self**exponent
     __pow__ = __rpow__ = _binary_ufuncs.float_power
 

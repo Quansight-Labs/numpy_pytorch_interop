@@ -50,7 +50,7 @@ def normalize_dtype(dtype, name=None):
     return torch_dtype
 
 
-def normalize_subok_like(arg, name):
+def normalize_subok_like(arg, name="subok"):
     if arg:
         raise ValueError(f"'{name}' parameter is not supported.")
 
@@ -94,7 +94,7 @@ def normalize_this(arg, parm, return_on_failure=_sentinel):
     normalizer = normalizers.get(parm.annotation, None)
     if normalizer:
         try:
-            return normalizer(arg)
+            return normalizer(arg, parm.name)
         except Exception as exc:
             if return_on_failure is not _sentinel:
                 return return_on_failure
