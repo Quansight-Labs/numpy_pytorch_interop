@@ -27,13 +27,6 @@ def ufunc_preprocess(
 
     if out_dtype:
         tensors = _util.typecast_tensors(tensors, out_dtype, casting)
-
-    # now broadcast input tensors against the out=... array
-    if out is not None:
-        # XXX: need to filter out noop broadcasts if t.shape == out.shape?
-        shape = out.shape
-        tensors = tuple(torch.broadcast_to(t, shape) for t in tensors)
-
     return tensors
 
 
