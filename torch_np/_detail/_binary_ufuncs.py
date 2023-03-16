@@ -45,9 +45,26 @@ from . import _dtypes_impl, _util
 
 # work around torch limitations w.r.t. numpy
 def matmul(x, y):
-    # work around RuntimeError: expected scalar type Int but found Double
+    # work around:
+    #  - RuntimeError: expected scalar type Int but found Double
+    #  - RuntimeError: "addmm_impl_cpu_" not implemented for 'Bool'
+    #  - RuntimeError: "addmm_impl_cpu_" not implemented for 'Half'
     dtype = _dtypes_impl.result_type_impl((x.dtype, y.dtype))
-    x = _util.cast_if_needed(x, dtype)
-    y = _util.cast_if_needed(y, dtype)
+    is_bool = dtype == torch.bool
+    is_half = dtype == torch.float16
+
+    work_dtype = dtype
+    if is_bool:
+        work_dtype = torch.uint8
+    if is_half:
+        work_dtype = torch.float32
+
+    x = _util.cast_if_needed(x, work_dtype)
+    y = _util.cast_if_needed(y, work_dtype)
+
     result = torch.matmul(x, y)
+
+    if work_dtype != dtype:
+        result = result.to(dtype)
+
     return result
