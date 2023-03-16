@@ -7,6 +7,7 @@ import torch
 # renames
 from torch import absolute as fabs
 from torch import arccos, arccosh, arcsin, arcsinh, arctan, arctanh
+from torch import bitwise_not
 from torch import bitwise_not as invert
 from torch import ceil
 from torch import conj_physical as conjugate
@@ -31,6 +32,7 @@ from torch import (
 from torch import rad2deg
 from torch import rad2deg as degrees
 from torch import reciprocal
+from torch import round as fix
 from torch import round as rint
 from torch import sign, signbit, sin, sinh, sqrt, square, tan, tanh, trunc
 
