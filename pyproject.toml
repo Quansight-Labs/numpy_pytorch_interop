@@ -10,4 +10,4 @@ dependencies = [
 ]
 version = "0.1.0"
 [tool.setuptools.packages.find]
-include = ["torch_np.*"]  # ["*"] by default
+include = ["torch_np", "torch_np.*"]  # ["*"] by default
