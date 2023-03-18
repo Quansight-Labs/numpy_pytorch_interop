@@ -137,7 +137,7 @@ def axis_none_ravel(*tensors, axis=None):
         return tensors, axis
 
 
-def cast_dont_broadcast(tensors, target_dtype, casting):
+def typecast_tensors(tensors, target_dtype, casting):
     """Dtype-cast tensors to target_dtype.
 
     Parameters
@@ -168,52 +168,6 @@ def cast_dont_broadcast(tensors, target_dtype, casting):
         cast_tensors.append(tensor)
 
     return tuple(cast_tensors)
-
-
-def cast_and_broadcast(tensors, out_param, casting):
-    """
-    Parameters
-    ----------
-    tensors : iterable
-        tuple or list of torch.Tensors to broadcast/typecast
-    target_dtype : a torch.dtype object
-        The torch dtype to cast all tensors to
-    target_shape : tuple
-        The tensor shape to broadcast all `tensors` to
-    casting : str
-        The casting mode, see `np.can_cast`
-
-    Returns
-    -------
-    a tuple of torch.Tensors with dtype being the PyTorch counterpart
-    of the `target_dtype` and `target_shape`
-    """
-    if out_param is None:
-        return tensors
-
-    target_dtype, target_shape = out_param
-
-    can_cast = _dtypes_impl.can_cast_impl
-
-    processed_tensors = []
-    for tensor in tensors:
-        # check dtypes of x and out
-        if not can_cast(tensor.dtype, target_dtype, casting=casting):
-            raise TypeError(
-                f"Cannot cast array data from {tensor.dtype} to"
-                f" {target_dtype} according to the rule '{casting}'"
-            )
-
-        # cast arr if needed
-        tensor = cast_if_needed(tensor, target_dtype)
-
-        # `out` broadcasts `tensor`
-        if tensor.shape != target_shape:
-            tensor = torch.broadcast_to(tensor, target_shape)
-
-        processed_tensors.append(tensor)
-
-    return tuple(processed_tensors)
 
 
 def axis_expand_func(func, tensor, axis, *args, **kwds):

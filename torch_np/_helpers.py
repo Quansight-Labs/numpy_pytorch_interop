@@ -1,57 +1,38 @@
 import torch
 
-from . import _dtypes
-from ._detail import _util
-
-
-def cast_and_broadcast(tensors, out, casting):
-    """Cast dtypes of arrays to out.dtype and broadcast if needed.
-
-    Parameters
-    ----------
-    arrays : sequence of arrays
-        Each element is broadcast against `out` and typecast to out.dtype
-    out : the "output" array
-        Not modified.
-    casting : str
-        One of numpy casting modes
-
-    Returns
-    -------
-    tensors : tuple of Tensors
-        Each tensor is dtype-cast and broadcast agains `out`, as needed
-
-    Notes
-    -----
-    The `out` arrays broadcasts and dtype-casts `arrays`, but not vice versa.
-
-    """
-    if out is None:
-        return tensors
-    else:
-        tensors = _util.cast_and_broadcast(
-            tensors, out.dtype.type.torch_dtype, out.shape, casting
-        )
-
-    return tuple(tensors)
+from ._detail import _dtypes_impl, _util
 
 
 def ufunc_preprocess(
     tensors, out, where, casting, order, dtype, subok, signature, extobj
 ):
+    """
+    Notes
+    -----
+    The `out` array broadcasts `tensors`, but not vice versa.
+    """
     # internal preprocessing or args in ufuncs (cf _unary_ufuncs, _binary_ufuncs)
     if order != "K" or not where or signature or extobj:
         raise NotImplementedError
 
-    # XXX: dtype=... parameter
-    if dtype is not None:
-        raise NotImplementedError
+    # dtype of the result: depends on both dtype=... and out=... arguments
+    if dtype is None:
+        out_dtype = None if out is None else out.dtype.torch_dtype
+    else:
+        out_dtype = (
+            dtype
+            if out is None
+            else _dtypes_impl.result_type_impl([dtype, out.dtype.torch_dtype])
+        )
 
-    out_shape_dtype = None
+    if out_dtype:
+        tensors = _util.typecast_tensors(tensors, out_dtype, casting)
+
+    # now broadcast input tensors against the out=... array
     if out is not None:
-        out_shape_dtype = (out.tensor.dtype, out.tensor.shape)
-
-    tensors = _util.cast_and_broadcast(tensors, out_shape_dtype, casting)
+        # XXX: need to filter out noop broadcasts if t.shape == out.shape?
+        shape = out.shape
+        tensors = tuple(torch.broadcast_to(t, shape) for t in tensors)
 
     return tensors
 
