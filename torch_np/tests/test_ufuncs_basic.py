@@ -371,3 +371,56 @@ class TestNdarrayDunderVsUfunc:
         if result_op.dtype != result_ufunc.dtype:
             pytest.xfail(reason="prob need weak type promotion (scalars)")
             assert result_op.dtype == result_ufunc.dtype
+
+
+class TestUfuncDtypeKwd:
+    def test_binary_ufunc_dtype(self):
+
+        # default computation uses float64:
+        r64 = np.add(1, 1e-15)
+        assert r64.dtype == "float64"
+        assert r64 - 1 > 0
+
+        # force the float32 dtype: loss of precision
+        r32 = np.add(1, 1e-15, dtype="float32")
+        assert r32.dtype == "float32"
+        assert r32 == 1
+
+        # casting of floating inputs to booleans
+        with assert_raises(TypeError):
+            np.add(1.0, 1e-15, dtype=bool)
+
+        # now force the cast
+        rb = np.add(1.0, 1e-15, dtype=bool, casting="unsafe")
+        assert rb.dtype == bool
+
+    def test_binary_ufunc_dtype_and_out(self):
+
+        # all in float64: no precision loss
+        out64 = np.empty(2, dtype=np.float64)
+        r64 = np.add([1.0, 2.0], 1.0e-15, out=out64)
+
+        assert (r64 != [1.0, 2.0]).all()
+        assert r64.dtype == np.float64
+
+        # all in float32: loss of precision, result is float32
+        out32 = np.empty(2, dtype=np.float32)
+        r32 = np.add([1.0, 2.0], 1.0e-15, dtype=np.float32, out=out32)
+        assert (r32 == [1, 2]).all()
+        assert r32.dtype == np.float32
+
+        # NB: this test differs from numpy: in numpy, r.dtype is float64
+        # but the precision is lost, r == [1, 2].
+        # I *guess* numpy casts inputs to the dtype=... value, performs calculations,
+        # and then casts the result back to out.dtype.
+        out64 = np.empty(2, dtype=np.float64)
+        r = np.add([1.0, 2.0], 1.0e-15, dtype=np.float32, out=out64)
+        assert (r != [1, 2]).all()
+        assert r.dtype == np.float64
+
+        # Internal computations are in float64, but the final cast to out.dtype
+        # truncates the precision => precision loss.
+        out32 = np.empty(2, dtype=np.float32)
+        r = np.add([1.0, 2.0], 1.0e-15, dtype=np.float64, out=out32)
+        assert (r == [1, 2]).all()
+        assert r.dtype == np.float32

@@ -308,7 +308,7 @@ def _concat_cast_helper(tensors, out=None, dtype=None, casting="same_kind"):
         out_dtype = _dtypes_impl.result_type_impl([t.dtype for t in tensors])
 
     # cast input arrays if necessary; do not broadcast them agains `out`
-    tensors = _util.cast_dont_broadcast(tensors, out_dtype, casting)
+    tensors = _util.typecast_tensors(tensors, out_dtype, casting)
 
     return tensors
 
@@ -497,7 +497,7 @@ def bincount(x, /, weights=None, minlength=0):
         x = x.new_empty(0, dtype=int)
 
     int_dtype = _dtypes_impl.default_int_dtype
-    (x,) = _util.cast_dont_broadcast((x,), int_dtype, casting="safe")
+    (x,) = _util.typecast_tensors((x,), int_dtype, casting="safe")
 
     result = torch.bincount(x, weights, minlength)
     return result
