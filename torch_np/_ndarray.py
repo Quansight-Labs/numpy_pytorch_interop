@@ -319,6 +319,14 @@ class ndarray:
     def __irshift__(self, other):
         return _binary_ufuncs.right_shift(self, other, out=self)
 
+    __matmul__ = _binary_ufuncs.matmul
+
+    def __rmatmul__(self, other):
+        return _binary_ufuncs.matmul(other, self)
+
+    def __imatmul__(self, other):
+        return _binary_ufuncs.matmul(self, other, out=self)
+
     # unary ops
     __invert__ = _unary_ufuncs.invert
     __abs__ = _unary_ufuncs.absolute

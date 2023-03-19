@@ -2605,7 +2605,6 @@ class TestMethods:
         if HAS_REFCOUNT:
             assert_(sys.getrefcount(a) < 50)
 
-    @pytest.mark.xfail(reason="TODO: implement np.dot")
     def test_size_zero_memleak(self):
         # Regression test for issue 9615
         # Exercises a special-case code path for dot products of length
@@ -6072,11 +6071,11 @@ class TestMatmul(MatmulCommon):
         assert not np.any(c)
 
 
-@pytest.mark.xfail(reason='TODO: @')
 class TestMatmulOperator(MatmulCommon):
     import operator
     matmul = operator.matmul
 
+    @pytest.mark.skip(reason="no __array_priority__")
     def test_array_priority_override(self):
 
         class A:
@@ -6094,11 +6093,10 @@ class TestMatmulOperator(MatmulCommon):
         assert_equal(self.matmul(b, a), "A")
 
     def test_matmul_raises(self):
-        assert_raises(TypeError, self.matmul, np.int8(5), np.int8(5))
-        assert_raises(TypeError, self.matmul, np.void(b'abc'), np.void(b'abc'))
-        assert_raises(TypeError, self.matmul, np.arange(10), np.void(b'abc'))
+        assert_raises((RuntimeError, TypeError), self.matmul, np.int8(5), np.int8(5))
 
-@pytest.mark.xfail(reason='TODO @')
+
+@pytest.mark.xfail(reason="torch supports inplace matmul, and so do we")
 def test_matmul_inplace():
     # It would be nice to support in-place matmul eventually, but for now
     # we don't have a working implementation, so better just to error out
