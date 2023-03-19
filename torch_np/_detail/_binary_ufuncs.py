@@ -38,7 +38,9 @@ from torch import (
     not_equal,
 )
 from torch import pow as power
-from torch import remainder, subtract, true_divide
+from torch import remainder
+from torch import remainder as mod
+from torch import subtract, true_divide
 
 from . import _dtypes_impl, _util
 
