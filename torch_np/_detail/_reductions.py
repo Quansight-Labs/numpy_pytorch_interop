@@ -35,6 +35,10 @@ def deco_axis_expand(func):
             axis = _util.normalize_axis_tuple(axis, tensor.ndim)
 
         if axis == ():
+            # NumPy does essentially an identity operation:
+            # >>> np.sum(np.ones(2), axis=())
+            # array([1., 1.])
+            # So we insert a length-one axis and run the reduction along it.
             newshape = _util.expand_shape(tensor.shape, axis=0)
             tensor = tensor.reshape(newshape)
             axis = (0,)
