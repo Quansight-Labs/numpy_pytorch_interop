@@ -14,9 +14,6 @@ SubokLike = typing.TypeVar("SubokLike")
 AxisLike = typing.TypeVar("AxisLike")
 NDArray = typing.TypeVar("NDarray")
 
-# annotate e.g. atleast_1d(*arys)
-UnpackedSeqArrayLike = typing.TypeVar("UnpackedSeqArrayLike")
-
 
 import inspect
 
@@ -76,7 +73,6 @@ normalizers = {
     ArrayLike: normalize_array_like,
     Optional[ArrayLike]: normalize_optional_array_like,
     Sequence[ArrayLike]: normalize_seq_array_like,
-    UnpackedSeqArrayLike: normalize_seq_array_like,  # cf handling in normalize
     Optional[NDArray]: normalize_ndarray,
     DTypeLike: normalize_dtype,
     SubokLike: normalize_subok_like,
@@ -100,25 +96,20 @@ def normalizer(func):
     @functools.wraps(func)
     def wrapped(*args, **kwds):
         sig = inspect.signature(func)
+        sp = dict(sig.parameters)
 
-        # first, check for *args in positional parameters. Case in point:
-        # atleast_1d(*arys: UnpackedSequenceArrayLike)
-        # if found,  consume all args into a tuple to normalize as a whole
-        for j, param in enumerate(sig.parameters.values()):
-            if param.annotation == UnpackedSeqArrayLike:
-                if j == 0:
-                    args = (args,)
-                else:
-                    # args = args[:j] + (args[j:],) would likely work
-                    # not present in numpy codebase, so do not bother just yet.
-                    # NB: branching on j ==0 is to avoid the empty tuple, args[:j]
-                    raise NotImplementedError
+        # check for *args. If detected, duplicate the correspoding parameter
+        # to have len(args) annotations for each element of *args.
+        for j, param in enumerate(sp.values()):
+            if param.kind == inspect.Parameter.VAR_POSITIONAL:
+                sp.pop(param.name)
+                variadic = {param.name + str(i): param for i in range(len(args))}
+                variadic.update(sp)
+                sp = variadic
                 break
 
         # normalize positional and keyword arguments
         # NB: extra unknown arguments: pass through, will raise in func(*lst) below
-        sp = sig.parameters
-
         lst = [normalize_this(arg, parm) for arg, parm in zip(args, sp.values())]
         lst += args[len(lst) :]
 

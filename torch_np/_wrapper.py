@@ -12,14 +12,7 @@ from . import _decorators, _dtypes, _funcs, _helpers
 from ._detail import _dtypes_impl, _flips, _reductions, _util
 from ._detail import implementations as _impl
 from ._ndarray import array, asarray, maybe_set_base, ndarray
-from ._normalizations import (
-    ArrayLike,
-    DTypeLike,
-    NDArray,
-    SubokLike,
-    UnpackedSeqArrayLike,
-    normalizer,
-)
+from ._normalizations import ArrayLike, DTypeLike, NDArray, SubokLike, normalizer
 
 # Things to decide on (punt for now)
 #
@@ -71,30 +64,30 @@ def copy(a: ArrayLike, order="K", subok: SubokLike = False):
 
 
 @normalizer
-def atleast_1d(*arys: UnpackedSeqArrayLike):
+def atleast_1d(*arys: ArrayLike):
     res = torch.atleast_1d(*arys)
-    if len(res) == 1:
-        return _helpers.array_from(res[0])
-    else:
+    if isinstance(res, tuple):
         return list(_helpers.tuple_arrays_from(res))
+    else:
+        return _helpers.array_from(res)
 
 
 @normalizer
-def atleast_2d(*arys: UnpackedSeqArrayLike):
+def atleast_2d(*arys: ArrayLike):
     res = torch.atleast_2d(*arys)
-    if len(res) == 1:
-        return _helpers.array_from(res[0])
-    else:
+    if isinstance(res, tuple):
         return list(_helpers.tuple_arrays_from(res))
+    else:
+        return _helpers.array_from(res)
 
 
 @normalizer
-def atleast_3d(*arys: UnpackedSeqArrayLike):
+def atleast_3d(*arys: ArrayLike):
     res = torch.atleast_3d(*arys)
-    if len(res) == 1:
-        return _helpers.array_from(res[0])
-    else:
+    if isinstance(res, tuple):
         return list(_helpers.tuple_arrays_from(res))
+    else:
+        return _helpers.array_from(res)
 
 
 def _concat_check(tup, dtype, out):
@@ -537,8 +530,7 @@ from torch import broadcast_shapes
 
 # YYY: pattern: tuple of arrays as input, tuple of arrays as output; cf nonzero
 @normalizer
-def broadcast_arrays(*args: UnpackedSeqArrayLike, subok: SubokLike = False):
-    args = args[0]  # undo the *args wrapping in normalizer
+def broadcast_arrays(*args: ArrayLike, subok: SubokLike = False):
     res = torch.broadcast_tensors(*args)
     return _helpers.tuple_arrays_from(res)
 
@@ -565,8 +557,7 @@ def ravel_multi_index(multi_index, dims, mode="raise", order="C"):
 
 
 @normalizer
-def meshgrid(*xi: UnpackedSeqArrayLike, copy=True, sparse=False, indexing="xy"):
-    xi = xi[0]  # undo the *xi wrapping in normalizer
+def meshgrid(*xi: ArrayLike, copy=True, sparse=False, indexing="xy"):
     output = _impl.meshgrid(*xi, copy=copy, sparse=sparse, indexing=indexing)
     outp = _helpers.tuple_arrays_from(output)
     return list(outp)  # match numpy, return a list

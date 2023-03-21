@@ -11,7 +11,6 @@ from ._normalizations import (
     DTypeLike,
     NDArray,
     SubokLike,
-    UnpackedSeqArrayLike,
     normalizer,
 )
 
