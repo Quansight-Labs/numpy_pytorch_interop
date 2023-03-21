@@ -401,6 +401,10 @@ class TestNormalizations:
         with assert_raises(TypeError):
             w.nonzero(a, oops="ouch")
 
+    def test_too_few_args_positional(self):
+        with assert_raises(TypeError):
+            w.nonzero()
+
     def test_unknown_args_with_defaults(self):
         # check a function 5 arguments and 4 defaults: this should work
         w.eye(3)

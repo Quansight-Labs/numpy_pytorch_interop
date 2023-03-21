@@ -115,35 +115,20 @@ def normalizer(func):
                     raise NotImplementedError
                 break
 
-        # loop over positional parameters and actual arguments
-        lst, dct = [], {}
-        for arg, (name, parm) in zip(args, sig.parameters.items()):
-            lst.append(normalize_this(arg, parm))
+        # normalize positional and keyword arguments
+        # NB: extra unknown arguments: pass through, will raise in func(*lst) below
+        sp = sig.parameters
 
-        # normalize keyword arguments
-        for name, arg in kwds.items():
-            if not name in sig.parameters:
-                # unknown kwarg, bail out
-                raise TypeError(
-                    f"{func.__name__}() got an unexpected keyword argument '{name}'."
-                )
+        lst = [normalize_this(arg, parm) for arg, parm in zip(args, sp.values())]
+        lst += args[len(lst) :]
 
-            parm = sig.parameters[name]
-            dct[name] = normalize_this(arg, parm)
+        dct = {
+            name: normalize_this(arg, sp[name]) if name in sp else arg
+            for name, arg in kwds.items()
+        }
 
-        ba = sig.bind(*lst, **dct)
-        ba.apply_defaults()
+        result = func(*lst, **dct)
 
-        # Now that all parameters have been consumed, check:
-        # Anything that has not been bound is unexpected positional arg => raise.
-        # If there are too few actual arguments, this fill fail in func(*ba.args) below
-        if len(args) > len(ba.args):
-            raise TypeError(
-                f"{func.__name__}() takes {len(ba.args)} positional argument but {len(args)} were given."
-            )
-
-        # finally, pass normalized arguments through
-        result = func(*ba.args, **ba.kwargs)
         return result
 
     return wrapped
