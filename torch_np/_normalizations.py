@@ -82,44 +82,34 @@ normalizers = {
 import functools
 
 
-def normalize_this(arg, parm):
+def maybe_normalize(arg, parm):
     """Normalize arg if a normalizer is registred."""
     normalizer = normalizers.get(parm.annotation, None)
-    if normalizer:
-        return normalizer(arg)
-    else:
-        # untyped arguments pass through
-        return arg
+    return normalizer(arg) if normalizer else arg
 
 
 def normalizer(func):
     @functools.wraps(func)
     def wrapped(*args, **kwds):
-        sig = inspect.signature(func)
-        sp = dict(sig.parameters)
+        params = inspect.signature(func).parameters
+        first_param = next(iter(params.values()))
+        # NumPy's API does not have positional args before variadic positional args
+        if first_param.kind == inspect.Parameter.VAR_POSITIONAL:
+            args = [maybe_normalize(arg, first_param) for arg in args]
+        else:
+            # NB: extra unknown arguments: pass through, will raise in func(*args) below
+            args = (
+                tuple(
+                    maybe_normalize(arg, parm)
+                    for arg, parm in zip(args, params.values())
+                )
+                + args[len(params.values()) :]
+            )
 
-        # check for *args. If detected, duplicate the correspoding parameter
-        # to have len(args) annotations for each element of *args.
-        for j, param in enumerate(sp.values()):
-            if param.kind == inspect.Parameter.VAR_POSITIONAL:
-                sp.pop(param.name)
-                variadic = {param.name + str(i): param for i in range(len(args))}
-                variadic.update(sp)
-                sp = variadic
-                break
-
-        # normalize positional and keyword arguments
-        # NB: extra unknown arguments: pass through, will raise in func(*lst) below
-        lst = [normalize_this(arg, parm) for arg, parm in zip(args, sp.values())]
-        lst += args[len(lst) :]
-
-        dct = {
-            name: normalize_this(arg, sp[name]) if name in sp else arg
+        kwds = {
+            name: maybe_normalize(arg, params[name]) if name in params else arg
             for name, arg in kwds.items()
         }
-
-        result = func(*lst, **dct)
-
-        return result
+        return func(*args, **kwds)
 
     return wrapped
