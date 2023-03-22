@@ -17,7 +17,7 @@ class TestIndexing:
 
         assert isinstance(a[0, 0], np.ndarray)
         assert isinstance(a[0, :], np.ndarray)
-        assert a[0, :].base is a
+        assert a[0, :].get()._base is a.get()
 
     def test_setitem(self):
         a = np.array([[1, 2, 3], [4, 5, 6]])
@@ -33,7 +33,7 @@ class TestReshape:
         assert np.all(np.reshape(arr, (2, 6)) == tgt)
 
         arr = np.asarray(arr)
-        assert np.transpose(arr, (1, 0)).base is arr
+        assert np.transpose(arr, (1, 0)).get()._base is arr.get()
 
     def test_reshape_method(self):
         arr = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
@@ -43,24 +43,24 @@ class TestReshape:
 
         # reshape(*shape_tuple)
         assert np.all(arr.reshape(2, 6) == tgt)
-        assert arr.reshape(2, 6).base is arr  # reshape keeps the base
+        assert arr.reshape(2, 6).get()._base is arr.get()  # reshape keeps the base
         assert arr.shape == arr_shape  # arr is intact
 
         # XXX: move out to dedicated test(s)
-        assert arr.reshape(2, 6)._tensor._base is arr._tensor
+        assert arr.reshape(2, 6).get()._base is arr.get()
 
         # reshape(shape_tuple)
         assert np.all(arr.reshape((2, 6)) == tgt)
-        assert arr.reshape((2, 6)).base is arr
+        assert arr.reshape((2, 6)).get()._base is arr.get()
         assert arr.shape == arr_shape
 
         tgt = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]
         assert np.all(arr.reshape(3, 4) == tgt)
-        assert arr.reshape(3, 4).base is arr
+        assert arr.reshape(3, 4).get()._base is arr.get()
         assert arr.shape == arr_shape
 
         assert np.all(arr.reshape((3, 4)) == tgt)
-        assert arr.reshape((3, 4)).base is arr
+        assert arr.reshape((3, 4)).get()._base is arr.get()
         assert arr.shape == arr_shape
 
 
@@ -82,7 +82,7 @@ class TestTranspose:
         assert_equal(np.transpose(arr, (1, 0)), tgt)
 
         arr = np.asarray(arr)
-        assert np.transpose(arr, (1, 0)).base is arr
+        assert np.transpose(arr, (1, 0)).get()._base is arr.get()
 
     def test_transpose_method(self):
         a = np.array([[1, 2], [3, 4]])
@@ -92,7 +92,7 @@ class TestTranspose:
         assert_raises(ValueError, lambda: a.transpose(0, 0))
         assert_raises(ValueError, lambda: a.transpose(0, 1, 2))
 
-        assert a.transpose().base is a
+        assert a.transpose().get()._base is a.get()
 
 
 class TestRavel:
@@ -102,13 +102,13 @@ class TestRavel:
         assert_equal(np.ravel(a), tgt)
 
         arr = np.asarray(a)
-        assert np.ravel(arr).base is arr
+        assert np.ravel(arr).get()._base is arr.get()
 
     def test_ravel_method(self):
         a = np.array([[0, 1], [2, 3]])
         assert_equal(a.ravel(), [0, 1, 2, 3])
 
-        assert a.ravel().base is a
+        assert a.ravel().get()._base is a.get()
 
 
 class TestNonzero:
@@ -323,7 +323,6 @@ class TestArgmaxArgminCommon:
         assert_equal(arg_method(out=out1, axis=0), np_method(a, out=out2, axis=0))
         assert_equal(out1, out2)
 
-    @pytest.mark.xfail(reason="out=... as a positional arg")
     @pytest.mark.parametrize(
         "arr_method, np_method", [("argmax", np.argmax), ("argmin", np.argmin)]
     )

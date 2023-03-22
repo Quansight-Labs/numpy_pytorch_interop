@@ -1,16 +1,8 @@
-import functools
 import operator
 
 import torch
 
 from . import _binary_ufuncs, _dtypes, _funcs, _helpers, _unary_ufuncs
-from ._decorators import (
-    NoValue,
-    axis_keepdims_wrapper,
-    axis_none_ravel_wrapper,
-    dtype_to_torch,
-    emulate_out_arg,
-)
 from ._detail import _dtypes_impl, _flips, _reductions, _util
 from ._detail import implementations as _impl
 
@@ -375,28 +367,23 @@ class ndarray:
     searchsorted = _funcs.searchsorted
 
     ### reductions ###
+    argmax = _funcs.argmax
+    argmin = _funcs.argmin
 
-    argmin = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmin))
-    argmax = emulate_out_arg(axis_keepdims_wrapper(_reductions.argmax))
+    any = _funcs.any
+    all = _funcs.all
+    max = _funcs.max
+    min = _funcs.min
+    ptp = _funcs.ptp
 
-    any = emulate_out_arg(axis_keepdims_wrapper(_reductions.any))
-    all = emulate_out_arg(axis_keepdims_wrapper(_reductions.all))
-    max = emulate_out_arg(axis_keepdims_wrapper(_reductions.max))
-    min = emulate_out_arg(axis_keepdims_wrapper(_reductions.min))
-    ptp = emulate_out_arg(axis_keepdims_wrapper(_reductions.ptp))
+    sum = _funcs.sum
+    prod = _funcs.prod
+    mean = _funcs.mean
+    var = _funcs.var
+    std = _funcs.std
 
-    sum = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.sum)))
-    prod = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.prod)))
-    mean = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.mean)))
-    var = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.var)))
-    std = emulate_out_arg(axis_keepdims_wrapper(dtype_to_torch(_reductions.std)))
-
-    cumprod = emulate_out_arg(
-        axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumprod))
-    )
-    cumsum = emulate_out_arg(
-        axis_none_ravel_wrapper(dtype_to_torch(_reductions.cumsum))
-    )
+    cumsum = _funcs.cumsum
+    cumprod = _funcs.cumprod
 
     ### indexing ###
     @staticmethod
@@ -468,25 +455,6 @@ def asarray(a, dtype=None, order=None, *, like=None):
 
 def maybe_set_base(tensor, base):
     return ndarray._from_tensor_and_base(tensor, base)
-
-
-class asarray_replacer:
-    def __init__(self, dispatch="one"):
-        if dispatch not in ["one", "two"]:
-            raise ValueError("ararray_replacer: unknown dispatch %s" % dispatch)
-        self._dispatch = dispatch
-
-    def __call__(self, func):
-        if self._dispatch == "one":
-
-            @functools.wraps(func)
-            def wrapped(x, *args, **kwds):
-                x_tensor = asarray(x).get()
-                return asarray(func(x_tensor, *args, **kwds))
-
-            return wrapped
-        else:
-            raise ValueError
 
 
 ###### dtype routines

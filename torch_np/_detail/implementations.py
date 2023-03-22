@@ -261,12 +261,6 @@ def dsplit(tensor, indices_or_sections):
 
 
 def clip(tensor, t_min, t_max):
-    if t_min is not None:
-        t_min = torch.broadcast_to(t_min, tensor.shape)
-
-    if t_max is not None:
-        t_max = torch.broadcast_to(t_max, tensor.shape)
-
     if t_min is None and t_max is None:
         raise ValueError("One of max or min must be given")
 

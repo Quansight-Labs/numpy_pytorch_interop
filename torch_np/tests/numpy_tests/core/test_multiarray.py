@@ -3743,7 +3743,6 @@ class TestArgmaxArgminCommon:
         ret = arg_method(axis=0, out=out)
         assert ret is out
 
-    @pytest.mark.xfail(reason='FIXME: out w/ positional args?')
     @pytest.mark.parametrize('arr_method, np_method',
         [('argmax', np.argmax),
          ('argmin', np.argmin)])

@@ -4,11 +4,80 @@ in the 'public' layer.
 Anything here only deals with torch objects, e.g. "dtype" is a torch.dtype instance etc
 """
 
+import typing
+
 import torch
 
 from . import _dtypes_impl, _util
 
 NoValue = None
+
+
+import functools
+
+############# XXX
+### From _util.axis_expand_func
+
+
+def deco_axis_expand(func):
+    """Generically handle axis arguments in reductions."""
+
+    @functools.wraps(func)
+    def wrapped(tensor, axis, *args, **kwds):
+
+        if axis is not None:
+            if not isinstance(axis, (list, tuple)):
+                if not isinstance(axis, typing.SupportsIndex):
+                    raise TypeError(
+                        f"{type(axis)=}, but should be a list/tuple or support operator.index()"
+                    )
+                axis = (axis,)
+            axis = _util.normalize_axis_tuple(axis, tensor.ndim)
+
+        if axis == ():
+            # NumPy does essentially an identity operation:
+            # >>> np.sum(np.ones(2), axis=())
+            # array([1., 1.])
+            # So we insert a length-one axis and run the reduction along it.
+            newshape = _util.expand_shape(tensor.shape, axis=0)
+            tensor = tensor.reshape(newshape)
+            axis = (0,)
+
+        result = func(tensor, axis=axis, *args, **kwds)
+        return result
+
+    return wrapped
+
+
+def emulate_keepdims(func):
+    @functools.wraps(func)
+    def wrapped(tensor, axis=None, keepdims=NoValue, *args, **kwds):
+        result = func(tensor, axis=axis, *args, **kwds)
+        if keepdims:
+            result = _util.apply_keepdims(result, axis, tensor.ndim)
+        return result
+
+    return wrapped
+
+
+def deco_axis_ravel(func):
+    """Generically handle 'axis=None ravels' behavior."""
+
+    @functools.wraps(func)
+    def wrapped(tensor, axis, *args, **kwds):
+        if axis is not None:
+            axis = _util.normalize_axis_index(axis, tensor.ndim)
+
+        tensors, axis = _util.axis_none_ravel(tensor, axis=axis)  # XXX: inline
+        tensor = tensors[0]
+
+        result = func(tensor, axis=axis, *args, **kwds)
+        return result
+
+    return wrapped
+
+
+##################################3
 
 
 def _atleast_float(dtype, other_dtype):
@@ -25,6 +94,8 @@ def _atleast_float(dtype, other_dtype):
     return dtype
 
 
+@emulate_keepdims
+@deco_axis_expand
 def count_nonzero(a, axis=None):
     # XXX: this all should probably be generalized to a sum(a != 0, dtype=bool)
     try:
@@ -34,6 +105,8 @@ def count_nonzero(a, axis=None):
     return tensor
 
 
+@emulate_keepdims
+@deco_axis_expand
 def argmax(tensor, axis=None):
     axis = _util.allow_only_single_axis(axis)
 
@@ -45,6 +118,8 @@ def argmax(tensor, axis=None):
     return tensor
 
 
+@emulate_keepdims
+@deco_axis_expand
 def argmin(tensor, axis=None):
     axis = _util.allow_only_single_axis(axis)
 
@@ -56,6 +131,8 @@ def argmin(tensor, axis=None):
     return tensor
 
 
+@emulate_keepdims
+@deco_axis_expand
 def any(tensor, axis=None, *, where=NoValue):
     if where is not NoValue:
         raise NotImplementedError
@@ -69,6 +146,8 @@ def any(tensor, axis=None, *, where=NoValue):
     return result
 
 
+@emulate_keepdims
+@deco_axis_expand
 def all(tensor, axis=None, *, where=NoValue):
     if where is not NoValue:
         raise NotImplementedError
@@ -82,6 +161,8 @@ def all(tensor, axis=None, *, where=NoValue):
     return result
 
 
+@emulate_keepdims
+@deco_axis_expand
 def max(tensor, axis=None, initial=NoValue, where=NoValue):
     if initial is not NoValue or where is not NoValue:
         raise NotImplementedError
@@ -90,6 +171,8 @@ def max(tensor, axis=None, initial=NoValue, where=NoValue):
     return result
 
 
+@emulate_keepdims
+@deco_axis_expand
 def min(tensor, axis=None, initial=NoValue, where=NoValue):
     if initial is not NoValue or where is not NoValue:
         raise NotImplementedError
@@ -98,11 +181,15 @@ def min(tensor, axis=None, initial=NoValue, where=NoValue):
     return result
 
 
+@emulate_keepdims
+@deco_axis_expand
 def ptp(tensor, axis=None):
     result = tensor.amax(axis) - tensor.amin(axis)
     return result
 
 
+@emulate_keepdims
+@deco_axis_expand
 def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     if initial is not NoValue or where is not NoValue:
         raise NotImplementedError
@@ -120,6 +207,8 @@ def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     return result
 
 
+@emulate_keepdims
+@deco_axis_expand
 def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     if initial is not NoValue or where is not NoValue:
         raise NotImplementedError
@@ -137,6 +226,8 @@ def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
     return result
 
 
+@emulate_keepdims
+@deco_axis_expand
 def mean(tensor, axis=None, dtype=None, *, where=NoValue):
     if where is not NoValue:
         raise NotImplementedError
@@ -159,6 +250,8 @@ def mean(tensor, axis=None, dtype=None, *, where=NoValue):
     return result
 
 
+@emulate_keepdims
+@deco_axis_expand
 def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
     if where is not NoValue:
         raise NotImplementedError
@@ -170,6 +263,8 @@ def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
     return result
 
 
+@emulate_keepdims
+@deco_axis_expand
 def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
     if where is not NoValue:
         raise NotImplementedError
@@ -186,6 +281,7 @@ def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
 #   2. axis=None ravels (cf concatenate)
 
 
+@deco_axis_ravel
 def cumprod(tensor, axis, dtype=None):
     if dtype == torch.bool:
         dtype = _dtypes_impl.default_int_dtype
@@ -197,6 +293,7 @@ def cumprod(tensor, axis, dtype=None):
     return result
 
 
+@deco_axis_ravel
 def cumsum(tensor, axis, dtype=None):
     if dtype == torch.bool:
         dtype = _dtypes_impl.default_int_dtype
@@ -208,7 +305,25 @@ def cumsum(tensor, axis, dtype=None):
     return result
 
 
-def average(a_tensor, axis, w_tensor):
+def average(a, axis, weights, returned=False, keepdims=False):
+    if weights is None:
+        result, wsum = average_noweights(a, axis, keepdims=keepdims)
+    else:
+        result, wsum = average_weights(a, axis, weights, keepdims=keepdims)
+
+    if returned:
+        if wsum.shape != result.shape:
+            wsum = torch.broadcast_to(wsum, result.shape).clone()
+    return result, wsum
+
+
+def average_noweights(a_tensor, axis, keepdims=False):
+    result = mean(a_tensor, axis=axis, keepdims=keepdims)
+    scl = torch.as_tensor(a_tensor.numel() / result.numel(), dtype=result.dtype)
+    return result, scl
+
+
+def average_weights(a_tensor, axis, w_tensor, keepdims=False):
 
     # dtype
     # FIXME: 1. use result_type
@@ -221,6 +336,9 @@ def average(a_tensor, axis, w_tensor):
 
     a_tensor = _util.cast_if_needed(a_tensor, result_dtype)
     w_tensor = _util.cast_if_needed(w_tensor, result_dtype)
+
+    # axis=None ravels, so store the originals to reuse with keepdims=True below
+    ax, ndim = axis, a_tensor.ndim
 
     # axis
     if axis is None:
@@ -250,10 +368,14 @@ def average(a_tensor, axis, w_tensor):
     denominator = w_tensor.sum(axis)
     result = numerator / denominator
 
+    # keepdims
+    if keepdims:
+        result = _util.apply_keepdims(result, ax, ndim)
+
     return result, denominator
 
 
-def quantile(a_tensor, q_tensor, axis, method):
+def quantile(a_tensor, q_tensor, axis, method, keepdims=False):
 
     if (0 > q_tensor).any() or (q_tensor > 1).any():
         raise ValueError("Quantiles must be in range [0, 1], got %s" % q_tensor)
@@ -266,6 +388,7 @@ def quantile(a_tensor, q_tensor, axis, method):
     if a_tensor.dtype == torch.float16:
         a_tensor = a_tensor.to(torch.float32)
 
+    # TODO: consider moving this normalize_axis_tuple dance to normalize axis? Across the board if at all.
     # axis
     if axis is not None:
         axis = _util.normalize_axis_tuple(axis, a_tensor.ndim)
@@ -273,8 +396,15 @@ def quantile(a_tensor, q_tensor, axis, method):
 
     q_tensor = _util.cast_if_needed(q_tensor, a_tensor.dtype)
 
+    # axis=None ravels, so store the originals to reuse with keepdims=True below
+    ax, ndim = axis, a_tensor.ndim
     (a_tensor, q_tensor), axis = _util.axis_none_ravel(a_tensor, q_tensor, axis=axis)
 
     result = torch.quantile(a_tensor, q_tensor, axis=axis, interpolation=method)
 
+    # NB: not using @emulate_keepdims here because the signature is (a, q, axis, ...)
+    # while the decorator expects (a, axis, ...)
+    # this can be fixed, of course, but the cure seems worse then the desease
+    if keepdims:
+        result = _util.apply_keepdims(result, ax, ndim)
     return result

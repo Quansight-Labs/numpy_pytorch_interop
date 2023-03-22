@@ -29,16 +29,31 @@ def cast_and_broadcast(tensors, out, casting):
     if out is None:
         return tensors
     else:
-        from ._ndarray import asarray, ndarray
-
-        if not isinstance(out, ndarray):
-            raise TypeError("Return arrays must be of ArrayType")
-
         tensors = _util.cast_and_broadcast(
             tensors, out.dtype.type.torch_dtype, out.shape, casting
         )
 
     return tuple(tensors)
+
+
+def ufunc_preprocess(
+    tensors, out, where, casting, order, dtype, subok, signature, extobj
+):
+    # internal preprocessing or args in ufuncs (cf _unary_ufuncs, _binary_ufuncs)
+    if order != "K" or not where or signature or extobj:
+        raise NotImplementedError
+
+    # XXX: dtype=... parameter
+    if dtype is not None:
+        raise NotImplementedError
+
+    out_shape_dtype = None
+    if out is not None:
+        out_shape_dtype = (out.get().dtype, out.get().shape)
+
+    tensors = _util.cast_and_broadcast(tensors, out_shape_dtype, casting)
+
+    return tensors
 
 
 # ### Return helpers: wrap a single tensor, a tuple of tensors, out= etc ###
@@ -52,11 +67,7 @@ def result_or_out(result_tensor, out_array=None, promote_scalar=False):
             result_tensor is placed into the out array.
     This weirdness is used e.g. in `np.percentile`
     """
-    from ._ndarray import asarray, ndarray
-
     if out_array is not None:
-        if not isinstance(out_array, ndarray):
-            raise TypeError("Return arrays must be of ArrayType")
         if result_tensor.shape != out_array.shape:
             can_fit = result_tensor.numel() == 1 and out_array.ndim == 0
             if promote_scalar and can_fit:
@@ -70,7 +81,7 @@ def result_or_out(result_tensor, out_array=None, promote_scalar=False):
         out_tensor.copy_(result_tensor)
         return out_array
     else:
-        return asarray(result_tensor)
+        return array_from(result_tensor)
 
 
 def array_from(tensor, base=None):
@@ -117,10 +128,3 @@ def to_tensors(*inputs):
     from ._ndarray import asarray, ndarray
 
     return tuple(asarray(value).get() for value in inputs)
-
-
-def to_tensors_or_none(*inputs):
-    """Convert all array_likes from `inputs` to tensors. Nones pass through"""
-    from ._ndarray import asarray, ndarray
-
-    return tuple(None if value is None else asarray(value).get() for value in inputs)

@@ -4,14 +4,15 @@ Things imported from here have numpy-compatible signatures but operate on
 pytorch tensors.
 """
 
+from typing import Optional, Sequence
+
 import torch
 
-from . import _funcs
+from . import _decorators, _dtypes, _funcs, _helpers
 from ._detail import _dtypes_impl, _flips, _reductions, _util
 from ._detail import implementations as _impl
-from ._ndarray import array, asarray, asarray_replacer, maybe_set_base, ndarray, newaxis
-
-from . import _dtypes, _helpers, _decorators  # isort: skip  # XXX
+from ._ndarray import array, asarray, maybe_set_base, ndarray
+from ._normalizations import ArrayLike, DTypeLike, NDArray, SubokLike, normalizer
 
 # Things to decide on (punt for now)
 #
@@ -54,40 +55,39 @@ NoValue = None
 ###### array creation routines
 
 
-def copy(a, order="K", subok=False):
-    a = asarray(a)
-    _util.subok_not_ok(subok=subok)
+@normalizer
+def copy(a: ArrayLike, order="K", subok: SubokLike = False):
     if order != "K":
         raise NotImplementedError
-    # XXX: ndarray.copy only accepts order='C'
-    return a.copy(order="C")
+    tensor = a.clone()
+    return _helpers.array_from(tensor)
 
 
-def atleast_1d(*arys):
-    tensors = _helpers.to_tensors(*arys)
-    res = torch.atleast_1d(tensors)
-    if len(res) == 1:
-        return asarray(res[0])
+@normalizer
+def atleast_1d(*arys: ArrayLike):
+    res = torch.atleast_1d(*arys)
+    if isinstance(res, tuple):
+        return list(_helpers.tuple_arrays_from(res))
     else:
-        return list(asarray(_) for _ in res)
+        return _helpers.array_from(res)
 
 
-def atleast_2d(*arys):
-    tensors = _helpers.to_tensors(*arys)
-    res = torch.atleast_2d(tensors)
-    if len(res) == 1:
-        return asarray(res[0])
+@normalizer
+def atleast_2d(*arys: ArrayLike):
+    res = torch.atleast_2d(*arys)
+    if isinstance(res, tuple):
+        return list(_helpers.tuple_arrays_from(res))
     else:
-        return list(asarray(_) for _ in res)
+        return _helpers.array_from(res)
 
 
-def atleast_3d(*arys):
-    tensors = _helpers.to_tensors(*arys)
-    res = torch.atleast_3d(tensors)
-    if len(res) == 1:
-        return asarray(res[0])
+@normalizer
+def atleast_3d(*arys: ArrayLike):
+    res = torch.atleast_3d(*arys)
+    if isinstance(res, tuple):
+        return list(_helpers.tuple_arrays_from(res))
     else:
-        return list(asarray(_) for _ in res)
+        return _helpers.array_from(res)
 
 
 def _concat_check(tup, dtype, out):
@@ -97,9 +97,6 @@ def _concat_check(tup, dtype, out):
         raise ValueError("need at least one array to concatenate")
 
     if out is not None:
-        if not isinstance(out, ndarray):
-            raise ValueError("'out' must be an array")
-
         if dtype is not None:
             # mimic numpy
             raise TypeError(
@@ -108,58 +105,67 @@ def _concat_check(tup, dtype, out):
             )
 
 
-@_decorators.dtype_to_torch
-def concatenate(ar_tuple, axis=0, out=None, dtype=None, casting="same_kind"):
-    tensors = _helpers.to_tensors(*ar_tuple)
-    _concat_check(tensors, dtype, out=out)
-    result = _impl.concatenate(tensors, axis, out, dtype, casting)
+@normalizer
+def concatenate(
+    ar_tuple: Sequence[ArrayLike],
+    axis=0,
+    out: Optional[NDArray] = None,
+    dtype: DTypeLike = None,
+    casting="same_kind",
+):
+    _concat_check(ar_tuple, dtype, out=out)
+    result = _impl.concatenate(ar_tuple, axis, out, dtype, casting)
     return _helpers.result_or_out(result, out)
 
 
-@_decorators.dtype_to_torch
-def vstack(tup, *, dtype=None, casting="same_kind"):
-    tensors = _helpers.to_tensors(*tup)
-    _concat_check(tensors, dtype, out=None)
-    result = _impl.vstack(tensors, dtype=dtype, casting=casting)
-    return asarray(result)
+@normalizer
+def vstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"):
+    _concat_check(tup, dtype, out=None)
+    result = _impl.vstack(tup, dtype=dtype, casting=casting)
+    return _helpers.array_from(result)
 
 
 row_stack = vstack
 
 
-@_decorators.dtype_to_torch
-def hstack(tup, *, dtype=None, casting="same_kind"):
-    tensors = _helpers.to_tensors(*tup)
-    _concat_check(tensors, dtype, out=None)
-    result = _impl.hstack(tensors, dtype=dtype, casting=casting)
-    return asarray(result)
+@normalizer
+def hstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"):
+    _concat_check(tup, dtype, out=None)
+    result = _impl.hstack(tup, dtype=dtype, casting=casting)
+    return _helpers.array_from(result)
 
 
-@_decorators.dtype_to_torch
-def dstack(tup, *, dtype=None, casting="same_kind"):
+@normalizer
+def dstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"):
     # XXX: in numpy 1.24 dstack does not have dtype and casting keywords
     # but {h,v}stack do.  Hence add them here for consistency.
-    tensors = _helpers.to_tensors(*tup)
-    result = _impl.dstack(tensors, dtype=dtype, casting=casting)
-    return asarray(result)
+    result = _impl.dstack(tup, dtype=dtype, casting=casting)
+    return _helpers.array_from(result)
 
 
-@_decorators.dtype_to_torch
-def column_stack(tup, *, dtype=None, casting="same_kind"):
+@normalizer
+def column_stack(
+    tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"
+):
     # XXX: in numpy 1.24 column_stack does not have dtype and casting keywords
     # but row_stack does. (because row_stack is an alias for vstack, really).
     # Hence add these keywords here for consistency.
-    tensors = _helpers.to_tensors(*tup)
-    _concat_check(tensors, dtype, out=None)
-    result = _impl.column_stack(tensors, dtype=dtype, casting=casting)
-    return asarray(result)
+    _concat_check(tup, dtype, out=None)
+    result = _impl.column_stack(tup, dtype=dtype, casting=casting)
+    return _helpers.array_from(result)
 
 
-@_decorators.dtype_to_torch
-def stack(arrays, axis=0, out=None, *, dtype=None, casting="same_kind"):
-    tensors = _helpers.to_tensors(*arrays)
-    _concat_check(tensors, dtype, out=out)
-    result = _impl.stack(tensors, axis=axis, out=out, dtype=dtype, casting=casting)
+@normalizer
+def stack(
+    arrays: Sequence[ArrayLike],
+    axis=0,
+    out: Optional[NDArray] = None,
+    *,
+    dtype: DTypeLike = None,
+    casting="same_kind",
+):
+    _concat_check(arrays, dtype, out=out)
+    result = _impl.stack(arrays, axis=axis, out=out, dtype=dtype, casting=casting)
     return _helpers.result_or_out(result, out)
 
 
@@ -198,143 +204,177 @@ def dsplit(ary, indices_or_sections):
     return tuple(maybe_set_base(x, base) for x in result)
 
 
-def kron(a, b):
-    a_tensor, b_tensor = _helpers.to_tensors(a, b)
-    result = torch.kron(a_tensor, b_tensor)
-    return asarray(result)
+@normalizer
+def kron(a: ArrayLike, b: ArrayLike):
+    result = torch.kron(a, b)
+    return _helpers.array_from(result)
 
 
-def tile(A, reps):
-    a_tensor = asarray(A).get()
+@normalizer
+def tile(A: ArrayLike, reps):
     if isinstance(reps, int):
         reps = (reps,)
 
-    result = torch.tile(a_tensor, reps)
-    return asarray(result)
+    result = torch.tile(A, reps)
+    return _helpers.array_from(result)
 
 
-def vander(x, N=None, increasing=False):
-    x_tensor = asarray(x).get()
-    result = torch.vander(x_tensor, N, increasing)
-    return asarray(result)
+@normalizer
+def vander(x: ArrayLike, N=None, increasing=False):
+    result = torch.vander(x, N, increasing)
+    return _helpers.array_from(result)
 
 
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None, axis=0):
     if axis != 0 or retstep or not endpoint:
         raise NotImplementedError
     # XXX: raises TypeError if start or stop are not scalars
-    return asarray(torch.linspace(start, stop, num, dtype=dtype))
+    result = torch.linspace(start, stop, num, dtype=dtype)
+    return _helpers.array_from(result)
 
 
-@_decorators.dtype_to_torch
-def geomspace(start, stop, num=50, endpoint=True, dtype=None, axis=0):
+@normalizer
+def geomspace(
+    start: ArrayLike,
+    stop: ArrayLike,
+    num=50,
+    endpoint=True,
+    dtype: DTypeLike = None,
+    axis=0,
+):
     if axis != 0 or not endpoint:
         raise NotImplementedError
-    start, stop = _helpers.to_tensors(start, stop)
     result = _impl.geomspace(start, stop, num, endpoint, dtype, axis)
-    return asarray(result)
+    return _helpers.array_from(result)
 
 
-@_decorators.dtype_to_torch
-def logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0):
+@normalizer
+def logspace(
+    start, stop, num=50, endpoint=True, base=10.0, dtype: DTypeLike = None, axis=0
+):
     if axis != 0 or not endpoint:
         raise NotImplementedError
-    return asarray(torch.logspace(start, stop, num, base=base, dtype=dtype))
+    result = torch.logspace(start, stop, num, base=base, dtype=dtype)
+    return _helpers.array_from(result)
 
 
-@_decorators.dtype_to_torch
-def arange(start=None, stop=None, step=1, dtype=None, *, like=None):
-    _util.subok_not_ok(like)
-    start, stop, step = _helpers.ndarrays_to_tensors(start, stop, step)
+@normalizer
+def arange(
+    start: Optional[ArrayLike] = None,
+    stop: Optional[ArrayLike] = None,
+    step: Optional[ArrayLike] = 1,
+    dtype: DTypeLike = None,
+    *,
+    like: SubokLike = None,
+):
     result = _impl.arange(start, stop, step, dtype=dtype)
-    return asarray(result)
+    return _helpers.array_from(result)
 
 
-@_decorators.dtype_to_torch
-def empty(shape, dtype=float, order="C", *, like=None):
-    _util.subok_not_ok(like)
+@normalizer
+def empty(shape, dtype: DTypeLike = float, order="C", *, like: SubokLike = None):
     if order != "C":
         raise NotImplementedError
     if dtype is None:
         dtype = _dtypes_impl.default_float_dtype
     result = torch.empty(shape, dtype=dtype)
-    return asarray(result)
+    return _helpers.array_from(result)
 
 
-# NB: *_like function deliberately deviate from numpy: it has subok=True
+# NB: *_like functions deliberately deviate from numpy: it has subok=True
 # as the default; we set subok=False and raise on anything else.
-@asarray_replacer()
-@_decorators.dtype_to_torch
-def empty_like(prototype, dtype=None, order="K", subok=False, shape=None):
-    _util.subok_not_ok(subok=subok)
+@normalizer
+def empty_like(
+    prototype: ArrayLike,
+    dtype: DTypeLike = None,
+    order="K",
+    subok: SubokLike = False,
+    shape=None,
+):
     if order != "K":
         raise NotImplementedError
     result = _impl.empty_like(prototype, dtype=dtype, shape=shape)
-    return result
+    return _helpers.array_from(result)
 
 
-@_decorators.dtype_to_torch
-def full(shape, fill_value, dtype=None, order="C", *, like=None):
-    _util.subok_not_ok(like)
+@normalizer
+def full(
+    shape,
+    fill_value: ArrayLike,
+    dtype: DTypeLike = None,
+    order="C",
+    *,
+    like: SubokLike = None,
+):
     if isinstance(shape, int):
         shape = (shape,)
     if order != "C":
         raise NotImplementedError
-    fill_value = asarray(fill_value).get()
     result = _impl.full(shape, fill_value, dtype=dtype)
-    return asarray(result)
+    return _helpers.array_from(result)
 
 
-@asarray_replacer()
-@_decorators.dtype_to_torch
-def full_like(a, fill_value, dtype=None, order="K", subok=False, shape=None):
-    _util.subok_not_ok(subok=subok)
+@normalizer
+def full_like(
+    a: ArrayLike,
+    fill_value,
+    dtype: DTypeLike = None,
+    order="K",
+    subok: SubokLike = False,
+    shape=None,
+):
     if order != "K":
         raise NotImplementedError
     result = _impl.full_like(a, fill_value, dtype=dtype, shape=shape)
-    return result
+    return _helpers.array_from(result)
 
 
-@_decorators.dtype_to_torch
-def ones(shape, dtype=None, order="C", *, like=None):
-    _util.subok_not_ok(like)
+@normalizer
+def ones(shape, dtype: DTypeLike = None, order="C", *, like: SubokLike = None):
     if order != "C":
         raise NotImplementedError
     if dtype is None:
         dtype = _dtypes_impl.default_float_dtype
     result = torch.ones(shape, dtype=dtype)
-    return asarray(result)
+    return _helpers.array_from(result)
 
 
-@asarray_replacer()
-@_decorators.dtype_to_torch
-def ones_like(a, dtype=None, order="K", subok=False, shape=None):
-    _util.subok_not_ok(subok=subok)
+@normalizer
+def ones_like(
+    a: ArrayLike,
+    dtype: DTypeLike = None,
+    order="K",
+    subok: SubokLike = False,
+    shape=None,
+):
     if order != "K":
         raise NotImplementedError
     result = _impl.ones_like(a, dtype=dtype, shape=shape)
-    return result
+    return _helpers.array_from(result)
 
 
-@_decorators.dtype_to_torch
-def zeros(shape, dtype=None, order="C", *, like=None):
-    _util.subok_not_ok(like)
+@normalizer
+def zeros(shape, dtype: DTypeLike = None, order="C", *, like: SubokLike = None):
     if order != "C":
         raise NotImplementedError
     if dtype is None:
         dtype = _dtypes_impl.default_float_dtype
     result = torch.zeros(shape, dtype=dtype)
-    return asarray(result)
+    return _helpers.array_from(result)
 
 
-@asarray_replacer()
-@_decorators.dtype_to_torch
-def zeros_like(a, dtype=None, order="K", subok=False, shape=None):
-    _util.subok_not_ok(subok=subok)
+@normalizer
+def zeros_like(
+    a: ArrayLike,
+    dtype: DTypeLike = None,
+    order="K",
+    subok: SubokLike = False,
+    shape=None,
+):
     if order != "K":
         raise NotImplementedError
     result = _impl.zeros_like(a, dtype=dtype, shape=shape)
-    return result
+    return _helpers.array_from(result)
 
 
 ###### misc/unordered
@@ -365,77 +405,80 @@ def _xy_helper_corrcoef(x_tensor, y_tensor=None, rowvar=True):
     return x_tensor
 
 
-@_decorators.dtype_to_torch
-def corrcoef(x, y=None, rowvar=True, bias=NoValue, ddof=NoValue, *, dtype=None):
+@normalizer
+def corrcoef(
+    x: ArrayLike,
+    y: Optional[ArrayLike] = None,
+    rowvar=True,
+    bias=NoValue,
+    ddof=NoValue,
+    *,
+    dtype: DTypeLike = None,
+):
     if bias is not None or ddof is not None:
         # deprecated in NumPy
         raise NotImplementedError
-
-    x_tensor, y_tensor = _helpers.to_tensors_or_none(x, y)
-    tensor = _xy_helper_corrcoef(x_tensor, y_tensor, rowvar)
+    tensor = _xy_helper_corrcoef(x, y, rowvar)
     result = _impl.corrcoef(tensor, dtype=dtype)
-    return asarray(result)
+    return _helpers.array_from(result)
 
 
-@_decorators.dtype_to_torch
+@normalizer
 def cov(
-    m,
-    y=None,
+    m: ArrayLike,
+    y: Optional[ArrayLike] = None,
     rowvar=True,
     bias=False,
     ddof=None,
-    fweights=None,
-    aweights=None,
+    fweights: Optional[ArrayLike] = None,
+    aweights: Optional[ArrayLike] = None,
     *,
-    dtype=None,
+    dtype: DTypeLike = None,
 ):
-
-    m_tensor, y_tensor, fweights_tensor, aweights_tensor = _helpers.to_tensors_or_none(
-        m, y, fweights, aweights
-    )
-    m_tensor = _xy_helper_corrcoef(m_tensor, y_tensor, rowvar)
-
-    result = _impl.cov(
-        m_tensor, bias, ddof, fweights_tensor, aweights_tensor, dtype=dtype
-    )
-    return asarray(result)
+    m = _xy_helper_corrcoef(m, y, rowvar)
+    result = _impl.cov(m, bias, ddof, fweights, aweights, dtype=dtype)
+    return _helpers.array_from(result)
 
 
-def bincount(x, /, weights=None, minlength=0):
-    if not isinstance(x, ndarray) and x == []:
+@normalizer
+def bincount(x: ArrayLike, /, weights: Optional[ArrayLike] = None, minlength=0):
+    if x.numel() == 0:
         # edge case allowed by numpy
-        x = asarray([], dtype=int)
-
-    x_tensor, weights_tensor = _helpers.to_tensors_or_none(x, weights)
-    result = _impl.bincount(x_tensor, weights_tensor, minlength)
-    return asarray(result)
+        x = torch.as_tensor([], dtype=int)
+    result = _impl.bincount(x, weights, minlength)
+    return _helpers.array_from(result)
 
 
-def where(condition, x=None, y=None, /):
-    cond_t, x_t, y_t = _helpers.to_tensors_or_none(condition, x, y)
-    result = _impl.where(cond_t, x_t, y_t)
+@normalizer
+def where(
+    condition: ArrayLike,
+    x: Optional[ArrayLike] = None,
+    y: Optional[ArrayLike] = None,
+    /,
+):
+    result = _impl.where(condition, x, y)
     if isinstance(result, tuple):
         # single-argument where(condition)
-        return tuple(asarray(x) for x in result)
+        return _helpers.tuple_arrays_from(result)
     else:
-        return asarray(result)
+        return _helpers.array_from(result)
 
 
 ###### module-level queries of object properties
 
 
-def ndim(a):
-    a = asarray(a).get()
+@normalizer
+def ndim(a: ArrayLike):
     return a.ndim
 
 
-def shape(a):
-    a = asarray(a).get()
+@normalizer
+def shape(a: ArrayLike):
     return tuple(a.shape)
 
 
-def size(a, axis=None):
-    a = asarray(a).get()
+@normalizer
+def size(a: ArrayLike, axis=None):
     if axis is None:
         return a.numel()
     else:
@@ -445,48 +488,51 @@ def size(a, axis=None):
 ###### shape manipulations and indexing
 
 
-def expand_dims(a, axis):
-    a = asarray(a)
+@normalizer
+def expand_dims(a: ArrayLike, axis):
     shape = _util.expand_shape(a.shape, axis)
-    tensor = a.get().view(shape)  # never copies
-    return ndarray._from_tensor_and_base(tensor, a)
+    tensor = a.view(shape)  # never copies
+    return _helpers.array_from(tensor, a)
 
 
-@asarray_replacer()
-def flip(m, axis=None):
-    return _flips.flip(m, axis)
+@normalizer
+def flip(m: ArrayLike, axis=None):
+    result = _flips.flip(m, axis)
+    return _helpers.array_from(result)
 
 
-@asarray_replacer()
-def flipud(m):
-    return _flips.flipud(m)
+@normalizer
+def flipud(m: ArrayLike):
+    result = _flips.flipud(m)
+    return _helpers.array_from(result)
 
 
-@asarray_replacer()
-def fliplr(m):
-    return _flips.fliplr(m)
+@normalizer
+def fliplr(m: ArrayLike):
+    result = _flips.fliplr(m)
+    return _helpers.array_from(result)
 
 
-@asarray_replacer()
-def rot90(m, k=1, axes=(0, 1)):
-    return _flips.rot90(m, k, axes)
+@normalizer
+def rot90(m: ArrayLike, k=1, axes=(0, 1)):
+    result = _flips.rot90(m, k, axes)
+    return _helpers.array_from(result)
 
 
-@asarray_replacer()
-def broadcast_to(array, shape, subok=False):
-    _util.subok_not_ok(subok=subok)
-    return torch.broadcast_to(array, size=shape)
+@normalizer
+def broadcast_to(array: ArrayLike, shape, subok: SubokLike = False):
+    result = torch.broadcast_to(array, size=shape)
+    return _helpers.array_from(result)
 
 
 from torch import broadcast_shapes
 
 
 # YYY: pattern: tuple of arrays as input, tuple of arrays as output; cf nonzero
-def broadcast_arrays(*args, subok=False):
-    _util.subok_not_ok(subok=subok)
-    tensors = _helpers.to_tensors(*args)
-    res = torch.broadcast_tensors(*tensors)
-    return tuple(asarray(_) for _ in res)
+@normalizer
+def broadcast_arrays(*args: ArrayLike, subok: SubokLike = False):
+    res = torch.broadcast_tensors(*args)
+    return _helpers.tuple_arrays_from(res)
 
 
 def unravel_index(indices, shape, order="C"):
@@ -510,19 +556,20 @@ def ravel_multi_index(multi_index, dims, mode="raise", order="C"):
     return sum(idx * dim for idx, dim in zip(multi_index, dims))
 
 
-def meshgrid(*xi, copy=True, sparse=False, indexing="xy"):
-    xi_tensors = _helpers.to_tensors(*xi)
-    output = _impl.meshgrid(*xi_tensors, copy=copy, sparse=sparse, indexing=indexing)
-    return [asarray(t) for t in output]
+@normalizer
+def meshgrid(*xi: ArrayLike, copy=True, sparse=False, indexing="xy"):
+    output = _impl.meshgrid(*xi, copy=copy, sparse=sparse, indexing=indexing)
+    outp = _helpers.tuple_arrays_from(output)
+    return list(outp)  # match numpy, return a list
 
 
-@_decorators.dtype_to_torch
-def indices(dimensions, dtype=int, sparse=False):
+@normalizer
+def indices(dimensions, dtype: DTypeLike = int, sparse=False):
     result = _impl.indices(dimensions, dtype=dtype, sparse=sparse)
     if sparse:
-        return tuple(asarray(x) for x in result)
+        return _helpers.tuple_arrays_from(result)
     else:
-        return asarray(result)
+        return _helpers.array_from(result)
 
 
 def flatnonzero(a):
@@ -530,246 +577,125 @@ def flatnonzero(a):
     return _funcs.nonzero(arr.ravel())[0]
 
 
-from ._decorators import emulate_out_arg
-from ._ndarray import axis_keepdims_wrapper
-
-count_nonzero = emulate_out_arg(axis_keepdims_wrapper(_reductions.count_nonzero))
-
-
-def roll(a, shift, axis=None):
-    tensor = asarray(a).get()
-    result = _impl.roll(tensor, shift, axis)
-    return asarray(result)
+@normalizer
+def roll(a: ArrayLike, shift, axis=None):
+    result = _impl.roll(a, shift, axis)
+    return _helpers.array_from(result)
 
 
 ###### tri{l, u} and related
-@asarray_replacer()
-def tril(m, k=0):
-    return m.tril(k)
+@normalizer
+def tril(m: ArrayLike, k=0):
+    result = m.tril(k)
+    return _helpers.array_from(result)
 
 
-@asarray_replacer()
-def triu(m, k=0):
-    return m.triu(k)
+@normalizer
+def triu(m: ArrayLike, k=0):
+    result = m.triu(k)
+    return _helpers.array_from(result)
 
 
 def tril_indices(n, k=0, m=None):
     result = _impl.tril_indices(n, k, m)
-    return tuple(asarray(t) for t in result)
+    return _helpers.tuple_arrays_from(result)
 
 
 def triu_indices(n, k=0, m=None):
     result = _impl.triu_indices(n, k, m)
-    return tuple(asarray(t) for t in result)
+    return _helpers.tuple_arrays_from(result)
 
 
-def tril_indices_from(arr, k=0):
-    tensor = asarray(arr).get()
-    result = _impl.tril_indices_from(tensor, k)
-    return tuple(asarray(t) for t in result)
+@normalizer
+def tril_indices_from(arr: ArrayLike, k=0):
+    result = _impl.tril_indices_from(arr, k)
+    return _helpers.tuple_arrays_from(result)
 
 
-def triu_indices_from(arr, k=0):
-    tensor = asarray(arr).get()
-    result = _impl.triu_indices_from(tensor, k)
-    return tuple(asarray(t) for t in result)
+@normalizer
+def triu_indices_from(arr: ArrayLike, k=0):
+    result = _impl.triu_indices_from(arr, k)
+    return _helpers.tuple_arrays_from(result)
 
 
-@_decorators.dtype_to_torch
-def tri(N, M=None, k=0, dtype=float, *, like=None):
-    _util.subok_not_ok(like)
+@normalizer
+def tri(N, M=None, k=0, dtype: DTypeLike = float, *, like: SubokLike = None):
     result = _impl.tri(N, M, k, dtype)
-    return asarray(result)
+    return _helpers.array_from(result)
 
 
 ###### reductions
-def argmax(a, axis=None, out=None, *, keepdims=NoValue):
-    arr = asarray(a)
-    return arr.argmax(axis=axis, out=out, keepdims=keepdims)
 
 
-def argmin(a, axis=None, out=None, *, keepdims=NoValue):
-    arr = asarray(a)
-    return arr.argmin(axis=axis, out=out, keepdims=keepdims)
-
-
-def amax(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    arr = asarray(a)
-    return arr.max(axis=axis, out=out, keepdims=keepdims, initial=initial, where=where)
-
-
-max = amax
-
-
-def amin(a, axis=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue):
-    arr = asarray(a)
-    return arr.min(axis=axis, out=out, keepdims=keepdims, initial=initial, where=where)
-
-
-min = amin
-
-
-def ptp(a, axis=None, out=None, keepdims=NoValue):
-    arr = asarray(a)
-    return arr.ptp(axis=axis, out=out, keepdims=keepdims)
-
-
-def all(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-    arr = asarray(a)
-    return arr.all(axis=axis, out=out, keepdims=keepdims, where=where)
-
-
-def any(a, axis=None, out=None, keepdims=NoValue, *, where=NoValue):
-    arr = asarray(a)
-    return arr.any(axis=axis, out=out, keepdims=keepdims, where=where)
-
-
-def mean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
-    arr = asarray(a)
-    return arr.mean(axis=axis, dtype=dtype, out=out, keepdims=keepdims, where=where)
-
-
-# YYY: pattern: initial=...
-
-
-def sum(
-    a, axis=None, dtype=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue
+@normalizer
+def average(
+    a: ArrayLike,
+    axis=None,
+    weights: ArrayLike = None,
+    returned=False,
+    *,
+    keepdims=NoValue,
 ):
-    arr = asarray(a)
-    return arr.sum(
-        axis=axis, dtype=dtype, out=out, keepdims=keepdims, initial=initial, where=where
+    result, wsum = _reductions.average(
+        a, axis, weights, returned=returned, keepdims=keepdims
     )
-
-
-def prod(
-    a, axis=None, dtype=None, out=None, keepdims=NoValue, initial=NoValue, where=NoValue
-):
-    arr = asarray(a)
-    return arr.prod(
-        axis=axis, dtype=dtype, out=out, keepdims=keepdims, initial=initial, where=where
-    )
-
-
-product = prod
-
-
-def cumprod(a, axis=None, dtype=None, out=None):
-    arr = asarray(a)
-    return arr.cumprod(axis=axis, dtype=dtype, out=out)
-
-
-cumproduct = cumprod
-
-
-def cumsum(a, axis=None, dtype=None, out=None):
-    arr = asarray(a)
-    return arr.cumsum(axis=axis, dtype=dtype, out=out)
-
-
-# YYY: pattern : ddof
-
-
-def std(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
-    arr = asarray(a)
-    return arr.std(
-        axis=axis, dtype=dtype, out=out, ddof=ddof, keepdims=keepdims, where=where
-    )
-
-
-def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=NoValue, *, where=NoValue):
-    arr = asarray(a)
-    return arr.var(
-        axis=axis, dtype=dtype, out=out, ddof=ddof, keepdims=keepdims, where=where
-    )
-
-
-def average(a, axis=None, weights=None, returned=False, *, keepdims=NoValue):
-
-    if weights is None:
-        result = mean(a, axis=axis, keepdims=keepdims)
-        if returned:
-            scl = result.dtype.type(a.size / result.size)
-            return result, scl
-        return result
-
-    a_tensor, w_tensor = _helpers.to_tensors(a, weights)
-
-    result, wsum = _reductions.average(a_tensor, axis, w_tensor)
-
-    # keepdims
-    if keepdims:
-        result = _util.apply_keepdims(result, axis, a_tensor.ndim)
-
-    # returned
     if returned:
-        scl = wsum
-        if scl.shape != result.shape:
-            scl = torch.broadcast_to(scl, result.shape).clone()
-
-        return asarray(result), asarray(scl)
+        return _helpers.tuple_arrays_from((result, wsum))
     else:
-        return asarray(result)
+        return _helpers.array_from(result)
 
 
+# Normalizations (ArrayLike et al) in percentile and median are done in `_funcs.py/quantile`.
 def percentile(
     a,
     q,
     axis=None,
-    out=None,
+    out: Optional[NDArray] = None,
     overwrite_input=False,
     method="linear",
     keepdims=False,
     *,
     interpolation=None,
 ):
-    return quantile(
+    return _funcs.quantile(
         a, asarray(q) / 100.0, axis, out, overwrite_input, method, keepdims=keepdims
     )
 
 
-def quantile(
-    a,
-    q,
-    axis=None,
-    out=None,
-    overwrite_input=False,
-    method="linear",
-    keepdims=False,
-    *,
-    interpolation=None,
+def median(
+    a, axis=None, out: Optional[NDArray] = None, overwrite_input=False, keepdims=False
 ):
-    if interpolation is not None:
-        raise ValueError("'interpolation' argument is deprecated; use 'method' instead")
-
-    a_tensor, q_tensor = _helpers.to_tensors(a, q)
-    result = _reductions.quantile(a_tensor, q_tensor, axis, method)
-
-    # keepdims
-    if keepdims:
-        result = _util.apply_keepdims(result, axis, a_tensor.ndim)
-    return _helpers.result_or_out(result, out, promote_scalar=True)
-
-
-def median(a, axis=None, out=None, overwrite_input=False, keepdims=False):
-    return quantile(
+    return _funcs.quantile(
         a, 0.5, axis=axis, overwrite_input=overwrite_input, out=out, keepdims=keepdims
     )
 
 
-def inner(a, b, /):
-    t_a, t_b = _helpers.to_tensors(a, b)
-    result = _impl.inner(t_a, t_b)
-    return asarray(result)
+@normalizer
+def inner(a: ArrayLike, b: ArrayLike, /):
+    result = _impl.inner(a, b)
+    return _helpers.array_from(result)
 
 
-def outer(a, b, out=None):
-    a_t, b_t = _helpers.to_tensors(a, b)
-    result = torch.outer(a_t, b_t)
+@normalizer
+def outer(a: ArrayLike, b: ArrayLike, out: Optional[NDArray] = None):
+    result = torch.outer(a, b)
     return _helpers.result_or_out(result, out)
 
 
-@asarray_replacer()
-def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoValue):
+# ### FIXME: this is a stub
+
+
+@normalizer
+def nanmean(
+    a: ArrayLike,
+    axis=None,
+    dtype: DTypeLike = None,
+    out: Optional[NDArray] = None,
+    keepdims=NoValue,
+    *,
+    where=NoValue,
+):
+    # XXX: this needs to be rewritten
     if where is not NoValue:
         raise NotImplementedError
     if dtype is None:
@@ -782,7 +708,7 @@ def nanmean(a, axis=None, dtype=None, out=None, keepdims=NoValue, *, where=NoVal
         result = a.nanmean(dtype=dtype, dim=axis, keepdim=bool(keepdims))
     if out is not None:
         out.copy_(result)
-    return result
+    return _helpers.array_from(result)
 
 
 def nanmin():
@@ -837,81 +763,91 @@ def nanpercentile():
     raise NotImplementedError
 
 
-def diff(a, n=1, axis=-1, prepend=NoValue, append=NoValue):
+@normalizer
+def diff(
+    a: ArrayLike,
+    n=1,
+    axis=-1,
+    prepend: Optional[ArrayLike] = NoValue,
+    append: Optional[ArrayLike] = NoValue,
+):
 
     if n == 0:
         # match numpy and return the input immediately
-        return a
-
-    a_tensor, prepend_tensor, append_tensor = _helpers.to_tensors_or_none(
-        a, prepend, append
-    )
+        return _helpers.array_from(result)
 
     result = _impl.diff(
-        a_tensor,
+        a,
         n=n,
         axis=axis,
-        prepend_tensor=prepend_tensor,
-        append_tensor=append_tensor,
+        prepend_tensor=prepend,
+        append_tensor=append,
     )
-    return asarray(result)
+    return _helpers.array_from(result)
 
 
 ##### math functions
 
 
-@asarray_replacer()
-def angle(z, deg=False):
+@normalizer
+def angle(z: ArrayLike, deg=False):
     result = _impl.angle(z, deg)
-    return result
+    return _helpers.array_from(result)
 
 
-@asarray_replacer()
-def sinc(x):
-    return torch.sinc(x)
+@normalizer
+def sinc(x: ArrayLike):
+    result = torch.sinc(x)
+    return _helpers.array_from(result)
 
 
-@asarray_replacer()
-def real_if_close(a, tol=100):
+@normalizer
+def real_if_close(a: ArrayLike, tol=100):
     result = _impl.real_if_close(a, tol=tol)
-    return result
+    return _helpers.array_from(result)
 
 
-@asarray_replacer()
-def iscomplex(x):
+@normalizer
+def iscomplex(x: ArrayLike):
     result = _impl.iscomplex(x)
-    return result  # XXX: missing .item on a zero-dim value; a case for array_or_scalar(value) ?
+    # XXX: missing .item on a zero-dim value; a case for array_or_scalar(value) ?
+    return _helpers.array_from(result)
 
 
-@asarray_replacer()
-def isreal(x):
+@normalizer
+def isreal(x: ArrayLike):
     result = _impl.isreal(x)
+    return _helpers.array_from(result)
+
+
+@normalizer
+def iscomplexobj(x: ArrayLike):
+    result = torch.is_complex(x)
     return result
 
 
-@asarray_replacer()
-def iscomplexobj(x):
-    return torch.is_complex(x)
+@normalizer
+def isrealobj(x: ArrayLike):
+    result = not torch.is_complex(x)
+    return result
 
 
-@asarray_replacer()
-def isrealobj(x):
-    return not torch.is_complex(x)
+@normalizer
+def isneginf(x: ArrayLike, out: Optional[NDArray] = None):
+    result = torch.isneginf(x, out=out)
+    return _helpers.array_from(result)
 
 
-@asarray_replacer()
-def isneginf(x, out=None):
-    return torch.isneginf(x, out=out)
+@normalizer
+def isposinf(x: ArrayLike, out: Optional[NDArray] = None):
+    result = torch.isposinf(x, out=out)
+    return _helpers.array_from(result)
 
 
-@asarray_replacer()
-def isposinf(x, out=None):
-    return torch.isposinf(x, out=out)
-
-
-@asarray_replacer()
-def i0(x):
-    return torch.special.i0(x)
+@normalizer
+def i0(x: ArrayLike):
+    result = torch.special.i0(x)
+    return _helpers.array_from(result)
 
 
 def isscalar(a):
@@ -923,27 +859,27 @@ def isscalar(a):
         return False
 
 
-def isclose(a, b, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
-    a_t, b_t = _helpers.to_tensors(a, b)
-    result = _impl.isclose(a_t, b_t, rtol, atol, equal_nan=equal_nan)
-    return asarray(result)
+@normalizer
+def isclose(a: ArrayLike, b: ArrayLike, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
+    result = _impl.isclose(a, b, rtol, atol, equal_nan=equal_nan)
+    return _helpers.array_from(result)
 
 
-def allclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False):
-    a_t, b_t = _helpers.to_tensors(a, b)
-    result = _impl.isclose(a_t, b_t, rtol, atol, equal_nan=equal_nan)
+@normalizer
+def allclose(a: ArrayLike, b: ArrayLike, rtol=1e-05, atol=1e-08, equal_nan=False):
+    result = _impl.isclose(a, b, rtol, atol, equal_nan=equal_nan)
     return result.all()
 
 
-def array_equal(a1, a2, equal_nan=False):
-    a1_t, a2_t = _helpers.to_tensors(a1, a2)
-    result = _impl.tensor_equal(a1_t, a2_t, equal_nan)
+@normalizer
+def array_equal(a1: ArrayLike, a2: ArrayLike, equal_nan=False):
+    result = _impl.tensor_equal(a1, a2, equal_nan)
     return result
 
 
-def array_equiv(a1, a2):
-    a1_t, a2_t = _helpers.to_tensors(a1, a2)
-    result = _impl.tensor_equiv(a1_t, a2_t)
+@normalizer
+def array_equiv(a1: ArrayLike, a2: ArrayLike):
+    result = _impl.tensor_equiv(a1, a2)
     return result
 
 
@@ -966,24 +902,26 @@ def asfarray():
 # ### put/take_along_axis ###
 
 
-def take_along_axis(arr, indices, axis):
-    tensor, t_indices = _helpers.to_tensors(arr, indices)
-    result = _impl.take_along_dim(tensor, t_indices, axis)
-    return asarray(result)
+@normalizer
+def take_along_axis(arr: ArrayLike, indices: ArrayLike, axis):
+    result = _impl.take_along_dim(arr, indices, axis)
+    return _helpers.array_from(result)
 
 
-def put_along_axis(arr, indices, values, axis):
-    tensor, t_indices, t_values = _helpers.to_tensors(arr, indices, values)
-    # modify the argument in-place
-    arr._tensor = _impl.put_along_dim(tensor, t_indices, t_values, axis)
+@normalizer
+def put_along_axis(arr: ArrayLike, indices: ArrayLike, values: ArrayLike, axis):
+    # modify the argument in-place : here `arr` is `arr._tensor` of the orignal `arr` argument
+    result = _impl.put_along_dim(arr, indices, values, axis)
+    arr.copy_(result.reshape(arr.shape))
     return None
 
 
 # ### unqiue et al ###
 
 
+@normalizer
 def unique(
-    ar,
+    ar: ArrayLike,
     return_index=False,
     return_inverse=False,
     return_counts=False,
@@ -991,9 +929,8 @@ def unique(
     *,
     equal_nan=True,
 ):
-    tensor = asarray(ar).get()
     result = _impl.unique(
-        tensor,
+        ar,
         return_index=return_index,
         return_inverse=return_inverse,
         return_counts=return_counts,
@@ -1002,9 +939,9 @@ def unique(
     )
 
     if isinstance(result, tuple):
-        return tuple(asarray(x) for x in result)
+        return _helpers.tuple_arrays_from(result)
     else:
-        return asarray(result)
+        return _helpers.array_from(result)
 
 
 ###### mapping from numpy API objects to wrappers from this module ######
