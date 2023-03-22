@@ -49,7 +49,7 @@ def ufunc_preprocess(
 
     out_shape_dtype = None
     if out is not None:
-        out_shape_dtype = (out.get().dtype, out.get().shape)
+        out_shape_dtype = (out.tensor.dtype, out.tensor.shape)
 
     tensors = _util.cast_and_broadcast(tensors, out_shape_dtype, casting)
 
@@ -77,7 +77,7 @@ def result_or_out(result_tensor, out_array=None, promote_scalar=False):
                     f"Bad size of the out array: out.shape = {out_array.shape}"
                     f" while result.shape = {result_tensor.shape}."
                 )
-        out_tensor = out_array.get()
+        out_tensor = out_array.tensor
         out_tensor.copy_(result_tensor)
         return out_array
     else:
@@ -87,8 +87,7 @@ def result_or_out(result_tensor, out_array=None, promote_scalar=False):
 def array_from(tensor, base=None):
     from ._ndarray import ndarray
 
-    base = base if isinstance(base, ndarray) else None
-    return ndarray._from_tensor_and_base(tensor, base)  # XXX: nuke .base
+    return ndarray(tensor)
 
 
 def tuple_arrays_from(result):
@@ -109,7 +108,7 @@ def ndarrays_to_tensors(*inputs):
     elif len(inputs) == 1:
         input_ = inputs[0]
         if isinstance(input_, ndarray):
-            return input_.get()
+            return input_.tensor
         elif isinstance(input_, tuple):
             result = []
             for sub_input in input_:
@@ -127,4 +126,4 @@ def to_tensors(*inputs):
     """Convert all array_likes from `inputs` to tensors."""
     from ._ndarray import asarray, ndarray
 
-    return tuple(asarray(value).get() for value in inputs)
+    return tuple(asarray(value).tensor for value in inputs)

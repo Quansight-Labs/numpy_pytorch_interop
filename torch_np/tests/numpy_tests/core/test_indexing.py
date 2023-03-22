@@ -115,7 +115,7 @@ class TestIndexing:
         # Empty tuple index creates a view
         a = np.array([1, 2, 3])
         assert_equal(a[()], a)
-        assert_(a[()].base is a)
+        assert_(a[()].tensor._base is a.tensor)
         a = np.array(0)
         pytest.skip(
             "torch doesn't have scalar types with distinct instancing behaviours"
@@ -164,7 +164,7 @@ class TestIndexing:
         assert_(a[...] is not a)
         assert_equal(a[...], a)
         # `a[...]` was `a` in numpy <1.9.
-        assert_(a[...].base is a)
+        assert_(a[...].tensor._base is a.tensor)
 
         # Slicing with ellipsis can skip an
         # arbitrary number of dimensions

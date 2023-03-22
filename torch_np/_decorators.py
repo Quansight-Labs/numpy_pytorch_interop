@@ -17,7 +17,7 @@ def out_shape_dtype(func):
     @functools.wraps(func)
     def wrapped(*args, out=None, **kwds):
         if out is not None:
-            kwds.update({"out_shape_dtype": (out.get().dtype, out.get().shape)})
+            kwds.update({"out_shape_dtype": (out.tensor.dtype, out.tensor.shape)})
         result_tensor = func(*args, **kwds)
         return _helpers.result_or_out(result_tensor, out)
 

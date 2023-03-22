@@ -31,7 +31,7 @@ class generic(abc.ABC):
             value = {"inf": torch.inf, "nan": torch.nan}[value]
 
         if isinstance(value, _ndarray.ndarray):
-            tensor = value.get()
+            tensor = value.tensor
         else:
             try:
                 tensor = torch.as_tensor(value, dtype=self.torch_dtype)
@@ -49,7 +49,7 @@ class generic(abc.ABC):
         # and here we follow the second approach and create a new object
         # *for all inputs*.
         #
-        return _ndarray.ndarray._from_tensor_and_base(tensor, None)
+        return _ndarray.ndarray(tensor)
 
 
 ##### these are abstract types
@@ -317,7 +317,7 @@ class DType:
     @property
     def itemsize(self):
         elem = self.type(1)
-        return elem.get().element_size()
+        return elem.tensor.element_size()
 
     def __getstate__(self):
         return self._scalar_type

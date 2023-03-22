@@ -62,48 +62,36 @@ class Flags:
 
 
 class ndarray:
-    def __init__(self):
-        self._tensor = torch.Tensor()
-        self._base = None
-
-    @classmethod
-    def _from_tensor_and_base(cls, tensor, base):
-        self = cls()
-        self._tensor = tensor
-        self._base = base
-        return self
-
-    def get(self):
-        return self._tensor
+    def __init__(self, t=None):
+        if t is None:
+            self.tensor = torch.Tensor()
+        else:
+            self.tensor = torch.as_tensor(t)
 
     @property
     def shape(self):
-        return tuple(self._tensor.shape)
+        return tuple(self.tensor.shape)
 
     @property
     def size(self):
-        return self._tensor.numel()
+        return self.tensor.numel()
 
     @property
     def ndim(self):
-        return self._tensor.ndim
+        return self.tensor.ndim
 
     @property
     def dtype(self):
-        return _dtypes.dtype(self._tensor.dtype)
+        return _dtypes.dtype(self.tensor.dtype)
 
     @property
     def strides(self):
-        elsize = self._tensor.element_size()
-        return tuple(stride * elsize for stride in self._tensor.stride())
+        elsize = self.tensor.element_size()
+        return tuple(stride * elsize for stride in self.tensor.stride())
 
     @property
     def itemsize(self):
-        return self._tensor.element_size()
-
-    @property
-    def base(self):
-        return self._base
+        return self.tensor.element_size()
 
     @property
     def flags(self):
@@ -112,15 +100,15 @@ class ndarray:
         # check if F contiguous
         from itertools import accumulate
 
-        f_strides = tuple(accumulate(list(self._tensor.shape), func=lambda x, y: x * y))
+        f_strides = tuple(accumulate(list(self.tensor.shape), func=lambda x, y: x * y))
         f_strides = (1,) + f_strides[:-1]
-        is_f_contiguous = f_strides == self._tensor.stride()
+        is_f_contiguous = f_strides == self.tensor.stride()
 
         return Flags(
             {
-                "C_CONTIGUOUS": self._tensor.is_contiguous(),
+                "C_CONTIGUOUS": self.tensor.is_contiguous(),
                 "F_CONTIGUOUS": is_f_contiguous,
-                "OWNDATA": self._tensor._base is None,
+                "OWNDATA": self.tensor._base is None,
                 "WRITEABLE": True,  # pytorch does not have readonly tensors
             }
         )
@@ -135,7 +123,7 @@ class ndarray:
 
     @real.setter
     def real(self, value):
-        self._tensor.real = asarray(value).get()
+        self.tensor.real = asarray(value).tensor
 
     @property
     def imag(self):
@@ -143,7 +131,7 @@ class ndarray:
 
     @imag.setter
     def imag(self, value):
-        self._tensor.imag = asarray(value).get()
+        self.tensor.imag = asarray(value).tensor
 
     round = _funcs.round
 
@@ -151,22 +139,22 @@ class ndarray:
     def astype(self, dtype):
         newt = ndarray()
         torch_dtype = _dtypes.dtype(dtype).torch_dtype
-        newt._tensor = self._tensor.to(torch_dtype)
+        newt.tensor = self.tensor.to(torch_dtype)
         return newt
 
     def copy(self, order="C"):
         if order != "C":
             raise NotImplementedError
-        tensor = self._tensor.clone()
-        return ndarray._from_tensor_and_base(tensor, None)
+        tensor = self.tensor.clone()
+        return ndarray(tensor)
 
     def tolist(self):
-        return self._tensor.tolist()
+        return self.tensor.tolist()
 
     ###  niceties ###
     def __str__(self):
         return (
-            str(self._tensor)
+            str(self.tensor)
             .replace("tensor", "array_w")
             .replace("dtype=torch.", "dtype=")
         )
@@ -197,7 +185,7 @@ class ndarray:
 
     def __bool__(self):
         try:
-            return bool(self._tensor)
+            return bool(self.tensor)
         except RuntimeError:
             raise ValueError(
                 "The truth value of an array with more than one "
@@ -206,35 +194,35 @@ class ndarray:
 
     def __index__(self):
         try:
-            return operator.index(self._tensor.item())
+            return operator.index(self.tensor.item())
         except Exception:
             mesg = "only integer scalar arrays can be converted to a scalar index"
             raise TypeError(mesg)
 
     def __float__(self):
-        return float(self._tensor)
+        return float(self.tensor)
 
     def __complex__(self):
         try:
-            return complex(self._tensor)
+            return complex(self.tensor)
         except ValueError as e:
             raise TypeError(*e.args)
 
     def __int__(self):
-        return int(self._tensor)
+        return int(self.tensor)
 
     # XXX : are single-element ndarrays scalars?
     # in numpy, only array scalars have the `is_integer` method
     def is_integer(self):
         try:
-            result = int(self._tensor) == self._tensor
+            result = int(self.tensor) == self.tensor
         except Exception:
             result = False
         return result
 
     ### sequence ###
     def __len__(self):
-        return self._tensor.shape[0]
+        return self.tensor.shape[0]
 
     ### arithmetic ###
 
@@ -360,8 +348,8 @@ class ndarray:
 
     def sort(self, axis=-1, kind=None, order=None):
         # ndarray.sort works in-place
-        result = _impl.sort(self._tensor, axis, kind, order)
-        self._tensor = result
+        result = _impl.sort(self.tensor, axis, kind, order)
+        self.tensor = result
 
     argsort = _funcs.argsort
     searchsorted = _funcs.searchsorted
@@ -398,13 +386,13 @@ class ndarray:
     def __getitem__(self, index):
         index = _helpers.ndarrays_to_tensors(index)
         index = ndarray._upcast_int_indices(index)
-        return ndarray._from_tensor_and_base(self._tensor.__getitem__(index), self)
+        return ndarray(self.tensor.__getitem__(index))
 
     def __setitem__(self, index, value):
         index = _helpers.ndarrays_to_tensors(index)
         index = ndarray._upcast_int_indices(index)
         value = _helpers.ndarrays_to_tensors(value)
-        return self._tensor.__setitem__(index, value)
+        return self.tensor.__setitem__(index, value)
 
 
 # This is the ideally the only place which talks to ndarray directly.
@@ -426,35 +414,28 @@ def array(obj, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=N
         a1 = []
         for elem in obj:
             if isinstance(elem, ndarray):
-                a1.append(elem.get().tolist())
+                a1.append(elem.tensor.tolist())
             else:
                 a1.append(elem)
         obj = a1
 
     # is obj an ndarray already?
-    base = None
     if isinstance(obj, ndarray):
-        obj = obj._tensor
-        base = obj
+        obj = obj.tensor
 
     # is a specific dtype requrested?
     torch_dtype = None
     if dtype is not None:
         torch_dtype = _dtypes.dtype(dtype).torch_dtype
-        base = None
 
     tensor = _util._coerce_to_tensor(obj, torch_dtype, copy, ndmin)
-    return ndarray._from_tensor_and_base(tensor, base)
+    return ndarray(tensor)
 
 
 def asarray(a, dtype=None, order=None, *, like=None):
     if order is None:
         order = "K"
     return array(a, dtype=dtype, order=order, like=like, copy=False, ndmin=0)
-
-
-def maybe_set_base(tensor, base):
-    return ndarray._from_tensor_and_base(tensor, base)
 
 
 ###### dtype routines
