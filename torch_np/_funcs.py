@@ -2,9 +2,9 @@ from typing import Optional
 
 import torch
 
+from . import _detail as _impl
 from . import _helpers
-from ._detail import _flips, _reductions, _util
-from ._detail import implementations as _impl
+from ._detail import _util
 from ._normalizations import (
     ArrayLike,
     AxisLike,
@@ -13,6 +13,8 @@ from ._normalizations import (
     SubokLike,
     normalizer,
 )
+
+NoValue = _util.NoValue
 
 
 @normalizer
@@ -158,13 +160,13 @@ def moveaxis(a: ArrayLike, source, destination):
 
 @normalizer
 def swapaxes(a: ArrayLike, axis1, axis2):
-    result = _flips.swapaxes(a, axis1, axis2)
+    result = _impl.swapaxes(a, axis1, axis2)
     return _helpers.array_from(result)
 
 
 @normalizer
 def rollaxis(a: ArrayLike, axis, start=0):
-    result = _flips.rollaxis(a, axis, start)
+    result = _impl.rollaxis(a, axis, start)
     return _helpers.array_from(result)
 
 
@@ -230,9 +232,6 @@ round = round_
 # ### reductions ###
 
 
-NoValue = None  # FIXME
-
-
 @normalizer
 def sum(
     a: ArrayLike,
@@ -243,7 +242,7 @@ def sum(
     initial=NoValue,
     where=NoValue,
 ):
-    result = _reductions.sum(
+    result = _impl.sum(
         a, axis=axis, dtype=dtype, initial=initial, where=where, keepdims=keepdims
     )
     return _helpers.result_or_out(result, out)
@@ -259,7 +258,7 @@ def prod(
     initial=NoValue,
     where=NoValue,
 ):
-    result = _reductions.prod(
+    result = _impl.prod(
         a, axis=axis, dtype=dtype, initial=initial, where=where, keepdims=keepdims
     )
     return _helpers.result_or_out(result, out)
@@ -278,9 +277,7 @@ def mean(
     *,
     where=NoValue,
 ):
-    result = _reductions.mean(
-        a, axis=axis, dtype=dtype, where=NoValue, keepdims=keepdims
-    )
+    result = _impl.mean(a, axis=axis, dtype=dtype, where=NoValue, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
@@ -295,7 +292,7 @@ def var(
     *,
     where=NoValue,
 ):
-    result = _reductions.var(
+    result = _impl.var(
         a, axis=axis, dtype=dtype, ddof=ddof, where=where, keepdims=keepdims
     )
     return _helpers.result_or_out(result, out)
@@ -312,7 +309,7 @@ def std(
     *,
     where=NoValue,
 ):
-    result = _reductions.std(
+    result = _impl.std(
         a, axis=axis, dtype=dtype, ddof=ddof, where=where, keepdims=keepdims
     )
     return _helpers.result_or_out(result, out)
@@ -326,7 +323,7 @@ def argmin(
     *,
     keepdims=NoValue,
 ):
-    result = _reductions.argmin(a, axis=axis, keepdims=keepdims)
+    result = _impl.argmin(a, axis=axis, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
@@ -338,7 +335,7 @@ def argmax(
     *,
     keepdims=NoValue,
 ):
-    result = _reductions.argmax(a, axis=axis, keepdims=keepdims)
+    result = _impl.argmax(a, axis=axis, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
@@ -351,9 +348,7 @@ def amax(
     initial=NoValue,
     where=NoValue,
 ):
-    result = _reductions.max(
-        a, axis=axis, initial=initial, where=where, keepdims=keepdims
-    )
+    result = _impl.max(a, axis=axis, initial=initial, where=where, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
@@ -369,9 +364,7 @@ def amin(
     initial=NoValue,
     where=NoValue,
 ):
-    result = _reductions.min(
-        a, axis=axis, initial=initial, where=where, keepdims=keepdims
-    )
+    result = _impl.min(a, axis=axis, initial=initial, where=where, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
@@ -382,7 +375,7 @@ min = amin
 def ptp(
     a: ArrayLike, axis: AxisLike = None, out: Optional[NDArray] = None, keepdims=NoValue
 ):
-    result = _reductions.ptp(a, axis=axis, keepdims=keepdims)
+    result = _impl.ptp(a, axis=axis, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
@@ -395,7 +388,7 @@ def all(
     *,
     where=NoValue,
 ):
-    result = _reductions.all(a, axis=axis, where=where, keepdims=keepdims)
+    result = _impl.all(a, axis=axis, where=where, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
@@ -408,13 +401,13 @@ def any(
     *,
     where=NoValue,
 ):
-    result = _reductions.any(a, axis=axis, where=where, keepdims=keepdims)
+    result = _impl.any(a, axis=axis, where=where, keepdims=keepdims)
     return _helpers.result_or_out(result, out)
 
 
 @normalizer
 def count_nonzero(a: ArrayLike, axis: AxisLike = None, *, keepdims=False):
-    result = _reductions.count_nonzero(a, axis=axis, keepdims=keepdims)
+    result = _impl.count_nonzero(a, axis=axis, keepdims=keepdims)
     return _helpers.array_from(result)
 
 
@@ -425,7 +418,7 @@ def cumsum(
     dtype: DTypeLike = None,
     out: Optional[NDArray] = None,
 ):
-    result = _reductions.cumsum(a, axis=axis, dtype=dtype)
+    result = _impl.cumsum(a, axis=axis, dtype=dtype)
     return _helpers.result_or_out(result, out)
 
 
@@ -436,7 +429,7 @@ def cumprod(
     dtype: DTypeLike = None,
     out: Optional[NDArray] = None,
 ):
-    result = _reductions.cumprod(a, axis=axis, dtype=dtype)
+    result = _impl.cumprod(a, axis=axis, dtype=dtype)
     return _helpers.result_or_out(result, out)
 
 
@@ -458,5 +451,5 @@ def quantile(
     if interpolation is not None:
         raise ValueError("'interpolation' argument is deprecated; use 'method' instead")
 
-    result = _reductions.quantile(a, q, axis, method=method, keepdims=keepdims)
+    result = _impl.quantile(a, q, axis, method=method, keepdims=keepdims)
     return _helpers.result_or_out(result, out, promote_scalar=True)

@@ -3,7 +3,7 @@ import operator
 import torch
 
 from . import _binary_ufuncs, _dtypes, _funcs, _helpers, _unary_ufuncs
-from ._detail import _dtypes_impl, _flips, _reductions, _util
+from ._detail import _dtypes_impl, _util
 from ._detail import implementations as _impl
 
 newaxis = None

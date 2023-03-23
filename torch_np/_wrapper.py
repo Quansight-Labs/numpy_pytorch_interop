@@ -8,11 +8,14 @@ from typing import Optional, Sequence
 
 import torch
 
-from . import _funcs, _helpers
-from ._detail import _dtypes_impl, _flips, _reductions, _util
-from ._detail import implementations as _impl
+from . import _decorators
+from . import _detail as _impl
+from . import _dtypes, _funcs, _helpers
+from ._detail import _dtypes_impl, _util
 from ._ndarray import asarray
 from ._normalizations import ArrayLike, DTypeLike, NDArray, SubokLike, normalizer
+
+NoValue = _util.NoValue
 
 # Things to decide on (punt for now)
 #
@@ -47,9 +50,6 @@ from ._normalizations import ArrayLike, DTypeLike, NDArray, SubokLike, normalize
 #   - two-arg functions (second may be None)
 #   - first arg is a sequence/tuple (_stack familty, concatenate, atleast_Nd etc)
 #   - optional out arg
-
-
-NoValue = None
 
 
 ###### array creation routines
@@ -492,25 +492,25 @@ def expand_dims(a: ArrayLike, axis):
 
 @normalizer
 def flip(m: ArrayLike, axis=None):
-    result = _flips.flip(m, axis)
+    result = _impl.flip(m, axis)
     return _helpers.array_from(result)
 
 
 @normalizer
 def flipud(m: ArrayLike):
-    result = _flips.flipud(m)
+    result = _impl.flipud(m)
     return _helpers.array_from(result)
 
 
 @normalizer
 def fliplr(m: ArrayLike):
-    result = _flips.fliplr(m)
+    result = _impl.fliplr(m)
     return _helpers.array_from(result)
 
 
 @normalizer
 def rot90(m: ArrayLike, k=1, axes=(0, 1)):
-    result = _flips.rot90(m, k, axes)
+    result = _impl.rot90(m, k, axes)
     return _helpers.array_from(result)
 
 
@@ -631,9 +631,7 @@ def average(
     *,
     keepdims=NoValue,
 ):
-    result, wsum = _reductions.average(
-        a, axis, weights, returned=returned, keepdims=keepdims
-    )
+    result, wsum = _impl.average(a, axis, weights, returned=returned, keepdims=keepdims)
     if returned:
         return _helpers.tuple_arrays_from((result, wsum))
     else:

@@ -10,7 +10,7 @@ import torch
 
 from . import _dtypes_impl, _util
 
-NoValue = None
+NoValue = _util.NoValue
 
 
 import functools
