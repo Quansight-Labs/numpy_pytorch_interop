@@ -104,7 +104,9 @@ def normalizer(_func=None, *, return_on_failure=_sentinel):
             first_param = next(iter(params.values()))
             # NumPy's API does not have positional args before variadic positional args
             if first_param.kind == inspect.Parameter.VAR_POSITIONAL:
-                args = [maybe_normalize(arg, first_param, return_on_failure) for arg in args]
+                args = [
+                    maybe_normalize(arg, first_param, return_on_failure) for arg in args
+                ]
             else:
                 # NB: extra unknown arguments: pass through, will raise in func(*args) below
                 args = (
@@ -120,10 +122,10 @@ def normalizer(_func=None, *, return_on_failure=_sentinel):
                 for name, arg in kwds.items()
             }
             return func(*args, **kwds)
+
         return wrapped
 
     if _func is None:
         return normalizer_inner
     else:
         return normalizer_inner(_func)
-
