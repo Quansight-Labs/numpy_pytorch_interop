@@ -12,7 +12,7 @@ import torch
 
 from . import _helpers
 from ._detail import _dtypes_impl, _util
-from ._normalizations import ArrayLike, normalizer
+from ._normalizations import ArrayLike, array_or_scalar, normalizer
 
 _default_dtype = _dtypes_impl.default_float_dtype
 
@@ -29,13 +29,6 @@ __all__ = [
     "shuffle",
     "uniform",
 ]
-
-
-def array_or_scalar(values, py_type=float, return_scalar=False):
-    if return_scalar:
-        return py_type(values.item())
-    else:
-        return _helpers.array_from(values)
 
 
 def seed(seed=None):
@@ -131,4 +124,4 @@ def choice(a: ArrayLike, size=None, replace=True, p: Optional[ArrayLike] = None)
 
     samples = a[indices]
 
-    return _helpers.array_from(samples)
+    return samples

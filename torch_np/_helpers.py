@@ -55,19 +55,9 @@ def result_or_out(result_tensor, out_array=None, promote_scalar=False):
         out_tensor.copy_(result_tensor)
         return out_array
     else:
-        return array_from(result_tensor)
+        from ._ndarray import ndarray
 
-
-def array_from(tensor, base=None):
-    from ._ndarray import ndarray
-
-    return ndarray(tensor)
-
-
-def tuple_arrays_from(result):
-    from ._ndarray import asarray
-
-    return tuple(asarray(x) for x in result)
+        return ndarray(result_tensor)
 
 
 # ### Various ways of converting array-likes to tensors ###
@@ -94,10 +84,3 @@ def ndarrays_to_tensors(*inputs):
     else:
         assert isinstance(inputs, tuple)  # sanity check
         return ndarrays_to_tensors(inputs)
-
-
-def to_tensors(*inputs):
-    """Convert all array_likes from `inputs` to tensors."""
-    from ._ndarray import asarray, ndarray
-
-    return tuple(asarray(value).tensor for value in inputs)
