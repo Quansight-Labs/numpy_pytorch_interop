@@ -5979,7 +5979,7 @@ class TestMatmul(MatmulCommon):
         # test out non-contiguous
         out = np.ones((5, 2, 2), dtype=float)
         c = self.matmul(a, b, out=out[..., 0])
-        assert c._tensor._base is out._tensor     # FIXME: self.tensor (no underscore)
+        assert c.tensor._base is out.tensor
         assert_array_equal(c, tgt)
         c = self.matmul(a, v, out=out[:, 0, 0])
         assert_array_equal(c, tgt_mv)

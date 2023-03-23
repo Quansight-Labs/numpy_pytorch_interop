@@ -68,7 +68,7 @@ def matmul(
     extobj=None,
     axes=None,
     axis=None,
-) -> OutArray:
+):
     tensors = _helpers.ufunc_preprocess(
         (x1, x2), out, True, casting, order, dtype, subok, signature, extobj
     )
@@ -77,7 +77,7 @@ def matmul(
 
     # NB: do not broadcast input tensors against the out=... array
     result = _binary_ufuncs.matmul(*tensors)
-    return result, out
+    return _helpers.result_or_out(result, out)
 
 
 #
