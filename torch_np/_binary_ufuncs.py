@@ -1,11 +1,15 @@
 from typing import Optional
 
+import torch
+
 from . import _helpers
 from ._detail import _binary_ufuncs
 from ._normalizations import ArrayLike, DTypeLike, NDArray, SubokLike, normalizer
 
 __all__ = [
-    name for name in dir(_binary_ufuncs) if not name.startswith("_") and name != "torch"
+    name
+    for name in dir(_binary_ufuncs)
+    if not name.startswith("_") and name not in ["torch", "matmul"]
 ]
 
 
@@ -33,10 +37,47 @@ def deco_binary_ufunc(torch_func):
         tensors = _helpers.ufunc_preprocess(
             (x1, x2), out, where, casting, order, dtype, subok, signature, extobj
         )
+        # now broadcast input tensors against the out=... array
+        if out is not None:
+            # XXX: need to filter out noop broadcasts if t.shape == out.shape?
+            shape = out.shape
+            tensors = tuple(torch.broadcast_to(t, shape) for t in tensors)
+
         result = torch_func(*tensors)
         return _helpers.result_or_out(result, out)
 
     return wrapped
+
+
+#
+# matmul is special in that its `out=...` array does not broadcast x1 and x2.
+# E.g. consider x1.shape = (5, 2) and x2.shape = (2, 3). Then `out.shape` is (5, 3).
+#
+@normalizer
+def matmul(
+    x1: ArrayLike,
+    x2: ArrayLike,
+    /,
+    out: Optional[NDArray] = None,
+    *,
+    casting="same_kind",
+    order="K",
+    dtype: DTypeLike = None,
+    subok: SubokLike = False,
+    signature=None,
+    extobj=None,
+    axes=None,
+    axis=None,
+):
+    tensors = _helpers.ufunc_preprocess(
+        (x1, x2), out, True, casting, order, dtype, subok, signature, extobj
+    )
+    if axis is not None or axes is not None:
+        raise NotImplementedError
+
+    # NB: do not broadcast input tensors against the out=... array
+    result = _binary_ufuncs.matmul(*tensors)
+    return _helpers.result_or_out(result, out)
 
 
 #
@@ -50,3 +91,58 @@ for name in __all__:
     decorated.__qualname__ = name  # XXX: is this really correct?
     decorated.__name__ = name
     vars()[name] = decorated
+
+
+# a stub implementation of divmod, should be improved after
+# https://github.com/pytorch/pytorch/issues/90820 is fixed in pytorch
+#
+# Implementation details: we just call two ufuncs which have been created
+# just above, for x1 // x2 and x1 % x2.
+# This means we are normalizing x1, x2 in each of the ufuncs --- note that there
+# is no @normalizer on divmod.
+
+
+def divmod(
+    x1,
+    x2,
+    /,
+    out=None,
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype=None,
+    subok: SubokLike = False,
+    signature=None,
+    extobj=None,
+):
+    out1, out2 = None, None
+    if out is not None:
+        out1, out2 = out
+
+    kwds = dict(
+        where=where,
+        casting=casting,
+        order=order,
+        dtype=dtype,
+        subok=subok,
+        signature=signature,
+        extobj=extobj,
+    )
+
+    # NB: use local names for
+    quot = floor_divide(x1, x2, out=out1, **kwds)
+    rem = remainder(x1, x2, out=out2, **kwds)
+
+    quot = _helpers.result_or_out(quot.tensor, out1)
+    rem = _helpers.result_or_out(rem.tensor, out2)
+
+    return quot, rem
+
+
+def modf(x, /, *args, **kwds):
+    quot, rem = divmod(x, 1, *args, **kwds)
+    return rem, quot
+
+
+__all__ = __all__ + ["divmod", "modf", "matmul"]

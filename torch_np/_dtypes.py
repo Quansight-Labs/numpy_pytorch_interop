@@ -174,7 +174,10 @@ _name_aliases = {
     "double": float64,
     "float_": float64,
     "csingle": complex64,
+    "singlecomplex": complex64,
     "cdouble": complex128,
+    "cfloat": complex128,
+    "complex_": complex128,
 }
 for name, obj in _name_aliases.items():
     globals()[name] = obj

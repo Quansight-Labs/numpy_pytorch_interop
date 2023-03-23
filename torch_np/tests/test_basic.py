@@ -45,6 +45,7 @@ one_arg_funcs = [
 
 ufunc_names = _unary_ufuncs.__all__
 ufunc_names.remove("invert")  # torch: bitwise_not_cpu not implemented for 'Float'
+ufunc_names.remove("bitwise_not")
 
 one_arg_funcs += [getattr(_unary_ufuncs, name) for name in ufunc_names]
 

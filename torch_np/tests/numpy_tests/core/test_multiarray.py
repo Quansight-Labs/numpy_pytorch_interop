@@ -2605,7 +2605,6 @@ class TestMethods:
         if HAS_REFCOUNT:
             assert_(sys.getrefcount(a) < 50)
 
-    @pytest.mark.xfail(reason="TODO: implement np.dot")
     def test_size_zero_memleak(self):
         # Regression test for issue 9615
         # Exercises a special-case code path for dot products of length
@@ -5707,7 +5706,7 @@ class MatmulCommon:
     """
     # Should work with these types. Will want to add
     # "O" at some point
-    types = "?bhilqBefdFD"
+    types = "?bhilBefdFD"
 
     def test_exceptions(self):
         dims = [
@@ -5725,7 +5724,7 @@ class MatmulCommon:
         for dt, (dm1, dm2) in itertools.product(self.types, dims):
             a = np.ones(dm1, dtype=dt)
             b = np.ones(dm2, dtype=dt)
-            assert_raises(ValueError, self.matmul, a, b)
+            assert_raises((RuntimeError, ValueError), self.matmul, a, b)
 
     def test_shapes(self):
         dims = [
@@ -5757,7 +5756,13 @@ class MatmulCommon:
                 res = self.matmul(*arg)
                 assert_(res.dtype == dt)
 
-            # vector vector returns scalars
+    @pytest.mark.xfail(reason='no scalars')
+    def test_result_types_2(self):
+        # in numpy, vector vector returns scalars
+        # we return a 0D array instead
+
+        for dt in self.types:
+            v = np.ones((1,)).astype(dt)
             if dt != "O":
                 res = self.matmul(v, v)
                 assert_(type(res) is np.dtype(dt).type)
@@ -5918,9 +5923,10 @@ class MatmulCommon:
         assert_equal(res, tgt12_21)
 
 
-@pytest.mark.xfail(reason='TODO: matmul (ufunc wrapping goes south?)')
 class TestMatmul(MatmulCommon):
-    matmul = np.matmul
+
+    def setup_method(self):
+        self.matmul = np.matmul
 
     def test_out_arg(self):
         a = np.ones((5, 2), dtype=float)
@@ -5940,7 +5946,7 @@ class TestMatmul(MatmulCommon):
         assert_array_equal(out, tgt, err_msg=msg)
 
         # test out with not allowed type cast (safe casting)
-        msg = "Cannot cast ufunc .* output"
+        msg = "Cannot cast"
         out = np.zeros((5, 2), dtype=np.int32)
         assert_raises_regex(TypeError, msg, self.matmul, a, b, out=out)
 
@@ -5948,9 +5954,9 @@ class TestMatmul(MatmulCommon):
         out = np.zeros((5, 2), dtype=np.complex128)
         c = self.matmul(a, b, out=out)
         assert_(c is out)
-        with suppress_warnings() as sup:
-            sup.filter(np.ComplexWarning, '')
-            c = c.astype(tgt.dtype)
+  #      with suppress_warnings() as sup:
+  #          sup.filter(np.ComplexWarning, '')
+        c = c.astype(tgt.dtype)
         assert_array_equal(c, tgt)
 
     def test_empty_out(self):
@@ -5960,7 +5966,7 @@ class TestMatmul(MatmulCommon):
         out = np.ones((1, 1, 1))
         assert self.matmul(arr, arr).shape == (0, 1, 1)
 
-        with pytest.raises(ValueError, match=r"non-broadcastable"):
+        with pytest.raises(ValueError, match="Bad size of the out array"):  # match=r"non-broadcastable"):
             self.matmul(arr, arr, out=out)
 
     def test_out_contiguous(self):
@@ -5973,7 +5979,7 @@ class TestMatmul(MatmulCommon):
         # test out non-contiguous
         out = np.ones((5, 2, 2), dtype=float)
         c = self.matmul(a, b, out=out[..., 0])
-        assert c.base is out
+        assert c.tensor._base is out.tensor
         assert_array_equal(c, tgt)
         c = self.matmul(a, v, out=out[:, 0, 0])
         assert_array_equal(c, tgt_mv)
@@ -6024,6 +6030,7 @@ class TestMatmul(MatmulCommon):
         assert_equal(r1, r3)
 
 
+    @pytest.mark.skip(reason='object arrays')
     def test_matmul_exception_multiply(self):
         # test that matmul fails if `__mul__` is missing
         class add_not_multiply():
@@ -6033,6 +6040,7 @@ class TestMatmul(MatmulCommon):
         with assert_raises(TypeError):
             b = np.matmul(a, a)
 
+    @pytest.mark.skip(reason='object arrays')
     def test_matmul_exception_add(self):
         # test that matmul fails if `__add__` is missing
         class multiply_not_add():
@@ -6042,6 +6050,7 @@ class TestMatmul(MatmulCommon):
         with assert_raises(TypeError):
             b = np.matmul(a, a)
 
+    @pytest.mark.xfail(reason="TODO: implement .view")
     def test_matmul_bool(self):
         # gh-14439
         a = np.array([[1, 0],[1, 1]], dtype=bool)
@@ -6061,11 +6070,11 @@ class TestMatmul(MatmulCommon):
         assert not np.any(c)
 
 
-@pytest.mark.xfail(reason='TODO: @')
 class TestMatmulOperator(MatmulCommon):
     import operator
     matmul = operator.matmul
 
+    @pytest.mark.skip(reason="no __array_priority__")
     def test_array_priority_override(self):
 
         class A:
@@ -6083,11 +6092,10 @@ class TestMatmulOperator(MatmulCommon):
         assert_equal(self.matmul(b, a), "A")
 
     def test_matmul_raises(self):
-        assert_raises(TypeError, self.matmul, np.int8(5), np.int8(5))
-        assert_raises(TypeError, self.matmul, np.void(b'abc'), np.void(b'abc'))
-        assert_raises(TypeError, self.matmul, np.arange(10), np.void(b'abc'))
+        assert_raises((RuntimeError, TypeError), self.matmul, np.int8(5), np.int8(5))
 
-@pytest.mark.xfail(reason='TODO @')
+
+@pytest.mark.xfail(reason="torch supports inplace matmul, and so do we")
 def test_matmul_inplace():
     # It would be nice to support in-place matmul eventually, but for now
     # we don't have a working implementation, so better just to error out

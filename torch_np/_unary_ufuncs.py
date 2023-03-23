@@ -4,6 +4,8 @@
 
 from typing import Optional
 
+import torch
+
 from . import _helpers
 from ._detail import _unary_ufuncs
 from ._normalizations import ArrayLike, DTypeLike, NDArray, SubokLike, normalizer
@@ -36,6 +38,11 @@ def deco_unary_ufunc(torch_func):
         tensors = _helpers.ufunc_preprocess(
             (x,), out, where, casting, order, dtype, subok, signature, extobj
         )
+        # now broadcast the input tensor against the out=... array
+        if out is not None:
+            # XXX: need to filter out noop broadcasts if t.shape == out.shape?
+            shape = out.shape
+            tensors = tuple(torch.broadcast_to(t, shape) for t in tensors)
         result = torch_func(*tensors)
         return _helpers.result_or_out(result, out)
 

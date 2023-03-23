@@ -266,6 +266,8 @@ class ndarray:
     def __ifloordiv__(self, other):
         return _binary_ufuncs.floor_divide(self, other, out=self)
 
+    __divmod__ = _binary_ufuncs.divmod
+
     # power, self**exponent
     __pow__ = __rpow__ = _binary_ufuncs.float_power
 
@@ -310,6 +312,14 @@ class ndarray:
 
     def __irshift__(self, other):
         return _binary_ufuncs.right_shift(self, other, out=self)
+
+    __matmul__ = _binary_ufuncs.matmul
+
+    def __rmatmul__(self, other):
+        return _binary_ufuncs.matmul(other, self)
+
+    def __imatmul__(self, other):
+        return _binary_ufuncs.matmul(self, other, out=self)
 
     # unary ops
     __invert__ = _unary_ufuncs.invert
