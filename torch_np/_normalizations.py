@@ -96,16 +96,40 @@ def maybe_normalize(arg, parm, return_on_failure=_sentinel):
             raise exc from None
 
 
+# ### Return value helpers ###
+
+
+def maybe_copy_to(out, result, promote_scalar_result=False):
+    # NB: here out is either an ndarray or None
+    if out is None:
+        return result
+    elif isinstance(result, torch.Tensor):
+        if result.shape != out.shape:
+            can_fit = result.numel() == 1 and out.ndim == 0
+            if promote_scalar_result and can_fit:
+                result = result.squeeze()
+            else:
+                raise ValueError(
+                    f"Bad size of the out array: out.shape = {out.shape}"
+                    f" while result.shape = {result.shape}."
+                )
+        out.tensor.copy_(result)
+        return out
+    elif isinstance(result, (tuple, list)):
+        return type(result)(map(copy_to, zip(result, out)))
+    else:
+        assert False  # We should never hit this path
+
+
 def wrap_tensors(result):
     from ._ndarray import ndarray
 
     if isinstance(result, torch.Tensor):
-        result = ndarray(result)
+        return ndarray(result)
     elif isinstance(result, (tuple, list)):
         result = type(result)(
             ndarray(x) if isinstance(x, torch.Tensor) else x for x in result
         )
-
     return result
 
 
@@ -118,11 +142,15 @@ def array_or_scalar(values, py_type=float, return_scalar=False):
         return ndarray(values)
 
 
-def normalizer(_func=None, *, return_on_failure=_sentinel):
+# ### The main decorator to normalize arguments / postprocess the output ###
+
+
+def normalizer(_func=None, *, return_on_failure=_sentinel, promote_scalar_result=False):
     def normalizer_inner(func):
         @functools.wraps(func)
         def wrapped(*args, **kwds):
-            params = inspect.signature(func).parameters
+            sig = inspect.signature(func)
+            params = sig.parameters
             first_param = next(iter(params.values()))
             # NumPy's API does not have positional args before variadic positional args
             if first_param.kind == inspect.Parameter.VAR_POSITIONAL:
@@ -144,7 +172,12 @@ def normalizer(_func=None, *, return_on_failure=_sentinel):
                 for name, arg in kwds.items()
             }
             result = func(*args, **kwds)
+
+            if "out" in params:
+                out = sig.bind(*args, **kwds).arguments.get("out")
+                result = maybe_copy_to(out, result, promote_scalar_result)
             result = wrap_tensors(result)
+
             return result
 
         return wrapped

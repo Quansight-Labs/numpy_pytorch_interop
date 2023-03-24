@@ -580,7 +580,6 @@ def assert_array_compare(
 
         """
         __tracebackhide__ = True  # Hide traceback for py.test
-
         x_id = func(x)
         y_id = func(y)
         # We include work-arounds here to handle three types of slightly

@@ -70,3 +70,9 @@ def matmul(x, y):
         result = result.to(dtype)
 
     return result
+
+
+# a stub implementation of divmod, should be improved after
+# https://github.com/pytorch/pytorch/issues/90820 is fixed in pytorch
+def divmod(x, y):
+    return x // y, x % y

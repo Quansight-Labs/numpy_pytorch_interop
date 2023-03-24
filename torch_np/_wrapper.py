@@ -8,7 +8,6 @@ from typing import Optional, Sequence
 
 import torch
 
-from . import _decorators
 from . import _detail as _impl
 from . import _dtypes, _funcs, _helpers
 from ._detail import _dtypes_impl, _util
@@ -116,7 +115,7 @@ def concatenate(
 ):
     _concat_check(ar_tuple, dtype, out=out)
     result = _impl.concatenate(ar_tuple, axis, out, dtype, casting)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 @normalizer
@@ -167,7 +166,7 @@ def stack(
 ):
     _concat_check(arrays, dtype, out=out)
     result = _impl.stack(arrays, axis=axis, out=out, dtype=dtype, casting=casting)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 @normalizer
@@ -601,7 +600,7 @@ def inner(a: ArrayLike, b: ArrayLike, /):
 @normalizer
 def outer(a: ArrayLike, b: ArrayLike, out: Optional[NDArray] = None):
     result = torch.outer(a, b)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 # ### FIXME: this is a stub

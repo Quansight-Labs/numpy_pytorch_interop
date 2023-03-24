@@ -30,39 +30,6 @@ def ufunc_preprocess(
     return tensors
 
 
-# ### Return helpers: wrap a single tensor, a tuple of tensors, out= etc ###
-
-
-def result_or_out(result_tensor, out_array=None, promote_scalar=False):
-    """A helper for returns with out= argument.
-
-    If `promote_scalar is True`, then:
-        if result_tensor.numel() == 1 and out is zero-dimensional,
-            result_tensor is placed into the out array.
-    This weirdness is used e.g. in `np.percentile`
-    """
-    if out_array is not None:
-        if result_tensor.shape != out_array.shape:
-            can_fit = result_tensor.numel() == 1 and out_array.ndim == 0
-            if promote_scalar and can_fit:
-                result_tensor = result_tensor.squeeze()
-            else:
-                raise ValueError(
-                    f"Bad size of the out array: out.shape = {out_array.shape}"
-                    f" while result.shape = {result_tensor.shape}."
-                )
-        out_tensor = out_array.tensor
-        out_tensor.copy_(result_tensor)
-        return out_array
-    else:
-        from ._ndarray import ndarray
-
-        return ndarray(result_tensor)
-
-
-# ### Various ways of converting array-likes to tensors ###
-
-
 def ndarrays_to_tensors(*inputs):
     """Convert all ndarrays from `inputs` to tensors. (other things are intact)"""
     from ._ndarray import asarray, ndarray

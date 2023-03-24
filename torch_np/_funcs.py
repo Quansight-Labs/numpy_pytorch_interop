@@ -45,7 +45,7 @@ def clip(
     # np.clip requires both a_min and a_max not None, while ndarray.clip allows
     # one of them to be None. Follow the more lax version.
     result = _impl.clip(a, min, max)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 @normalizer
@@ -80,7 +80,7 @@ def trace(
     out: Optional[NDArray] = None,
 ):
     result = _impl.trace(a, offset, axis1, axis2, dtype)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 @normalizer
@@ -135,7 +135,7 @@ def vdot(a: ArrayLike, b: ArrayLike, /):
 @normalizer
 def dot(a: ArrayLike, b: ArrayLike, out: Optional[NDArray] = None):
     result = _impl.dot(a, b)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 # ### sort and partition ###
@@ -234,7 +234,7 @@ def imag(a: ArrayLike):
 @normalizer
 def round_(a: ArrayLike, decimals=0, out: Optional[NDArray] = None):
     result = _impl.round(a, decimals)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 around = round_
@@ -257,7 +257,7 @@ def sum(
     result = _impl.sum(
         a, axis=axis, dtype=dtype, initial=initial, where=where, keepdims=keepdims
     )
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 @normalizer
@@ -273,7 +273,7 @@ def prod(
     result = _impl.prod(
         a, axis=axis, dtype=dtype, initial=initial, where=where, keepdims=keepdims
     )
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 product = prod
@@ -290,7 +290,7 @@ def mean(
     where=NoValue,
 ):
     result = _impl.mean(a, axis=axis, dtype=dtype, where=NoValue, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 @normalizer
@@ -307,7 +307,7 @@ def var(
     result = _impl.var(
         a, axis=axis, dtype=dtype, ddof=ddof, where=where, keepdims=keepdims
     )
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 @normalizer
@@ -324,7 +324,7 @@ def std(
     result = _impl.std(
         a, axis=axis, dtype=dtype, ddof=ddof, where=where, keepdims=keepdims
     )
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 @normalizer
@@ -336,7 +336,7 @@ def argmin(
     keepdims=NoValue,
 ):
     result = _impl.argmin(a, axis=axis, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 @normalizer
@@ -348,7 +348,7 @@ def argmax(
     keepdims=NoValue,
 ):
     result = _impl.argmax(a, axis=axis, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 @normalizer
@@ -361,7 +361,7 @@ def amax(
     where=NoValue,
 ):
     result = _impl.max(a, axis=axis, initial=initial, where=where, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 max = amax
@@ -377,7 +377,7 @@ def amin(
     where=NoValue,
 ):
     result = _impl.min(a, axis=axis, initial=initial, where=where, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 min = amin
@@ -388,7 +388,7 @@ def ptp(
     a: ArrayLike, axis: AxisLike = None, out: Optional[NDArray] = None, keepdims=NoValue
 ):
     result = _impl.ptp(a, axis=axis, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 @normalizer
@@ -401,7 +401,7 @@ def all(
     where=NoValue,
 ):
     result = _impl.all(a, axis=axis, where=where, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 @normalizer
@@ -414,7 +414,7 @@ def any(
     where=NoValue,
 ):
     result = _impl.any(a, axis=axis, where=where, keepdims=keepdims)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 @normalizer
@@ -431,7 +431,7 @@ def cumsum(
     out: Optional[NDArray] = None,
 ):
     result = _impl.cumsum(a, axis=axis, dtype=dtype)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 @normalizer
@@ -442,13 +442,13 @@ def cumprod(
     out: Optional[NDArray] = None,
 ):
     result = _impl.cumprod(a, axis=axis, dtype=dtype)
-    return _helpers.result_or_out(result, out)
+    return result
 
 
 cumproduct = cumprod
 
 
-@normalizer
+@normalizer(promote_scalar_result=True)
 def quantile(
     a: ArrayLike,
     q: ArrayLike,
@@ -469,10 +469,10 @@ def quantile(
         keepdims=keepdims,
         interpolation=interpolation,
     )
-    return _helpers.result_or_out(result, out, promote_scalar=True)
+    return result
 
 
-@normalizer
+@normalizer(promote_scalar_result=True)
 def percentile(
     a: ArrayLike,
     q: ArrayLike,
@@ -493,7 +493,7 @@ def percentile(
         keepdims=keepdims,
         interpolation=interpolation,
     )
-    return _helpers.result_or_out(result, out, promote_scalar=True)
+    return result
 
 
 def median(

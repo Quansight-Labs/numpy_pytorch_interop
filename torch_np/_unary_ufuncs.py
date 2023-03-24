@@ -1,7 +1,3 @@
-# from ._decorators import deco_unary_ufunc_from_impl
-# from ._detail import _ufunc_impl
-
-
 from typing import Optional
 
 import torch
@@ -44,7 +40,7 @@ def deco_unary_ufunc(torch_func):
             shape = out.shape
             tensors = tuple(torch.broadcast_to(t, shape) for t in tensors)
         result = torch_func(*tensors)
-        return _helpers.result_or_out(result, out)
+        return result
 
     return wrapped
 
