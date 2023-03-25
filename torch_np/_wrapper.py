@@ -525,12 +525,6 @@ def indices(dimensions, dtype: DTypeLike = int, sparse=False):
     return result
 
 
-@normalizer
-def roll(a: ArrayLike, shift, axis=None):
-    result = _impl.roll(a, shift, axis)
-    return result
-
-
 ###### tri{l, u} and related
 @normalizer
 def tril(m: ArrayLike, k=0):
