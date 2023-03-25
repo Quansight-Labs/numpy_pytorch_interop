@@ -1,6 +1,5 @@
 from . import random
 from ._binary_ufuncs import *
-from ._detail._index_tricks import *
 from ._detail._util import AxisError, UFuncTypeError
 from ._dtypes import *
 from ._funcs import *

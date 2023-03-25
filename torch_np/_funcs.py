@@ -1698,3 +1698,203 @@ def median(
     return quantile(
         a, 0.5, axis=axis, overwrite_input=overwrite_input, out=out, keepdims=keepdims
     )
+
+
+@normalizer
+def average(
+    a: ArrayLike,
+    axis=None,
+    weights: ArrayLike = None,
+    returned=False,
+    *,
+    keepdims=NoValue,
+):
+    result, wsum = _impl.average(a, axis, weights, returned=returned, keepdims=keepdims)
+    if returned:
+        return result, wsum
+    else:
+        return result
+
+
+@normalizer
+def diff(
+    a: ArrayLike,
+    n=1,
+    axis=-1,
+    prepend: Optional[ArrayLike] = NoValue,
+    append: Optional[ArrayLike] = NoValue,
+):
+    axis = _util.normalize_axis_index(axis, a.ndim)
+
+    if n < 0:
+        raise ValueError(f"order must be non-negative but got {n}")
+
+    if n == 0:
+        # match numpy and return the input immediately
+        return a
+
+    if prepend is not None:
+        shape = list(a.shape)
+        shape[axis] = prepend.shape[axis] if prepend.ndim > 0 else 1
+        prepend = torch.broadcast_to(prepend, shape)
+
+    if append is not None:
+        shape = list(a.shape)
+        shape[axis] = append.shape[axis] if append.ndim > 0 else 1
+        append = torch.broadcast_to(append, shape)
+
+    result = torch.diff(a, n, axis=axis, prepend=prepend, append=append)
+
+    return result
+
+
+# ### math functions ###
+
+
+@normalizer
+def angle(z: ArrayLike, deg=False):
+    result = torch.angle(z)
+    if deg:
+        result = result * 180 / torch.pi
+    return result
+
+
+@normalizer
+def sinc(x: ArrayLike):
+    result = torch.sinc(x)
+    return result
+
+
+@normalizer
+def real(a: ArrayLike):
+    result = torch.real(a)
+    return result
+
+
+@normalizer
+def imag(a: ArrayLike):
+    if a.is_complex():
+        result = a.imag
+    else:
+        result = torch.zeros_like(a)
+    return result
+
+
+@normalizer
+def round_(a: ArrayLike, decimals=0, out: Optional[NDArray] = None) -> OutArray:
+    if a.is_floating_point():
+        result = torch.round(a, decimals=decimals)
+    elif a.is_complex():
+        # RuntimeError: "round_cpu" not implemented for 'ComplexFloat'
+        result = (
+            torch.round(a.real, decimals=decimals)
+            + torch.round(a.imag, decimals=decimals) * 1j
+        )
+    else:
+        # RuntimeError: "round_cpu" not implemented for 'int'
+        result = a
+    return result, out
+
+
+around = round_
+round = round_
+
+
+@normalizer
+def real_if_close(a: ArrayLike, tol=100):
+    # XXX: copies vs views; numpy seems to return a copy?
+    if not torch.is_complex(a):
+        return a
+    if tol > 1:
+        # Undocumented in numpy: if tol < 1, it's an absolute tolerance!
+        # Otherwise, tol > 1 is relative tolerance, in units of the dtype epsilon
+        # https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/type_check.py#L577
+        tol = tol * torch.finfo(a.dtype).eps
+
+    mask = torch.abs(a.imag) < tol
+    return a.real if mask.all() else a
+
+
+@normalizer
+def iscomplex(x: ArrayLike):
+    if torch.is_complex(x):
+        return torch.as_tensor(x).imag != 0
+    result = torch.zeros_like(x, dtype=torch.bool)
+    if result.ndim == 0:
+        result = result.item()
+    return result
+
+
+@normalizer
+def isreal(x: ArrayLike):
+    if torch.is_complex(x):
+        return torch.as_tensor(x).imag == 0
+    result = torch.ones_like(x, dtype=torch.bool)
+    if result.ndim == 0:
+        result = result.item()
+    return result
+
+
+@normalizer
+def iscomplexobj(x: ArrayLike):
+    result = torch.is_complex(x)
+    return result
+
+
+@normalizer
+def isrealobj(x: ArrayLike):
+    result = not torch.is_complex(x)
+    return result
+
+
+@normalizer
+def isneginf(x: ArrayLike, out: Optional[NDArray] = None):
+    result = torch.isneginf(x, out=out)
+    return result
+
+
+@normalizer
+def isposinf(x: ArrayLike, out: Optional[NDArray] = None):
+    result = torch.isposinf(x, out=out)
+    return result
+
+
+@normalizer
+def i0(x: ArrayLike):
+    result = torch.special.i0(x)
+    return result
+
+
+@normalizer(return_on_failure=False)
+def isscalar(a: ArrayLike):
+    # XXX: this is a stub
+    if a is False:
+        return a
+    return a.numel() == 1
+
+
+"""
+Vendored objects from numpy.lib.index_tricks
+"""
+
+
+class IndexExpression:
+    """
+    Written by Konrad Hinsen <hinsen@cnrs-orleans.fr>
+    last revision: 1999-7-23
+
+    Cosmetic changes by T. Oliphant 2001
+    """
+
+    def __init__(self, maketuple):
+        self.maketuple = maketuple
+
+    def __getitem__(self, item):
+        if self.maketuple and not isinstance(item, tuple):
+            return (item,)
+        else:
+            return item
+
+
+index_exp = IndexExpression(maketuple=True)
+s_ = IndexExpression(maketuple=False)

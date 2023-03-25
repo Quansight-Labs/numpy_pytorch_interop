@@ -13,7 +13,7 @@ from numpy.lib.index_tricks import (
     )
 
 from torch_np import diag_indices, diag_indices_from, fill_diagonal
-from torch_np._detail._index_tricks import index_exp, s_
+from torch_np import index_exp, s_
 
 
 @pytest.mark.xfail(reason='unravel_index not implemented')
