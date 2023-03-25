@@ -1,9 +1,17 @@
-from typing import Optional
+"""A thin pytorch / numpy compat layer.
+
+Things imported from here have numpy-compatible signatures but operate on
+pytorch tensors.
+"""
+
+from typing import Optional, Sequence
 
 import torch
 
-from ._detail import _dtypes_impl, _util, _reductions as _impl
 from . import _helpers
+from ._detail import _dtypes_impl
+from ._detail import _reductions as _impl
+from ._detail import _util
 from ._normalizations import (
     ArrayLike,
     AxisLike,
@@ -13,8 +21,1022 @@ from ._normalizations import (
     normalizer,
 )
 
-
 NoValue = _util.NoValue
+
+
+###### array creation routines
+
+
+@normalizer
+def copy(a: ArrayLike, order="K", subok: SubokLike = False):
+    if order != "K":
+        raise NotImplementedError
+    tensor = a.clone()
+    return tensor
+
+
+@normalizer
+def atleast_1d(*arys: ArrayLike):
+    res = torch.atleast_1d(*arys)
+    if isinstance(res, tuple):
+        return list(res)
+    else:
+        return res
+
+
+@normalizer
+def atleast_2d(*arys: ArrayLike):
+    res = torch.atleast_2d(*arys)
+    if isinstance(res, tuple):
+        return list(res)
+    else:
+        return res
+
+
+@normalizer
+def atleast_3d(*arys: ArrayLike):
+    res = torch.atleast_3d(*arys)
+    if isinstance(res, tuple):
+        return list(res)
+    else:
+        return res
+
+
+def _concat_check(tup, dtype, out):
+    """Check inputs in concatenate et al."""
+    if tup == ():
+        # XXX:RuntimeError in torch, ValueError in numpy
+        raise ValueError("need at least one array to concatenate")
+
+    if out is not None:
+        if dtype is not None:
+            # mimic numpy
+            raise TypeError(
+                "concatenate() only takes `out` or `dtype` as an "
+                "argument, but both were provided."
+            )
+
+
+def _concat_cast_helper(tensors, out=None, dtype=None, casting="same_kind"):
+    """Figure out dtypes, cast if necessary."""
+
+    if out is not None or dtype is not None:
+        # figure out the type of the inputs and outputs
+        out_dtype = out.dtype.torch_dtype if dtype is None else dtype
+    else:
+        out_dtype = _dtypes_impl.result_type_impl([t.dtype for t in tensors])
+
+    # cast input arrays if necessary; do not broadcast them agains `out`
+    tensors = _util.typecast_tensors(tensors, out_dtype, casting)
+
+    return tensors
+
+
+def _concatenate(tensors, axis=0, out=None, dtype=None, casting="same_kind"):
+    # pure torch implementation, used below and in cov/corrcoef below
+    tensors, axis = _util.axis_none_ravel(*tensors, axis=axis)
+    tensors = _concat_cast_helper(tensors, out, dtype, casting)
+
+    try:
+        result = torch.cat(tensors, axis)
+    except (IndexError, RuntimeError) as e:
+        raise _util.AxisError(*e.args)
+    return result
+
+
+@normalizer
+def concatenate(
+    ar_tuple: Sequence[ArrayLike],
+    axis=0,
+    out: Optional[NDArray] = None,
+    dtype: DTypeLike = None,
+    casting="same_kind",
+) -> OutArray:
+    _concat_check(ar_tuple, dtype, out=out)
+    result = _concatenate(ar_tuple, axis=axis, out=out, dtype=dtype, casting=casting)
+    return result, out
+
+
+@normalizer
+def vstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"):
+    _concat_check(tup, dtype, out=None)
+    tensors = _concat_cast_helper(tup, dtype=dtype, casting=casting)
+    result = torch.vstack(tensors)
+    return result
+
+
+row_stack = vstack
+
+
+@normalizer
+def hstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"):
+    _concat_check(tup, dtype, out=None)
+    tensors = _concat_cast_helper(tup, dtype=dtype, casting=casting)
+    result = torch.hstack(tensors)
+    return result
+
+
+@normalizer
+def dstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"):
+    # XXX: in numpy 1.24 dstack does not have dtype and casting keywords
+    # but {h,v}stack do.  Hence add them here for consistency.
+    _concat_check(tup, dtype, out=None)
+    tensors = _concat_cast_helper(tup, dtype=dtype, casting=casting)
+    result = torch.dstack(tensors)
+    return result
+
+
+@normalizer
+def column_stack(
+    tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"
+):
+    # XXX: in numpy 1.24 column_stack does not have dtype and casting keywords
+    # but row_stack does. (because row_stack is an alias for vstack, really).
+    # Hence add these keywords here for consistency.
+    _concat_check(tup, dtype, out=None)
+    tensors = _concat_cast_helper(tup, dtype=dtype, casting=casting)
+    result = torch.column_stack(tensors)
+    return result
+
+
+@normalizer
+def stack(
+    arrays: Sequence[ArrayLike],
+    axis=0,
+    out: Optional[NDArray] = None,
+    *,
+    dtype: DTypeLike = None,
+    casting="same_kind",
+) -> OutArray:
+    _concat_check(arrays, dtype, out=out)
+
+    tensors = _concat_cast_helper(arrays, dtype=dtype, casting=casting)
+    result_ndim = tensors[0].ndim + 1
+    axis = _util.normalize_axis_index(axis, result_ndim)
+    try:
+        result = torch.stack(tensors, axis=axis)
+    except RuntimeError as e:
+        raise ValueError(*e.args)
+    return result, out
+
+
+# ### split ###
+
+
+def _split_helper(tensor, indices_or_sections, axis, strict=False):
+    if isinstance(indices_or_sections, int):
+        return _split_helper_int(tensor, indices_or_sections, axis, strict)
+    elif isinstance(indices_or_sections, (list, tuple)):
+        # NB: drop split=..., it only applies to split_helper_int
+        return _split_helper_list(tensor, list(indices_or_sections), axis)
+    else:
+        raise TypeError("split_helper: ", type(indices_or_sections))
+
+
+def _split_helper_int(tensor, indices_or_sections, axis, strict=False):
+    if not isinstance(indices_or_sections, int):
+        raise NotImplementedError("split: indices_or_sections")
+
+    axis = _util.normalize_axis_index(axis, tensor.ndim)
+
+    # numpy: l%n chunks of size (l//n + 1), the rest are sized l//n
+    l, n = tensor.shape[axis], indices_or_sections
+
+    if n <= 0:
+        raise ValueError()
+
+    if l % n == 0:
+        num, sz = n, l // n
+        lst = [sz] * num
+    else:
+        if strict:
+            raise ValueError("array split does not result in an equal division")
+
+        num, sz = l % n, l // n + 1
+        lst = [sz] * num
+
+    lst += [sz - 1] * (n - num)
+
+    result = torch.split(tensor, lst, axis)
+
+    return result
+
+
+def _split_helper_list(tensor, indices_or_sections, axis):
+    if not isinstance(indices_or_sections, list):
+        raise NotImplementedError("split: indices_or_sections: list")
+    # numpy expectes indices, while torch expects lengths of sections
+    # also, numpy appends zero-size arrays for indices above the shape[axis]
+    lst = [x for x in indices_or_sections if x <= tensor.shape[axis]]
+    num_extra = len(indices_or_sections) - len(lst)
+
+    lst.append(tensor.shape[axis])
+    lst = [
+        lst[0],
+    ] + [a - b for a, b in zip(lst[1:], lst[:-1])]
+    lst += [0] * num_extra
+
+    return torch.split(tensor, lst, axis)
+
+
+@normalizer
+def array_split(ary: ArrayLike, indices_or_sections, axis=0):
+    result = _split_helper(ary, indices_or_sections, axis)
+    return result
+
+
+@normalizer
+def split(ary: ArrayLike, indices_or_sections, axis=0):
+    result = _split_helper(ary, indices_or_sections, axis, strict=True)
+    return result
+
+
+@normalizer
+def hsplit(ary: ArrayLike, indices_or_sections):
+    if ary.ndim == 0:
+        raise ValueError("hsplit only works on arrays of 1 or more dimensions")
+    axis = 1 if ary.ndim > 1 else 0
+    return _split_helper(ary, indices_or_sections, axis, strict=True)
+
+
+@normalizer
+def vsplit(ary: ArrayLike, indices_or_sections):
+    if ary.ndim < 2:
+        raise ValueError("vsplit only works on arrays of 2 or more dimensions")
+    return _split_helper(ary, indices_or_sections, 0, strict=True)
+
+
+@normalizer
+def dsplit(ary: ArrayLike, indices_or_sections):
+    if ary.ndim < 3:
+        raise ValueError("dsplit only works on arrays of 3 or more dimensions")
+    return _split_helper(ary, indices_or_sections, 2, strict=True)
+
+
+@normalizer
+def kron(a: ArrayLike, b: ArrayLike):
+    result = torch.kron(a, b)
+    return result
+
+
+@normalizer
+def vander(x: ArrayLike, N=None, increasing=False):
+    result = torch.vander(x, N, increasing)
+    return result
+
+
+# ### linspace, geomspace, logspace and arange ###
+
+
+@normalizer
+def linspace(
+    start: ArrayLike,
+    stop: ArrayLike,
+    num=50,
+    endpoint=True,
+    retstep=False,
+    dtype: DTypeLike = None,
+    axis=0,
+):
+    if axis != 0 or retstep or not endpoint:
+        raise NotImplementedError
+    # XXX: raises TypeError if start or stop are not scalars
+    result = torch.linspace(start, stop, num, dtype=dtype)
+    return result
+
+
+@normalizer
+def geomspace(
+    start: ArrayLike,
+    stop: ArrayLike,
+    num=50,
+    endpoint=True,
+    dtype: DTypeLike = None,
+    axis=0,
+):
+    if axis != 0 or not endpoint:
+        raise NotImplementedError
+    base = torch.pow(stop / start, 1.0 / (num - 1))
+    logbase = torch.log(base)
+    result = torch.logspace(
+        torch.log(start) / logbase,
+        torch.log(stop) / logbase,
+        num,
+        base=base,
+    )
+    return result
+
+
+@normalizer
+def logspace(
+    start, stop, num=50, endpoint=True, base=10.0, dtype: DTypeLike = None, axis=0
+):
+    if axis != 0 or not endpoint:
+        raise NotImplementedError
+    result = torch.logspace(start, stop, num, base=base, dtype=dtype)
+    return result
+
+
+@normalizer
+def arange(
+    start: Optional[ArrayLike] = None,
+    stop: Optional[ArrayLike] = None,
+    step: Optional[ArrayLike] = 1,
+    dtype: DTypeLike = None,
+    *,
+    like: SubokLike = None,
+):
+    if step == 0:
+        raise ZeroDivisionError
+    if stop is None and start is None:
+        raise TypeError
+    if stop is None:
+        # XXX: this breaks if start is passed as a kwarg:
+        # arange(start=4) should raise (no stop) but doesn't
+        start, stop = 0, start
+    if start is None:
+        start = 0
+
+    # the dtype of the result
+    if dtype is None:
+        dtype = _dtypes_impl.default_int_dtype
+    dt_list = [_util._coerce_to_tensor(x).dtype for x in (start, stop, step)]
+    dt_list.append(dtype)
+    dtype = _dtypes_impl.result_type_impl(dt_list)
+
+    # work around RuntimeError: "arange_cpu" not implemented for 'ComplexFloat'
+    if dtype.is_complex:
+        work_dtype, target_dtype = torch.float64, dtype
+    else:
+        work_dtype, target_dtype = dtype, dtype
+
+    if (step > 0 and start > stop) or (step < 0 and start < stop):
+        # empty range
+        return torch.empty(0, dtype=target_dtype)
+
+    try:
+        result = torch.arange(start, stop, step, dtype=work_dtype)
+        result = _util.cast_if_needed(result, target_dtype)
+    except RuntimeError:
+        raise ValueError("Maximum allowed size exceeded")
+
+    return result
+
+
+# ### zeros/ones/empty/full ###
+
+
+@normalizer
+def empty(shape, dtype: DTypeLike = float, order="C", *, like: SubokLike = None):
+    if order != "C":
+        raise NotImplementedError
+    if dtype is None:
+        dtype = _dtypes_impl.default_float_dtype
+    result = torch.empty(shape, dtype=dtype)
+    return result
+
+
+# NB: *_like functions deliberately deviate from numpy: it has subok=True
+# as the default; we set subok=False and raise on anything else.
+@normalizer
+def empty_like(
+    prototype: ArrayLike,
+    dtype: DTypeLike = None,
+    order="K",
+    subok: SubokLike = False,
+    shape=None,
+):
+    if order != "K":
+        raise NotImplementedError
+    result = torch.empty_like(prototype, dtype=dtype)
+    if shape is not None:
+        result = result.reshape(shape)
+    return result
+
+
+@normalizer
+def full(
+    shape,
+    fill_value: ArrayLike,
+    dtype: DTypeLike = None,
+    order="C",
+    *,
+    like: SubokLike = None,
+):
+    if isinstance(shape, int):
+        shape = (shape,)
+    if order != "C":
+        raise NotImplementedError
+    if dtype is None:
+        dtype = fill_value.dtype
+    if not isinstance(shape, (tuple, list)):
+        shape = (shape,)
+    result = torch.full(shape, fill_value, dtype=dtype)
+    return result
+
+
+@normalizer
+def full_like(
+    a: ArrayLike,
+    fill_value,
+    dtype: DTypeLike = None,
+    order="K",
+    subok: SubokLike = False,
+    shape=None,
+):
+    if order != "K":
+        raise NotImplementedError
+    # XXX: fill_value broadcasts
+    result = torch.full_like(a, fill_value, dtype=dtype)
+    if shape is not None:
+        result = result.reshape(shape)
+    return result
+
+
+@normalizer
+def ones(shape, dtype: DTypeLike = None, order="C", *, like: SubokLike = None):
+    if order != "C":
+        raise NotImplementedError
+    if dtype is None:
+        dtype = _dtypes_impl.default_float_dtype
+    result = torch.ones(shape, dtype=dtype)
+    return result
+
+
+@normalizer
+def ones_like(
+    a: ArrayLike,
+    dtype: DTypeLike = None,
+    order="K",
+    subok: SubokLike = False,
+    shape=None,
+):
+    if order != "K":
+        raise NotImplementedError
+    result = torch.ones_like(a, dtype=dtype)
+    if shape is not None:
+        result = result.reshape(shape)
+    return result
+
+
+@normalizer
+def zeros(shape, dtype: DTypeLike = None, order="C", *, like: SubokLike = None):
+    if order != "C":
+        raise NotImplementedError
+    if dtype is None:
+        dtype = _dtypes_impl.default_float_dtype
+    result = torch.zeros(shape, dtype=dtype)
+    return result
+
+
+@normalizer
+def zeros_like(
+    a: ArrayLike,
+    dtype: DTypeLike = None,
+    order="K",
+    subok: SubokLike = False,
+    shape=None,
+):
+    if order != "K":
+        raise NotImplementedError
+    result = torch.zeros_like(a, dtype=dtype)
+    if shape is not None:
+        result = result.reshape(shape)
+    return result
+
+
+# ### cov & corrcoef ###
+
+
+def _xy_helper_corrcoef(x_tensor, y_tensor=None, rowvar=True):
+    """Prepate inputs for cov and corrcoef."""
+
+    # https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/function_base.py#L2636
+    if y_tensor is not None:
+        # make sure x and y are at least 2D
+        ndim_extra = 2 - x_tensor.ndim
+        if ndim_extra > 0:
+            x_tensor = x_tensor.view((1,) * ndim_extra + x_tensor.shape)
+        if not rowvar and x_tensor.shape[0] != 1:
+            x_tensor = x_tensor.mT
+        x_tensor = x_tensor.clone()
+
+        ndim_extra = 2 - y_tensor.ndim
+        if ndim_extra > 0:
+            y_tensor = y_tensor.view((1,) * ndim_extra + y_tensor.shape)
+        if not rowvar and y_tensor.shape[0] != 1:
+            y_tensor = y_tensor.mT
+        y_tensor = y_tensor.clone()
+
+        x_tensor = _concatenate((x_tensor, y_tensor), axis=0)
+
+    return x_tensor
+
+
+@normalizer
+def corrcoef(
+    x: ArrayLike,
+    y: Optional[ArrayLike] = None,
+    rowvar=True,
+    bias=NoValue,
+    ddof=NoValue,
+    *,
+    dtype: DTypeLike = None,
+):
+    if bias is not None or ddof is not None:
+        # deprecated in NumPy
+        raise NotImplementedError
+    xy_tensor = _xy_helper_corrcoef(x, y, rowvar)
+
+    is_half = dtype == torch.float16
+    if is_half:
+        # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
+        dtype = torch.float32
+
+    xy_tensor = _util.cast_if_needed(xy_tensor, dtype)
+    result = torch.corrcoef(xy_tensor)
+
+    if is_half:
+        result = result.to(torch.float16)
+
+    return result
+
+
+@normalizer
+def cov(
+    m: ArrayLike,
+    y: Optional[ArrayLike] = None,
+    rowvar=True,
+    bias=False,
+    ddof=None,
+    fweights: Optional[ArrayLike] = None,
+    aweights: Optional[ArrayLike] = None,
+    *,
+    dtype: DTypeLike = None,
+):
+    m = _xy_helper_corrcoef(m, y, rowvar)
+
+    if ddof is None:
+        ddof = 1 if bias == 0 else 0
+
+    is_half = dtype == torch.float16
+    if is_half:
+        # work around torch's "addmm_impl_cpu_" not implemented for 'Half'"
+        dtype = torch.float32
+
+    m = _util.cast_if_needed(m, dtype)
+    result = torch.cov(m, correction=ddof, aweights=aweights, fweights=fweights)
+
+    if is_half:
+        result = result.to(torch.float16)
+
+    return result
+
+
+# ### logic & element selection ###
+
+
+@normalizer
+def bincount(x: ArrayLike, /, weights: Optional[ArrayLike] = None, minlength=0):
+    if x.numel() == 0:
+        # edge case allowed by numpy
+        x = x.new_empty(0, dtype=int)
+
+    int_dtype = _dtypes_impl.default_int_dtype
+    (x,) = _util.typecast_tensors((x,), int_dtype, casting="safe")
+
+    result = torch.bincount(x, weights, minlength)
+    return result
+
+
+@normalizer
+def where(
+    condition: ArrayLike,
+    x: Optional[ArrayLike] = None,
+    y: Optional[ArrayLike] = None,
+    /,
+):
+    selector = (x is None) == (y is None)
+    if not selector:
+        raise ValueError("either both or neither of x and y should be given")
+
+    if condition.dtype != torch.bool:
+        condition = condition.to(torch.bool)
+
+    if x is None and y is None:
+        result = torch.where(condition)
+    else:
+        try:
+            result = torch.where(condition, x, y)
+        except RuntimeError as e:
+            raise ValueError(*e.args)
+    return result
+
+
+###### module-level queries of object properties
+
+
+@normalizer
+def ndim(a: ArrayLike):
+    return a.ndim
+
+
+@normalizer
+def shape(a: ArrayLike):
+    return tuple(a.shape)
+
+
+@normalizer
+def size(a: ArrayLike, axis=None):
+    if axis is None:
+        return a.numel()
+    else:
+        return a.shape[axis]
+
+
+###### shape manipulations and indexing
+
+
+@normalizer
+def expand_dims(a: ArrayLike, axis):
+    shape = _util.expand_shape(a.shape, axis)
+    tensor = a.view(shape)  # never copies
+    return tensor
+
+
+@normalizer
+def flip(m: ArrayLike, axis=None):
+    # XXX: semantic difference: np.flip returns a view, torch.flip copies
+    if axis is None:
+        axis = tuple(range(m.ndim))
+    else:
+        axis = _util.normalize_axis_tuple(axis, m.ndim)
+    return torch.flip(m, axis)
+
+
+@normalizer
+def flipud(m: ArrayLike):
+    result = torch.flipud(m)
+    return result
+
+
+@normalizer
+def fliplr(m: ArrayLike):
+    result = torch.fliplr(m)
+    return result
+
+
+@normalizer
+def rot90(m: ArrayLike, k=1, axes=(0, 1)):
+    axes = _util.normalize_axis_tuple(axes, m.ndim)
+    return torch.rot90(m, k, axes)
+
+
+# ### broadcasting and indices ###
+
+
+@normalizer
+def broadcast_to(array: ArrayLike, shape, subok: SubokLike = False):
+    result = torch.broadcast_to(array, size=shape)
+    return result
+
+
+from torch import broadcast_shapes
+
+
+@normalizer
+def broadcast_arrays(*args: ArrayLike, subok: SubokLike = False):
+    res = torch.broadcast_tensors(*args)
+    return res
+
+
+# FIXME: this needs fixing
+def unravel_index(indices, shape, order="C"):
+    # cf https://github.com/pytorch/pytorch/pull/66687
+    # this version is from
+    # https://discuss.pytorch.org/t/how-to-do-a-unravel-index-in-pytorch-just-like-in-numpy/12987/3
+    if order != "C":
+        raise NotImplementedError
+    result = []
+    for index in indices:
+        out = []
+        for dim in reversed(shape):
+            out.append(index % dim)
+            index = index // dim
+        result.append(tuple(reversed(out)))
+    return result
+
+
+def ravel_multi_index(multi_index, dims, mode="raise", order="C"):
+    return sum(idx * dim for idx, dim in zip(multi_index, dims))
+
+
+@normalizer
+def meshgrid(*xi: ArrayLike, copy=True, sparse=False, indexing="xy"):
+    ndim = len(xi)
+
+    if indexing not in ["xy", "ij"]:
+        raise ValueError("Valid values for `indexing` are 'xy' and 'ij'.")
+
+    s0 = (1,) * ndim
+    output = [x.reshape(s0[:i] + (-1,) + s0[i + 1 :]) for i, x in enumerate(xi)]
+
+    if indexing == "xy" and ndim > 1:
+        # switch first and second axis
+        output[0] = output[0].reshape((1, -1) + s0[2:])
+        output[1] = output[1].reshape((-1, 1) + s0[2:])
+
+    if not sparse:
+        # Return the full N-D matrix (not only the 1-D vector)
+        output = torch.broadcast_tensors(*output)
+
+    if copy:
+        output = [x.clone() for x in output]
+
+    return list(output)  # match numpy, return a list
+
+
+@normalizer
+def indices(dimensions, dtype: DTypeLike = int, sparse=False):
+    # https://github.com/numpy/numpy/blob/v1.24.0/numpy/core/numeric.py#L1691-L1791
+    dimensions = tuple(dimensions)
+    N = len(dimensions)
+    shape = (1,) * N
+    if sparse:
+        res = tuple()
+    else:
+        res = torch.empty((N,) + dimensions, dtype=dtype)
+    for i, dim in enumerate(dimensions):
+        idx = torch.arange(dim, dtype=dtype).reshape(
+            shape[:i] + (dim,) + shape[i + 1 :]
+        )
+        if sparse:
+            res = res + (idx,)
+        else:
+            res[i] = idx
+    return res
+
+
+# ### tri*-something ###
+
+
+@normalizer
+def tril(m: ArrayLike, k=0):
+    result = m.tril(k)
+    return result
+
+
+@normalizer
+def triu(m: ArrayLike, k=0):
+    result = m.triu(k)
+    return result
+
+
+def tril_indices(n, k=0, m=None):
+    if m is None:
+        m = n
+    result = torch.tril_indices(n, m, offset=k)
+    return result
+
+
+def triu_indices(n, k=0, m=None):
+    if m is None:
+        m = n
+    result = torch.triu_indices(n, m, offset=k)
+    return result
+
+
+@normalizer
+def tril_indices_from(arr: ArrayLike, k=0):
+    if arr.ndim != 2:
+        raise ValueError("input array must be 2-d")
+    result = torch.tril_indices(arr.shape[0], arr.shape[1], offset=k)
+    return tuple(result)
+
+
+@normalizer
+def triu_indices_from(arr: ArrayLike, k=0):
+    if arr.ndim != 2:
+        raise ValueError("input array must be 2-d")
+    result = torch.triu_indices(arr.shape[0], arr.shape[1], offset=k)
+    # unpack: numpy returns a 2-tuple of index arrays; torch returns a 2-row tensor
+    return tuple(result)
+
+
+@normalizer
+def tri(N, M=None, k=0, dtype: DTypeLike = float, *, like: SubokLike = None):
+    if M is None:
+        M = N
+    tensor = torch.ones((N, M), dtype=dtype)
+    tensor = torch.tril(tensor, diagonal=k)
+    return tensor
+
+
+# ### nanfunctions ###  # FIXME: this is a stub
+
+
+@normalizer
+def nanmean(
+    a: ArrayLike,
+    axis=None,
+    dtype: DTypeLike = None,
+    out: Optional[NDArray] = None,
+    keepdims=NoValue,
+    *,
+    where=NoValue,
+):
+    # XXX: this needs to be rewritten
+    if where is not NoValue:
+        raise NotImplementedError
+    if dtype is None:
+        dtype = a.dtype
+    if axis is None:
+        result = a.nanmean(dtype=dtype)
+        if keepdims:
+            result = torch.full(a.shape, result, dtype=result.dtype)
+    else:
+        result = a.nanmean(dtype=dtype, dim=axis, keepdim=bool(keepdims))
+    if out is not None:
+        out.copy_(result)
+    return result
+
+
+def nanmin():
+    raise NotImplementedError
+
+
+def nanmax():
+    raise NotImplementedError
+
+
+def nanvar():
+    raise NotImplementedError
+
+
+def nanstd():
+    raise NotImplementedError
+
+
+def nanargmin():
+    raise NotImplementedError
+
+
+def nanargmax():
+    raise NotImplementedError
+
+
+def nansum():
+    raise NotImplementedError
+
+
+def nanprod():
+    raise NotImplementedError
+
+
+def nancumsum():
+    raise NotImplementedError
+
+
+def nancumprod():
+    raise NotImplementedError
+
+
+def nanmedian():
+    raise NotImplementedError
+
+
+def nanquantile():
+    raise NotImplementedError
+
+
+def nanpercentile():
+    raise NotImplementedError
+
+
+# ### equality, equivalence, allclose ###
+
+
+@normalizer
+def isclose(a: ArrayLike, b: ArrayLike, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
+    dtype = _dtypes_impl.result_type_impl((a.dtype, b.dtype))
+    a = _util.cast_if_needed(a, dtype)
+    b = _util.cast_if_needed(b, dtype)
+    result = torch.isclose(a, b, rtol=rtol, atol=atol, equal_nan=equal_nan)
+    return result
+
+
+def allclose(a: ArrayLike, b: ArrayLike, rtol=1e-05, atol=1e-08, equal_nan=False):
+    result = isclose(a, b, rtol, atol, equal_nan=equal_nan)
+    return result.all()
+
+
+def _tensor_equal(a1_t, a2_t, equal_nan=False):
+    # Implementation of array_equal/array_equiv.
+    if a1_t.shape != a2_t.shape:
+        return False
+    if equal_nan:
+        nan_loc = (torch.isnan(a1_t) == torch.isnan(a2_t)).all()
+        if nan_loc:
+            # check the values
+            result = a1_t[~torch.isnan(a1_t)] == a2_t[~torch.isnan(a2_t)]
+        else:
+            return False
+    else:
+        result = a1_t == a2_t
+    return bool(result.all())
+
+
+@normalizer
+def array_equal(a1: ArrayLike, a2: ArrayLike, equal_nan=False):
+    result = _tensor_equal(a1, a2, equal_nan=equal_nan)
+    return result
+
+
+@normalizer
+def array_equiv(a1: ArrayLike, a2: ArrayLike):
+    # *almost* the same as array_equal: _equiv tries to broadcast, _equal does not
+    try:
+        a1_t, a2_t = torch.broadcast_tensors(a1, a2)
+    except RuntimeError:
+        # failed to broadcast => not equivalent
+        return False
+    return _tensor_equal(a1_t, a2_t)
+
+
+def common_type():
+    raise NotImplementedError
+
+
+def mintypecode():
+    raise NotImplementedError
+
+
+def nan_to_num():
+    raise NotImplementedError
+
+
+def asfarray():
+    raise NotImplementedError
+
+
+# ### put/take_along_axis ###
+
+
+@normalizer
+def take_along_axis(arr: ArrayLike, indices: ArrayLike, axis):
+    (arr,), axis = _util.axis_none_ravel(arr, axis=axis)
+    axis = _util.normalize_axis_index(axis, arr.ndim)
+    return torch.take_along_dim(arr, indices, axis)
+
+
+@normalizer
+def put_along_axis(arr: ArrayLike, indices: ArrayLike, values: ArrayLike, axis):
+    (arr,), axis = _util.axis_none_ravel(arr, axis=axis)
+    axis = _util.normalize_axis_index(axis, arr.ndim)
+
+    indices, values = torch.broadcast_tensors(indices, values)
+    values = _util.cast_if_needed(values, arr.dtype)
+    result = torch.scatter(arr, axis, indices, values)
+    arr.copy_(result.reshape(arr.shape))
+    return None
+
+
+# ### unique et al ###
+
+
+@normalizer
+def unique(
+    ar: ArrayLike,
+    return_index=False,
+    return_inverse=False,
+    return_counts=False,
+    axis=None,
+    *,
+    equal_nan=True,
+):
+    if return_index or not equal_nan:
+        raise NotImplementedError
+
+    if axis is None:
+        ar = ar.ravel()
+        axis = 0
+    axis = _util.normalize_axis_index(axis, ar.ndim)
+
+    is_half = ar.dtype == torch.float16
+    if is_half:
+        ar = ar.to(torch.float32)
+
+    result = torch.unique(
+        ar, return_inverse=return_inverse, return_counts=return_counts, dim=axis
+    )
+
+    if is_half:
+        if isinstance(result, tuple):
+            result = (result[0].to(torch.float16),) + result[1:]
+        else:
+            result = result.to(torch.float16)
+
+    return result
 
 
 @normalizer
