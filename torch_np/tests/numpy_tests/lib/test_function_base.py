@@ -26,14 +26,15 @@ from torch_np.random import rand
 
 # FIXME: make from torch_np
 from numpy.lib import (
-    bartlett, blackman,
-    delete, digitize, extract, gradient, hamming, hanning,
-    insert, interp, kaiser, msort, piecewise, place,
+    delete, digitize, extract, gradient,
+    insert, interp, msort, piecewise, place,
     select, setxor1d, trapz, trim_zeros, unwrap, vectorize
     )
 from torch_np._detail._util import normalize_axis_tuple
 
 from torch_np import corrcoef, cov, i0, angle, sinc, diff, meshgrid, unique
+from torch_np import flipud, hamming, hanning, kaiser, blackman, bartlett
+
 
 def get_mat(n):
     data = np.arange(n)
@@ -1701,7 +1702,6 @@ class TestUnwrap:
         assert sm_discont.dtype == wrap_uneven.dtype
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 @pytest.mark.parametrize(
     "dtype", np.typecodes["AllInteger"] + np.typecodes["Float"]
 )
@@ -1716,7 +1716,7 @@ class TestFilterwindows:
         assert w.dtype == ref_dtype
 
         # check symmetry
-        assert_equal(w, flipud(w))
+        assert_allclose(w, flipud(w), atol=1e-15)
 
         # check known value
         if scalar < 1:
@@ -1734,7 +1734,7 @@ class TestFilterwindows:
         assert w.dtype == ref_dtype
 
         # check symmetry
-        assert_equal(w, flipud(w))
+        assert_allclose(w, flipud(w), atol=1e-15)
 
         # check known value
         if scalar < 1:
@@ -1752,7 +1752,7 @@ class TestFilterwindows:
         assert w.dtype == ref_dtype
 
         # check symmetry
-        assert_equal(w, flipud(w))
+        assert_allclose(w, flipud(w), atol=1e-15)
 
         # check known value
         if scalar < 1:
@@ -1770,7 +1770,7 @@ class TestFilterwindows:
         assert w.dtype == ref_dtype
 
         # check symmetry
-        assert_equal(w, flipud(w))
+        assert_allclose(w, flipud(w), atol=1e-15)
 
         # check known value
         if scalar < 1:

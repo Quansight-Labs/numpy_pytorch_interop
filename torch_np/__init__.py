@@ -14,7 +14,7 @@ sometrue = any
 
 inf = float("inf")
 nan = float("nan")
-from math import pi  # isort: skip
+from math import pi, e  # isort: skip
 
 False_ = asarray(False, bool_)
 True_ = asarray(True, bool_)
