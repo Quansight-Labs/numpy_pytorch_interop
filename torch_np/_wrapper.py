@@ -8,8 +8,7 @@ from typing import Optional, Sequence
 
 import torch
 
-from . import _detail as _impl
-from . import _dtypes, _funcs, _helpers
+from . import _dtypes
 from ._detail import _dtypes_impl, _util
 from ._ndarray import asarray
 from ._normalizations import ArrayLike, DTypeLike, NDArray, SubokLike, normalizer
@@ -825,7 +824,7 @@ def put_along_axis(arr: ArrayLike, indices: ArrayLike, values: ArrayLike, axis):
     return None
 
 
-# ### unqiue et al ###
+# ### unique et al ###
 
 
 @normalizer

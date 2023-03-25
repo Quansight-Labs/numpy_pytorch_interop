@@ -2,9 +2,8 @@ from typing import Optional
 
 import torch
 
-from . import _detail as _impl
+from ._detail import _dtypes_impl, _util, _reductions as _impl
 from . import _helpers
-from ._detail import _util
 from ._normalizations import (
     ArrayLike,
     AxisLike,
@@ -14,7 +13,6 @@ from ._normalizations import (
     normalizer,
 )
 
-_dtypes_impl = _impl._dtypes_impl
 
 NoValue = _util.NoValue
 
