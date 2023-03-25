@@ -1159,6 +1159,15 @@ def vdot(a: ArrayLike, b: ArrayLike, /):
 
 
 @normalizer
+def tensordot(a: ArrayLike, b: ArrayLike, axes=2):
+    if isinstance(axes, (list, tuple)):
+        axes = [[ax] if isinstance(ax, int) else ax for ax in axes]
+    result = torch.tensordot(a, b, dims=axes)
+
+    return result
+
+
+@normalizer
 def dot(a: ArrayLike, b: ArrayLike, out: Optional[NDArray] = None):
     dtype = _dtypes_impl.result_type_impl((a.dtype, b.dtype))
     a = _util.cast_if_needed(a, dtype)

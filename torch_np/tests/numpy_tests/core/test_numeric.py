@@ -2988,15 +2988,21 @@ class TestBroadcast:
             np.broadcast([[1, 2, 3]], [[4], [5]], [6, 7])
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestTensordot:
 
     def test_zero_dimension(self):
         # Test resolution to issue #5663
-        a = np.ndarray((3,0))
-        b = np.ndarray((0,4))
+        a = np.zeros((3,0))
+        b = np.zeros((0,4))
         td = np.tensordot(a, b, (1, 0))
         assert_array_equal(td, np.dot(a, b))
+
+    @pytest.mark.xfail(reason="no einsum")
+    def test_zero_dimension_einsum(self):
+        # Test resolution to issue #5663
+        a = np.zeros((3,0))
+        b = np.zeros((0,4))
+        td = np.tensordot(a, b, (1, 0))
         assert_array_equal(td, np.einsum('ij,jk', a, b))
 
     def test_zero_dimensional(self):

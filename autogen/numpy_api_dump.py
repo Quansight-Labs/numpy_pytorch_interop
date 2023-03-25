@@ -134,10 +134,6 @@ def binary_repr(num, width=None):
     raise NotImplementedError
 
 
-def blackman(M):
-    raise NotImplementedError
-
-
 def block(arrays):
     raise NotImplementedError
 
@@ -337,14 +333,6 @@ def gradient(f, *varargs, axis=None, edge_order=1):
     raise NotImplementedError
 
 
-def hamming(M):
-    raise NotImplementedError
-
-
-def hanning(M):
-    raise NotImplementedError
-
-
 def histogram(a, bins=10, range=None, normed=None, weights=None, density=None):
     raise NotImplementedError
 
@@ -406,10 +394,6 @@ def iterable(y):
 
 
 def ix_(*args):
-    raise NotImplementedError
-
-
-def kaiser(M, beta):
     raise NotImplementedError
 
 
@@ -756,10 +740,6 @@ def sort_complex(a):
 
 
 def take(a, indices, axis=None, out=None, mode="raise"):
-    raise NotImplementedError
-
-
-def tensordot(a, b, axes=2):
     raise NotImplementedError
 
 
