@@ -64,8 +64,13 @@ class ndarray:
     def __init__(self, t=None):
         if t is None:
             self.tensor = torch.Tensor()
+        elif isinstance(t, torch.Tensor):
+            self.tensor = t
         else:
-            self.tensor = torch.as_tensor(t)
+            raise ValueError(
+                "ndarray constructor is not recommended; prefer"
+                "either array(...) or zeros/empty(...)"
+            )
 
     @property
     def shape(self):
