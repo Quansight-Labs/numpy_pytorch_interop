@@ -102,6 +102,8 @@ def triu_indices_from(tensor, k):
     if tensor.ndim != 2:
         raise ValueError("input array must be 2-d")
     result = torch.triu_indices(tensor.shape[0], tensor.shape[1], offset=k)
+    # unpack: numpy returns a 2-tuple of index arrays; torch returns a 2-row tensor
+    result = tuple(result)
     return result
 
 
@@ -109,6 +111,7 @@ def tril_indices_from(tensor, k=0):
     if tensor.ndim != 2:
         raise ValueError("input array must be 2-d")
     result = torch.tril_indices(tensor.shape[0], tensor.shape[1], offset=k)
+    result = tuple(result)
     return result
 
 

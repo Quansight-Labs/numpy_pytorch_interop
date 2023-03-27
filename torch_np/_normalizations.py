@@ -21,8 +21,9 @@ from . import _dtypes
 
 
 def normalize_array_like(x, name=None):
-    (tensor,) = _helpers.to_tensors(x)
-    return tensor
+    from ._ndarray import asarray
+
+    return asarray(x).tensor
 
 
 def normalize_optional_array_like(x, name=None):
@@ -32,8 +33,7 @@ def normalize_optional_array_like(x, name=None):
 
 
 def normalize_seq_array_like(x, name=None):
-    tensors = _helpers.to_tensors(*x)
-    return tensors
+    return tuple(normalize_array_like(value) for value in x)
 
 
 def normalize_dtype(dtype, name=None):
@@ -96,6 +96,28 @@ def maybe_normalize(arg, parm, return_on_failure=_sentinel):
             raise exc from None
 
 
+def wrap_tensors(result):
+    from ._ndarray import ndarray
+
+    if isinstance(result, torch.Tensor):
+        result = ndarray(result)
+    elif isinstance(result, (tuple, list)):
+        result = type(result)(
+            ndarray(x) if isinstance(x, torch.Tensor) else x for x in result
+        )
+
+    return result
+
+
+def array_or_scalar(values, py_type=float, return_scalar=False):
+    if return_scalar:
+        return py_type(values.item())
+    else:
+        from ._ndarray import ndarray
+
+        return ndarray(values)
+
+
 def normalizer(_func=None, *, return_on_failure=_sentinel):
     def normalizer_inner(func):
         @functools.wraps(func)
@@ -121,7 +143,9 @@ def normalizer(_func=None, *, return_on_failure=_sentinel):
                 name: maybe_normalize(arg, params[name]) if name in params else arg
                 for name, arg in kwds.items()
             }
-            return func(*args, **kwds)
+            result = func(*args, **kwds)
+            result = wrap_tensors(result)
+            return result
 
         return wrapped
 

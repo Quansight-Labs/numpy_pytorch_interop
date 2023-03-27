@@ -61,34 +61,34 @@ def copy(a: ArrayLike, order="K", subok: SubokLike = False):
     if order != "K":
         raise NotImplementedError
     tensor = a.clone()
-    return _helpers.array_from(tensor)
+    return tensor
 
 
 @normalizer
 def atleast_1d(*arys: ArrayLike):
     res = torch.atleast_1d(*arys)
     if isinstance(res, tuple):
-        return list(_helpers.tuple_arrays_from(res))
+        return list(res)
     else:
-        return _helpers.array_from(res)
+        return res
 
 
 @normalizer
 def atleast_2d(*arys: ArrayLike):
     res = torch.atleast_2d(*arys)
     if isinstance(res, tuple):
-        return list(_helpers.tuple_arrays_from(res))
+        return list(res)
     else:
-        return _helpers.array_from(res)
+        return res
 
 
 @normalizer
 def atleast_3d(*arys: ArrayLike):
     res = torch.atleast_3d(*arys)
     if isinstance(res, tuple):
-        return list(_helpers.tuple_arrays_from(res))
+        return list(res)
     else:
-        return _helpers.array_from(res)
+        return res
 
 
 def _concat_check(tup, dtype, out):
@@ -123,7 +123,7 @@ def concatenate(
 def vstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"):
     _concat_check(tup, dtype, out=None)
     result = _impl.vstack(tup, dtype=dtype, casting=casting)
-    return _helpers.array_from(result)
+    return result
 
 
 row_stack = vstack
@@ -133,7 +133,7 @@ row_stack = vstack
 def hstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"):
     _concat_check(tup, dtype, out=None)
     result = _impl.hstack(tup, dtype=dtype, casting=casting)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -141,7 +141,7 @@ def dstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_k
     # XXX: in numpy 1.24 dstack does not have dtype and casting keywords
     # but {h,v}stack do.  Hence add them here for consistency.
     result = _impl.dstack(tup, dtype=dtype, casting=casting)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -153,7 +153,7 @@ def column_stack(
     # Hence add these keywords here for consistency.
     _concat_check(tup, dtype, out=None)
     result = _impl.column_stack(tup, dtype=dtype, casting=casting)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -173,43 +173,43 @@ def stack(
 @normalizer
 def array_split(ary: ArrayLike, indices_or_sections, axis=0):
     result = _impl.split_helper(ary, indices_or_sections, axis)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
 def split(ary: ArrayLike, indices_or_sections, axis=0):
     result = _impl.split_helper(ary, indices_or_sections, axis, strict=True)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
 def hsplit(ary: ArrayLike, indices_or_sections):
     result = _impl.hsplit(ary, indices_or_sections)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
 def vsplit(ary: ArrayLike, indices_or_sections):
     result = _impl.vsplit(ary, indices_or_sections)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
 def dsplit(ary: ArrayLike, indices_or_sections):
     result = _impl.dsplit(ary, indices_or_sections)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
 def kron(a: ArrayLike, b: ArrayLike):
     result = torch.kron(a, b)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def vander(x: ArrayLike, N=None, increasing=False):
     result = torch.vander(x, N, increasing)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -223,7 +223,7 @@ def linspace(
     axis=0,
 ):
     result = _impl.linspace(start, stop, num, endpoint, retstep, dtype, axis)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -236,7 +236,7 @@ def geomspace(
     axis=0,
 ):
     result = _impl.geomspace(start, stop, num, endpoint, dtype, axis)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -244,7 +244,7 @@ def logspace(
     start, stop, num=50, endpoint=True, base=10.0, dtype: DTypeLike = None, axis=0
 ):
     result = _impl.logspace(start, stop, num, endpoint, base, dtype, axis)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -257,13 +257,13 @@ def arange(
     like: SubokLike = None,
 ):
     result = _impl.arange(start, stop, step, dtype=dtype)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def empty(shape, dtype: DTypeLike = float, order="C", *, like: SubokLike = None):
     result = _impl.empty(shape, dtype, order)
-    return _helpers.array_from(result)
+    return result
 
 
 # NB: *_like functions deliberately deviate from numpy: it has subok=True
@@ -277,7 +277,7 @@ def empty_like(
     shape=None,
 ):
     result = _impl.empty_like(prototype, dtype=dtype, shape=shape)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -290,7 +290,7 @@ def full(
     like: SubokLike = None,
 ):
     result = _impl.full(shape, fill_value, dtype=dtype, order=order)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -303,13 +303,13 @@ def full_like(
     shape=None,
 ):
     result = _impl.full_like(a, fill_value, dtype=dtype, shape=shape, order=order)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def ones(shape, dtype: DTypeLike = None, order="C", *, like: SubokLike = None):
     result = _impl.ones(shape, dtype, order)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -321,13 +321,13 @@ def ones_like(
     shape=None,
 ):
     result = _impl.ones_like(a, dtype=dtype, shape=shape, order=order)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def zeros(shape, dtype: DTypeLike = None, order="C", *, like: SubokLike = None):
     result = _impl.zeros(shape, dtype, order)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -339,7 +339,7 @@ def zeros_like(
     shape=None,
 ):
     result = _impl.zeros_like(a, dtype=dtype, shape=shape, order=order)
-    return _helpers.array_from(result)
+    return result
 
 
 ###### misc/unordered
@@ -385,7 +385,7 @@ def corrcoef(
         raise NotImplementedError
     tensor = _xy_helper_corrcoef(x, y, rowvar)
     result = _impl.corrcoef(tensor, dtype=dtype)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -402,13 +402,13 @@ def cov(
 ):
     m = _xy_helper_corrcoef(m, y, rowvar)
     result = _impl.cov(m, bias, ddof, fweights, aweights, dtype=dtype)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def bincount(x: ArrayLike, /, weights: Optional[ArrayLike] = None, minlength=0):
     result = _impl.bincount(x, weights, minlength)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -419,11 +419,7 @@ def where(
     /,
 ):
     result = _impl.where(condition, x, y)
-    if isinstance(result, tuple):
-        # single-argument where(condition)
-        return _helpers.tuple_arrays_from(result)
-    else:
-        return _helpers.array_from(result)
+    return result
 
 
 ###### module-level queries of object properties
@@ -454,37 +450,37 @@ def size(a: ArrayLike, axis=None):
 def expand_dims(a: ArrayLike, axis):
     shape = _util.expand_shape(a.shape, axis)
     tensor = a.view(shape)  # never copies
-    return _helpers.array_from(tensor, a)
+    return tensor
 
 
 @normalizer
 def flip(m: ArrayLike, axis=None):
     result = _impl.flip(m, axis)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def flipud(m: ArrayLike):
     result = _impl.flipud(m)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def fliplr(m: ArrayLike):
     result = _impl.fliplr(m)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def rot90(m: ArrayLike, k=1, axes=(0, 1)):
     result = _impl.rot90(m, k, axes)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def broadcast_to(array: ArrayLike, shape, subok: SubokLike = False):
     result = torch.broadcast_to(array, size=shape)
-    return _helpers.array_from(result)
+    return result
 
 
 from torch import broadcast_shapes
@@ -494,7 +490,7 @@ from torch import broadcast_shapes
 @normalizer
 def broadcast_arrays(*args: ArrayLike, subok: SubokLike = False):
     res = torch.broadcast_tensors(*args)
-    return _helpers.tuple_arrays_from(res)
+    return res
 
 
 def unravel_index(indices, shape, order="C"):
@@ -521,64 +517,60 @@ def ravel_multi_index(multi_index, dims, mode="raise", order="C"):
 @normalizer
 def meshgrid(*xi: ArrayLike, copy=True, sparse=False, indexing="xy"):
     output = _impl.meshgrid(*xi, copy=copy, sparse=sparse, indexing=indexing)
-    outp = _helpers.tuple_arrays_from(output)
-    return list(outp)  # match numpy, return a list
+    return list(output)  # match numpy, return a list
 
 
 @normalizer
 def indices(dimensions, dtype: DTypeLike = int, sparse=False):
     result = _impl.indices(dimensions, dtype=dtype, sparse=sparse)
-    if sparse:
-        return _helpers.tuple_arrays_from(result)
-    else:
-        return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def roll(a: ArrayLike, shift, axis=None):
     result = _impl.roll(a, shift, axis)
-    return _helpers.array_from(result)
+    return result
 
 
 ###### tri{l, u} and related
 @normalizer
 def tril(m: ArrayLike, k=0):
     result = m.tril(k)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def triu(m: ArrayLike, k=0):
     result = m.triu(k)
-    return _helpers.array_from(result)
+    return result
 
 
 def tril_indices(n, k=0, m=None):
     result = _impl.tril_indices(n, k, m)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 def triu_indices(n, k=0, m=None):
     result = _impl.triu_indices(n, k, m)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
 def tril_indices_from(arr: ArrayLike, k=0):
     result = _impl.tril_indices_from(arr, k)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
 def triu_indices_from(arr: ArrayLike, k=0):
     result = _impl.triu_indices_from(arr, k)
-    return _helpers.tuple_arrays_from(result)
+    return result
 
 
 @normalizer
 def tri(N, M=None, k=0, dtype: DTypeLike = float, *, like: SubokLike = None):
     result = _impl.tri(N, M, k, dtype)
-    return _helpers.array_from(result)
+    return result
 
 
 ###### reductions
@@ -595,15 +587,15 @@ def average(
 ):
     result, wsum = _impl.average(a, axis, weights, returned=returned, keepdims=keepdims)
     if returned:
-        return _helpers.tuple_arrays_from((result, wsum))
+        return result, wsum
     else:
-        return _helpers.array_from(result)
+        return result
 
 
 @normalizer
 def inner(a: ArrayLike, b: ArrayLike, /):
     result = _impl.inner(a, b)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -638,7 +630,7 @@ def nanmean(
         result = a.nanmean(dtype=dtype, dim=axis, keepdim=bool(keepdims))
     if out is not None:
         out.copy_(result)
-    return _helpers.array_from(result)
+    return result
 
 
 def nanmin():
@@ -708,7 +700,7 @@ def diff(
         prepend_tensor=prepend,
         append_tensor=append,
     )
-    return _helpers.array_from(result)
+    return result
 
 
 ##### math functions
@@ -717,32 +709,32 @@ def diff(
 @normalizer
 def angle(z: ArrayLike, deg=False):
     result = _impl.angle(z, deg)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def sinc(x: ArrayLike):
     result = torch.sinc(x)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def real_if_close(a: ArrayLike, tol=100):
     result = _impl.real_if_close(a, tol=tol)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def iscomplex(x: ArrayLike):
     result = _impl.iscomplex(x)
     # XXX: missing .item on a zero-dim value; a case for array_or_scalar(value) ?
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def isreal(x: ArrayLike):
     result = _impl.isreal(x)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -760,19 +752,19 @@ def isrealobj(x: ArrayLike):
 @normalizer
 def isneginf(x: ArrayLike, out: Optional[NDArray] = None):
     result = torch.isneginf(x, out=out)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def isposinf(x: ArrayLike, out: Optional[NDArray] = None):
     result = torch.isposinf(x, out=out)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
 def i0(x: ArrayLike):
     result = torch.special.i0(x)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer(return_on_failure=False)
@@ -786,7 +778,7 @@ def isscalar(a: ArrayLike):
 @normalizer
 def isclose(a: ArrayLike, b: ArrayLike, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
     result = _impl.isclose(a, b, rtol, atol, equal_nan=equal_nan)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -829,7 +821,7 @@ def asfarray():
 @normalizer
 def take_along_axis(arr: ArrayLike, indices: ArrayLike, axis):
     result = _impl.take_along_dim(arr, indices, axis)
-    return _helpers.array_from(result)
+    return result
 
 
 @normalizer
@@ -861,13 +853,4 @@ def unique(
         axis=axis,
         equal_nan=equal_nan,
     )
-
-    if isinstance(result, tuple):
-        return _helpers.tuple_arrays_from(result)
-    else:
-        return _helpers.array_from(result)
-
-
-###### mapping from numpy API objects to wrappers from this module ######
-
-# All is in the mapping dict in _mapping.py
+    return result
