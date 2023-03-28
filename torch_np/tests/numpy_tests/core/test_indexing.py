@@ -1053,9 +1053,8 @@ class TestFloatNonIntegerArgument:
 
         assert_raises(TypeError, np.reshape, a, (1., 1., -1))
         assert_raises(TypeError, np.reshape, a, (np.array(1.), -1))
-        pytest.xfail("XXX: take not implemented")
         assert_raises(TypeError, np.take, a, [0], 1.)
-        assert_raises(TypeError, np.take, a, [0], np.float64(1.))
+        assert_raises((TypeError, RuntimeError), np.take, a, [0], np.float64(1.))
 
     @pytest.mark.skip(
         reason=(
@@ -1089,7 +1088,6 @@ class TestBooleanIndexing:
         # array is thus also deprecated, but not with the same message:
         assert_warns(DeprecationWarning, operator.index, np.True_)
 
-        pytest.xfail("XXX: take not implemented")
         assert_raises(TypeError, np.take, args=(a, [0], False))
 
         pytest.skip("torch consumes boolean tensors as ints, no bother raising here")
@@ -1138,8 +1136,7 @@ class TestArrayToIndexDeprecation:
         # so no exception is expected. The raising is effectively tested above.
         a = np.array([[[1]]])
 
-        pytest.xfail("XXX: take not implemented")
-        assert_raises(TypeError, np.take, a, [0], a)
+        assert_raises((TypeError, RuntimeError), np.take, a, [0], a)
 
         pytest.skip(
             "Multi-dimensional tensors are indexable just as long as they only "
