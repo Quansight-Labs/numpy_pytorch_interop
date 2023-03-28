@@ -815,12 +815,22 @@ def asfarray():
     raise NotImplementedError
 
 
-# ### put/take_along_axis ###
+# ### put/take et al ###
 
 
 @normalizer
 def take_along_axis(arr: ArrayLike, indices: ArrayLike, axis):
     result = _impl.take_along_dim(arr, indices, axis)
+    return result
+
+
+@normalizer
+def take(a: ArrayLike, indices: ArrayLike, axis=None, out=None, mode="raise"):
+    if out is not None:
+        raise NotImplementedError(f"{out=}")
+    if mode != "raise":
+        raise NotImplementedError(f"{mode=}")
+    result = _impl.take(a, indices, axis)
     return result
 
 

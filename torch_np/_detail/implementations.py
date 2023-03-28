@@ -743,6 +743,14 @@ def take_along_dim(tensor, t_indices, axis):
     return result
 
 
+def take(tensor, t_indices, axis):
+    (tensor,), axis = _util.axis_none_ravel(tensor, axis=axis)
+    axis = _util.normalize_axis_index(axis, tensor.ndim)
+    idx = (slice(None),) * axis + (t_indices, ...)
+    result = tensor[idx]
+    return result
+
+
 def put_along_dim(tensor, t_indices, t_values, axis):
     (tensor,), axis = _util.axis_none_ravel(tensor, axis=axis)
     axis = _util.normalize_axis_index(axis, tensor.ndim)
