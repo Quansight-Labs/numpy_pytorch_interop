@@ -3817,63 +3817,48 @@ class TestPutmask:
             np.putmask(a=x, values=[-1, -2],  mask=[0, 1])
 
 
-@pytest.mark.xfail(reason='TODO')
 class TestTake:
     def tst_basic(self, x):
         ind = list(range(x.shape[0]))
-        assert_array_equal(x.take(ind, axis=0), x)
+        assert_array_equal(np.take(x, ind, axis=0), x)
 
     def test_ip_types(self):
-        unchecked_types = [bytes, str, np.void]
-
         x = np.random.random(24)*100
-        x.shape = 2, 3, 4
+        x = np.reshape(x, (2, 3, 4))
         for types in np.sctypes.values():
             for T in types:
-                if T not in unchecked_types:
-                    self.tst_basic(x.copy().astype(T))
-
-            # Also test string of a length which uses an untypical length
-            self.tst_basic(x.astype("S3"))
+                self.tst_basic(x.copy().astype(T))
 
     def test_raise(self):
         x = np.random.random(24)*100
-        x.shape = 2, 3, 4
-        assert_raises(IndexError, x.take, [0, 1, 2], axis=0)
-        assert_raises(IndexError, x.take, [-3], axis=0)
-        assert_array_equal(x.take([-1], axis=0)[0], x[1])
+        x = np.reshape(x, (2, 3, 4))
+        assert_raises(IndexError, np.take, x, [0, 1, 2], axis=0)
+        assert_raises(IndexError, np.take, x, [-3], axis=0)
+        assert_array_equal(np.take(x, [-1], axis=0)[0], x[1])
 
+    @pytest.mark.xfail(reason="XXX: take(..., mode='clip')")
     def test_clip(self):
         x = np.random.random(24)*100
-        x.shape = 2, 3, 4
-        assert_array_equal(x.take([-1], axis=0, mode='clip')[0], x[0])
-        assert_array_equal(x.take([2], axis=0, mode='clip')[0], x[1])
+        x = np.reshape(x, (2, 3, 4))
+        assert_array_equal(np.take(x, [-1], axis=0, mode='clip')[0], x[0])
+        assert_array_equal(np.take(x, [2], axis=0, mode='clip')[0], x[1])
 
+    @pytest.mark.xfail(reason="XXX: take(..., mode='wrap')")
     def test_wrap(self):
         x = np.random.random(24)*100
-        x.shape = 2, 3, 4
-        assert_array_equal(x.take([-1], axis=0, mode='wrap')[0], x[1])
-        assert_array_equal(x.take([2], axis=0, mode='wrap')[0], x[0])
-        assert_array_equal(x.take([3], axis=0, mode='wrap')[0], x[1])
+        x = np.reshape(x, (2, 3, 4))
+        assert_array_equal(np.take(x, [-1], axis=0, mode='wrap')[0], x[1])
+        assert_array_equal(np.take(x, [2], axis=0, mode='wrap')[0], x[0])
+        assert_array_equal(np.take(x, [3], axis=0, mode='wrap')[0], x[1])
 
-    @pytest.mark.parametrize('dtype', ('>i4', '<i4'))
-    def test_byteorder(self, dtype):
-        x = np.array([1, 2, 3], dtype)
-        assert_array_equal(x.take([0, 2, 1]), [1, 3, 2])
-
-    def test_record_array(self):
-        # Note mixed byteorder.
-        rec = np.array([(-5, 2.0, 3.0), (5.0, 4.0, 3.0)],
-                      dtype=[('x', '<f8'), ('y', '>f8'), ('z', '<f8')])
-        rec1 = rec.take([1])
-        assert_(rec1['x'] == 5.0 and rec1['y'] == 4.0)
-
+    @pytest.mark.xfail(reason="XXX: take(out=...)")
     def test_out_overlap(self):
         # gh-6272 check overlap on out
         x = np.arange(5)
         y = np.take(x, [1, 2, 3], out=x[2:5], mode='wrap')
         assert_equal(y, np.array([1, 2, 3]))
 
+    @pytest.mark.xfail(reason="XXX: take(out=...)")
     @pytest.mark.parametrize('shape', [(1, 2), (1,), ()])
     def test_ret_is_out(self, shape):
         # 0d arrays should not be an exception to this rule

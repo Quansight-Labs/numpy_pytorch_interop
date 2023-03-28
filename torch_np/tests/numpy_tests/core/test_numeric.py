@@ -282,7 +282,6 @@ class TestNonarrayArgs:
 
         assert_equal(tgt, out)
 
-    @pytest.mark.xfail(reason="TODO implement take(...)")
     def test_take(self):
         tgt = [2, 3, 5]
         indices = [1, 2, 4]

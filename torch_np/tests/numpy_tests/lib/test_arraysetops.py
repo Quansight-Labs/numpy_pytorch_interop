@@ -768,7 +768,6 @@ class TestUnique:
         assert_array_equal(unique(inp, axis=0), unique(inp_arr, axis=0), msg)
         assert_array_equal(unique(inp, axis=1), unique(inp_arr, axis=1), msg)
 
-    @pytest.mark.xfail(reason='TODO: implement take')
     def test_unique_axis(self):
         types = []
         types.extend(np.typecodes['AllInteger'])
@@ -857,6 +856,15 @@ class TestUnique:
         result = np.array([[0, 0, 1], [0, 1, 0], [0, 0, 1], [0, 1, 0]])
         assert_array_equal(unique(data, axis=1), result.astype(dtype), msg)
 
+        pytest.xfail("torch has different unique ordering behaviour")
+        # e.g.
+        #
+        #     >>> x = np.array([[[1, 1], [0, 1]], [[1, 0], [0, 0]]])
+        #     >>> np.unique(x, axis=2)
+        #    [[1, 1], [0, 1]], [[1, 0], [0, 0]]
+        #     >>> torch.unique(torch.as_tensor(x), dim=2)
+        #    [[1, 1], [1, 0]], [[0, 1], [0, 0]]
+        #
         msg = 'Unique with 3d array and axis=2 failed'
         data3d = np.array([[[1, 1],
                             [1, 0]],
