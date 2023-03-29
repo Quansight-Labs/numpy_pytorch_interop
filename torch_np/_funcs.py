@@ -888,20 +888,14 @@ def allclose(a: ArrayLike, b: ArrayLike, rtol=1e-05, atol=1e-08, equal_nan=False
     return torch.allclose(a, b, rtol=rtol, atol=atol, equal_nan=equal_nan)
 
 
-def _tensor_equal(a1_t, a2_t, equal_nan=False):
+def _tensor_equal(a1, a2, equal_nan=False):
     # Implementation of array_equal/array_equiv.
-    if a1_t.shape != a2_t.shape:
-        return False
     if equal_nan:
-        nan_loc = (torch.isnan(a1_t) == torch.isnan(a2_t)).all()
-        if nan_loc:
-            # check the values
-            result = a1_t[~torch.isnan(a1_t)] == a2_t[~torch.isnan(a2_t)]
-        else:
-            return False
+        return (a1.shape == a2.shape) and (
+            (a1 == a2) | (torch.isnan(a1) & torch.isnan(a2))
+        ).all().item()
     else:
-        result = a1_t == a2_t
-    return bool(result.all())
+        return torch.equal(a1, a2)
 
 
 @normalizer
@@ -1822,8 +1816,6 @@ def i0(x: ArrayLike):
 @normalizer(return_on_failure=False)
 def isscalar(a: ArrayLike):
     # XXX: this is a stub
-    if a is False:
-        return False
     return a.numel() == 1
 
 
