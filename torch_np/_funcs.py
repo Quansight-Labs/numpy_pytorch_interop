@@ -1865,35 +1865,30 @@ s_ = IndexExpression(maketuple=False)
 
 
 @normalizer
-def hamming(M: ArrayLike):
-    M = int(M.item())
+def hamming(M):
     dtype = _dtypes_impl.default_float_dtype
     return torch.hamming_window(M, periodic=False, dtype=dtype)
 
 
 @normalizer
-def hanning(M: ArrayLike):
-    M = int(M.item())
+def hanning(M):
     dtype = _dtypes_impl.default_float_dtype
     return torch.hann_window(M, periodic=False, dtype=dtype)
 
 
 @normalizer
-def kaiser(M: ArrayLike, beta):
-    M = int(M.item())
+def kaiser(M, beta):
     dtype = _dtypes_impl.default_float_dtype
     return torch.kaiser_window(M, beta=beta, periodic=False, dtype=dtype)
 
 
 @normalizer
-def blackman(M: ArrayLike):
-    M = int(M.item())
+def blackman(M):
     dtype = _dtypes_impl.default_float_dtype
     return torch.blackman_window(M, periodic=False, dtype=dtype)
 
 
 @normalizer
-def bartlett(M: ArrayLike):
-    M = int(M.item())
+def bartlett(M):
     dtype = _dtypes_impl.default_float_dtype
     return torch.bartlett_window(M, periodic=False, dtype=dtype)

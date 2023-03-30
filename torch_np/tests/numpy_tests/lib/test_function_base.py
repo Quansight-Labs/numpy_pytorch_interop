@@ -1709,10 +1709,10 @@ class TestUnwrap:
 class TestFilterwindows:
 
     def test_hanning(self, dtype: str, M: int) -> None:
-        scalar = np.array(M, dtype=dtype)[()]
+        scalar = M
 
         w = hanning(scalar)
-        ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
@@ -1727,10 +1727,10 @@ class TestFilterwindows:
             assert_almost_equal(np.sum(w, axis=0), 4.500, 4)
 
     def test_hamming(self, dtype: str, M: int) -> None:
-        scalar = np.array(M, dtype=dtype)[()]
+        scalar = M
 
         w = hamming(scalar)
-        ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
@@ -1745,10 +1745,10 @@ class TestFilterwindows:
             assert_almost_equal(np.sum(w, axis=0), 4.9400, 4)
 
     def test_bartlett(self, dtype: str, M: int) -> None:
-        scalar = np.array(M, dtype=dtype)[()]
+        scalar = M
 
         w = bartlett(scalar)
-        ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
@@ -1763,10 +1763,10 @@ class TestFilterwindows:
             assert_almost_equal(np.sum(w, axis=0), 4.4444, 4)
 
     def test_blackman(self, dtype: str, M: int) -> None:
-        scalar = np.array(M, dtype=dtype)[()]
+        scalar = M
 
         w = blackman(scalar)
-        ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
@@ -1781,10 +1781,10 @@ class TestFilterwindows:
             assert_almost_equal(np.sum(w, axis=0), 3.7800, 4)
 
     def test_kaiser(self, dtype: str, M: int) -> None:
-        scalar = np.array(M, dtype=dtype)[()]
+        scalar = M
 
         w = kaiser(scalar, 0)
-        ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
