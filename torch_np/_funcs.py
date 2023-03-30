@@ -1162,9 +1162,7 @@ def vdot(a: ArrayLike, b: ArrayLike, /):
 def tensordot(a: ArrayLike, b: ArrayLike, axes=2):
     if isinstance(axes, (list, tuple)):
         axes = [[ax] if isinstance(ax, int) else ax for ax in axes]
-    result = torch.tensordot(a, b, dims=axes)
-
-    return result
+    return torch.tensordot(a, b, dims=axes)
 
 
 @normalizer
