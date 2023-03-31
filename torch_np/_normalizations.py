@@ -1,5 +1,6 @@
 """ "Normalize" arguments: convert array_likes to tensors, dtypes to torch dtypes and so on.
 """
+import functools
 import operator
 import typing
 from typing import Optional, Sequence
@@ -79,21 +80,11 @@ normalizers = {
     AxisLike: normalize_axis_like,
 }
 
-import functools
 
-_sentinel = object()
-
-
-def maybe_normalize(arg, parm, return_on_failure=_sentinel):
+def maybe_normalize(arg, parm):
     """Normalize arg if a normalizer is registred."""
     normalizer = normalizers.get(parm.annotation, None)
-    try:
-        return normalizer(arg, parm.name) if normalizer else arg
-    except Exception as exc:
-        if return_on_failure is not _sentinel:
-            return return_on_failure
-        else:
-            raise exc from None
+    return normalizer(arg, parm.name) if normalizer else arg
 
 
 # ### Return value helpers ###
@@ -145,7 +136,7 @@ def array_or_scalar(values, py_type=float, return_scalar=False):
 # ### The main decorator to normalize arguments / postprocess the output ###
 
 
-def normalizer(_func=None, *, return_on_failure=_sentinel, promote_scalar_result=False):
+def normalizer(_func=None, *, promote_scalar_result=False):
     def normalizer_inner(func):
         @functools.wraps(func)
         def wrapped(*args, **kwds):
@@ -154,14 +145,12 @@ def normalizer(_func=None, *, return_on_failure=_sentinel, promote_scalar_result
             first_param = next(iter(params.values()))
             # NumPy's API does not have positional args before variadic positional args
             if first_param.kind == inspect.Parameter.VAR_POSITIONAL:
-                args = [
-                    maybe_normalize(arg, first_param, return_on_failure) for arg in args
-                ]
+                args = [maybe_normalize(arg, first_param) for arg in args]
             else:
                 # NB: extra unknown arguments: pass through, will raise in func(*args) below
                 args = (
                     tuple(
-                        maybe_normalize(arg, parm, return_on_failure)
+                        maybe_normalize(arg, parm)
                         for arg, parm in zip(args, params.values())
                     )
                     + args[len(params.values()) :]

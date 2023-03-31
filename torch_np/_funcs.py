@@ -18,6 +18,7 @@ from ._normalizations import (
     DTypeLike,
     NDArray,
     SubokLike,
+    normalize_array_like,
     normalizer,
 )
 
@@ -1813,10 +1814,13 @@ def i0(x: ArrayLike):
     return torch.special.i0(x)
 
 
-@normalizer(return_on_failure=False)
-def isscalar(a: ArrayLike):
+def isscalar(a):
     # XXX: this is a stub
-    return a.numel() == 1
+    try:
+        t = normalize_array_like(a)
+        return t.numel() == 1
+    except Exception:
+        return False
 
 
 """
