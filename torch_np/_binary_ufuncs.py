@@ -80,6 +80,41 @@ def matmul(
     return result
 
 
+def divmod(
+    x1: ArrayLike,
+    x2: ArrayLike,
+    out1: Optional[NDArray] = None,
+    out2: Optional[NDArray] = None,
+    /,
+    out: Optional[tuple[NDArray]] = (None, None),
+    *,
+    where=True,
+    casting="same_kind",
+    order="K",
+    dtype: DTypeLike = None,
+    subok: SubokLike = False,
+    signature=None,
+    extobj=None,
+):
+    num_outs = sum(x is None for x in [out1, out2])
+    if sum_outs == 1:
+        raise ValueError("both out1 and out2 need to be provided")
+    if sum_outs != 0 and out != (None, None):
+        raise ValueError("Either provide out1 and out2, or out.")
+    if out is not None:
+        out1, out2 = out
+    if out1.shape != out2.shape or out1.dtype != out2.dtype:
+        raise ValueError("out1, out2 must be compatible")
+
+    tensors = _helpers.ufunc_preprocess(
+        (x1, x2), out, True, casting, order, dtype, subok, signature, extobj
+    )
+
+    result = _binary_ufuncs.divmod(*tensors)
+
+    return quot, rem
+
+
 #
 # For each torch ufunc implementation, decorate and attach the decorated name
 # to this module. Its contents is then exported to the public namespace in __init__.py
