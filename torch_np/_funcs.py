@@ -1159,6 +1159,13 @@ def vdot(a: ArrayLike, b: ArrayLike, /):
 
 
 @normalizer
+def tensordot(a: ArrayLike, b: ArrayLike, axes=2):
+    if isinstance(axes, (list, tuple)):
+        axes = [[ax] if isinstance(ax, int) else ax for ax in axes]
+    return torch.tensordot(a, b, dims=axes)
+
+
+@normalizer
 def dot(a: ArrayLike, b: ArrayLike, out: Optional[NDArray] = None):
     dtype = _dtypes_impl.result_type_impl((a.dtype, b.dtype))
     a = _util.cast_if_needed(a, dtype)
@@ -1850,3 +1857,36 @@ class IndexExpression:
 
 index_exp = IndexExpression(maketuple=True)
 s_ = IndexExpression(maketuple=False)
+
+
+# ### Filter windows ###
+
+
+@normalizer
+def hamming(M):
+    dtype = _dtypes_impl.default_float_dtype
+    return torch.hamming_window(M, periodic=False, dtype=dtype)
+
+
+@normalizer
+def hanning(M):
+    dtype = _dtypes_impl.default_float_dtype
+    return torch.hann_window(M, periodic=False, dtype=dtype)
+
+
+@normalizer
+def kaiser(M, beta):
+    dtype = _dtypes_impl.default_float_dtype
+    return torch.kaiser_window(M, beta=beta, periodic=False, dtype=dtype)
+
+
+@normalizer
+def blackman(M):
+    dtype = _dtypes_impl.default_float_dtype
+    return torch.blackman_window(M, periodic=False, dtype=dtype)
+
+
+@normalizer
+def bartlett(M):
+    dtype = _dtypes_impl.default_float_dtype
+    return torch.bartlett_window(M, periodic=False, dtype=dtype)

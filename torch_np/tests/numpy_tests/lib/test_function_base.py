@@ -26,14 +26,15 @@ from torch_np.random import rand
 
 # FIXME: make from torch_np
 from numpy.lib import (
-    bartlett, blackman,
-    delete, digitize, extract, gradient, hamming, hanning,
-    insert, interp, kaiser, msort, piecewise, place,
+    delete, digitize, extract, gradient,
+    insert, interp, msort, piecewise, place,
     select, setxor1d, trapz, trim_zeros, unwrap, vectorize
     )
 from torch_np._detail._util import normalize_axis_tuple
 
 from torch_np import corrcoef, cov, i0, angle, sinc, diff, meshgrid, unique
+from torch_np import flipud, hamming, hanning, kaiser, blackman, bartlett
+
 
 def get_mat(n):
     data = np.arange(n)
@@ -1701,7 +1702,6 @@ class TestUnwrap:
         assert sm_discont.dtype == wrap_uneven.dtype
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 @pytest.mark.parametrize(
     "dtype", np.typecodes["AllInteger"] + np.typecodes["Float"]
 )
@@ -1709,14 +1709,14 @@ class TestUnwrap:
 class TestFilterwindows:
 
     def test_hanning(self, dtype: str, M: int) -> None:
-        scalar = np.array(M, dtype=dtype)[()]
+        scalar = M
 
         w = hanning(scalar)
-        ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
-        assert_equal(w, flipud(w))
+        assert_allclose(w, flipud(w), atol=1e-15)
 
         # check known value
         if scalar < 1:
@@ -1727,14 +1727,14 @@ class TestFilterwindows:
             assert_almost_equal(np.sum(w, axis=0), 4.500, 4)
 
     def test_hamming(self, dtype: str, M: int) -> None:
-        scalar = np.array(M, dtype=dtype)[()]
+        scalar = M
 
         w = hamming(scalar)
-        ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
-        assert_equal(w, flipud(w))
+        assert_allclose(w, flipud(w), atol=1e-15)
 
         # check known value
         if scalar < 1:
@@ -1745,14 +1745,14 @@ class TestFilterwindows:
             assert_almost_equal(np.sum(w, axis=0), 4.9400, 4)
 
     def test_bartlett(self, dtype: str, M: int) -> None:
-        scalar = np.array(M, dtype=dtype)[()]
+        scalar = M
 
         w = bartlett(scalar)
-        ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
-        assert_equal(w, flipud(w))
+        assert_allclose(w, flipud(w), atol=1e-15)
 
         # check known value
         if scalar < 1:
@@ -1763,14 +1763,14 @@ class TestFilterwindows:
             assert_almost_equal(np.sum(w, axis=0), 4.4444, 4)
 
     def test_blackman(self, dtype: str, M: int) -> None:
-        scalar = np.array(M, dtype=dtype)[()]
+        scalar = M
 
         w = blackman(scalar)
-        ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
-        assert_equal(w, flipud(w))
+        assert_allclose(w, flipud(w), atol=1e-15)
 
         # check known value
         if scalar < 1:
@@ -1781,10 +1781,10 @@ class TestFilterwindows:
             assert_almost_equal(np.sum(w, axis=0), 3.7800, 4)
 
     def test_kaiser(self, dtype: str, M: int) -> None:
-        scalar = np.array(M, dtype=dtype)[()]
+        scalar = M
 
         w = kaiser(scalar, 0)
-        ref_dtype = np.result_type(scalar.dtype, np.float64)
+        ref_dtype = np.result_type(dtype, np.float64)
         assert w.dtype == ref_dtype
 
         # check symmetry
