@@ -407,8 +407,7 @@ class ndarray:
         value = _helpers.ndarrays_to_tensors(value)
         return self.tensor.__setitem__(index, value)
 
-    def take(*a, **kw):
-        raise NotImplementedError()
+    take = _funcs.take
 
 
 # This is the ideally the only place which talks to ndarray directly.
