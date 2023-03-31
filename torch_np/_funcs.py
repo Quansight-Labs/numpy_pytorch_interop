@@ -687,10 +687,6 @@ def broadcast_arrays(*args: ArrayLike, subok: SubokLike = False):
     return torch.broadcast_tensors(*args)
 
 
-def ravel_multi_index(multi_index, dims, mode="raise", order="C"):
-    return sum(idx * dim for idx, dim in zip(multi_index, dims))
-
-
 @normalizer
 def meshgrid(*xi: ArrayLike, copy=True, sparse=False, indexing="xy"):
     ndim = len(xi)
