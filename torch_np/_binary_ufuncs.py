@@ -86,7 +86,7 @@ def divmod(
     out1: Optional[NDArray] = None,
     out2: Optional[NDArray] = None,
     /,
-    out: Optional[tuple[NDArray]] = (None, None),
+    out: tuple[Optional[NDArray], Optional[NDArray]] = (None, None),
     *,
     where=True,
     casting="same_kind",

@@ -170,36 +170,6 @@ def typecast_tensors(tensors, target_dtype, casting):
     return tuple(cast_tensors)
 
 
-def axis_expand_func(func, tensor, axis, *args, **kwds):
-    """Generically handle axis arguments in reductions."""
-    if axis is not None:
-        if not isinstance(axis, (list, tuple)):
-            axis = (axis,)
-        axis = normalize_axis_tuple(axis, tensor.ndim)
-
-    if axis == ():
-        newshape = expand_shape(tensor.shape, axis=0)
-        tensor = tensor.reshape(newshape)
-        axis = (0,)
-
-    result = func(tensor, axis=axis, *args, **kwds)
-
-    return result
-
-
-def axis_ravel_func(func, tensor, axis, *args, **kwds):
-    """Generically handle axis arguments in cumsum/cumprod."""
-    if axis is not None:
-        axis = normalize_axis_index(axis, tensor.ndim)
-
-    tensors, axis = axis_none_ravel(tensor, axis=axis)
-    tensor = tensors[0]
-
-    result = func(tensor, axis=axis, *args, **kwds)
-
-    return result
-
-
 def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
     """The core logic of the array(...) function.
 

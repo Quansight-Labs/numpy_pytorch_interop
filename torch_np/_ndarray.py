@@ -4,7 +4,6 @@ import torch
 
 from . import _binary_ufuncs, _dtypes, _funcs, _helpers, _unary_ufuncs
 from ._detail import _dtypes_impl, _util
-from ._detail import implementations as _impl
 
 newaxis = None
 
@@ -358,8 +357,7 @@ class ndarray:
 
     def sort(self, axis=-1, kind=None, order=None):
         # ndarray.sort works in-place
-        result = _impl.sort(self.tensor, axis, kind, order)
-        self.tensor = result
+        self.tensor.copy_(_funcs._sort(self.tensor, axis, kind, order))
 
     argsort = _funcs.argsort
     searchsorted = _funcs.searchsorted
