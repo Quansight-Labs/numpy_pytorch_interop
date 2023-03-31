@@ -111,10 +111,10 @@ def concatenate(
     out: Optional[NDArray] = None,
     dtype: DTypeLike = None,
     casting="same_kind",
-) -> OutArray:
+):
     _concat_check(ar_tuple, dtype, out=out)
     result = _concatenate(ar_tuple, axis=axis, out=out, dtype=dtype, casting=casting)
-    return result, out
+    return result
 
 
 @normalizer
@@ -163,7 +163,7 @@ def stack(
     *,
     dtype: DTypeLike = None,
     casting="same_kind",
-) -> OutArray:
+):
     _concat_check(arrays, dtype, out=out)
 
     tensors = _concat_cast_helper(arrays, dtype=dtype, casting=casting)
@@ -173,7 +173,7 @@ def stack(
         result = torch.stack(tensors, axis=axis)
     except RuntimeError as e:
         raise ValueError(*e.args)
-    return result, out
+    return result
 
 
 # ### split ###
@@ -1013,7 +1013,7 @@ def clip(
     # one of them to be None. Follow the more lax version.
     if min is None and max is None:
         raise ValueError("One of max or min must be given")
-    result = torch.clamp(min, max)
+    result = torch.clamp(a, min, max)
     return result
 
 
@@ -1194,6 +1194,12 @@ def inner(a: ArrayLike, b: ArrayLike, /):
         result = result.to(torch.bool)
     return result
 
+
+@normalizer
+def outer(a: ArrayLike, b: ArrayLike, out: Optional[NDArray] = None):
+    return torch.outer(a, b)
+
+
 # ### sort and partition ###
 
 
@@ -1371,7 +1377,7 @@ def imag(a: ArrayLike):
 
 
 @normalizer
-def round_(a: ArrayLike, decimals=0, out: Optional[NDArray] = None) -> OutArray:
+def round_(a: ArrayLike, decimals=0, out: Optional[NDArray] = None):
     if a.is_floating_point():
         result = torch.round(a, decimals=decimals)
     elif a.is_complex():
@@ -1730,7 +1736,7 @@ def imag(a: ArrayLike):
 
 
 @normalizer
-def round_(a: ArrayLike, decimals=0, out: Optional[NDArray] = None) -> OutArray:
+def round_(a: ArrayLike, decimals=0, out: Optional[NDArray] = None):
     if a.is_floating_point():
         result = torch.round(a, decimals=decimals)
     elif a.is_complex():
@@ -1742,7 +1748,7 @@ def round_(a: ArrayLike, decimals=0, out: Optional[NDArray] = None) -> OutArray:
     else:
         # RuntimeError: "round_cpu" not implemented for 'int'
         result = a
-    return result, out
+    return result
 
 
 around = round_
