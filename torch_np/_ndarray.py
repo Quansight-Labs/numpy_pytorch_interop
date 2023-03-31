@@ -407,6 +407,8 @@ class ndarray:
         value = _helpers.ndarrays_to_tensors(value)
         return self.tensor.__setitem__(index, value)
 
+    take = _funcs.take
+
 
 # This is the ideally the only place which talks to ndarray directly.
 # The rest goes through asarray (preferred) or array.

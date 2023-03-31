@@ -931,6 +931,24 @@ def asfarray():
 
 
 @normalizer
+def take(
+    a: ArrayLike,
+    indices: ArrayLike,
+    axis=None,
+    out: Optional[NDArray] = None,
+    mode="raise",
+):
+    if mode != "raise":
+        raise NotImplementedError(f"{mode=}")
+
+    (a,), axis = _util.axis_none_ravel(a, axis=axis)
+    axis = _util.normalize_axis_index(axis, a.ndim)
+    idx = (slice(None),) * axis + (indices, ...)
+    result = a[idx]
+    return result
+
+
+@normalizer
 def take_along_axis(arr: ArrayLike, indices: ArrayLike, axis):
     (arr,), axis = _util.axis_none_ravel(arr, axis=axis)
     axis = _util.normalize_axis_index(axis, arr.ndim)
