@@ -929,10 +929,15 @@ def asfarray():
 
 # ### put/take_along_axis ###
 
+
 @normalizer
-def take(a: ArrayLike, indices: ArrayLike, axis=None, out : Optional[NDArray]=None, mode="raise"):
-    if out is not None:
-        raise NotImplementedError(f"{out=}")
+def take(
+    a: ArrayLike,
+    indices: ArrayLike,
+    axis=None,
+    out: Optional[NDArray] = None,
+    mode="raise",
+):
     if mode != "raise":
         raise NotImplementedError(f"{mode=}")
 
@@ -941,8 +946,6 @@ def take(a: ArrayLike, indices: ArrayLike, axis=None, out : Optional[NDArray]=No
     idx = (slice(None),) * axis + (indices, ...)
     result = a[idx]
     return result
-
-
 
 
 @normalizer

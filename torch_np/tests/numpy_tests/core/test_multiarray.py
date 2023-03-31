@@ -3851,14 +3851,13 @@ class TestTake:
         assert_array_equal(np.take(x, [2], axis=0, mode='wrap')[0], x[0])
         assert_array_equal(np.take(x, [3], axis=0, mode='wrap')[0], x[1])
 
-    @pytest.mark.xfail(reason="XXX: take(out=...)")
+    @pytest.mark.xfail(reason="XXX: take(mode='wrap')")
     def test_out_overlap(self):
         # gh-6272 check overlap on out
         x = np.arange(5)
         y = np.take(x, [1, 2, 3], out=x[2:5], mode='wrap')
         assert_equal(y, np.array([1, 2, 3]))
 
-    @pytest.mark.xfail(reason="XXX: take(out=...)")
     @pytest.mark.parametrize('shape', [(1, 2), (1,), ()])
     def test_ret_is_out(self, shape):
         # 0d arrays should not be an exception to this rule
