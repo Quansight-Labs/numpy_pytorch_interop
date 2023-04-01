@@ -927,6 +927,10 @@ def asfarray():
     raise NotImplementedError
 
 
+def block(*args, **kwds):
+    raise NotImplementedError
+
+
 # ### put/take_along_axis ###
 
 
@@ -1358,6 +1362,7 @@ def reshape(a: ArrayLike, newshape, order="C"):
 @normalizer
 def transpose(a: ArrayLike, axes=None):
     # numpy allows both .tranpose(sh) and .transpose(*sh)
+    axes = axes[0] if len(axes) == 1 else axes
     if axes in [(), None, (None,)]:
         axes = tuple(range(a.ndim))[::-1]
     try:
