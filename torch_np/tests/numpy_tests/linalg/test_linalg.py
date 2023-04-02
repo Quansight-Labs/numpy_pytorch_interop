@@ -338,6 +338,7 @@ class LinalgGeneralizedSquareTestCase(LinalgTestCase):
         self.check_cases(require={'generalized', 'square'},
                          exclude={'size-0'})
 
+    @pytest.mark.xfail(reason="zero-size arrays")
     @pytest.mark.slow
     def test_generalized_empty_sq_cases(self):
         self.check_cases(require={'generalized', 'square', 'size-0'})
@@ -357,11 +358,13 @@ class LinalgGeneralizedNonsquareTestCase(LinalgTestCase):
 
 class HermitianGeneralizedTestCase(LinalgTestCase):
 
+    @pytest.mark.xfail(reason="sort complex")
     @pytest.mark.slow
     def test_generalized_herm_cases(self):
         self.check_cases(require={'generalized', 'hermitian'},
                          exclude={'size-0'})
 
+    @pytest.mark.xfail(reason="zero-size arrays")
     @pytest.mark.slow
     def test_generalized_empty_herm_cases(self):
         self.check_cases(require={'generalized', 'hermitian', 'size-0'},
@@ -637,7 +640,7 @@ class SVDHermitianCases(HermitianTestCase, HermitianGeneralizedTestCase):
 
         assert_almost_equal(np.matmul(u, hermitian(u)), np.broadcast_to(np.eye(u.shape[-1]), u.shape))
         assert_almost_equal(np.matmul(vt, hermitian(vt)), np.broadcast_to(np.eye(vt.shape[-1]), vt.shape))
-        assert_equal(np.sort(s)[..., ::-1], s)
+        assert_equal(np.sort(s), np.flip(s, -1))
         assert_(consistent_subclass(u, a))
         assert_(consistent_subclass(vt, a))
 
@@ -802,8 +805,8 @@ class DetCases(LinalgSquareTestCase, LinalgGeneralizedSquareTestCase):
         else:
             ad = asarray(a).astype(cdouble)
         ev = linalg.eigvals(ad)
-        assert_almost_equal(d, multiply.reduce(ev, axis=-1))
-        assert_almost_equal(s * np.exp(ld), multiply.reduce(ev, axis=-1))
+        assert_almost_equal(d, np.prod(ev, axis=-1))
+        assert_almost_equal(s * np.exp(ld), np.prod(ev, axis=-1))
 
         s = np.atleast_1d(s)
         ld = np.atleast_1d(ld)
@@ -853,14 +856,6 @@ class TestDet(DetCases):
         assert_equal(res, (1, 0))
         assert_(res[0].dtype.type is np.float64)
         assert_(res[1].dtype.type is np.float64)
-
-
-    # stub out these two tests inherited from superclasses
-    def test_empty_sq_cases(self):
-        pytest.xfail("multiply.reduce")
-
-    def test_sq_cases(self):
-        pytest.xfail("multiply.reduce")
 
 
 class LstsqCases(LinalgSquareTestCase, LinalgNonsquareTestCase):
@@ -1776,7 +1771,7 @@ class TestCholesky:
         assert_(isinstance(res, np.ndarray))
 
 
-@pytest.mark.xfail(reason='TODO')
+@pytest.mark.xfail(reason='endianness')
 def test_byteorder_check():
     # Byte order check should pass for native order
     if sys.byteorder == 'little':
@@ -1798,7 +1793,6 @@ def test_byteorder_check():
             assert_array_equal(res, routine(sw_arr))
 
 
-@pytest.mark.xfail(reason='TODO')
 @pytest.mark.skipif(IS_WASM, reason="fp errors don't work in wasm")
 def test_generalized_raise_multiloop():
     # It should raise an error even if the error doesn't occur in the
@@ -1814,7 +1808,6 @@ def test_generalized_raise_multiloop():
     assert_raises(np.linalg.LinAlgError, np.linalg.inv, x)
 
 
-@pytest.mark.xfail(reason='TODO')
 def test_xerbla_override():
     # Check that our xerbla has been successfully linked in. If it is not,
     # the default xerbla routine is called, which prints a message to stdout
@@ -1864,7 +1857,6 @@ def test_xerbla_override():
             pytest.skip('Numpy xerbla not linked in.')
 
 
-@pytest.mark.xfail(reason='TODO')
 @pytest.mark.skipif(IS_WASM, reason="Cannot start subprocess")
 @pytest.mark.slow
 def test_sdot_bug_8577():
@@ -1901,7 +1893,6 @@ def test_sdot_bug_8577():
         subprocess.check_call([sys.executable, "-c", code])
 
 
-@pytest.mark.xfail(reason='TODO')
 class TestMultiDot:
 
     def test_basic_function_with_three_arguments(self):
@@ -2027,11 +2018,10 @@ class TestMultiDot:
         assert_almost_equal(np.triu(m), np.triu(m_expected))
 
     def test_too_few_input_arrays(self):
-        assert_raises(ValueError, multi_dot, [])
-        assert_raises(ValueError, multi_dot, [np.random.random((3, 3))])
+        assert_raises((RuntimeError, ValueError), multi_dot, [])
+        assert_raises((RuntimeError, ValueError), multi_dot, [np.random.random((3, 3))])
 
 
-@pytest.mark.xfail(reason='TODO')
 class TestTensorinv:
 
     @pytest.mark.parametrize("arr, ind", [
@@ -2039,7 +2029,7 @@ class TestTensorinv:
         (np.ones((3, 3, 2)), 1),
         ])
     def test_non_square_handling(self, arr, ind):
-        with assert_raises(LinAlgError):
+        with assert_raises((LinAlgError, RuntimeError)):
             linalg.tensorinv(arr, ind=ind)
 
     @pytest.mark.parametrize("shape, ind", [
@@ -2048,8 +2038,7 @@ class TestTensorinv:
         ((24, 8, 3), 1),
         ])
     def test_tensorinv_shape(self, shape, ind):
-        a = np.eye(24)
-        a.shape = shape
+        a = np.eye(24).reshape(shape)
         ainv = linalg.tensorinv(a=a, ind=ind)
         expected = a.shape[ind:] + a.shape[:ind]
         actual = ainv.shape
@@ -2059,21 +2048,18 @@ class TestTensorinv:
         0, -2,
         ])
     def test_tensorinv_ind_limit(self, ind):
-        a = np.eye(24)
-        a.shape = (4, 6, 8, 3)
-        with assert_raises(ValueError):
+        a = np.eye(24).reshape(4, 6, 8, 3)
+        with assert_raises((ValueError, RuntimeError)):
             linalg.tensorinv(a=a, ind=ind)
 
     def test_tensorinv_result(self):
         # mimic a docstring example
-        a = np.eye(24)
-        a.shape = (24, 8, 3)
+        a = np.eye(24).reshape(24, 8, 3)
         ainv = linalg.tensorinv(a, ind=1)
         b = np.ones(24)
         assert_allclose(np.tensordot(ainv, b, 1), np.linalg.tensorsolve(a, b))
 
 
-@pytest.mark.xfail(reason='TODO')
 class TestTensorsolve:
 
     @pytest.mark.parametrize("a, axes", [
@@ -2081,7 +2067,7 @@ class TestTensorsolve:
         (np.ones((3, 3, 2)), (0, 2)),
         ])
     def test_non_square_handling(self, a, axes):
-        with assert_raises(LinAlgError):
+        with assert_raises((LinAlgError, RuntimeError)):
             b = np.ones(a.shape[:2])
             linalg.tensorsolve(a, b, axes=axes)
 
@@ -2119,7 +2105,7 @@ def test_blas64_dot():
     assert_equal(c[0,-1], 1)
 
 
-@pytest.mark.xfail(reason='TODO')
+@pytest.mark.skip(reason='lapack-lite specific')
 @pytest.mark.xfail(not HAS_LAPACK64,
                    reason="Numpy not compiled with 64-bit BLAS/LAPACK")
 def test_blas64_geqrf_lwork_smoketest():

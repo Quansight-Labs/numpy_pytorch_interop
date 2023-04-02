@@ -1,3 +1,5 @@
+from typing import Sequence
+
 import torch
 
 from ._detail import _dtypes_impl, _util
@@ -41,7 +43,7 @@ def matrix_power(a: ArrayLike, n):
 
 
 @normalizer
-def multi_dot(inputs, *, out=None):
+def multi_dot(inputs : Sequence[ArrayLike], *, out=None):
     return torch.linalg.multi_dot(inputs)
 
 
@@ -64,7 +66,11 @@ def lstsq(a: ArrayLike, b: ArrayLike, rcond=None):
 @normalizer
 def inv(a: ArrayLike):
     a = _atleast_float_1(a)
-    return torch.linalg.inv(a)
+    try:
+        result = torch.linalg.inv(a)
+    except torch._C._LinAlgError as e:
+        raise LinAlgError(*e.args)
+    return result
 
 
 @normalizer
