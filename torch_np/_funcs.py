@@ -1911,19 +1911,23 @@ def bartlett(M):
     return torch.bartlett_window(M, periodic=False, dtype=dtype)
 
 
-
 # ### Dtype routines ###
 
 # vendored from https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/type_check.py#L666
 
 
-array_type = [[torch.float16, torch.float32, torch.float64],
-              [None, torch.complex64, torch.complex128]]
-array_precision = {torch.float16: 0,
-                   torch.float32: 1,
-                   torch.float64: 2,
-                   torch.complex64: 1,
-                   torch.complex128: 2,}
+array_type = [
+    [torch.float16, torch.float32, torch.float64],
+    [None, torch.complex64, torch.complex128],
+]
+array_precision = {
+    torch.float16: 0,
+    torch.float32: 1,
+    torch.float64: 2,
+    torch.complex64: 1,
+    torch.complex128: 2,
+}
+
 
 @normalizer
 def common_type(*tensors: ArrayLike):
@@ -1936,7 +1940,7 @@ def common_type(*tensors: ArrayLike):
         t = a.dtype
         if iscomplexobj(a):
             is_complex = True
-        if not(t.is_floating_point or t.is_complex):
+        if not (t.is_floating_point or t.is_complex):
             p = 2  # array_precision[_nx.double]
         else:
             p = array_precision.get(t, None)
@@ -1947,5 +1951,3 @@ def common_type(*tensors: ArrayLike):
         return array_type[1][precision]
     else:
         return array_type[0][precision]
-
-
