@@ -6,6 +6,8 @@ pytorch tensors.
 # Contents of this module ends up in the main namespace via _funcs.py
 # where type annotations are used in conjunction with the @normalizer decorator.
 
+import builtins
+import math
 import operator
 from typing import Optional, Sequence
 
@@ -41,7 +43,6 @@ def copyto(dst: NDArray, src: ArrayLike, casting="same_kind", where=NoValue):
         raise NotImplementedError
     (src,) = _util.typecast_tensors((src,), dst.tensor.dtype, casting=casting)
     dst.tensor.copy_(src)
-
 
 
 def atleast_1d(*arys: ArrayLike):
@@ -995,6 +996,65 @@ def tile(A: ArrayLike, reps):
     return torch.tile(A, reps)
 
 
+def resize(a: ArrayLike, new_shape=None):
+    # implementation vendored from
+    # https://github.com/numpy/numpy/blob/v1.24.0/numpy/core/fromnumeric.py#L1420-L1497
+    if new_shape is None:
+        return a
+
+    if isinstance(new_shape, int):
+        new_shape = (new_shape,)
+
+    a = ravel(a)
+
+    new_size = 1
+    for dim_length in new_shape:
+        new_size *= dim_length
+        if dim_length < 0:
+            raise ValueError("all elements of `new_shape` must be non-negative")
+
+    if a.numel() == 0 or new_size == 0:
+        # First case must zero fill. The second would have repeats == 0.
+        return torch.zeros(new_shape, dtype=a.dtype)
+
+    repeats = -(-new_size // a.numel())  # ceil division
+    a = concatenate((a,) * repeats)[:new_size]
+
+    return reshape(a, new_shape)
+
+
+def _ndarray_resize(a: ArrayLike, new_shape, refcheck=False):
+    # implementation of ndarray.resize.
+    # NB: differs from np.resize: fills with zeros instead of making repeated copies of input.
+    if refcheck:
+        raise NotImplementedError(
+            f"resize(..., refcheck={refcheck} is not implemented."
+        )
+
+    if new_shape in [(), (None,)]:
+        return a
+
+    # support both x.resize((2, 2)) and x.resize(2, 2)
+    if len(new_shape) == 1:
+        new_shape = new_shape[0]
+    if isinstance(new_shape, int):
+        new_shape = (new_shape,)
+
+    a = ravel(a)
+
+    if builtins.any(x < 0 for x in new_shape):
+        raise ValueError("all elements of `new_shape` must be non-negative")
+
+    new_numel = math.prod(new_shape)
+    if new_numel < a.numel():
+        # shrink
+        return a[:new_numel].reshape(new_shape)
+    else:
+        b = torch.zeros(new_numel)
+        b[: a.numel()] = a
+        return b.reshape(new_shape)
+
+
 # ### diag et al ###
 
 
@@ -1821,7 +1881,6 @@ def common_type(*tensors: ArrayLike):
         return array_type[0][precision]
 
 
-
 # ### histograms ###
 
 
@@ -1864,4 +1923,3 @@ def histogram(
         b = b.to(int)
 
     return h, b
-
