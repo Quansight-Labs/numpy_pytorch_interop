@@ -152,6 +152,14 @@ class ndarray:
         tensor = self.tensor.clone()
         return ndarray(tensor)
 
+    def view(self, dtype):
+        torch_dtype = _dtypes.dtype(dtype).torch_dtype
+        tview = self.tensor.view(torch_dtype)
+        return ndarray(tview)
+
+    def fill(self, value):
+        self.tensor.fill_(value)
+
     def tolist(self):
         return self.tensor.tolist()
 

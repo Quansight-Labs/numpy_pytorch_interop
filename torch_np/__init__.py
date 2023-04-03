@@ -1,4 +1,4 @@
-from . import random
+from . import linalg, random
 from ._binary_ufuncs import *
 from ._detail._util import AxisError, UFuncTypeError
 from ._dtypes import *
