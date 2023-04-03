@@ -911,10 +911,6 @@ def array_equiv(a1: ArrayLike, a2: ArrayLike):
     return _tensor_equal(a1_t, a2_t)
 
 
-def common_type():
-    raise NotImplementedError
-
-
 def mintypecode():
     raise NotImplementedError
 
@@ -924,6 +920,10 @@ def nan_to_num():
 
 
 def asfarray():
+    raise NotImplementedError
+
+
+def block(*args, **kwds):
     raise NotImplementedError
 
 
@@ -1358,8 +1358,12 @@ def reshape(a: ArrayLike, newshape, order="C"):
 @normalizer
 def transpose(a: ArrayLike, axes=None):
     # numpy allows both .tranpose(sh) and .transpose(*sh)
+    # also older code uses axes being a list
     if axes in [(), None, (None,)]:
         axes = tuple(range(a.ndim))[::-1]
+    elif len(axes) == 1:
+        axes = axes[0]
+
     try:
         result = a.permute(axes)
     except RuntimeError:
@@ -1908,3 +1912,45 @@ def blackman(M):
 def bartlett(M):
     dtype = _dtypes_impl.default_float_dtype
     return torch.bartlett_window(M, periodic=False, dtype=dtype)
+
+
+# ### Dtype routines ###
+
+# vendored from https://github.com/numpy/numpy/blob/v1.24.0/numpy/lib/type_check.py#L666
+
+
+array_type = [
+    [torch.float16, torch.float32, torch.float64],
+    [None, torch.complex64, torch.complex128],
+]
+array_precision = {
+    torch.float16: 0,
+    torch.float32: 1,
+    torch.float64: 2,
+    torch.complex64: 1,
+    torch.complex128: 2,
+}
+
+
+@normalizer
+def common_type(*tensors: ArrayLike):
+
+    import builtins
+
+    is_complex = False
+    precision = 0
+    for a in tensors:
+        t = a.dtype
+        if iscomplexobj(a):
+            is_complex = True
+        if not (t.is_floating_point or t.is_complex):
+            p = 2  # array_precision[_nx.double]
+        else:
+            p = array_precision.get(t, None)
+            if p is None:
+                raise TypeError("can't get common type for non-numeric array")
+        precision = builtins.max(precision, p)
+    if is_complex:
+        return array_type[1][precision]
+    else:
+        return array_type[0][precision]
