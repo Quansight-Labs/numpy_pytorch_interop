@@ -18,6 +18,7 @@ __all__ = [
 # these implement ndarray methods but need not be public functions
 semi_private = [
     "_flatten",
+    "_ndarray_resize",
 ]
 
 

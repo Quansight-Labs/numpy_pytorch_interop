@@ -358,6 +358,12 @@ class ndarray:
     ravel = _funcs.ravel
     flatten = _funcs._flatten
 
+    def resize(self, *new_shape, refcheck=False):
+        # ndarray.resize works in-place (may cause a reallocation though)
+        self.tensor = _funcs_impl._ndarray_resize(
+            self.tensor, new_shape, refcheck=refcheck
+        )
+
     nonzero = _funcs.nonzero
     clip = _funcs.clip
     repeat = _funcs.repeat
