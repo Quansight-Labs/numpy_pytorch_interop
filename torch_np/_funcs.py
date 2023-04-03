@@ -1358,9 +1358,12 @@ def reshape(a: ArrayLike, newshape, order="C"):
 @normalizer
 def transpose(a: ArrayLike, axes=None):
     # numpy allows both .tranpose(sh) and .transpose(*sh)
-    axes = axes[0] if len(axes) == 1 else axes
+    # also older code uses axes being a list
     if axes in [(), None, (None,)]:
         axes = tuple(range(a.ndim))[::-1]
+    elif len(axes) == 1:
+        axes = axes[0]
+
     try:
         result = a.permute(axes)
     except RuntimeError:
