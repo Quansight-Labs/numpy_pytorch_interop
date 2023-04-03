@@ -5,6 +5,7 @@ pytorch tensors.
 """
 
 from typing import Optional, Sequence
+import math
 
 import torch
 
@@ -1046,6 +1047,26 @@ def tile(A: ArrayLike, reps):
     if isinstance(reps, int):
         reps = (reps,)
     return torch.tile(A, reps)
+
+
+@normalizer
+def resize(a: ArrayLike, new_shape=None):
+
+    if new_shape is None:
+        return a
+
+    if a.numel() == 0:
+        a = torch.zeros(1, dtype=a.dtype)
+
+    numel = math.prod(new_shape)
+    quot, rem = divmod(numel, a.numel())
+    repeats = quot * a.numel()
+
+    result = torch.empty(numel, dtype=a.dtype)
+    result[:repeats] = torch.tile(a.ravel(), (quot,))
+    if rem > 0:
+        result[-rem:] = a.ravel()[:rem]
+    return result.reshape(new_shape)
 
 
 # ### diag et al ###

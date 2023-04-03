@@ -362,6 +362,8 @@ class ndarray:
     clip = _funcs.clip
     repeat = _funcs.repeat
 
+    resize = _funcs.resize
+
     diagonal = _funcs.diagonal
     trace = _funcs.trace
     dot = _funcs.dot

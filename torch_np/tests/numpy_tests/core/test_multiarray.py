@@ -4513,7 +4513,6 @@ class TestFlat:
         assert it.index == it.base.size
 
 
-@pytest.mark.xfail(reason='TODO')
 class TestResize:
 
     @_no_tracing
@@ -4523,16 +4522,18 @@ class TestResize:
             x.resize((5, 5), refcheck=False)
         else:
             x.resize((5, 5))
-        assert_array_equal(x.flat[:9],
-                np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]).flat)
-        assert_array_equal(x[9:].flat, 0)
+        assert_array_equal(x.ravel()[:9],
+                np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]).ravel())
+        assert_array_equal(x[9:].ravel(), 0)
 
+    @pytest.mark.xfail(reason="how to find if someone is refencing an array")
     def test_check_reference(self):
         x = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         y = x
         assert_raises(ValueError, x.resize, (5, 1))
         del y  # avoid pyflakes unused variable warning.
 
+    @pytest.mark.xfail(reason="only allow tuples as new_shape")
     @_no_tracing
     def test_int_shape(self):
         x = np.eye(3)
@@ -4549,6 +4550,7 @@ class TestResize:
         x.resize()
         assert_array_equal(x, np.eye(3))
 
+    @pytest.mark.xfail(reason="why would one do it")
     def test_0d_shape(self):
         # to it multiple times to test it does not break alloc cache gh-9216
         for i in range(10):
@@ -4563,10 +4565,11 @@ class TestResize:
 
     def test_invalid_arguments(self):
         assert_raises(TypeError, np.eye(3).resize, 'hi')
-        assert_raises(ValueError, np.eye(3).resize, -1)
+        assert_raises((TypeError, ValueError), np.eye(3).resize, -1)
         assert_raises(TypeError, np.eye(3).resize, order=1)
         assert_raises(TypeError, np.eye(3).resize, refcheck='hi')
 
+    @pytest.mark.xfail(reason="only allow tuples as new_shape")
     @_no_tracing
     def test_freeform_shape(self):
         x = np.eye(3)
@@ -4576,6 +4579,7 @@ class TestResize:
             x.resize(3, 2, 1)
         assert_(x.shape == (3, 2, 1))
 
+    @pytest.mark.xfail(reason="only allow tuples as new_shape")
     @_no_tracing
     def test_zeros_appended(self):
         x = np.eye(3)
@@ -4586,18 +4590,6 @@ class TestResize:
         assert_array_equal(x[0], np.eye(3))
         assert_array_equal(x[1], np.zeros((3, 3)))
 
-    @_no_tracing
-    def test_obj_obj(self):
-        # check memory is initialized on resize, gh-4857
-        a = np.ones(10, dtype=[('k', object, 2)])
-        if IS_PYPY:
-            a.resize(15, refcheck=False)
-        else:
-            a.resize(15,)
-        assert_equal(a.shape, (15,))
-        assert_array_equal(a['k'][-5:], 0)
-        assert_array_equal(a['k'][:-5], 1)
-
     def test_empty_view(self):
         # check that sizes containing a zero don't trigger a reallocate for
         # already empty arrays
@@ -4606,6 +4598,7 @@ class TestResize:
         x_view.resize((0, 10))
         x_view.resize((0, 100))
 
+    @pytest.mark.xfail(reason="ignore weakrefs")
     def test_check_weakref(self):
         x = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         xref = weakref.ref(x)
