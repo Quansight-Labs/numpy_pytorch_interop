@@ -37,6 +37,14 @@ def copy(a: ArrayLike, order="K", subok: SubokLike = False):
 
 
 @normalizer
+def copyto(dst: NDArray, src: ArrayLike, casting="same_kind", where=NoValue):
+    if where is not NoValue:
+        raise NotImplementedError
+    (src,) = _util.typecast_tensors((src,), dst.tensor.dtype, casting=casting)
+    dst.tensor.copy_(src)
+
+
+@normalizer
 def atleast_1d(*arys: ArrayLike):
     res = torch.atleast_1d(*arys)
     if isinstance(res, tuple):
