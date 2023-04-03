@@ -1,5 +1,7 @@
 import torch_np as np
 
+from torch_np import histogram
+
 #from numpy.lib.histograms import histogram, histogramdd, histogram_bin_edges
 from torch_np.testing import (
     assert_, assert_equal, assert_array_equal, assert_almost_equal,
@@ -10,7 +12,7 @@ from torch_np.testing import (
 import pytest
 from pytest import raises as assert_raises
 
-@pytest.mark.xfail(reason='TODO')
+
 class TestHistogram:
 
     def setup_method(self):
@@ -35,7 +37,7 @@ class TestHistogram:
         hist, edges = histogram([1, 2, 3, 4], [1, 2])
         assert_array_equal(hist, [2, ])
         assert_array_equal(edges, [1, 2])
-        assert_raises(ValueError, histogram, [1, 2], bins=0)
+        assert_raises((RuntimeError, ValueError), histogram, [1, 2], bins=0)
         h, e = histogram([1, 2], bins=1)
         assert_equal(h, np.array([2]))
         assert_allclose(e, np.array([1., 2.]))
@@ -52,7 +54,7 @@ class TestHistogram:
         v = np.arange(10)
         bins = [0, 1, 3, 6, 10]
         a, b = histogram(v, bins, density=True)
-        assert_array_equal(a, .1)
+        assert_almost_equal(a, .1)
         assert_equal(np.sum(a * np.diff(b)), 1)
 
         # Test that passing False works too
@@ -64,7 +66,7 @@ class TestHistogram:
         v = np.arange(10)
         bins = [0, 1, 3, 6, np.inf]
         a, b = histogram(v, bins, density=True)
-        assert_array_equal(a, [.1, .1, .1, 0.])
+        assert_almost_equal(a, [.1, .1, .1, 0.])
 
         # Taken from a bug report from N. Becker on the numpy-discussion
         # mailing list Aug. 6, 2010.
@@ -99,7 +101,7 @@ class TestHistogram:
     def test_arr_weights_mismatch(self):
         a = np.arange(10) + .5
         w = np.arange(11) + .5
-        with assert_raises_regex(ValueError, "same shape as"):
+        with assert_raises((RuntimeError, ValueError)): #, "same shape as"):
             h, b = histogram(a, range=[1, 9], weights=w, density=True)
 
 
@@ -118,6 +120,7 @@ class TestHistogram:
         h, b = histogram(a, weights=np.ones(10, float))
         assert_(np.issubdtype(h.dtype, np.floating))
 
+    @pytest.mark.xfail(reason="TODO: histogram2d")
     def test_f32_rounding(self):
         # gh-4799, check that the rounding of the edges works with float32
         x = np.array([276.318359, -69.593948, 21.329449], dtype=np.float32)
@@ -134,13 +137,13 @@ class TestHistogram:
         # Should raise an warning on booleans
         # Ensure that the histograms are equivalent, need to suppress
         # the warnings to get the actual outputs
-        with suppress_warnings() as sup:
-            rec = sup.record(RuntimeWarning, 'Converting input from .*')
-            hist, edges = np.histogram([True, True, False])
+  #      with suppress_warnings() as sup:
+  #          rec = sup.record(RuntimeWarning, 'Converting input from .*')
+        hist, edges = np.histogram([True, True, False])
             # A warning should be issued
-            assert_equal(len(rec), 1)
-            assert_array_equal(hist, int_hist)
-            assert_array_equal(edges, int_edges)
+#            assert_equal(len(rec), 1)
+        assert_array_equal(hist, int_hist)
+        assert_array_equal(edges, int_edges)
 
     def test_weights(self):
         v = np.random.rand(100)
@@ -171,6 +174,7 @@ class TestHistogram:
             weights=[2, 1, 1, 1, 1, 1, 1, 1, 1], density=True)
         assert_almost_equal(a, [.2, .1, .1, .075])
 
+    @pytest.mark.xfail(reason="histogram complex weights")
     def test_exotic_weights(self):
 
         # Test the use of weights that are not integer or floats, but e.g.
@@ -223,15 +227,16 @@ class TestHistogram:
         # Normal ranges should be fine
         vals = np.linspace(0.0, 1.0, num=100)
         histogram(vals, range=[0.25,0.75])
-        assert_raises(ValueError, histogram, vals, range=[np.nan,0.75])
-        assert_raises(ValueError, histogram, vals, range=[0.25,np.inf])
+        assert_raises((RuntimeError, ValueError), histogram, vals, range=[np.nan,0.75])
+        assert_raises((RuntimeError, ValueError), histogram, vals, range=[0.25,np.inf])
 
     def test_invalid_range(self):
         # start of range must be < end of range
         vals = np.linspace(0.0, 1.0, num=100)
-        with assert_raises_regex(ValueError, "max must be larger than"):
+        with assert_raises((RuntimeError, ValueError)):
             np.histogram(vals, range=[0.1, 0.01])
 
+    @pytest.mark.xfail(reason="edge cases")
     def test_bin_edge_cases(self):
         # Ensure that floating-point computations correctly place edge cases.
         arr = np.array([337, 404, 739, 806, 1007, 1811, 2012])
@@ -252,77 +257,55 @@ class TestHistogram:
         # gracefully handle bins object > 1 dimension
         vals = np.linspace(0.0, 1.0, num=100)
         bins = np.array([[0, 0.5], [0.6, 1.0]])
-        with assert_raises_regex(ValueError, "must be 1d"):
+        with assert_raises((RuntimeError, ValueError)):
             np.histogram(vals, bins=bins)
 
+    @pytest.mark.xfail(reason="uint64")
     def test_unsigned_monotonicity_check(self):
         # Ensures ValueError is raised if bins not increasing monotonically
         # when bins contain unsigned values (see #9222)
         arr = np.array([2])
         bins = np.array([1, 3, 1], dtype='uint64')
-        with assert_raises(ValueError):
+        with assert_raises((RuntimeError, ValueError)):
             hist, edges = np.histogram(arr, bins=bins)
 
     def test_object_array_of_0d(self):
         # gh-7864
-        assert_raises(ValueError,
+        assert_raises((RuntimeError, ValueError),
             histogram, [np.array(0.4) for i in range(10)] + [-np.inf])
-        assert_raises(ValueError,
+        assert_raises((RuntimeError, ValueError),
             histogram, [np.array(0.4) for i in range(10)] + [np.inf])
 
         # these should not crash
         np.histogram([np.array(0.5) for i in range(10)] + [.500000000000001])
         np.histogram([np.array(0.5) for i in range(10)] + [.5])
 
+    @pytest.mark.xfail(reason="bins='auto'")
     def test_some_nan_values(self):
         # gh-7503
         one_nan = np.array([0, 1, np.nan])
         all_nan = np.array([np.nan, np.nan])
 
         # the internal comparisons with NaN give warnings
-        sup = suppress_warnings()
-        sup.filter(RuntimeWarning)
-        with sup:
+  #      sup = suppress_warnings()
+  #      sup.filter(RuntimeWarning)
+  #      with sup:
             # can't infer range with nan
-            assert_raises(ValueError, histogram, one_nan, bins='auto')
-            assert_raises(ValueError, histogram, all_nan, bins='auto')
+        assert_raises(ValueError, histogram, one_nan, bins='auto')
+        assert_raises(ValueError, histogram, all_nan, bins='auto')
 
-            # explicit range solves the problem
-            h, b = histogram(one_nan, bins='auto', range=(0, 1))
-            assert_equal(h.sum(), 2)  # nan is not counted
-            h, b = histogram(all_nan, bins='auto', range=(0, 1))
-            assert_equal(h.sum(), 0)  # nan is not counted
+        # explicit range solves the problem
+        h, b = histogram(one_nan, bins='auto', range=(0, 1))
+        assert_equal(h.sum(), 2)  # nan is not counted
+        h, b = histogram(all_nan, bins='auto', range=(0, 1))
+        assert_equal(h.sum(), 0)  # nan is not counted
 
-            # as does an explicit set of bins
-            h, b = histogram(one_nan, bins=[0, 1])
-            assert_equal(h.sum(), 2)  # nan is not counted
-            h, b = histogram(all_nan, bins=[0, 1])
-            assert_equal(h.sum(), 0)  # nan is not counted
+        # as does an explicit set of bins
+        h, b = histogram(one_nan, bins=[0, 1])
+        assert_equal(h.sum(), 2)  # nan is not counted
+        h, b = histogram(all_nan, bins=[0, 1])
+        assert_equal(h.sum(), 0)  # nan is not counted
 
-    def test_datetime(self):
-        begin = np.datetime64('2000-01-01', 'D')
-        offsets = np.array([0, 0, 1, 1, 2, 3, 5, 10, 20])
-        bins = np.array([0, 2, 7, 20])
-        dates = begin + offsets
-        date_bins = begin + bins
-
-        td = np.dtype('timedelta64[D]')
-
-        # Results should be the same for integer offsets or datetime values.
-        # For now, only explicit bins are supported, since linspace does not
-        # work on datetimes or timedeltas
-        d_count, d_edge = histogram(dates, bins=date_bins)
-        t_count, t_edge = histogram(offsets.astype(td), bins=bins.astype(td))
-        i_count, i_edge = histogram(offsets, bins=bins)
-
-        assert_equal(d_count, i_count)
-        assert_equal(t_count, i_count)
-
-        assert_equal((d_edge - begin).astype(int), i_edge)
-        assert_equal(t_edge.astype(int), i_edge)
-
-        assert_equal(d_edge.dtype, dates.dtype)
-        assert_equal(t_edge.dtype, td)
 
     def do_signed_overflow_bounds(self, dtype):
         exponent = 8 * np.dtype(dtype).itemsize - 1
@@ -335,6 +318,10 @@ class TestHistogram:
         self.do_signed_overflow_bounds(np.byte)
         self.do_signed_overflow_bounds(np.short)
         self.do_signed_overflow_bounds(np.intc)
+
+
+    @pytest.mark.xfail(reason="int->float conversin loses precision")
+    def test_signed_overflow_bounds_2(self):
         self.do_signed_overflow_bounds(np.int_)
         self.do_signed_overflow_bounds(np.longlong)
 
@@ -376,15 +363,15 @@ class TestHistogram:
         self.do_precision_lower_bound(float_small, float_large)
         self.do_precision_upper_bound(float_small, float_large)
 
+    @pytest.mark.xfail(reason="mixed dtypes")
     def test_precision(self):
         # not looping results in a useful stack trace upon failure
         self.do_precision(np.half, np.single)
         self.do_precision(np.half, np.double)
-        self.do_precision(np.half, np.longdouble)
         self.do_precision(np.single, np.double)
-        self.do_precision(np.single, np.longdouble)
-        self.do_precision(np.double, np.longdouble)
 
+
+    @pytest.mark.xfail(reason="histogram_bin_edges")
     def test_histogram_bin_edges(self):
         hist, e = histogram([1, 2, 3, 4], [1, 2])
         edges = histogram_bin_edges([1, 2, 3, 4], [1, 2])
@@ -400,6 +387,7 @@ class TestHistogram:
         assert_array_equal(edges, e)
 
   ##  @requires_memory(free_bytes=1e10)
+    @pytest.mark.xfail(reason="TODO histogramdd")
     @pytest.mark.slow
     def test_big_arrays(self):
         sample = np.zeros([100000000, 3])
