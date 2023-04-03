@@ -705,7 +705,6 @@ class TestCond(CondCases):
         assert_almost_equal(linalg.cond(A, -1), 0.5)
         assert_almost_equal(linalg.cond(A, 'fro'), np.sqrt(265 / 12))
 
-    @pytest.mark.xfail(reason="nan -> inf, as numpy does")
     def test_singular(self):
         # Singular matrices have infinite condition number for
         # positive norms, and negative norms shouldn't raise
@@ -747,7 +746,6 @@ class TestCond(CondCases):
                 assert_(not np.isnan(c[0]))
                 assert_(not np.isnan(c[2]))
 
-    @pytest.mark.xfail(reason="nan -> inf, as numpy does")
     def test_stacked_singular(self):
         # Check behavior when only some of the stacked matrices are
         # singular
