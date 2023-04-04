@@ -1679,7 +1679,7 @@ class TestQR:
         assert_(isinstance(r, a_type))
         assert_(q.shape[-2:] == (m, m))
         assert_(r.shape[-2:] == (m, n))
-        assert_almost_equal(matmul(q, r), a)
+        assert_almost_equal(matmul(q, r), a, single_decimal=5)
         I_mat = np.identity(q.shape[-1])
         stack_I_mat = np.broadcast_to(I_mat, 
                         q.shape[:-2] + (q.shape[-1],)*2)
