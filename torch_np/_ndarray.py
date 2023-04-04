@@ -2,7 +2,7 @@ import operator
 
 import torch
 
-from . import _binary_ufuncs, _dtypes, _funcs, _helpers, _unary_ufuncs
+from . import _binary_ufuncs, _dtypes, _funcs, _funcs_impl, _helpers, _unary_ufuncs
 from ._detail import _dtypes_impl, _util
 from ._normalizations import ArrayLike, normalizer
 
@@ -382,7 +382,7 @@ class ndarray:
 
     def sort(self, axis=-1, kind=None, order=None):
         # ndarray.sort works in-place
-        self.tensor.copy_(_funcs._sort(self.tensor, axis, kind, order))
+        self.tensor.copy_(_funcs_impl._sort(self.tensor, axis, kind, order))
 
     argsort = _funcs.argsort
     searchsorted = _funcs.searchsorted
