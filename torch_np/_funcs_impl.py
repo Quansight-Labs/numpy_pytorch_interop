@@ -6,7 +6,7 @@ pytorch tensors.
 # Contents of this module ends up in the main namespace via _funcs.py
 # where type annotations are used in conjunction with the @normalizer decorator.
 
-
+import operator
 from typing import Optional, Sequence
 
 import torch
@@ -34,6 +34,14 @@ def copy(a: ArrayLike, order="K", subok: SubokLike = False):
     if order != "K":
         raise NotImplementedError
     return a.clone()
+
+
+def copyto(dst: NDArray, src: ArrayLike, casting="same_kind", where=NoValue):
+    if where is not NoValue:
+        raise NotImplementedError
+    (src,) = _util.typecast_tensors((src,), dst.tensor.dtype, casting=casting)
+    dst.tensor.copy_(src)
+
 
 
 def atleast_1d(*arys: ArrayLike):
@@ -1811,3 +1819,49 @@ def common_type(*tensors: ArrayLike):
         return array_type[1][precision]
     else:
         return array_type[0][precision]
+
+
+
+# ### histograms ###
+
+
+def histogram(
+    a: ArrayLike,
+    bins: ArrayLike = 10,
+    range=None,
+    normed=None,
+    weights: Optional[ArrayLike] = None,
+    density=None,
+):
+    if normed is not None:
+        raise ValueError("normed argument is deprecated, use density= instead")
+
+    is_a_int = not (a.dtype.is_floating_point or a.dtype.is_complex)
+    is_w_int = weights is None or not weights.dtype.is_floating_point
+    if is_a_int:
+        a = a.to(float)
+
+    if weights is not None:
+        weights = _util.cast_if_needed(weights, a.dtype)
+
+    if isinstance(bins, torch.Tensor):
+        if bins.ndim == 0:
+            # bins was a single int
+            bins = operator.index(bins)
+        else:
+            bins = _util.cast_if_needed(bins, a.dtype)
+
+    if range is None:
+        h, b = torch.histogram(a, bins, weight=weights, density=bool(density))
+    else:
+        h, b = torch.histogram(
+            a, bins, range=range, weight=weights, density=bool(density)
+        )
+
+    if not density and is_w_int:
+        h = h.to(int)
+    if is_a_int:
+        b = b.to(int)
+
+    return h, b
+
