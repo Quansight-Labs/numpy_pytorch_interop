@@ -4,7 +4,7 @@
 import numpy as np
 import torch
 
-from .._unary_ufuncs import *
+from .._ufuncs import *
 from ..testing import assert_allclose
 
 
