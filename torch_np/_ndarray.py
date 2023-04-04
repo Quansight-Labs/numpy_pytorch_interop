@@ -168,6 +168,8 @@ class ndarray:
 
     @normalizer
     def fill(self, value: ArrayLike):
+        # Both Pytorch and NumPy accept 0D arrays/tensors and scalars, and
+        # error out on D > 0 arrays
         self.tensor.fill_(value)
 
     def tolist(self):
@@ -406,6 +408,9 @@ class ndarray:
 
     ### indexing ###
     def item(self, *args):
+        # Mimic NumPy's implementation with three special cases (no arguments,
+        # a flat index and a multi-index):
+        # https://github.com/numpy/numpy/blob/main/numpy/core/src/multiarray/methods.c#L702
         if args == ():
             return self.tensor.item()
         elif len(args) == 1:
