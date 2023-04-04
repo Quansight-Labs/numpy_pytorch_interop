@@ -4,6 +4,7 @@ import torch
 
 from . import _binary_ufuncs, _dtypes, _funcs, _helpers, _unary_ufuncs
 from ._detail import _dtypes_impl, _util
+from ._normalizations import ArrayLike, normalizer
 
 newaxis = None
 
@@ -118,6 +119,14 @@ class ndarray:
         )
 
     @property
+    def data(self):
+        return self.tensor.data_ptr()
+
+    @property
+    def nbytes(self):
+        return self.tensor.storage().nbytes()
+
+    @property
     def T(self):
         return self.transpose()
 
@@ -157,7 +166,10 @@ class ndarray:
         tview = self.tensor.view(torch_dtype)
         return ndarray(tview)
 
-    def fill(self, value):
+    @normalizer
+    def fill(self, value: ArrayLike):
+        # Both Pytorch and NumPy accept 0D arrays/tensors and scalars, and
+        # error out on D > 0 arrays
         self.tensor.fill_(value)
 
     def tolist(self):
@@ -395,6 +407,18 @@ class ndarray:
     cumprod = _funcs.cumprod
 
     ### indexing ###
+    def item(self, *args):
+        # Mimic NumPy's implementation with three special cases (no arguments,
+        # a flat index and a multi-index):
+        # https://github.com/numpy/numpy/blob/main/numpy/core/src/multiarray/methods.c#L702
+        if args == ():
+            return self.tensor.item()
+        elif len(args) == 1:
+            # int argument
+            return self.ravel()[args[0]]
+        else:
+            return self.__getitem__(args)
+
     @staticmethod
     def _upcast_int_indices(index):
         if isinstance(index, torch.Tensor):
