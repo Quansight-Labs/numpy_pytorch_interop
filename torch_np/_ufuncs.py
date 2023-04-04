@@ -2,13 +2,14 @@ from typing import Optional
 
 import torch
 
-from . import _helpers
-from ._detail import _binary_ufuncs
+from . import _binary_ufuncs_impl, _helpers, _unary_ufuncs_impl
 from ._normalizations import ArrayLike, DTypeLike, NDArray, SubokLike, normalizer
 
-__all__ = [
+# ############# Binary ufuncs ######################
+
+__binary__ = [
     name
-    for name in dir(_binary_ufuncs)
+    for name in dir(_binary_ufuncs_impl)
     if not name.startswith("_") and name not in ["torch", "matmul"]
 ]
 
@@ -76,7 +77,7 @@ def matmul(
         raise NotImplementedError
 
     # NB: do not broadcast input tensors against the out=... array
-    result = _binary_ufuncs.matmul(*tensors)
+    result = _binary_ufuncs_impl.matmul(*tensors)
     return result
 
 
@@ -110,7 +111,7 @@ def divmod(
         (x1, x2), out, True, casting, order, dtype, subok, signature, extobj
     )
 
-    result = _binary_ufuncs.divmod(*tensors)
+    result = _binary_ufuncs_impl.divmod(*tensors)
 
     return quot, rem
 
@@ -119,8 +120,8 @@ def divmod(
 # For each torch ufunc implementation, decorate and attach the decorated name
 # to this module. Its contents is then exported to the public namespace in __init__.py
 #
-for name in __all__:
-    ufunc = getattr(_binary_ufuncs, name)
+for name in __binary__:
+    ufunc = getattr(_binary_ufuncs_impl, name)
     decorated = normalizer(deco_binary_ufunc(ufunc))
 
     decorated.__qualname__ = name  # XXX: is this really correct?
@@ -133,4 +134,64 @@ def modf(x, /, *args, **kwds):
     return rem, quot
 
 
-__all__ = __all__ + ["divmod", "modf", "matmul"]
+__binary__ = __binary__ + ["divmod", "modf", "matmul"]
+
+
+# ############# Unary ufuncs ######################
+
+
+__unary__ = [
+    name
+    for name in dir(_unary_ufuncs_impl)
+    if not name.startswith("_") and name != "torch"
+]
+
+
+def deco_unary_ufunc(torch_func):
+    """Common infra for unary ufuncs.
+
+    Normalize arguments, sort out type casting, broadcasting and delegate to
+    the pytorch functions for the actual work.
+    """
+
+    def wrapped(
+        x: ArrayLike,
+        /,
+        out: Optional[NDArray] = None,
+        *,
+        where=True,
+        casting="same_kind",
+        order="K",
+        dtype: DTypeLike = None,
+        subok: SubokLike = False,
+        signature=None,
+        extobj=None,
+    ):
+        tensors = _helpers.ufunc_preprocess(
+            (x,), out, where, casting, order, dtype, subok, signature, extobj
+        )
+        # now broadcast the input tensor against the out=... array
+        if out is not None:
+            # XXX: need to filter out noop broadcasts if t.shape == out.shape?
+            shape = out.shape
+            tensors = tuple(torch.broadcast_to(t, shape) for t in tensors)
+        result = torch_func(*tensors)
+        return result
+
+    return wrapped
+
+
+#
+# For each torch ufunc implementation, decorate and attach the decorated name
+# to this module. Its contents is then exported to the public namespace in __init__.py
+#
+for name in __unary__:
+    ufunc = getattr(_unary_ufuncs_impl, name)
+    decorated = normalizer(deco_unary_ufunc(ufunc))
+
+    decorated.__qualname__ = name  # XXX: is this really correct?
+    decorated.__name__ = name
+    vars()[name] = decorated
+
+
+__all__ = __binary__ + __unary__

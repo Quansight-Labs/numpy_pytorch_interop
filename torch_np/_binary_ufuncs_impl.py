@@ -1,5 +1,5 @@
 """Export torch work functions for binary ufuncs, rename/tweak to match numpy.
-This listing is further exported to public symbols in the `torch_np/_binary_ufuncs.py` module.
+This listing is further exported to public symbols in the `torch_np/_ufuncs.py` module.
 """
 
 import torch
@@ -42,7 +42,7 @@ from torch import remainder
 from torch import remainder as mod
 from torch import subtract, true_divide
 
-from . import _dtypes_impl, _util
+from ._detail import _dtypes_impl, _util
 
 
 # work around torch limitations w.r.t. numpy

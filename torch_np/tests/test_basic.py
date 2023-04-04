@@ -6,7 +6,7 @@ import torch
 from pytest import raises as assert_raises
 
 import torch_np as w
-import torch_np._unary_ufuncs as _unary_ufuncs
+import torch_np._ufuncs as _ufuncs
 
 # These function receive one array_like arg and return one array_like result
 one_arg_funcs = [
@@ -43,11 +43,11 @@ one_arg_funcs = [
     w.flatnonzero,
 ]
 
-ufunc_names = _unary_ufuncs.__all__
+ufunc_names = _ufuncs.__unary__
 ufunc_names.remove("invert")  # torch: bitwise_not_cpu not implemented for 'Float'
 ufunc_names.remove("bitwise_not")
 
-one_arg_funcs += [getattr(_unary_ufuncs, name) for name in ufunc_names]
+one_arg_funcs += [getattr(_ufuncs, name) for name in ufunc_names]
 
 
 @pytest.mark.parametrize("func", one_arg_funcs)
