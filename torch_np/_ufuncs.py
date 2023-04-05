@@ -7,7 +7,7 @@ from ._normalizations import ArrayLike, DTypeLike, NDArray, SubokLike, normalize
 
 # ############# Binary ufuncs ######################
 
-__binary__ = [
+_binary = [
     name
     for name in dir(_binary_ufuncs_impl)
     if not name.startswith("_") and name not in ["torch", "matmul"]
@@ -120,7 +120,7 @@ def divmod(
 # For each torch ufunc implementation, decorate and attach the decorated name
 # to this module. Its contents is then exported to the public namespace in __init__.py
 #
-for name in __binary__:
+for name in _binary:
     ufunc = getattr(_binary_ufuncs_impl, name)
     decorated = normalizer(deco_binary_ufunc(ufunc))
 
@@ -134,13 +134,13 @@ def modf(x, /, *args, **kwds):
     return rem, quot
 
 
-__binary__ = __binary__ + ["divmod", "modf", "matmul"]
+_binary = _binary + ["divmod", "modf", "matmul"]
 
 
 # ############# Unary ufuncs ######################
 
 
-__unary__ = [
+_unary = [
     name
     for name in dir(_unary_ufuncs_impl)
     if not name.startswith("_") and name != "torch"
@@ -185,7 +185,7 @@ def deco_unary_ufunc(torch_func):
 # For each torch ufunc implementation, decorate and attach the decorated name
 # to this module. Its contents is then exported to the public namespace in __init__.py
 #
-for name in __unary__:
+for name in _unary:
     ufunc = getattr(_unary_ufuncs_impl, name)
     decorated = normalizer(deco_unary_ufunc(ufunc))
 
@@ -194,4 +194,4 @@ for name in __unary__:
     vars()[name] = decorated
 
 
-__all__ = __binary__ + __unary__
+__all__ = _binary + _unary
