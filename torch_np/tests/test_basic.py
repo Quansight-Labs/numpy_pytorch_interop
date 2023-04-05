@@ -43,7 +43,7 @@ one_arg_funcs = [
     w.flatnonzero,
 ]
 
-ufunc_names = _ufuncs.__unary__
+ufunc_names = _ufuncs._unary
 ufunc_names.remove("invert")  # torch: bitwise_not_cpu not implemented for 'Float'
 ufunc_names.remove("bitwise_not")
 
