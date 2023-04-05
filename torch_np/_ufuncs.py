@@ -47,6 +47,9 @@ def deco_binary_ufunc(torch_func):
         result = torch_func(*tensors)
         return result
 
+    wrapped.__qualname__ = torch_func.__name__
+    wrapped.__name__ = torch_func.__name__
+
     return wrapped
 
 
@@ -123,9 +126,6 @@ def divmod(
 for name in _binary:
     ufunc = getattr(_binary_ufuncs_impl, name)
     decorated = normalizer(deco_binary_ufunc(ufunc))
-
-    decorated.__qualname__ = name  # XXX: is this really correct?
-    decorated.__name__ = name
     vars()[name] = decorated
 
 
@@ -178,6 +178,9 @@ def deco_unary_ufunc(torch_func):
         result = torch_func(*tensors)
         return result
 
+    wrapped.__qualname__ = torch_func.__name__
+    wrapped.__name__ = torch_func.__name__
+
     return wrapped
 
 
@@ -188,9 +191,6 @@ def deco_unary_ufunc(torch_func):
 for name in _unary:
     ufunc = getattr(_unary_ufuncs_impl, name)
     decorated = normalizer(deco_unary_ufunc(ufunc))
-
-    decorated.__qualname__ = name  # XXX: is this really correct?
-    decorated.__name__ = name
     vars()[name] = decorated
 
 
