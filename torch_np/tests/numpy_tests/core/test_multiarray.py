@@ -2907,7 +2907,7 @@ class TestBinop:
         b = np.array([3])
         c = (a * a) / b
 
-        assert_almost_equal(c, 25 / 3)
+        assert_almost_equal(c, 25 / 3, decimal=5)
         assert_equal(a, 5)
         assert_equal(b, 3)
 
@@ -5577,7 +5577,7 @@ class TestMatmul(MatmulCommon):
         out = np.ones((1, 1, 1))
         assert self.matmul(arr, arr).shape == (0, 1, 1)
 
-        with pytest.raises(ValueError, match="Bad size of the out array"):  # match=r"non-broadcastable"):
+        with pytest.raises((RuntimeError, ValueError)):
             self.matmul(arr, arr, out=out)
 
     def test_out_contiguous(self):

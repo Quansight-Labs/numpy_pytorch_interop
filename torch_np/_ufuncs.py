@@ -3,7 +3,28 @@ from typing import Optional
 import torch
 
 from . import _binary_ufuncs_impl, _helpers, _unary_ufuncs_impl
+from ._detail import _dtypes_impl, _util
 from ._normalizations import ArrayLike, DTypeLike, NDArray, SubokLike, normalizer
+
+
+def _ufunc_preprocess(tensors, where, casting, order, dtype, subok, signature, extobj):
+    if order != "K" or not where or signature or extobj:
+        raise NotImplementedError
+
+    if dtype is None:
+        dtype = _dtypes_impl.result_type_impl([t.dtype for t in tensors])
+
+    tensors = _util.typecast_tensors(tensors, dtype, casting)
+
+    return tensors
+
+
+def _ufunc_postprocess(result, out, casting):
+    if out is not None:
+        (result,) = _util.typecast_tensors((result,), out.dtype.torch_dtype, casting)
+        result = torch.broadcast_to(result, out.shape)
+    return result
+
 
 # ############# Binary ufuncs ######################
 
@@ -35,16 +56,12 @@ def deco_binary_ufunc(torch_func):
         signature=None,
         extobj=None,
     ):
-        tensors = _helpers.ufunc_preprocess(
-            (x1, x2), out, where, casting, order, dtype, subok, signature, extobj
+        tensors = _ufunc_preprocess(
+            (x1, x2), where, casting, order, dtype, subok, signature, extobj
         )
-        # now broadcast input tensors against the out=... array
-        if out is not None:
-            # XXX: need to filter out noop broadcasts if t.shape == out.shape?
-            shape = out.shape
-            tensors = tuple(torch.broadcast_to(t, shape) for t in tensors)
-
         result = torch_func(*tensors)
+
+        result = _ufunc_postprocess(result, out, casting)
         return result
 
     wrapped.__qualname__ = torch_func.__name__
@@ -54,8 +71,9 @@ def deco_binary_ufunc(torch_func):
 
 
 #
-# matmul is special in that its `out=...` array does not broadcast x1 and x2.
-# E.g. consider x1.shape = (5, 2) and x2.shape = (2, 3). Then `out.shape` is (5, 3).
+# matmul's signature is _slightly_ different from other ufuncs:
+# - no where=...
+# - additional axis=..., axes=...
 #
 @normalizer
 def matmul(
@@ -73,17 +91,21 @@ def matmul(
     axes=None,
     axis=None,
 ):
-    tensors = _helpers.ufunc_preprocess(
-        (x1, x2), out, True, casting, order, dtype, subok, signature, extobj
+    tensors = _ufunc_preprocess(
+        (x1, x2), True, casting, order, dtype, subok, signature, extobj
     )
     if axis is not None or axes is not None:
         raise NotImplementedError
 
-    # NB: do not broadcast input tensors against the out=... array
     result = _binary_ufuncs_impl.matmul(*tensors)
+
+    result = _ufunc_postprocess(result, out, casting)
     return result
 
 
+#
+# nin=2, nout=2
+#
 def divmod(
     x1: ArrayLike,
     x2: ArrayLike,
@@ -110,12 +132,14 @@ def divmod(
     if out1.shape != out2.shape or out1.dtype != out2.dtype:
         raise ValueError("out1, out2 must be compatible")
 
-    tensors = _helpers.ufunc_preprocess(
-        (x1, x2), out, True, casting, order, dtype, subok, signature, extobj
+    tensors = _ufunc_preprocess(
+        (x1, x2), True, casting, order, dtype, subok, signature, extobj
     )
 
-    result = _binary_ufuncs_impl.divmod(*tensors)
+    quot, rem = _binary_ufuncs_impl.divmod(*tensors)
 
+    quot = _ufunc_postprocess(quot, out1, casting)
+    rem = _ufunc_postprocess(rem, out2, casting)
     return quot, rem
 
 
@@ -167,15 +191,11 @@ def deco_unary_ufunc(torch_func):
         signature=None,
         extobj=None,
     ):
-        tensors = _helpers.ufunc_preprocess(
-            (x,), out, where, casting, order, dtype, subok, signature, extobj
+        tensors = _ufunc_preprocess(
+            (x,), where, casting, order, dtype, subok, signature, extobj
         )
-        # now broadcast the input tensor against the out=... array
-        if out is not None:
-            # XXX: need to filter out noop broadcasts if t.shape == out.shape?
-            shape = out.shape
-            tensors = tuple(torch.broadcast_to(t, shape) for t in tensors)
         result = torch_func(*tensors)
+        result = _ufunc_postprocess(result, out, casting)
         return result
 
     wrapped.__qualname__ = torch_func.__name__
