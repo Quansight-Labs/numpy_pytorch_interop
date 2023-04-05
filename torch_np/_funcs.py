@@ -7,7 +7,11 @@ from ._normalizations import normalizer
 # and consume/return PyTorch tensors/dtypes.
 # They are also type annotated.
 # Pull these functions from _funcs_impl and decorate them with @normalizer, which
-# converts inputs/outputs to/from tensors/torch dtypes to tnp.dtypes and so on.
+# - Converts any input `np.ndarray`, `torch_np.ndarray`, list of lists, Python scalars, etc into a `torch.Tensor`.
+# - Maps NumPy dtypes to PyTorch dtypes
+# - If the input to the `axis` kwarg is an ndarray, it maps it into a tuple
+# - Implements the semantics for the `out=` arg
+# - Wraps back the outputs into `torch_np.ndarrays`
 
 __all__ = [
     x
