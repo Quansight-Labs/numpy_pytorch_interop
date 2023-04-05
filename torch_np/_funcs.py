@@ -3,7 +3,7 @@ import inspect
 from . import _funcs_impl
 from ._normalizations import normalizer
 
-# _funcs_imple.py contains functions which mimic NumPy's eponimous equivalents,
+# _funcs_impl.py contains functions which mimic NumPy's eponimous equivalents,
 # and consume/return PyTorch tensors/dtypes.
 # They are also type annotated.
 # Pull these functions from _funcs_impl and decorate them with @normalizer, which

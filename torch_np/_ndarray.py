@@ -388,7 +388,7 @@ class ndarray:
 
     def sort(self, axis=-1, kind=None, order=None):
         # ndarray.sort works in-place
-        self.tensor.copy_(_funcs_impl._sort(self.tensor, axis, kind, order))
+        _funcs.copyto(self, _funcs.sort(self, axis, kind, order))
 
     argsort = _funcs.argsort
     searchsorted = _funcs.searchsorted
