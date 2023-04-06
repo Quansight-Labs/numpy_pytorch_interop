@@ -14,6 +14,7 @@ DTypeLike = typing.TypeVar("DTypeLike")
 SubokLike = typing.TypeVar("SubokLike")
 AxisLike = typing.TypeVar("AxisLike")
 NDArray = typing.TypeVar("NDarray")
+OutArray = typing.TypeVar("OutArray")
 
 
 import inspect
@@ -60,6 +61,19 @@ def normalize_axis_like(arg, name=None):
 
 
 def normalize_ndarray(arg, name=None):
+    # check the arg is an ndarray, extract its tensor attribute
+    if arg is None:
+        return arg
+
+    from ._ndarray import ndarray
+
+    if not isinstance(arg, ndarray):
+        raise TypeError("'out' must be an array")
+    return arg.tensor
+
+
+def normalize_outarray(arg, name=None):
+    # almost normalize_ndarray, only return the array, not its tensor
     if arg is None:
         return arg
 
@@ -75,6 +89,8 @@ normalizers = {
     Optional[ArrayLike]: normalize_optional_array_like,
     Sequence[ArrayLike]: normalize_seq_array_like,
     Optional[NDArray]: normalize_ndarray,
+    Optional[OutArray]: normalize_outarray,
+    NDArray: normalize_ndarray,
     DTypeLike: normalize_dtype,
     SubokLike: normalize_subok_like,
     AxisLike: normalize_axis_like,
@@ -164,6 +180,9 @@ def normalizer(_func=None, *, promote_scalar_result=False):
 
             if "out" in params:
                 out = sig.bind(*args, **kwds).arguments.get("out")
+
+                ###                if out is not None: breakpoint()
+
                 result = maybe_copy_to(out, result, promote_scalar_result)
             result = wrap_tensors(result)
 
