@@ -14,6 +14,18 @@ DTypeLike = typing.TypeVar("DTypeLike")
 SubokLike = typing.TypeVar("SubokLike")
 AxisLike = typing.TypeVar("AxisLike")
 NDArray = typing.TypeVar("NDarray")
+
+# OutArray is to annotate the out= array argument.
+#
+# This one is special is several respects:
+# First, It needs to be an NDArray, and we need to preserve the `result is out`
+# semantics. Therefore, we cannot just extract the Tensor from the out array.
+# So we never pass the out array to implementer functions and handle it in the
+# `normalizer` below.
+# Second, the out= argument can be either keyword or positional argument, and
+# as a positional arg, it can be anywhere in the signature.
+# To handle all this, we define a special `OutArray` annotation and dispatch on it.
+#
 OutArray = typing.TypeVar("OutArray")
 
 
@@ -123,6 +135,7 @@ def maybe_copy_to(out, result, promote_scalar_result=False):
         out.tensor.copy_(result)
         return out
     elif isinstance(result, (tuple, list)):
+        # FIXME: this is broken (there is no copy_to)
         return type(result)(map(copy_to, zip(result, out)))
     else:
         assert False  # We should never hit this path
@@ -180,9 +193,6 @@ def normalizer(_func=None, *, promote_scalar_result=False):
 
             if "out" in params:
                 out = sig.bind(*args, **kwds).arguments.get("out")
-
-                ###                if out is not None: breakpoint()
-
                 result = maybe_copy_to(out, result, promote_scalar_result)
             result = wrap_tensors(result)
 
