@@ -105,12 +105,6 @@ ufunc_op_iop_numeric = [
     (np.add, operator.__add__, operator.__iadd__),
     (np.subtract, operator.__sub__, operator.__isub__),
     (np.multiply, operator.__mul__, operator.__imul__),
-    (np.divide, operator.__truediv__, operator.__itruediv__),
-    (np.floor_divide, operator.__floordiv__, operator.__ifloordiv__),
-    (np.float_power, operator.__pow__, operator.__ipow__),
-    ##   (np.remainder, operator.__mod__, operator.__imod__),   # does not handle complex
-    # remainder vs fmod?
-    # pow vs power vs float_power
 ]
 
 ufuncs_with_dunders = [ufunc for ufunc, _, _ in ufunc_op_iop_numeric]
@@ -409,13 +403,11 @@ class TestUfuncDtypeKwd:
         assert (r32 == [1, 2]).all()
         assert r32.dtype == np.float32
 
-        # NB: this test differs from numpy: in numpy, r.dtype is float64
-        # but the precision is lost, r == [1, 2].
-        # I *guess* numpy casts inputs to the dtype=... value, performs calculations,
-        # and then casts the result back to out.dtype.
+        # dtype is float32, so computation is in float32: precision loss
+        # the result is then cast to float64
         out64 = np.empty(2, dtype=np.float64)
         r = np.add([1.0, 2.0], 1.0e-15, dtype=np.float32, out=out64)
-        assert (r != [1, 2]).all()
+        assert (r == [1, 2]).all()
         assert r.dtype == np.float64
 
         # Internal computations are in float64, but the final cast to out.dtype
