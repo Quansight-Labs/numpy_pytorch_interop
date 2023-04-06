@@ -31,7 +31,7 @@ def _ufunc_postprocess(result, out, casting):
 _binary = [
     name
     for name in dir(_binary_ufuncs_impl)
-    if not name.startswith("_") and name not in ["torch", "matmul"]
+    if not name.startswith("_") and name not in ["torch", "matmul", "divmod"]
 ]
 
 
@@ -106,6 +106,7 @@ def matmul(
 #
 # nin=2, nout=2
 #
+@normalizer
 def divmod(
     x1: ArrayLike,
     x2: ArrayLike,
@@ -122,15 +123,18 @@ def divmod(
     signature=None,
     extobj=None,
 ):
-    num_outs = sum(x is None for x in [out1, out2])
-    if sum_outs == 1:
+    # make sure we either have no out arrays at all, or there is either
+    # out1, out2, or out=tuple, but not both
+    num_outs = sum(x is not None for x in [out1, out2])
+    if num_outs == 1:
         raise ValueError("both out1 and out2 need to be provided")
-    if sum_outs != 0 and out != (None, None):
-        raise ValueError("Either provide out1 and out2, or out.")
-    if out is not None:
+    else:
         out1, out2 = out
-    if out1.shape != out2.shape or out1.dtype != out2.dtype:
-        raise ValueError("out1, out2 must be compatible")
+        if num_outs == 2:
+            if out1 is not None or out2 is not None:
+                raise TypeError(
+                    "cannot specify 'out' as both a positional and keyword argument"
+                )
 
     tensors = _ufunc_preprocess(
         (x1, x2), True, casting, order, dtype, subok, signature, extobj

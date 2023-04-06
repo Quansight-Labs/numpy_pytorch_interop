@@ -7,6 +7,7 @@ from pytest import raises as assert_raises
 
 import torch_np as w
 import torch_np._ufuncs as _ufuncs
+from torch_np.testing import assert_equal
 
 # These function receive one array_like arg and return one array_like result
 one_arg_funcs = [
@@ -445,3 +446,45 @@ class TestCopyTo:
         # force the type cast
         w.copyto(dst, src, casting="unsafe")
         assert (dst == src).all()
+
+
+class TestDivmod:
+    def test_divmod_out(self):
+        x1 = w.arange(8, 15)
+        x2 = w.arange(4, 11)
+
+        out = (w.empty_like(x1), w.empty_like(x1))
+
+        quot, rem = w.divmod(x1, x2, out=out)
+
+        assert_equal(quot, x1 // x2)
+        assert_equal(rem, x1 % x2)
+
+        out1, out2 = out
+        assert quot is out[0]
+        assert rem is out[1]
+
+    def test_divmod_out_list(self):
+        x1 = [4, 5, 6]
+        x2 = [2, 1, 2]
+
+        out = (w.empty_like(x1), w.empty_like(x1))
+
+        quot, rem = w.divmod(x1, x2, out=out)
+
+        assert quot is out[0]
+        assert rem is out[1]
+
+    def test_divmod_no_out(self):
+        # check that the out= machinery handles no out at all
+        x1 = w.array([4, 5, 6])
+        x2 = w.array([2, 1, 2])
+        quot, rem = w.divmod(x1, x2)
+
+        assert_equal(quot, x1 // x2)
+        assert_equal(rem, x1 % x2)
+
+    def test_divmod_out_both_pos_and_kw(self):
+        o = w.empty(1)
+        with assert_raises(TypeError):
+            w.divmod(1, 2, o, o, out=(o, o))
