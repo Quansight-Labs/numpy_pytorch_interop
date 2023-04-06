@@ -22,6 +22,7 @@ from ._normalizations import (
     AxisLike,
     DTypeLike,
     NDArray,
+    OutArray,
     SubokLike,
     normalize_array_like,
 )
@@ -41,8 +42,8 @@ def copy(a: ArrayLike, order="K", subok: SubokLike = False):
 def copyto(dst: NDArray, src: ArrayLike, casting="same_kind", where=NoValue):
     if where is not NoValue:
         raise NotImplementedError
-    (src,) = _util.typecast_tensors((src,), dst.tensor.dtype, casting=casting)
-    dst.tensor.copy_(src)
+    (src,) = _util.typecast_tensors((src,), dst.dtype, casting=casting)
+    dst.copy_(src)
 
 
 def atleast_1d(*arys: ArrayLike):
@@ -114,7 +115,7 @@ def _concatenate(tensors, axis=0, out=None, dtype=None, casting="same_kind"):
 def concatenate(
     ar_tuple: Sequence[ArrayLike],
     axis=0,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     dtype: DTypeLike = None,
     casting="same_kind",
 ):
@@ -160,7 +161,7 @@ def column_stack(
 def stack(
     arrays: Sequence[ArrayLike],
     axis=0,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     *,
     dtype: DTypeLike = None,
     casting="same_kind",
@@ -754,7 +755,7 @@ def nanmean(
     a: ArrayLike,
     axis=None,
     dtype: DTypeLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     keepdims=NoValue,
     *,
     where=NoValue,
@@ -892,7 +893,7 @@ def take(
     a: ArrayLike,
     indices: ArrayLike,
     axis=None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     mode="raise",
 ):
     if mode != "raise":
@@ -975,7 +976,7 @@ def clip(
     a: ArrayLike,
     min: Optional[ArrayLike] = None,
     max: Optional[ArrayLike] = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
 ):
     # np.clip requires both a_min and a_max not None, while ndarray.clip allows
     # one of them to be None. Follow the more lax version.
@@ -1070,7 +1071,7 @@ def trace(
     axis1=0,
     axis2=1,
     dtype: DTypeLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
 ):
     result = torch.diagonal(a, offset, dim1=axis1, dim2=axis2).sum(-1, dtype=dtype)
     return result
@@ -1180,7 +1181,7 @@ def tensordot(a: ArrayLike, b: ArrayLike, axes=2):
     return torch.tensordot(a, b, dims=axes)
 
 
-def dot(a: ArrayLike, b: ArrayLike, out: Optional[NDArray] = None):
+def dot(a: ArrayLike, b: ArrayLike, out: Optional[OutArray] = None):
     dtype = _dtypes_impl.result_type_impl((a.dtype, b.dtype))
     a = _util.cast_if_needed(a, dtype)
     b = _util.cast_if_needed(b, dtype)
@@ -1215,7 +1216,7 @@ def inner(a: ArrayLike, b: ArrayLike, /):
     return result
 
 
-def outer(a: ArrayLike, b: ArrayLike, out: Optional[NDArray] = None):
+def outer(a: ArrayLike, b: ArrayLike, out: Optional[OutArray] = None):
     return torch.outer(a, b)
 
 
@@ -1382,7 +1383,7 @@ def imag(a: ArrayLike):
     return result
 
 
-def round_(a: ArrayLike, decimals=0, out: Optional[NDArray] = None):
+def round_(a: ArrayLike, decimals=0, out: Optional[OutArray] = None):
     if a.is_floating_point():
         result = torch.round(a, decimals=decimals)
     elif a.is_complex():
@@ -1408,7 +1409,7 @@ def sum(
     a: ArrayLike,
     axis: AxisLike = None,
     dtype: DTypeLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     keepdims=NoValue,
     initial=NoValue,
     where=NoValue,
@@ -1423,7 +1424,7 @@ def prod(
     a: ArrayLike,
     axis: AxisLike = None,
     dtype: DTypeLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     keepdims=NoValue,
     initial=NoValue,
     where=NoValue,
@@ -1441,7 +1442,7 @@ def mean(
     a: ArrayLike,
     axis: AxisLike = None,
     dtype: DTypeLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     keepdims=NoValue,
     *,
     where=NoValue,
@@ -1454,7 +1455,7 @@ def var(
     a: ArrayLike,
     axis: AxisLike = None,
     dtype: DTypeLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     ddof=0,
     keepdims=NoValue,
     *,
@@ -1470,7 +1471,7 @@ def std(
     a: ArrayLike,
     axis: AxisLike = None,
     dtype: DTypeLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     ddof=0,
     keepdims=NoValue,
     *,
@@ -1485,7 +1486,7 @@ def std(
 def argmin(
     a: ArrayLike,
     axis: AxisLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     *,
     keepdims=NoValue,
 ):
@@ -1496,7 +1497,7 @@ def argmin(
 def argmax(
     a: ArrayLike,
     axis: AxisLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     *,
     keepdims=NoValue,
 ):
@@ -1507,7 +1508,7 @@ def argmax(
 def amax(
     a: ArrayLike,
     axis: AxisLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     keepdims=NoValue,
     initial=NoValue,
     where=NoValue,
@@ -1522,7 +1523,7 @@ max = amax
 def amin(
     a: ArrayLike,
     axis: AxisLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     keepdims=NoValue,
     initial=NoValue,
     where=NoValue,
@@ -1535,7 +1536,10 @@ min = amin
 
 
 def ptp(
-    a: ArrayLike, axis: AxisLike = None, out: Optional[NDArray] = None, keepdims=NoValue
+    a: ArrayLike,
+    axis: AxisLike = None,
+    out: Optional[OutArray] = None,
+    keepdims=NoValue,
 ):
     result = _impl.ptp(a, axis=axis, keepdims=keepdims)
     return result
@@ -1544,7 +1548,7 @@ def ptp(
 def all(
     a: ArrayLike,
     axis: AxisLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     keepdims=NoValue,
     *,
     where=NoValue,
@@ -1556,7 +1560,7 @@ def all(
 def any(
     a: ArrayLike,
     axis: AxisLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     keepdims=NoValue,
     *,
     where=NoValue,
@@ -1574,7 +1578,7 @@ def cumsum(
     a: ArrayLike,
     axis: AxisLike = None,
     dtype: DTypeLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
 ):
     result = _impl.cumsum(a, axis=axis, dtype=dtype)
     return result
@@ -1584,7 +1588,7 @@ def cumprod(
     a: ArrayLike,
     axis: AxisLike = None,
     dtype: DTypeLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
 ):
     result = _impl.cumprod(a, axis=axis, dtype=dtype)
     return result
@@ -1597,7 +1601,7 @@ def quantile(
     a: ArrayLike,
     q: ArrayLike,
     axis: AxisLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     overwrite_input=False,
     method="linear",
     keepdims=False,
@@ -1620,7 +1624,7 @@ def percentile(
     a: ArrayLike,
     q: ArrayLike,
     axis: AxisLike = None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     overwrite_input=False,
     method="linear",
     keepdims=False,
@@ -1642,7 +1646,7 @@ def percentile(
 def median(
     a: ArrayLike,
     axis=None,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     overwrite_input=False,
     keepdims=False,
 ):
@@ -1726,7 +1730,7 @@ def imag(a: ArrayLike):
     return result
 
 
-def round_(a: ArrayLike, decimals=0, out: Optional[NDArray] = None):
+def round_(a: ArrayLike, decimals=0, out: Optional[OutArray] = None):
     if a.is_floating_point():
         result = torch.round(a, decimals=decimals)
     elif a.is_complex():
@@ -1786,11 +1790,11 @@ def isrealobj(x: ArrayLike):
     return not torch.is_complex(x)
 
 
-def isneginf(x: ArrayLike, out: Optional[NDArray] = None):
+def isneginf(x: ArrayLike, out: Optional[OutArray] = None):
     return torch.isneginf(x, out=out)
 
 
-def isposinf(x: ArrayLike, out: Optional[NDArray] = None):
+def isposinf(x: ArrayLike, out: Optional[OutArray] = None):
     return torch.isposinf(x, out=out)
 
 

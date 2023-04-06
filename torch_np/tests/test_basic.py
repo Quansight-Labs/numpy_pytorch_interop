@@ -413,3 +413,35 @@ class TestNormalizations:
         # five arguments, four defaults: this should fail
         with assert_raises(TypeError):
             w.eye()
+
+
+class TestCopyTo:
+    def test_basic(self):
+        dst = w.empty(4)
+        src = w.arange(4)
+        w.copyto(dst, src)
+        assert (dst == src).all()
+
+    def test_bcast(self):
+        dst = w.empty((4, 2))
+        src = w.arange(4)
+
+        # cannot broadcast => error out
+        with assert_raises(RuntimeError):
+            w.copyto(dst, src)
+
+        # broadcast src against dst
+        dst = w.empty((2, 4))
+        w.copyto(dst, src)
+        assert (dst == src).all()
+
+    def test_typecast(self):
+        dst = w.empty(4, dtype=int)
+        src = w.arange(4, dtype=float)
+
+        with assert_raises(TypeError):
+            w.copyto(dst, src, casting="no")
+
+        # force the type cast
+        w.copyto(dst, src, casting="unsafe")
+        assert (dst == src).all()

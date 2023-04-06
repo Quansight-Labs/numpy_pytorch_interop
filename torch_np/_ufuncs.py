@@ -4,7 +4,7 @@ import torch
 
 from . import _binary_ufuncs_impl, _helpers, _unary_ufuncs_impl
 from ._detail import _dtypes_impl, _util
-from ._normalizations import ArrayLike, DTypeLike, NDArray, SubokLike, normalizer
+from ._normalizations import ArrayLike, DTypeLike, OutArray, SubokLike, normalizer
 
 
 def _ufunc_preprocess(tensors, where, casting, order, dtype, subok, signature, extobj):
@@ -46,7 +46,7 @@ def deco_binary_ufunc(torch_func):
         x1: ArrayLike,
         x2: ArrayLike,
         /,
-        out: Optional[NDArray] = None,
+        out: Optional[OutArray] = None,
         *,
         where=True,
         casting="same_kind",
@@ -80,7 +80,7 @@ def matmul(
     x1: ArrayLike,
     x2: ArrayLike,
     /,
-    out: Optional[NDArray] = None,
+    out: Optional[OutArray] = None,
     *,
     casting="same_kind",
     order="K",
@@ -109,10 +109,10 @@ def matmul(
 def divmod(
     x1: ArrayLike,
     x2: ArrayLike,
-    out1: Optional[NDArray] = None,
-    out2: Optional[NDArray] = None,
+    out1: Optional[OutArray] = None,
+    out2: Optional[OutArray] = None,
     /,
-    out: tuple[Optional[NDArray], Optional[NDArray]] = (None, None),
+    out: tuple[Optional[OutArray], Optional[OutArray]] = (None, None),
     *,
     where=True,
     casting="same_kind",
@@ -181,7 +181,7 @@ def deco_unary_ufunc(torch_func):
     def wrapped(
         x: ArrayLike,
         /,
-        out: Optional[NDArray] = None,
+        out: Optional[OutArray] = None,
         *,
         where=True,
         casting="same_kind",
