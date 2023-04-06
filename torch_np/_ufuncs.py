@@ -128,13 +128,14 @@ def divmod(
     num_outs = sum(x is not None for x in [out1, out2])
     if num_outs == 1:
         raise ValueError("both out1 and out2 need to be provided")
+    elif num_outs == 2:
+        o1, o2 = out
+        if o1 is not None or o2 is not None:
+            raise TypeError(
+                "cannot specify 'out' as both a positional and keyword argument"
+            )
     else:
         out1, out2 = out
-        if num_outs == 2:
-            if out1 is not None or out2 is not None:
-                raise TypeError(
-                    "cannot specify 'out' as both a positional and keyword argument"
-                )
 
     tensors = _ufunc_preprocess(
         (x1, x2), True, casting, order, dtype, subok, signature, extobj

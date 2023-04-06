@@ -475,6 +475,18 @@ class TestDivmod:
         assert quot is out[0]
         assert rem is out[1]
 
+    @pytest.mark.xfail(reason="out1, out2 not implemented")
+    def test_divmod_pos_only(self):
+        x1 = [4, 5, 6]
+        x2 = [2, 1, 2]
+
+        out1, out2 = w.empty_like(x1), w.empty_like(x1)
+
+        quot, rem = w.divmod(x1, x2, out1, out2)
+
+        assert quot is out1
+        assert rem is out2
+
     def test_divmod_no_out(self):
         # check that the out= machinery handles no out at all
         x1 = w.array([4, 5, 6])
