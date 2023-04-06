@@ -2,7 +2,7 @@ import operator
 
 import torch
 
-from . import _binary_ufuncs, _dtypes, _funcs, _helpers, _unary_ufuncs
+from . import _dtypes, _funcs, _funcs_impl, _helpers, _ufuncs
 from ._detail import _dtypes_impl, _util
 from ._normalizations import ArrayLike, normalizer
 
@@ -188,7 +188,7 @@ class ndarray:
     ### comparisons ###
     def __eq__(self, other):
         try:
-            return _binary_ufuncs.equal(self, other)
+            return _ufuncs.equal(self, other)
         except (RuntimeError, TypeError):
             # Failed to convert other to array: definitely not equal.
             falsy = torch.full(self.shape, fill_value=False, dtype=bool)
@@ -196,16 +196,16 @@ class ndarray:
 
     def __ne__(self, other):
         try:
-            return _binary_ufuncs.not_equal(self, other)
+            return _ufuncs.not_equal(self, other)
         except (RuntimeError, TypeError):
             # Failed to convert other to array: definitely not equal.
             falsy = torch.full(self.shape, fill_value=True, dtype=bool)
             return asarray(falsy)
 
-    __gt__ = _binary_ufuncs.greater
-    __lt__ = _binary_ufuncs.less
-    __ge__ = _binary_ufuncs.greater_equal
-    __le__ = _binary_ufuncs.less_equal
+    __gt__ = _ufuncs.greater
+    __lt__ = _ufuncs.less
+    __ge__ = _ufuncs.greater_equal
+    __le__ = _ufuncs.less_equal
 
     def __bool__(self):
         try:
@@ -251,107 +251,107 @@ class ndarray:
     ### arithmetic ###
 
     # add, self + other
-    __add__ = __radd__ = _binary_ufuncs.add
+    __add__ = __radd__ = _ufuncs.add
 
     def __iadd__(self, other):
-        return _binary_ufuncs.add(self, other, out=self)
+        return _ufuncs.add(self, other, out=self)
 
     # sub, self - other
-    __sub__ = _binary_ufuncs.subtract
+    __sub__ = _ufuncs.subtract
 
     # XXX: generate a function just for this? AND other non-commutative ops.
     def __rsub__(self, other):
-        return _binary_ufuncs.subtract(other, self)
+        return _ufuncs.subtract(other, self)
 
     def __isub__(self, other):
-        return _binary_ufuncs.subtract(self, other, out=self)
+        return _ufuncs.subtract(self, other, out=self)
 
     # mul, self * other
-    __mul__ = __rmul__ = _binary_ufuncs.multiply
+    __mul__ = __rmul__ = _ufuncs.multiply
 
     def __imul__(self, other):
-        return _binary_ufuncs.multiply(self, other, out=self)
+        return _ufuncs.multiply(self, other, out=self)
 
     # div, self / other
-    __truediv__ = _binary_ufuncs.divide
+    __truediv__ = _ufuncs.divide
 
     def __rtruediv__(self, other):
-        return _binary_ufuncs.divide(other, self)
+        return _ufuncs.divide(other, self)
 
     def __itruediv__(self, other):
-        return _binary_ufuncs.divide(self, other, out=self)
+        return _ufuncs.divide(self, other, out=self)
 
     # floordiv, self // other
-    __floordiv__ = _binary_ufuncs.floor_divide
+    __floordiv__ = _ufuncs.floor_divide
 
     def __rfloordiv__(self, other):
-        return _binary_ufuncs.floor_divide(other, self)
+        return _ufuncs.floor_divide(other, self)
 
     def __ifloordiv__(self, other):
-        return _binary_ufuncs.floor_divide(self, other, out=self)
+        return _ufuncs.floor_divide(self, other, out=self)
 
-    __divmod__ = _binary_ufuncs.divmod
+    __divmod__ = _ufuncs.divmod
 
     # power, self**exponent
-    __pow__ = __rpow__ = _binary_ufuncs.float_power
+    __pow__ = __rpow__ = _ufuncs.float_power
 
     def __rpow__(self, exponent):
-        return _binary_ufuncs.float_power(exponent, self)
+        return _ufuncs.float_power(exponent, self)
 
     def __ipow__(self, exponent):
-        return _binary_ufuncs.float_power(self, exponent, out=self)
+        return _ufuncs.float_power(self, exponent, out=self)
 
     # remainder, self % other
-    __mod__ = __rmod__ = _binary_ufuncs.remainder
+    __mod__ = __rmod__ = _ufuncs.remainder
 
     def __imod__(self, other):
-        return _binary_ufuncs.remainder(self, other, out=self)
+        return _ufuncs.remainder(self, other, out=self)
 
     # bitwise ops
     # and, self & other
-    __and__ = __rand__ = _binary_ufuncs.bitwise_and
+    __and__ = __rand__ = _ufuncs.bitwise_and
 
     def __iand__(self, other):
-        return _binary_ufuncs.bitwise_and(self, other, out=self)
+        return _ufuncs.bitwise_and(self, other, out=self)
 
     # or, self | other
-    __or__ = __ror__ = _binary_ufuncs.bitwise_or
+    __or__ = __ror__ = _ufuncs.bitwise_or
 
     def __ior__(self, other):
-        return _binary_ufuncs.bitwise_or(self, other, out=self)
+        return _ufuncs.bitwise_or(self, other, out=self)
 
     # xor, self ^ other
-    __xor__ = __rxor__ = _binary_ufuncs.bitwise_xor
+    __xor__ = __rxor__ = _ufuncs.bitwise_xor
 
     def __ixor__(self, other):
-        return _binary_ufuncs.bitwise_xor(self, other, out=self)
+        return _ufuncs.bitwise_xor(self, other, out=self)
 
     # bit shifts
-    __lshift__ = __rlshift__ = _binary_ufuncs.left_shift
+    __lshift__ = __rlshift__ = _ufuncs.left_shift
 
     def __ilshift__(self, other):
-        return _binary_ufuncs.left_shift(self, other, out=self)
+        return _ufuncs.left_shift(self, other, out=self)
 
-    __rshift__ = __rrshift__ = _binary_ufuncs.right_shift
+    __rshift__ = __rrshift__ = _ufuncs.right_shift
 
     def __irshift__(self, other):
-        return _binary_ufuncs.right_shift(self, other, out=self)
+        return _ufuncs.right_shift(self, other, out=self)
 
-    __matmul__ = _binary_ufuncs.matmul
+    __matmul__ = _ufuncs.matmul
 
     def __rmatmul__(self, other):
-        return _binary_ufuncs.matmul(other, self)
+        return _ufuncs.matmul(other, self)
 
     def __imatmul__(self, other):
-        return _binary_ufuncs.matmul(self, other, out=self)
+        return _ufuncs.matmul(self, other, out=self)
 
     # unary ops
-    __invert__ = _unary_ufuncs.invert
-    __abs__ = _unary_ufuncs.absolute
-    __pos__ = _unary_ufuncs.positive
-    __neg__ = _unary_ufuncs.negative
+    __invert__ = _ufuncs.invert
+    __abs__ = _ufuncs.absolute
+    __pos__ = _ufuncs.positive
+    __neg__ = _ufuncs.negative
 
-    conjugate = _unary_ufuncs.conjugate
+    conjugate = _ufuncs.conjugate
     conj = conjugate
 
     ### methods to match namespace functions
@@ -370,6 +370,12 @@ class ndarray:
     ravel = _funcs.ravel
     flatten = _funcs._flatten
 
+    def resize(self, *new_shape, refcheck=False):
+        # ndarray.resize works in-place (may cause a reallocation though)
+        self.tensor = _funcs_impl._ndarray_resize(
+            self.tensor, new_shape, refcheck=refcheck
+        )
+
     nonzero = _funcs.nonzero
     clip = _funcs.clip
     repeat = _funcs.repeat
@@ -382,7 +388,7 @@ class ndarray:
 
     def sort(self, axis=-1, kind=None, order=None):
         # ndarray.sort works in-place
-        self.tensor.copy_(_funcs._sort(self.tensor, axis, kind, order))
+        _funcs.copyto(self, _funcs.sort(self, axis, kind, order))
 
     argsort = _funcs.argsort
     searchsorted = _funcs.searchsorted
