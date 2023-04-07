@@ -80,7 +80,7 @@ def normalize_ndarray(arg, name=None):
     from ._ndarray import ndarray
 
     if not isinstance(arg, ndarray):
-        raise TypeError("'out' must be an array")
+        raise TypeError(f"'{name}' must be an array")
     return arg.tensor
 
 
@@ -135,8 +135,9 @@ def maybe_copy_to(out, result, promote_scalar_result=False):
         out.tensor.copy_(result)
         return out
     elif isinstance(result, (tuple, list)):
-        # FIXME: this is broken (there is no copy_to)
-        return type(result)(map(copy_to, zip(result, out)))
+        return type(result)(
+            maybe_copy_to(o, r, promote_scalar_result) for o, r in zip(out, result)
+        )
     else:
         assert False  # We should never hit this path
 
