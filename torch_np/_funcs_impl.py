@@ -5,6 +5,7 @@ pytorch tensors.
 """
 # Contents of this module ends up in the main namespace via _funcs.py
 # where type annotations are used in conjunction with the @normalizer decorator.
+from __future__ import annotations
 
 import builtins
 import math
