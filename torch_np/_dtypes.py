@@ -243,7 +243,7 @@ def sctype_from_string(s):
         return _aliases[s]
     if s in _python_types:
         return _python_types[s]
-    raise TypeError(f"data type '{s}' not understood")
+    raise TypeError(f"data type {s!r} not understood")
 
 
 def sctype_from_torch_dtype(torch_dtype):
