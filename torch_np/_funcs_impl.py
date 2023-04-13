@@ -894,6 +894,28 @@ def take_along_axis(arr: ArrayLike, indices: ArrayLike, axis):
     return torch.take_along_dim(arr, indices, axis)
 
 
+def put(
+    a: ArrayLike,
+    ind: Sequence[ArrayLike],
+    v: ArrayLike,
+    mode: NotImplementedType = "raise",
+):
+    index = torch.concat(ind)
+    index[index < 0] += a.numel()  # normalise negative indices
+    index_u, index_c = torch.unique(index, return_counts=True)
+    duplicated_indices = index_u[index_c > 1]
+    if duplicated_indices.numel() > 0:
+        raise NotImplementedError(
+            "duplicated indices are not supported. duplicated indices: "
+            f"{duplicated_indices}"
+        )
+    source = v
+    if source.numel() < index.numel():
+        source = torch.broadcast_to(source, index.size())
+    a.put_(index, source)
+    return None
+
+
 def put_along_axis(arr: ArrayLike, indices: ArrayLike, values: ArrayLike, axis):
     (arr,), axis = _util.axis_none_ravel(arr, axis=axis)
     axis = _util.normalize_axis_index(axis, arr.ndim)
