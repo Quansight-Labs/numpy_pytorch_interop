@@ -12,7 +12,6 @@ from . import _helpers
 
 ArrayLike = typing.TypeVar("ArrayLike")
 DTypeLike = typing.TypeVar("DTypeLike")
-SubokLike = typing.TypeVar("SubokLike")
 AxisLike = typing.TypeVar("AxisLike")
 NDArray = typing.TypeVar("NDarray")
 
@@ -35,23 +34,23 @@ import inspect
 from . import _dtypes
 
 
-def normalize_array_like(x, name=None):
+def normalize_array_like(x, parm=None):
     from ._ndarray import asarray
 
     return asarray(x).tensor
 
 
-def normalize_optional_array_like(x, name=None):
+def normalize_optional_array_like(x, parm=None):
     # This explicit normalizer is needed because otherwise normalize_array_like
     # does not run for a parameter annotated as Optional[ArrayLike]
-    return None if x is None else normalize_array_like(x, name)
+    return None if x is None else normalize_array_like(x, parm)
 
 
-def normalize_seq_array_like(x, name=None):
+def normalize_seq_array_like(x, parm=None):
     return tuple(normalize_array_like(value) for value in x)
 
 
-def normalize_dtype(dtype, name=None):
+def normalize_dtype(dtype, parm=None):
     # cf _decorators.dtype_to_torch
     torch_dtype = None
     if dtype is not None:
@@ -60,12 +59,12 @@ def normalize_dtype(dtype, name=None):
     return torch_dtype
 
 
-def normalize_subok_like(arg, name="subok"):
-    if arg:
-        raise ValueError(f"'{name}' parameter is not supported.")
+def normalize_not_implemented(arg, parm):
+    if arg != parm.default:
+        raise NotImplementedError(f"'{parm.name}' parameter is not supported.")
 
 
-def normalize_axis_like(arg, name=None):
+def normalize_axis_like(arg, parm=None):
     from ._ndarray import ndarray
 
     if isinstance(arg, ndarray):
@@ -73,7 +72,7 @@ def normalize_axis_like(arg, name=None):
     return arg
 
 
-def normalize_ndarray(arg, name=None):
+def normalize_ndarray(arg, parm=None):
     # check the arg is an ndarray, extract its tensor attribute
     if arg is None:
         return arg
@@ -81,11 +80,11 @@ def normalize_ndarray(arg, name=None):
     from ._ndarray import ndarray
 
     if not isinstance(arg, ndarray):
-        raise TypeError(f"'{name}' must be an array")
+        raise TypeError(f"'{parm.name}' must be an array")
     return arg.tensor
 
 
-def normalize_outarray(arg, name=None):
+def normalize_outarray(arg, parm=None):
     # almost normalize_ndarray, only return the array, not its tensor
     if arg is None:
         return arg
@@ -93,7 +92,7 @@ def normalize_outarray(arg, name=None):
     from ._ndarray import ndarray
 
     if not isinstance(arg, ndarray):
-        raise TypeError("'out' must be an array")
+        raise TypeError(f"'{parm.name}' must be an array")
     return arg
 
 
@@ -105,15 +104,15 @@ normalizers = {
     "Optional[OutArray]": normalize_outarray,
     "NDArray": normalize_ndarray,
     "DTypeLike": normalize_dtype,
-    "SubokLike": normalize_subok_like,
     "AxisLike": normalize_axis_like,
+    NotImplemented: normalize_not_implemented,
 }
 
 
 def maybe_normalize(arg, parm):
     """Normalize arg if a normalizer is registred."""
     normalizer = normalizers.get(parm.annotation, None)
-    return normalizer(arg, parm.name) if normalizer else arg
+    return normalizer(arg, parm) if normalizer else arg
 
 
 # ### Return value helpers ###

@@ -134,9 +134,6 @@ def argmin(tensor, axis=None):
 @emulate_keepdims
 @deco_axis_expand
 def any(tensor, axis=None, *, where=NoValue):
-    if where is not NoValue:
-        raise NotImplementedError
-
     axis = _util.allow_only_single_axis(axis)
 
     if axis is None:
@@ -149,9 +146,6 @@ def any(tensor, axis=None, *, where=NoValue):
 @emulate_keepdims
 @deco_axis_expand
 def all(tensor, axis=None, *, where=NoValue):
-    if where is not NoValue:
-        raise NotImplementedError
-
     axis = _util.allow_only_single_axis(axis)
 
     if axis is None:
@@ -164,36 +158,24 @@ def all(tensor, axis=None, *, where=NoValue):
 @emulate_keepdims
 @deco_axis_expand
 def max(tensor, axis=None, initial=NoValue, where=NoValue):
-    if initial is not NoValue or where is not NoValue:
-        raise NotImplementedError
-
-    result = tensor.amax(axis)
-    return result
+    return tensor.amax(axis)
 
 
 @emulate_keepdims
 @deco_axis_expand
 def min(tensor, axis=None, initial=NoValue, where=NoValue):
-    if initial is not NoValue or where is not NoValue:
-        raise NotImplementedError
-
-    result = tensor.amin(axis)
-    return result
+    return tensor.amin(axis)
 
 
 @emulate_keepdims
 @deco_axis_expand
 def ptp(tensor, axis=None):
-    result = tensor.amax(axis) - tensor.amin(axis)
-    return result
+    return tensor.amax(axis) - tensor.amin(axis)
 
 
 @emulate_keepdims
 @deco_axis_expand
 def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
-    if initial is not NoValue or where is not NoValue:
-        raise NotImplementedError
-
     assert dtype is None or isinstance(dtype, torch.dtype)
 
     if dtype == torch.bool:
@@ -210,9 +192,6 @@ def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
 @emulate_keepdims
 @deco_axis_expand
 def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
-    if initial is not NoValue or where is not NoValue:
-        raise NotImplementedError
-
     axis = _util.allow_only_single_axis(axis)
 
     if dtype == torch.bool:
@@ -229,9 +208,6 @@ def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
 @emulate_keepdims
 @deco_axis_expand
 def mean(tensor, axis=None, dtype=None, *, where=NoValue):
-    if where is not NoValue:
-        raise NotImplementedError
-
     dtype = _atleast_float(dtype, tensor.dtype)
 
     is_half = dtype == torch.float16
@@ -253,9 +229,6 @@ def mean(tensor, axis=None, dtype=None, *, where=NoValue):
 @emulate_keepdims
 @deco_axis_expand
 def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
-    if where is not NoValue:
-        raise NotImplementedError
-
     dtype = _atleast_float(dtype, tensor.dtype)
     tensor = _util.cast_if_needed(tensor, dtype)
     result = tensor.std(dim=axis, correction=ddof)
@@ -266,9 +239,6 @@ def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
 @emulate_keepdims
 @deco_axis_expand
 def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
-    if where is not NoValue:
-        raise NotImplementedError
-
     dtype = _atleast_float(dtype, tensor.dtype)
     tensor = _util.cast_if_needed(tensor, dtype)
     result = tensor.var(dim=axis, correction=ddof)
@@ -386,9 +356,6 @@ def quantile(
         # https://numpy.org/doc/stable/reference/generated/numpy.percentile.html#numpy-percentile
         # Here we choose to work out-of-place because why not.
         pass
-
-    if interpolation is not None:
-        raise ValueError("'interpolation' argument is deprecated; use 'method' instead")
 
     if not a.dtype.is_floating_point:
         dtype = _dtypes_impl.default_float_dtype

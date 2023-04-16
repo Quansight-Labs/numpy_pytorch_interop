@@ -6,13 +6,10 @@ import torch
 
 from . import _binary_ufuncs_impl, _helpers, _unary_ufuncs_impl
 from ._detail import _dtypes_impl, _util
-from ._normalizations import ArrayLike, DTypeLike, OutArray, SubokLike, normalizer
+from ._normalizations import ArrayLike, DTypeLike, OutArray, normalizer
 
 
 def _ufunc_preprocess(tensors, where, casting, order, dtype, subok, signature, extobj):
-    if order != "K" or not where or signature or extobj:
-        raise NotImplementedError
-
     if dtype is None:
         dtype = _dtypes_impl.result_type_impl([t.dtype for t in tensors])
 
@@ -54,7 +51,7 @@ def deco_binary_ufunc(torch_func):
         casting="same_kind",
         order="K",
         dtype: DTypeLike = None,
-        subok: SubokLike = False,
+        subok: NotImplemented = False,
         signature=None,
         extobj=None,
     ):
@@ -85,20 +82,17 @@ def matmul(
     out: Optional[OutArray] = None,
     *,
     casting="same_kind",
-    order="K",
+    order: NotImplemented = "K",
     dtype: DTypeLike = None,
-    subok: SubokLike = False,
-    signature=None,
-    extobj=None,
-    axes=None,
-    axis=None,
+    subok: NotImplemented = False,
+    signature: NotImplemented = None,
+    extobj: NotImplemented = None,
+    axes: NotImplemented = None,
+    axis: NotImplemented = None,
 ):
     tensors = _ufunc_preprocess(
         (x1, x2), True, casting, order, dtype, subok, signature, extobj
     )
-    if axis is not None or axes is not None:
-        raise NotImplementedError
-
     result = _binary_ufuncs_impl.matmul(*tensors)
 
     result = _ufunc_postprocess(result, out, casting)
@@ -117,13 +111,13 @@ def divmod(
     /,
     out: tuple[Optional[OutArray], Optional[OutArray]] = (None, None),
     *,
-    where=True,
+    where: NotImplemented = True,
     casting="same_kind",
-    order="K",
+    order: NotImplemented = "K",
     dtype: DTypeLike = None,
-    subok: SubokLike = False,
-    signature=None,
-    extobj=None,
+    subok: NotImplemented = False,
+    signature: NotImplemented = None,
+    extobj: NotImplemented = None,
 ):
     # make sure we either have no out arrays at all, or there is either
     # out1, out2, or out=tuple, but not both
@@ -194,7 +188,7 @@ def deco_unary_ufunc(torch_func):
         casting="same_kind",
         order="K",
         dtype: DTypeLike = None,
-        subok: SubokLike = False,
+        subok: NotImplemented = False,
         signature=None,
         extobj=None,
     ):
