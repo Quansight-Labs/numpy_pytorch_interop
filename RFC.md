@@ -107,8 +107,6 @@ that utility flag, similar to
 [`torch.set_default_dtype`](https://pytorch.org/docs/stable/generated/torch.set_default_dtype.html).
 Perhaps call it `torch_np.use_torch_defaults()` and then add a way for users
 to be able to set their own int/float/complex defaults.
-**TODO(Lezcano)**: Do we just use them just in factory functions, or do we also
-use them anywhere else -> Check
 
 **NumPy scalars**. NumPy's type system is tricky. At first sight, it looks
 like PyTorch's, but with few more dtypes like `np.uint16` or `np.longdouble`.
