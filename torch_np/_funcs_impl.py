@@ -1080,6 +1080,8 @@ def eye(
     *,
     like: NotImplementedType = None,
 ):
+    if dtype is None:
+        dtype = _dtypes_impl.default_dtypes.float_dtype
     if M is None:
         M = N
     z = torch.zeros(N, M, dtype=dtype)
