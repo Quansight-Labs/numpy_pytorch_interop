@@ -9,7 +9,7 @@ import torch
 from . import _dtypes_impl
 
 # more __all__ manipulations at the bottom
-__all__ = ["dtype", "DType", "typecodes", "issubdtype"]
+__all__ = ["dtype", "DType", "typecodes", "issubdtype", "set_default_dtype"]
 
 
 # ### Scalar types ###
@@ -255,7 +255,7 @@ def sctype_from_torch_dtype(torch_dtype):
 
 def dtype(arg):
     if arg is None:
-        arg = _dtypes_impl.default_float_dtype
+        arg = _dtypes_impl.default_dtypes.float_dtype
     return DType(arg)
 
 
@@ -343,21 +343,40 @@ typecodes = {
 # ### Defaults and dtype discovery
 
 
-def default_int_type():
-    return dtype(_dtypes_impl.default_int_dtype)
+def set_default_dtype(fp_dtype="numpy", int_dtype="numpy"):
+    """Set the (global) defaults for fp and int dtypes.
 
+    Parameters
+    ----------
+    fp_dtype
+        Allowed values are "numpy", "pytorch" or dtype_like things which
+        can be converted into a tnp.DType instance.
+        Default is "numpy" (i.e. float64).
+    int_dtype
+        Allowed values are "numpy", "pytorch" or dtype_like things which
+        can be converted into a tnp.DType instance.
+        Default is "numpy" (i.e. int64).
 
-def default_float_type():
-    return dtype(_dtypes_impl.default_float_dtype)
+    Returns
+    -------
+    The old default dtype state, i.e. a DefaultDTypes object.
 
+    Side effects
+    ------------
+    Sets the new global state (`_dtypes_impl.default_dtypes`) with the provided dtypes.
 
-def default_complex_type():
-    return dtype(_dtypes_impl.default_complex_dtype)
+    """
+    if fp_dtype not in ["numpy", "pytorch"]:
+        fp_dtype = dtype(fp_dtype).torch_dtype
+    if int_dtype not in ["numpy", "pytorch"]:
+        int_dtype = dtype(int_dtype).torch_dtype
 
+    new_defaults = _dtypes_impl.DefaultDTypes(fp_dtype, int_dtype)
 
-def get_default_dtype_for(dtyp):
-    torch_dtype = dtype(dtyp).torch_dtype
-    return _dtypes_impl.get_default_type_for(torch_dtype)
+    # set the new global state and return the old state
+    old_defaults = _dtypes_impl.default_dtypes
+    _dtypes_impl.default_dtypes = new_defaults
+    return old_defaults
 
 
 def issubclass_(arg, klass):

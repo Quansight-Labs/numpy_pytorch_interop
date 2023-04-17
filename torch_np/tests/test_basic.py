@@ -507,3 +507,29 @@ class TestSmokeNotImpl:
         # smoke test that the "NotImplemented" annotation is picked up
         with assert_raises(NotImplementedError):
             w.empty(3, like="ooops")
+
+
+class TestDefaultDtype:
+    def test_defaults(self):
+        # by default, both floats and ints 64 bit
+        x = w.empty(3)
+        z = x + 1j * x
+
+        assert x.dtype.torch_dtype == torch.float64
+        assert z.dtype.torch_dtype == torch.complex128
+
+        assert w.arange(3).dtype.torch_dtype == torch.int64
+
+    def test_set_default_float(self):
+        try:
+            w.set_default_dtype(fp_dtype="float32")
+
+            x = w.empty(3)
+            z = x + 1j * x
+
+            assert x.dtype.torch_dtype == torch.float32
+            assert z.dtype.torch_dtype == torch.complex64
+
+        finally:
+            # restore the
+            w.set_default_dtype(fp_dtype="numpy")
