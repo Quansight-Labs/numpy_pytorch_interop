@@ -6,7 +6,7 @@ import builtins
 
 import torch
 
-from ._detail import _dtypes_impl
+from . import _dtypes_impl
 
 # more __all__ manipulations at the bottom
 __all__ = ["dtype", "DType", "typecodes", "issubdtype"]
@@ -255,7 +255,7 @@ def sctype_from_torch_dtype(torch_dtype):
 
 def dtype(arg):
     if arg is None:
-        arg = _dtypes_impl.default_scalar_dtype
+        arg = _dtypes_impl.default_float_dtype
     return DType(arg)
 
 

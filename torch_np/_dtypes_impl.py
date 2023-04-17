@@ -6,7 +6,6 @@ scalar types, wrapper dtypes or anything like that. PyTorch only.
 import torch
 
 #### defaults : mimic NumPy
-default_scalar_dtype = torch.float64
 default_int_dtype = torch.int64
 default_float_dtype = torch.float64
 default_complex_dtype = torch.complex128

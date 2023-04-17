@@ -1,5 +1,5 @@
 from . import linalg, random
-from ._detail._util import AxisError, UFuncTypeError
+from ._util import AxisError, UFuncTypeError
 from ._dtypes import *
 from ._funcs import *
 from ._getlimits import errstate, finfo, iinfo

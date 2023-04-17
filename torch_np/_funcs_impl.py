@@ -15,9 +15,9 @@ from typing import Optional, Sequence
 import torch
 
 from . import _helpers
-from ._detail import _dtypes_impl
-from ._detail import _reductions as _impl
-from ._detail import _util
+from . import _dtypes_impl
+from . import _reductions as _impl
+from . import _util
 from ._normalizations import (
     ArrayLike,
     AxisLike,

@@ -3,7 +3,7 @@ import pytest
 import inspect
 
 import torch_np as np
-from torch_np._detail._util import normalize_axis_tuple
+from torch_np._util import normalize_axis_tuple
 from torch_np.testing import (
     assert_, assert_equal, assert_almost_equal,
     assert_array_equal, #suppress_warnings

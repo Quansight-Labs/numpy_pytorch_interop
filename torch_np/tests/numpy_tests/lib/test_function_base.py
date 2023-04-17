@@ -30,7 +30,7 @@ from numpy.lib import (
     insert, interp, msort, piecewise, place,
     select, setxor1d, trapz, trim_zeros, unwrap, vectorize
     )
-from torch_np._detail._util import normalize_axis_tuple
+from torch_np._util import normalize_axis_tuple
 
 from torch_np import corrcoef, cov, i0, angle, sinc, diff, meshgrid, unique
 from torch_np import flipud, hamming, hanning, kaiser, blackman, bartlett

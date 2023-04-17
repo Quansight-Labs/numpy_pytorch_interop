@@ -5,7 +5,7 @@ from typing import Optional
 import torch
 
 from . import _binary_ufuncs_impl, _helpers, _unary_ufuncs_impl
-from ._detail import _dtypes_impl, _util
+from . import _dtypes_impl, _util
 from ._normalizations import (
     ArrayLike,
     DTypeLike,
