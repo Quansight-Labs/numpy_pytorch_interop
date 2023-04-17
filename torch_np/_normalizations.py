@@ -1,9 +1,10 @@
 """ "Normalize" arguments: convert array_likes to tensors, dtypes to torch dtypes and so on.
 """
+from __future__ import annotations
+
 import functools
 import operator
 import typing
-from typing import Optional, Sequence
 
 import torch
 
@@ -97,15 +98,15 @@ def normalize_outarray(arg, name=None):
 
 
 normalizers = {
-    ArrayLike: normalize_array_like,
-    Optional[ArrayLike]: normalize_optional_array_like,
-    Sequence[ArrayLike]: normalize_seq_array_like,
-    Optional[NDArray]: normalize_ndarray,
-    Optional[OutArray]: normalize_outarray,
-    NDArray: normalize_ndarray,
-    DTypeLike: normalize_dtype,
-    SubokLike: normalize_subok_like,
-    AxisLike: normalize_axis_like,
+    "ArrayLike": normalize_array_like,
+    "Optional[ArrayLike]": normalize_optional_array_like,
+    "Sequence[ArrayLike]": normalize_seq_array_like,
+    "Optional[NDArray]": normalize_ndarray,
+    "Optional[OutArray]": normalize_outarray,
+    "NDArray": normalize_ndarray,
+    "DTypeLike": normalize_dtype,
+    "SubokLike": normalize_subok_like,
+    "AxisLike": normalize_axis_like,
 }
 
 

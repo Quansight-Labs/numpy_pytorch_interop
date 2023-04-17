@@ -26,7 +26,7 @@ jobs:
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{
             hashFiles('etc/example-environment.yml') }}
           activate-environment: foo
-          python-version: 3.9
+          python-version: 3.8
           channels: conda-forge
           allow-softlinks: true
           channel-priority: strict
@@ -37,14 +37,13 @@ jobs:
           conda config --add channels conda-forge
           conda config --set channel_priority strict
           conda info
-          conda install python==3.9 pytorch==1.13.0 pytest pytest-xdist numpy hypothesis -y
+          conda install python==3.8 pytorch pytest pytest-xdist numpy hypothesis -y
           conda list
           conda config --show-sources
-      #    conda config --show
       - run: |
           echo $PWD
           ls -l
       - name: Run tests
         run: |
-          pytest torch_np/ -v -s -n 2 --runslow
+          pytest torch_np/ -s -n 2 --runslow
 

@@ -5,6 +5,8 @@ NumPy has strict guarantees on reproducibility etc; here we don't give any.
 Q: default dtype is float64 in numpy
 
 """
+from __future__ import annotations
+
 from math import sqrt
 from typing import Optional
 
