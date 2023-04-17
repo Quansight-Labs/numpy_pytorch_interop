@@ -275,11 +275,6 @@ writing `torch_np.ndarray` above to make more explicit our intents, but there
 shouldn't be any ambiguity.
 
 **OBS(Lezcano)**: `DTypeLike` should be `Optional[DTypeLike]`
-**OBS(Lezcano)**: Should we have a `NotImplementedType` to mark the args that
-are not being implemented? We could then assert that either that parameter has
-not been provided, and if it has, it has the same value as the default. The
-goal here would be to either use all the args of a function in its
-implementation, or mark explicitly those that we don't use.
 
 **Implmenting out**: In PyTorch, the `out` kwarg is, as the name says, a
 keyword-only argument. It is for this reason that, in PrimTorch, we were able
