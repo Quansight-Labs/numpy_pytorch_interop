@@ -28,6 +28,11 @@ NDArray = typing.TypeVar("NDarray")
 #
 OutArray = typing.TypeVar("OutArray")
 
+try:
+    from typing import NotImplementedType
+except ImportError:
+    NotImplementedType = typing.TypeVar("NotImplementedType")
+
 
 import inspect
 
@@ -105,7 +110,7 @@ normalizers = {
     "NDArray": normalize_ndarray,
     "DTypeLike": normalize_dtype,
     "AxisLike": normalize_axis_like,
-    NotImplemented: normalize_not_implemented,
+    "NotImplementedType": normalize_not_implemented,
 }
 
 

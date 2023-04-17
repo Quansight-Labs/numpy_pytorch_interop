@@ -23,6 +23,7 @@ from ._normalizations import (
     AxisLike,
     DTypeLike,
     NDArray,
+    NotImplementedType,
     OutArray,
     normalize_array_like,
 )
@@ -33,12 +34,17 @@ NoValue = _util.NoValue
 ###### array creation routines
 
 
-def copy(a: ArrayLike, order: NotImplemented = "K", subok: NotImplemented = False):
+def copy(
+    a: ArrayLike, order: NotImplementedType = "K", subok: NotImplementedType = False
+):
     return a.clone()
 
 
 def copyto(
-    dst: NDArray, src: ArrayLike, casting="same_kind", where: NotImplemented = NoValue
+    dst: NDArray,
+    src: ArrayLike,
+    casting="same_kind",
+    where: NotImplementedType = NoValue,
 ):
     (src,) = _util.typecast_tensors((src,), dst.dtype, casting=casting)
     dst.copy_(src)
@@ -320,7 +326,7 @@ def arange(
     step: Optional[ArrayLike] = 1,
     dtype: DTypeLike = None,
     *,
-    like: NotImplemented = None,
+    like: NotImplementedType = None,
 ):
     if step == 0:
         raise ZeroDivisionError
@@ -365,9 +371,9 @@ def arange(
 def empty(
     shape,
     dtype: DTypeLike = float,
-    order: NotImplemented = "C",
+    order: NotImplementedType = "C",
     *,
-    like: NotImplemented = None,
+    like: NotImplementedType = None,
 ):
     if dtype is None:
         dtype = _dtypes_impl.default_float_dtype
@@ -381,8 +387,8 @@ def empty(
 def empty_like(
     prototype: ArrayLike,
     dtype: DTypeLike = None,
-    order: NotImplemented = "K",
-    subok: NotImplemented = False,
+    order: NotImplementedType = "K",
+    subok: NotImplementedType = False,
     shape=None,
 ):
     result = torch.empty_like(prototype, dtype=dtype)
@@ -395,9 +401,9 @@ def full(
     shape,
     fill_value: ArrayLike,
     dtype: DTypeLike = None,
-    order: NotImplemented = "C",
+    order: NotImplementedType = "C",
     *,
-    like: NotImplemented = None,
+    like: NotImplementedType = None,
 ):
     if isinstance(shape, int):
         shape = (shape,)
@@ -412,8 +418,8 @@ def full_like(
     a: ArrayLike,
     fill_value,
     dtype: DTypeLike = None,
-    order: NotImplemented = "K",
-    subok: NotImplemented = False,
+    order: NotImplementedType = "K",
+    subok: NotImplementedType = False,
     shape=None,
 ):
     # XXX: fill_value broadcasts
@@ -426,9 +432,9 @@ def full_like(
 def ones(
     shape,
     dtype: DTypeLike = None,
-    order: NotImplemented = "C",
+    order: NotImplementedType = "C",
     *,
-    like: NotImplemented = None,
+    like: NotImplementedType = None,
 ):
     if dtype is None:
         dtype = _dtypes_impl.default_float_dtype
@@ -438,8 +444,8 @@ def ones(
 def ones_like(
     a: ArrayLike,
     dtype: DTypeLike = None,
-    order: NotImplemented = "K",
-    subok: NotImplemented = False,
+    order: NotImplementedType = "K",
+    subok: NotImplementedType = False,
     shape=None,
 ):
     result = torch.ones_like(a, dtype=dtype)
@@ -451,9 +457,9 @@ def ones_like(
 def zeros(
     shape,
     dtype: DTypeLike = None,
-    order: NotImplemented = "C",
+    order: NotImplementedType = "C",
     *,
-    like: NotImplemented = None,
+    like: NotImplementedType = None,
 ):
     if dtype is None:
         dtype = _dtypes_impl.default_float_dtype
@@ -463,8 +469,8 @@ def zeros(
 def zeros_like(
     a: ArrayLike,
     dtype: DTypeLike = None,
-    order: NotImplemented = "K",
-    subok: NotImplemented = False,
+    order: NotImplementedType = "K",
+    subok: NotImplementedType = False,
     shape=None,
 ):
     result = torch.zeros_like(a, dtype=dtype)
@@ -647,14 +653,14 @@ def rot90(m: ArrayLike, k=1, axes=(0, 1)):
 # ### broadcasting and indices ###
 
 
-def broadcast_to(array: ArrayLike, shape, subok: NotImplemented = False):
+def broadcast_to(array: ArrayLike, shape, subok: NotImplementedType = False):
     return torch.broadcast_to(array, size=shape)
 
 
 from torch import broadcast_shapes
 
 
-def broadcast_arrays(*args: ArrayLike, subok: NotImplemented = False):
+def broadcast_arrays(*args: ArrayLike, subok: NotImplementedType = False):
     return torch.broadcast_tensors(*args)
 
 
@@ -740,7 +746,7 @@ def triu_indices_from(arr: ArrayLike, k=0):
     return tuple(result)
 
 
-def tri(N, M=None, k=0, dtype: DTypeLike = float, *, like: NotImplemented = None):
+def tri(N, M=None, k=0, dtype: DTypeLike = float, *, like: NotImplementedType = None):
     if M is None:
         M = N
     tensor = torch.ones((N, M), dtype=dtype)
@@ -758,7 +764,7 @@ def nanmean(
     out: Optional[OutArray] = None,
     keepdims=NoValue,
     *,
-    where: NotImplemented = NoValue,
+    where: NotImplementedType = NoValue,
 ):
     # XXX: this needs to be rewritten
     if dtype is None:
@@ -892,7 +898,7 @@ def take(
     indices: ArrayLike,
     axis=None,
     out: Optional[OutArray] = None,
-    mode: NotImplemented = "raise",
+    mode: NotImplementedType = "raise",
 ):
     (a,), axis = _util.axis_none_ravel(a, axis=axis)
     axis = _util.normalize_axis_index(axis, a.ndim)
@@ -923,12 +929,12 @@ def put_along_axis(arr: ArrayLike, indices: ArrayLike, values: ArrayLike, axis):
 
 def unique(
     ar: ArrayLike,
-    return_index: NotImplemented = False,
+    return_index: NotImplementedType = False,
     return_inverse=False,
     return_counts=False,
     axis=None,
     *,
-    equal_nan: NotImplemented = True,
+    equal_nan: NotImplementedType = True,
 ):
     if axis is None:
         ar = ar.ravel()
@@ -1074,9 +1080,9 @@ def eye(
     M=None,
     k=0,
     dtype: DTypeLike = float,
-    order: NotImplemented = "C",
+    order: NotImplementedType = "C",
     *,
-    like: NotImplemented = None,
+    like: NotImplementedType = None,
 ):
     if M is None:
         M = N
@@ -1085,7 +1091,7 @@ def eye(
     return z
 
 
-def identity(n, dtype: DTypeLike = None, *, like: NotImplemented = None):
+def identity(n, dtype: DTypeLike = None, *, like: NotImplementedType = None):
     return torch.eye(n, dtype=dtype)
 
 
@@ -1230,14 +1236,14 @@ def _sort_helper(tensor, axis, kind, order):
     return tensor, axis, stable
 
 
-def sort(a: ArrayLike, axis=-1, kind=None, order: NotImplemented = None):
+def sort(a: ArrayLike, axis=-1, kind=None, order: NotImplementedType = None):
     # `order` keyword arg is only relevant for structured dtypes; so not supported here.
     a, axis, stable = _sort_helper(a, axis, kind, order)
     result = torch.sort(a, dim=axis, stable=stable)
     return result.values
 
 
-def argsort(a: ArrayLike, axis=-1, kind=None, order: NotImplemented = None):
+def argsort(a: ArrayLike, axis=-1, kind=None, order: NotImplementedType = None):
     a, axis, stable = _sort_helper(a, axis, kind, order)
     return torch.argsort(a, dim=axis, stable=stable)
 
@@ -1316,7 +1322,7 @@ def squeeze(a: ArrayLike, axis=None):
     return result
 
 
-def reshape(a: ArrayLike, newshape, order: NotImplemented = "C"):
+def reshape(a: ArrayLike, newshape, order: NotImplementedType = "C"):
     # if sh = (1, 2, 3), numpy allows both .reshape(sh) and .reshape(*sh)
     newshape = newshape[0] if len(newshape) == 1 else newshape
     return a.reshape(newshape)
@@ -1342,14 +1348,14 @@ def transpose(a: ArrayLike, axes=None):
     return result
 
 
-def ravel(a: ArrayLike, order: NotImplemented = "C"):
+def ravel(a: ArrayLike, order: NotImplementedType = "C"):
     return torch.ravel(a)
 
 
 # leading underscore since arr.flatten exists but np.flatten does not
 
 
-def _flatten(a: ArrayLike, order: NotImplemented = "C"):
+def _flatten(a: ArrayLike, order: NotImplementedType = "C"):
     # may return a copy
     return torch.flatten(a)
 
@@ -1398,8 +1404,8 @@ def sum(
     dtype: DTypeLike = None,
     out: Optional[OutArray] = None,
     keepdims=NoValue,
-    initial: NotImplemented = NoValue,
-    where: NotImplemented = NoValue,
+    initial: NotImplementedType = NoValue,
+    where: NotImplementedType = NoValue,
 ):
     result = _impl.sum(
         a, axis=axis, dtype=dtype, initial=initial, where=where, keepdims=keepdims
@@ -1413,8 +1419,8 @@ def prod(
     dtype: DTypeLike = None,
     out: Optional[OutArray] = None,
     keepdims=NoValue,
-    initial: NotImplemented = NoValue,
-    where: NotImplemented = NoValue,
+    initial: NotImplementedType = NoValue,
+    where: NotImplementedType = NoValue,
 ):
     result = _impl.prod(
         a, axis=axis, dtype=dtype, initial=initial, where=where, keepdims=keepdims
@@ -1432,7 +1438,7 @@ def mean(
     out: Optional[OutArray] = None,
     keepdims=NoValue,
     *,
-    where: NotImplemented = NoValue,
+    where: NotImplementedType = NoValue,
 ):
     result = _impl.mean(a, axis=axis, dtype=dtype, where=NoValue, keepdims=keepdims)
     return result
@@ -1446,7 +1452,7 @@ def var(
     ddof=0,
     keepdims=NoValue,
     *,
-    where: NotImplemented = NoValue,
+    where: NotImplementedType = NoValue,
 ):
     result = _impl.var(
         a, axis=axis, dtype=dtype, ddof=ddof, where=where, keepdims=keepdims
@@ -1462,7 +1468,7 @@ def std(
     ddof=0,
     keepdims=NoValue,
     *,
-    where: NotImplemented = NoValue,
+    where: NotImplementedType = NoValue,
 ):
     result = _impl.std(
         a, axis=axis, dtype=dtype, ddof=ddof, where=where, keepdims=keepdims
@@ -1497,8 +1503,8 @@ def amax(
     axis: AxisLike = None,
     out: Optional[OutArray] = None,
     keepdims=NoValue,
-    initial: NotImplemented = NoValue,
-    where: NotImplemented = NoValue,
+    initial: NotImplementedType = NoValue,
+    where: NotImplementedType = NoValue,
 ):
     result = _impl.max(a, axis=axis, initial=initial, where=where, keepdims=keepdims)
     return result
@@ -1512,8 +1518,8 @@ def amin(
     axis: AxisLike = None,
     out: Optional[OutArray] = None,
     keepdims=NoValue,
-    initial: NotImplemented = NoValue,
-    where: NotImplemented = NoValue,
+    initial: NotImplementedType = NoValue,
+    where: NotImplementedType = NoValue,
 ):
     result = _impl.min(a, axis=axis, initial=initial, where=where, keepdims=keepdims)
     return result
@@ -1538,7 +1544,7 @@ def all(
     out: Optional[OutArray] = None,
     keepdims=NoValue,
     *,
-    where: NotImplemented = NoValue,
+    where: NotImplementedType = NoValue,
 ):
     result = _impl.all(a, axis=axis, where=where, keepdims=keepdims)
     return result
@@ -1550,7 +1556,7 @@ def any(
     out: Optional[OutArray] = None,
     keepdims=NoValue,
     *,
-    where: NotImplemented = NoValue,
+    where: NotImplementedType = NoValue,
 ):
     result = _impl.any(a, axis=axis, where=where, keepdims=keepdims)
     return result
@@ -1593,7 +1599,7 @@ def quantile(
     method="linear",
     keepdims=False,
     *,
-    interpolation: NotImplemented = None,
+    interpolation: NotImplementedType = None,
 ):
     result = _impl.quantile(
         a,
@@ -1616,7 +1622,7 @@ def percentile(
     method="linear",
     keepdims=False,
     *,
-    interpolation: NotImplemented = None,
+    interpolation: NotImplementedType = None,
 ):
     result = _impl.percentile(
         a,

@@ -500,3 +500,10 @@ class TestDivmod:
         o = w.empty(1)
         with assert_raises(TypeError):
             w.divmod(1, 2, o, o, out=(o, o))
+
+
+class TestSmokeNotImpl:
+    def test_basic(self):
+        # smoke test that the "NotImplemented" annotation is picked up
+        with assert_raises(NotImplementedError):
+            w.empty(3, like="ooops")

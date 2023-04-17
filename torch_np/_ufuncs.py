@@ -6,7 +6,13 @@ import torch
 
 from . import _binary_ufuncs_impl, _helpers, _unary_ufuncs_impl
 from ._detail import _dtypes_impl, _util
-from ._normalizations import ArrayLike, DTypeLike, OutArray, normalizer
+from ._normalizations import (
+    ArrayLike,
+    DTypeLike,
+    NotImplementedType,
+    OutArray,
+    normalizer,
+)
 
 
 def _ufunc_preprocess(tensors, where, casting, order, dtype, subok, signature, extobj):
@@ -51,7 +57,7 @@ def deco_binary_ufunc(torch_func):
         casting="same_kind",
         order="K",
         dtype: DTypeLike = None,
-        subok: NotImplemented = False,
+        subok: NotImplementedType = False,
         signature=None,
         extobj=None,
     ):
@@ -82,13 +88,13 @@ def matmul(
     out: Optional[OutArray] = None,
     *,
     casting="same_kind",
-    order: NotImplemented = "K",
+    order: NotImplementedType = "K",
     dtype: DTypeLike = None,
-    subok: NotImplemented = False,
-    signature: NotImplemented = None,
-    extobj: NotImplemented = None,
-    axes: NotImplemented = None,
-    axis: NotImplemented = None,
+    subok: NotImplementedType = False,
+    signature: NotImplementedType = None,
+    extobj: NotImplementedType = None,
+    axes: NotImplementedType = None,
+    axis: NotImplementedType = None,
 ):
     tensors = _ufunc_preprocess(
         (x1, x2), True, casting, order, dtype, subok, signature, extobj
@@ -111,13 +117,13 @@ def divmod(
     /,
     out: tuple[Optional[OutArray], Optional[OutArray]] = (None, None),
     *,
-    where: NotImplemented = True,
+    where: NotImplementedType = True,
     casting="same_kind",
-    order: NotImplemented = "K",
+    order: NotImplementedType = "K",
     dtype: DTypeLike = None,
-    subok: NotImplemented = False,
-    signature: NotImplemented = None,
-    extobj: NotImplemented = None,
+    subok: NotImplementedType = False,
+    signature: NotImplementedType = None,
+    extobj: NotImplementedType = None,
 ):
     # make sure we either have no out arrays at all, or there is either
     # out1, out2, or out=tuple, but not both
@@ -188,7 +194,7 @@ def deco_unary_ufunc(torch_func):
         casting="same_kind",
         order="K",
         dtype: DTypeLike = None,
-        subok: NotImplemented = False,
+        subok: NotImplementedType = False,
         signature=None,
         extobj=None,
     ):
