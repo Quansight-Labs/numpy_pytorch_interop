@@ -4,16 +4,12 @@ in the 'public' layer.
 Anything here only deals with torch objects, e.g. "dtype" is a torch.dtype instance etc
 """
 
+import functools
 import typing
 
 import torch
 
 from . import _dtypes_impl, _util
-
-NoValue = _util.NoValue
-
-
-import functools
 
 ############# XXX
 ### From _util.axis_expand_func
@@ -51,7 +47,7 @@ def deco_axis_expand(func):
 
 def emulate_keepdims(func):
     @functools.wraps(func)
-    def wrapped(tensor, axis=None, keepdims=NoValue, *args, **kwds):
+    def wrapped(tensor, axis=None, keepdims=None, *args, **kwds):
         result = func(tensor, axis=axis, *args, **kwds)
         if keepdims:
             result = _util.apply_keepdims(result, axis, tensor.ndim)
@@ -133,10 +129,7 @@ def argmin(tensor, axis=None):
 
 @emulate_keepdims
 @deco_axis_expand
-def any(tensor, axis=None, *, where=NoValue):
-    if where is not NoValue:
-        raise NotImplementedError
-
+def any(tensor, axis=None, *, where=None):
     axis = _util.allow_only_single_axis(axis)
 
     if axis is None:
@@ -148,10 +141,7 @@ def any(tensor, axis=None, *, where=NoValue):
 
 @emulate_keepdims
 @deco_axis_expand
-def all(tensor, axis=None, *, where=NoValue):
-    if where is not NoValue:
-        raise NotImplementedError
-
+def all(tensor, axis=None, *, where=None):
     axis = _util.allow_only_single_axis(axis)
 
     if axis is None:
@@ -163,37 +153,25 @@ def all(tensor, axis=None, *, where=NoValue):
 
 @emulate_keepdims
 @deco_axis_expand
-def max(tensor, axis=None, initial=NoValue, where=NoValue):
-    if initial is not NoValue or where is not NoValue:
-        raise NotImplementedError
-
-    result = tensor.amax(axis)
-    return result
+def max(tensor, axis=None, initial=None, where=None):
+    return tensor.amax(axis)
 
 
 @emulate_keepdims
 @deco_axis_expand
-def min(tensor, axis=None, initial=NoValue, where=NoValue):
-    if initial is not NoValue or where is not NoValue:
-        raise NotImplementedError
-
-    result = tensor.amin(axis)
-    return result
+def min(tensor, axis=None, initial=None, where=None):
+    return tensor.amin(axis)
 
 
 @emulate_keepdims
 @deco_axis_expand
 def ptp(tensor, axis=None):
-    result = tensor.amax(axis) - tensor.amin(axis)
-    return result
+    return tensor.amax(axis) - tensor.amin(axis)
 
 
 @emulate_keepdims
 @deco_axis_expand
-def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
-    if initial is not NoValue or where is not NoValue:
-        raise NotImplementedError
-
+def sum(tensor, axis=None, dtype=None, initial=None, where=None):
     assert dtype is None or isinstance(dtype, torch.dtype)
 
     if dtype == torch.bool:
@@ -209,10 +187,7 @@ def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
 
 @emulate_keepdims
 @deco_axis_expand
-def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
-    if initial is not NoValue or where is not NoValue:
-        raise NotImplementedError
-
+def prod(tensor, axis=None, dtype=None, initial=None, where=None):
     axis = _util.allow_only_single_axis(axis)
 
     if dtype == torch.bool:
@@ -228,10 +203,7 @@ def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
 
 @emulate_keepdims
 @deco_axis_expand
-def mean(tensor, axis=None, dtype=None, *, where=NoValue):
-    if where is not NoValue:
-        raise NotImplementedError
-
+def mean(tensor, axis=None, dtype=None, *, where=None):
     dtype = _atleast_float(dtype, tensor.dtype)
 
     is_half = dtype == torch.float16
@@ -252,10 +224,7 @@ def mean(tensor, axis=None, dtype=None, *, where=NoValue):
 
 @emulate_keepdims
 @deco_axis_expand
-def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
-    if where is not NoValue:
-        raise NotImplementedError
-
+def std(tensor, axis=None, dtype=None, ddof=0, *, where=None):
     dtype = _atleast_float(dtype, tensor.dtype)
     tensor = _util.cast_if_needed(tensor, dtype)
     result = tensor.std(dim=axis, correction=ddof)
@@ -265,10 +234,7 @@ def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
 
 @emulate_keepdims
 @deco_axis_expand
-def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
-    if where is not NoValue:
-        raise NotImplementedError
-
+def var(tensor, axis=None, dtype=None, ddof=0, *, where=None):
     dtype = _atleast_float(dtype, tensor.dtype)
     tensor = _util.cast_if_needed(tensor, dtype)
     result = tensor.var(dim=axis, correction=ddof)
@@ -386,9 +352,6 @@ def quantile(
         # https://numpy.org/doc/stable/reference/generated/numpy.percentile.html#numpy-percentile
         # Here we choose to work out-of-place because why not.
         pass
-
-    if interpolation is not None:
-        raise ValueError("'interpolation' argument is deprecated; use 'method' instead")
 
     if not a.dtype.is_floating_point:
         dtype = _dtypes_impl.default_float_dtype

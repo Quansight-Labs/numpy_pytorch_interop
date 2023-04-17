@@ -6,13 +6,16 @@ import torch
 
 from . import _binary_ufuncs_impl, _helpers, _unary_ufuncs_impl
 from ._detail import _dtypes_impl, _util
-from ._normalizations import ArrayLike, DTypeLike, OutArray, SubokLike, normalizer
+from ._normalizations import (
+    ArrayLike,
+    DTypeLike,
+    NotImplementedType,
+    OutArray,
+    normalizer,
+)
 
 
 def _ufunc_preprocess(tensors, where, casting, order, dtype, subok, signature, extobj):
-    if order != "K" or not where or signature or extobj:
-        raise NotImplementedError
-
     if dtype is None:
         dtype = _dtypes_impl.result_type_impl([t.dtype for t in tensors])
 
@@ -44,6 +47,7 @@ def deco_binary_ufunc(torch_func):
     the pytorch functions for the actual work.
     """
 
+    @normalizer
     def wrapped(
         x1: ArrayLike,
         x2: ArrayLike,
@@ -54,7 +58,7 @@ def deco_binary_ufunc(torch_func):
         casting="same_kind",
         order="K",
         dtype: DTypeLike = None,
-        subok: SubokLike = False,
+        subok: NotImplementedType = False,
         signature=None,
         extobj=None,
     ):
@@ -85,20 +89,17 @@ def matmul(
     out: Optional[OutArray] = None,
     *,
     casting="same_kind",
-    order="K",
+    order: NotImplementedType = "K",
     dtype: DTypeLike = None,
-    subok: SubokLike = False,
-    signature=None,
-    extobj=None,
-    axes=None,
-    axis=None,
+    subok: NotImplementedType = False,
+    signature: NotImplementedType = None,
+    extobj: NotImplementedType = None,
+    axes: NotImplementedType = None,
+    axis: NotImplementedType = None,
 ):
     tensors = _ufunc_preprocess(
         (x1, x2), True, casting, order, dtype, subok, signature, extobj
     )
-    if axis is not None or axes is not None:
-        raise NotImplementedError
-
     result = _binary_ufuncs_impl.matmul(*tensors)
 
     result = _ufunc_postprocess(result, out, casting)
@@ -117,13 +118,13 @@ def divmod(
     /,
     out: tuple[Optional[OutArray], Optional[OutArray]] = (None, None),
     *,
-    where=True,
+    where: NotImplementedType = True,
     casting="same_kind",
-    order="K",
+    order: NotImplementedType = "K",
     dtype: DTypeLike = None,
-    subok: SubokLike = False,
-    signature=None,
-    extobj=None,
+    subok: NotImplementedType = False,
+    signature: NotImplementedType = None,
+    extobj: NotImplementedType = None,
 ):
     # make sure we either have no out arrays at all, or there is either
     # out1, out2, or out=tuple, but not both
@@ -151,13 +152,11 @@ def divmod(
 
 
 #
-# For each torch ufunc implementation, decorate and attach the decorated name
-# to this module. Its contents is then exported to the public namespace in __init__.py
+# Attach ufuncs to this module, for a further export to the public namespace in __init__.py
 #
 for name in _binary:
     ufunc = getattr(_binary_ufuncs_impl, name)
-    decorated = normalizer(deco_binary_ufunc(ufunc))
-    vars()[name] = decorated
+    vars()[name] = deco_binary_ufunc(ufunc)
 
 
 def modf(x, /, *args, **kwds):
@@ -185,6 +184,7 @@ def deco_unary_ufunc(torch_func):
     the pytorch functions for the actual work.
     """
 
+    @normalizer
     def wrapped(
         x: ArrayLike,
         /,
@@ -194,7 +194,7 @@ def deco_unary_ufunc(torch_func):
         casting="same_kind",
         order="K",
         dtype: DTypeLike = None,
-        subok: SubokLike = False,
+        subok: NotImplementedType = False,
         signature=None,
         extobj=None,
     ):
@@ -212,13 +212,11 @@ def deco_unary_ufunc(torch_func):
 
 
 #
-# For each torch ufunc implementation, decorate and attach the decorated name
-# to this module. Its contents is then exported to the public namespace in __init__.py
+# Attach ufuncs to this module, for a further export to the public namespace in __init__.py
 #
 for name in _unary:
     ufunc = getattr(_unary_ufuncs_impl, name)
-    decorated = normalizer(deco_unary_ufunc(ufunc))
-    vars()[name] = decorated
+    vars()[name] = deco_unary_ufunc(ufunc)
 
 
 __all__ = _binary + _unary
