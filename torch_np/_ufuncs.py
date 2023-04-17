@@ -47,6 +47,7 @@ def deco_binary_ufunc(torch_func):
     the pytorch functions for the actual work.
     """
 
+    @normalizer
     def wrapped(
         x1: ArrayLike,
         x2: ArrayLike,
@@ -151,13 +152,11 @@ def divmod(
 
 
 #
-# For each torch ufunc implementation, decorate and attach the decorated name
-# to this module. Its contents is then exported to the public namespace in __init__.py
+# Attach ufuncs to this module, for a further export to the public namespace in __init__.py
 #
 for name in _binary:
     ufunc = getattr(_binary_ufuncs_impl, name)
-    decorated = normalizer(deco_binary_ufunc(ufunc))
-    vars()[name] = decorated
+    vars()[name] = deco_binary_ufunc(ufunc)
 
 
 def modf(x, /, *args, **kwds):
@@ -185,6 +184,7 @@ def deco_unary_ufunc(torch_func):
     the pytorch functions for the actual work.
     """
 
+    @normalizer
     def wrapped(
         x: ArrayLike,
         /,
@@ -212,13 +212,11 @@ def deco_unary_ufunc(torch_func):
 
 
 #
-# For each torch ufunc implementation, decorate and attach the decorated name
-# to this module. Its contents is then exported to the public namespace in __init__.py
+# Attach ufuncs to this module, for a further export to the public namespace in __init__.py
 #
 for name in _unary:
     ufunc = getattr(_unary_ufuncs_impl, name)
-    decorated = normalizer(deco_unary_ufunc(ufunc))
-    vars()[name] = decorated
+    vars()[name] = deco_unary_ufunc(ufunc)
 
 
 __all__ = _binary + _unary
