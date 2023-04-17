@@ -7,7 +7,6 @@ import torch
 
 from . import _dtypes_impl
 
-NoValue = None
 
 # https://github.com/numpy/numpy/blob/v1.23.0/numpy/distutils/misc_util.py#L497-L504
 def is_sequence(seq):

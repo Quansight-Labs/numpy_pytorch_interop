@@ -28,9 +28,6 @@ from ._normalizations import (
     normalize_array_like,
 )
 
-NoValue = _util.NoValue
-
-
 ###### array creation routines
 
 
@@ -44,7 +41,7 @@ def copyto(
     dst: NDArray,
     src: ArrayLike,
     casting="same_kind",
-    where: NotImplementedType = NoValue,
+    where: NotImplementedType = None,
 ):
     (src,) = _util.typecast_tensors((src,), dst.dtype, casting=casting)
     dst.copy_(src)
@@ -511,8 +508,8 @@ def corrcoef(
     x: ArrayLike,
     y: Optional[ArrayLike] = None,
     rowvar=True,
-    bias=NoValue,
-    ddof=NoValue,
+    bias=None,
+    ddof=None,
     *,
     dtype: DTypeLike = None,
 ):
@@ -762,9 +759,9 @@ def nanmean(
     axis=None,
     dtype: DTypeLike = None,
     out: Optional[OutArray] = None,
-    keepdims=NoValue,
+    keepdims=None,
     *,
-    where: NotImplementedType = NoValue,
+    where: NotImplementedType = None,
 ):
     # XXX: this needs to be rewritten
     if dtype is None:
@@ -1403,9 +1400,9 @@ def sum(
     axis: AxisLike = None,
     dtype: DTypeLike = None,
     out: Optional[OutArray] = None,
-    keepdims=NoValue,
-    initial: NotImplementedType = NoValue,
-    where: NotImplementedType = NoValue,
+    keepdims=None,
+    initial: NotImplementedType = None,
+    where: NotImplementedType = None,
 ):
     result = _impl.sum(
         a, axis=axis, dtype=dtype, initial=initial, where=where, keepdims=keepdims
@@ -1418,9 +1415,9 @@ def prod(
     axis: AxisLike = None,
     dtype: DTypeLike = None,
     out: Optional[OutArray] = None,
-    keepdims=NoValue,
-    initial: NotImplementedType = NoValue,
-    where: NotImplementedType = NoValue,
+    keepdims=None,
+    initial: NotImplementedType = None,
+    where: NotImplementedType = None,
 ):
     result = _impl.prod(
         a, axis=axis, dtype=dtype, initial=initial, where=where, keepdims=keepdims
@@ -1436,11 +1433,11 @@ def mean(
     axis: AxisLike = None,
     dtype: DTypeLike = None,
     out: Optional[OutArray] = None,
-    keepdims=NoValue,
+    keepdims=None,
     *,
-    where: NotImplementedType = NoValue,
+    where: NotImplementedType = None,
 ):
-    result = _impl.mean(a, axis=axis, dtype=dtype, where=NoValue, keepdims=keepdims)
+    result = _impl.mean(a, axis=axis, dtype=dtype, where=None, keepdims=keepdims)
     return result
 
 
@@ -1450,9 +1447,9 @@ def var(
     dtype: DTypeLike = None,
     out: Optional[OutArray] = None,
     ddof=0,
-    keepdims=NoValue,
+    keepdims=None,
     *,
-    where: NotImplementedType = NoValue,
+    where: NotImplementedType = None,
 ):
     result = _impl.var(
         a, axis=axis, dtype=dtype, ddof=ddof, where=where, keepdims=keepdims
@@ -1466,9 +1463,9 @@ def std(
     dtype: DTypeLike = None,
     out: Optional[OutArray] = None,
     ddof=0,
-    keepdims=NoValue,
+    keepdims=None,
     *,
-    where: NotImplementedType = NoValue,
+    where: NotImplementedType = None,
 ):
     result = _impl.std(
         a, axis=axis, dtype=dtype, ddof=ddof, where=where, keepdims=keepdims
@@ -1481,7 +1478,7 @@ def argmin(
     axis: AxisLike = None,
     out: Optional[OutArray] = None,
     *,
-    keepdims=NoValue,
+    keepdims=None,
 ):
     result = _impl.argmin(a, axis=axis, keepdims=keepdims)
     return result
@@ -1492,7 +1489,7 @@ def argmax(
     axis: AxisLike = None,
     out: Optional[OutArray] = None,
     *,
-    keepdims=NoValue,
+    keepdims=None,
 ):
     result = _impl.argmax(a, axis=axis, keepdims=keepdims)
     return result
@@ -1502,9 +1499,9 @@ def amax(
     a: ArrayLike,
     axis: AxisLike = None,
     out: Optional[OutArray] = None,
-    keepdims=NoValue,
-    initial: NotImplementedType = NoValue,
-    where: NotImplementedType = NoValue,
+    keepdims=None,
+    initial: NotImplementedType = None,
+    where: NotImplementedType = None,
 ):
     result = _impl.max(a, axis=axis, initial=initial, where=where, keepdims=keepdims)
     return result
@@ -1517,9 +1514,9 @@ def amin(
     a: ArrayLike,
     axis: AxisLike = None,
     out: Optional[OutArray] = None,
-    keepdims=NoValue,
-    initial: NotImplementedType = NoValue,
-    where: NotImplementedType = NoValue,
+    keepdims=None,
+    initial: NotImplementedType = None,
+    where: NotImplementedType = None,
 ):
     result = _impl.min(a, axis=axis, initial=initial, where=where, keepdims=keepdims)
     return result
@@ -1532,7 +1529,7 @@ def ptp(
     a: ArrayLike,
     axis: AxisLike = None,
     out: Optional[OutArray] = None,
-    keepdims=NoValue,
+    keepdims=None,
 ):
     result = _impl.ptp(a, axis=axis, keepdims=keepdims)
     return result
@@ -1542,9 +1539,9 @@ def all(
     a: ArrayLike,
     axis: AxisLike = None,
     out: Optional[OutArray] = None,
-    keepdims=NoValue,
+    keepdims=None,
     *,
-    where: NotImplementedType = NoValue,
+    where: NotImplementedType = None,
 ):
     result = _impl.all(a, axis=axis, where=where, keepdims=keepdims)
     return result
@@ -1554,9 +1551,9 @@ def any(
     a: ArrayLike,
     axis: AxisLike = None,
     out: Optional[OutArray] = None,
-    keepdims=NoValue,
+    keepdims=None,
     *,
-    where: NotImplementedType = NoValue,
+    where: NotImplementedType = None,
 ):
     result = _impl.any(a, axis=axis, where=where, keepdims=keepdims)
     return result
@@ -1659,7 +1656,7 @@ def average(
     weights: ArrayLike = None,
     returned=False,
     *,
-    keepdims=NoValue,
+    keepdims=None,
 ):
     result, wsum = _impl.average(a, axis, weights, returned=returned, keepdims=keepdims)
     if returned:
@@ -1672,8 +1669,8 @@ def diff(
     a: ArrayLike,
     n=1,
     axis=-1,
-    prepend: Optional[ArrayLike] = NoValue,
-    append: Optional[ArrayLike] = NoValue,
+    prepend: Optional[ArrayLike] = None,
+    append: Optional[ArrayLike] = None,
 ):
     axis = _util.normalize_axis_index(axis, a.ndim)
 

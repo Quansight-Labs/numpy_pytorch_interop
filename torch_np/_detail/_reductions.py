@@ -4,16 +4,12 @@ in the 'public' layer.
 Anything here only deals with torch objects, e.g. "dtype" is a torch.dtype instance etc
 """
 
+import functools
 import typing
 
 import torch
 
 from . import _dtypes_impl, _util
-
-NoValue = _util.NoValue
-
-
-import functools
 
 ############# XXX
 ### From _util.axis_expand_func
@@ -51,7 +47,7 @@ def deco_axis_expand(func):
 
 def emulate_keepdims(func):
     @functools.wraps(func)
-    def wrapped(tensor, axis=None, keepdims=NoValue, *args, **kwds):
+    def wrapped(tensor, axis=None, keepdims=None, *args, **kwds):
         result = func(tensor, axis=axis, *args, **kwds)
         if keepdims:
             result = _util.apply_keepdims(result, axis, tensor.ndim)
@@ -133,7 +129,7 @@ def argmin(tensor, axis=None):
 
 @emulate_keepdims
 @deco_axis_expand
-def any(tensor, axis=None, *, where=NoValue):
+def any(tensor, axis=None, *, where=None):
     axis = _util.allow_only_single_axis(axis)
 
     if axis is None:
@@ -145,7 +141,7 @@ def any(tensor, axis=None, *, where=NoValue):
 
 @emulate_keepdims
 @deco_axis_expand
-def all(tensor, axis=None, *, where=NoValue):
+def all(tensor, axis=None, *, where=None):
     axis = _util.allow_only_single_axis(axis)
 
     if axis is None:
@@ -157,13 +153,13 @@ def all(tensor, axis=None, *, where=NoValue):
 
 @emulate_keepdims
 @deco_axis_expand
-def max(tensor, axis=None, initial=NoValue, where=NoValue):
+def max(tensor, axis=None, initial=None, where=None):
     return tensor.amax(axis)
 
 
 @emulate_keepdims
 @deco_axis_expand
-def min(tensor, axis=None, initial=NoValue, where=NoValue):
+def min(tensor, axis=None, initial=None, where=None):
     return tensor.amin(axis)
 
 
@@ -175,7 +171,7 @@ def ptp(tensor, axis=None):
 
 @emulate_keepdims
 @deco_axis_expand
-def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
+def sum(tensor, axis=None, dtype=None, initial=None, where=None):
     assert dtype is None or isinstance(dtype, torch.dtype)
 
     if dtype == torch.bool:
@@ -191,7 +187,7 @@ def sum(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
 
 @emulate_keepdims
 @deco_axis_expand
-def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
+def prod(tensor, axis=None, dtype=None, initial=None, where=None):
     axis = _util.allow_only_single_axis(axis)
 
     if dtype == torch.bool:
@@ -207,7 +203,7 @@ def prod(tensor, axis=None, dtype=None, initial=NoValue, where=NoValue):
 
 @emulate_keepdims
 @deco_axis_expand
-def mean(tensor, axis=None, dtype=None, *, where=NoValue):
+def mean(tensor, axis=None, dtype=None, *, where=None):
     dtype = _atleast_float(dtype, tensor.dtype)
 
     is_half = dtype == torch.float16
@@ -228,7 +224,7 @@ def mean(tensor, axis=None, dtype=None, *, where=NoValue):
 
 @emulate_keepdims
 @deco_axis_expand
-def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
+def std(tensor, axis=None, dtype=None, ddof=0, *, where=None):
     dtype = _atleast_float(dtype, tensor.dtype)
     tensor = _util.cast_if_needed(tensor, dtype)
     result = tensor.std(dim=axis, correction=ddof)
@@ -238,7 +234,7 @@ def std(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
 
 @emulate_keepdims
 @deco_axis_expand
-def var(tensor, axis=None, dtype=None, ddof=0, *, where=NoValue):
+def var(tensor, axis=None, dtype=None, ddof=0, *, where=None):
     dtype = _atleast_float(dtype, tensor.dtype)
     tensor = _util.cast_if_needed(tensor, dtype)
     result = tensor.var(dim=axis, correction=ddof)
