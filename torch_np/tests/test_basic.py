@@ -520,9 +520,10 @@ class TestDefaultDtype:
 
         assert w.arange(3).dtype.torch_dtype == torch.int64
 
-    def test_set_default_float(self):
+    @pytest.mark.parametrize("dt", ["pytorch", "float32", torch.float32])
+    def test_set_default_float(self, dt):
         try:
-            w.set_default_dtype(fp_dtype="float32")
+            w.set_default_dtype(fp_dtype=dt)
 
             x = w.empty(3)
             z = x + 1j * x

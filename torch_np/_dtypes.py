@@ -350,20 +350,25 @@ def set_default_dtype(fp_dtype="numpy", int_dtype="numpy"):
     ----------
     fp_dtype
         Allowed values are "numpy", "pytorch" or dtype_like things which
-        can be converted into a tnp.DType instance.
+        can be converted into a DType instance.
         Default is "numpy" (i.e. float64).
     int_dtype
         Allowed values are "numpy", "pytorch" or dtype_like things which
-        can be converted into a tnp.DType instance.
+        can be converted into a DType instance.
         Default is "numpy" (i.e. int64).
 
     Returns
     -------
-    The old default dtype state, i.e. a DefaultDTypes object.
+    The old default dtype state: a namedtuple with attributes ``float_dtype``,
+    ``complex_dtypes`` and ``int_dtype``. These attributes store *pytorch*
+    dtypes.
 
-    Side effects
+    Notes
     ------------
-    Sets the new global state (`_dtypes_impl.default_dtypes`) with the provided dtypes.
+    This functions has a side effect: it sets the global state with the provided dtypes.
+
+    The complex dtype has bit width of at least twice the width of the float
+    dtype, i.e. it's complex128 for float64 and complex64 for float64.
 
     """
     if fp_dtype not in ["numpy", "pytorch"]:
@@ -371,7 +376,27 @@ def set_default_dtype(fp_dtype="numpy", int_dtype="numpy"):
     if int_dtype not in ["numpy", "pytorch"]:
         int_dtype = dtype(int_dtype).torch_dtype
 
-    new_defaults = _dtypes_impl.DefaultDTypes(fp_dtype, int_dtype)
+    if fp_dtype == "numpy":
+        float_dtype = _dtypes_impl.default_dtypes_numpy.float_dtype
+    elif fp_dtype == "pytorch":
+        float_dtype = torch.float32
+    else:
+        float_dtype = fp_dtype
+
+    complex_dtype = {
+        torch.float64: torch.complex128,
+        torch.float32: torch.complex64,
+        torch.float16: torch.complex64,
+    }[float_dtype]
+
+    if int_dtype in ["numpy", "pytorch"]:
+        int_dtype = _dtypes_impl.default_dtypes_numpy.int_dtype
+    else:
+        int_dtype = int_dtype
+
+    new_defaults = _dtypes_impl.DefaultDTypes(
+        float_dtype=float_dtype, complex_dtype=complex_dtype, int_dtype=int_dtype
+    )
 
     # set the new global state and return the old state
     old_defaults = _dtypes_impl.default_dtypes

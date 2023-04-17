@@ -3,44 +3,21 @@
 Here `dtype` is always a torch.dtype, this module knows nothing about
 scalar types, wrapper dtypes or anything like that. PyTorch only.
 """
+from collections import namedtuple
+
 import torch
 
 #### defaults : mimic NumPy, allow user control
-
-
-class DefaultDTypes:
-    """A bag class for dtype defaults."""
-
-    def __init__(self, fp_dtype="numpy", int_dtype="pytorch"):
-
-        if not (fp_dtype in ["numpy", "pytorch"] or isinstance(fp_dtype, torch.dtype)):
-            raise TypeError(f"failed to interpter {fp_dtype} as torch.dtype.")
-        if not (
-            int_dtype in ["numpy", "pytorch"] or isinstance(int_dtype, torch.dtype)
-        ):
-            raise TypeError(f"failed to interpter {int_dtype} as torch.dtype.")
-
-        if fp_dtype == "numpy":
-            self.float_dtype = torch.float64
-        elif fp_dtype == "pytorch":
-            self.float_dtype = torch.float32
-        else:
-            self.float_dtype = fp_dtype
-
-        self.complex_dtype = {
-            torch.float64: torch.complex128,
-            torch.float32: torch.complex64,
-            torch.float16: torch.complex64,
-        }[self.float_dtype]
-
-        if int_dtype in ["numpy", "pytorch"]:
-            self.int_dtype = torch.int64
-        else:
-            self.int_dtype = int_dtype
-
+DefaultDTypes = namedtuple(
+    "DefaultDTypes", ["float_dtype", "complex_dtype", "int_dtype"]
+)
 
 # a global state: NumPy defaults
-default_dtypes = DefaultDTypes()
+default_dtypes_numpy = DefaultDTypes(
+    float_dtype=torch.float64, complex_dtype=torch.complex128, int_dtype=torch.int64
+)
+
+default_dtypes = default_dtypes_numpy
 
 
 def get_default_dtype_for(dtype):
