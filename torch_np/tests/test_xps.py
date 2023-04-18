@@ -125,9 +125,16 @@ def test_put(np_x, data):
 
     note(f"{tnp_x=}")
     tnp_ind = []
-    for np_indices in ind:
-        tnp_indices = tnp.asarray(np_indices).astype(np_indices.dtype.name)
-        tnp_ind.append(tnp_indices)
+    list_at_ind = data.draw(
+        st.lists(st.booleans(), min_size=len(ind), max_size=len(ind)),
+        label="list_at_ind",
+    )
+    for np_indices, use_list in zip(ind, list_at_ind):
+        if use_list:
+            indices = np_indices.tolist()
+        else:
+            indices = tnp.asarray(np_indices).astype(np_indices.dtype.name)
+        tnp_ind.append(indices)
     tnp_ind = tuple(tnp_ind)
     note(f"{tnp_ind=}")
     tnp_v = tnp.asarray(v.copy()).astype(v.dtype.name)

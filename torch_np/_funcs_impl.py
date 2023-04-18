@@ -900,7 +900,11 @@ def put(
     v: ArrayLike,
     mode: NotImplementedType = "raise",
 ):
-    index = torch.concat(ind)
+    indexes = list(ind)
+    for i, index in enumerate(indexes):
+        if not isinstance(index, torch.Tensor):
+            indexes[i] = torch.as_tensor(index)
+    index = torch.concat(indexes)
     index[index < 0] += a.numel()  # normalise negative indices
     index_u, index_c = torch.unique(index, return_counts=True)
     duplicated_indices = index_u[index_c > 1]
@@ -911,7 +915,9 @@ def put(
         )
     source = v
     if source.numel() < index.numel():
-        source = torch.broadcast_to(source, index.size())
+        numel_ratio = float(index.numel() / source.numel())
+        if numel_ratio.is_integer():
+            source = torch.stack([source for _ in range(int(numel_ratio))])
     a.put_(index, source)
     return None
 
