@@ -344,7 +344,11 @@ typecodes = {
 
 
 def set_default_dtype(fp_dtype="numpy", int_dtype="numpy"):
-    """Set the (global) defaults for fp and int dtypes.
+    """Set the (global) defaults for fp, complex, and int dtypes.
+    
+    The complex dtype is inferred from the float (fp) dtype. It has 
+    a width at least twice the width of the float dtype, 
+    i.e., it's complex128 for float64 and complex64 for float32.
 
     Parameters
     ----------
