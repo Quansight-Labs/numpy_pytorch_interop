@@ -900,6 +900,7 @@ def put(
     v: ArrayLike,
     mode: NotImplementedType = "raise",
 ):
+    v = v.type(a.dtype)
     numel_ratio = ind.numel() / v.numel()
     if numel_ratio.is_integer():
         sizes = [int(numel_ratio)]

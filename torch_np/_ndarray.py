@@ -409,6 +409,9 @@ class ndarray:
             value = _util.cast_if_needed(value, self.tensor.dtype)
         return self.tensor.__setitem__(index, value)
 
+    take = _funcs.take
+    put = _funcs.put
+
 
 # This is the ideally the only place which talks to ndarray directly.
 # The rest goes through asarray (preferred) or array.
