@@ -10,7 +10,7 @@ Copyright (c) 2015 Alberto Santini - MIT License
 Code adapted from Alberto Santini implementation available at:
 https://github.com/albertosantini/python-fluid
 """
-import numpy as np
+import torch_np as np
 
 
 def set_bnd(N, b, x):

@@ -41,3 +41,16 @@ For plotting with matplotlib, convert torch_numpy arrays to numpy via
 
 
 
+Diffusion/advection
+-------------------
+
+Origin: N. Rougier, From python to numpy,
+https://github.com/rougier/from-python-to-numpy/blob/master/code/{smoke_solver,smoke_1,smoke_2}.py
+
+Source: `e2e/smoke`
+
+Tweaks
+------
+
+ - fix a bug in bool array minus bool array (fails on numpy 1.24)
+ - inline np.fromfunction into a call to np.indices
