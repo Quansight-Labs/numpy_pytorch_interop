@@ -183,7 +183,10 @@ if __name__ == '__main__':
         
     # P = BreadthFirst(Z, start, goal)
     # X, Y = P[:,1], P[:,0]
-    
+
+    print("Z = ", Z)
+    print("P = ", P)
+
     # Visualization maze, gradient and shortest path
     plt.figure(figsize=(13, 13*Z.shape[0]/Z.shape[1]))
     ax = plt.subplot(1, 1, 1, frameon=False)
