@@ -1,6 +1,6 @@
 import torch
 
-from ._detail import _dtypes_impl, _util
+from . import _dtypes_impl, _util
 
 
 def ndarrays_to_tensors(*inputs):

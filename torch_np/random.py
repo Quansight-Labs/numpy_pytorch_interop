@@ -12,11 +12,10 @@ from typing import Optional
 
 import torch
 
-from . import _helpers
-from ._detail import _dtypes_impl, _util
+from . import _dtypes_impl, _helpers, _util
 from ._normalizations import ArrayLike, array_or_scalar, normalizer
 
-_default_dtype = _dtypes_impl.default_float_dtype
+_default_dtype = _dtypes_impl.default_dtypes.float_dtype
 
 __all__ = [
     "seed",

@@ -42,7 +42,7 @@ from torch import remainder
 from torch import remainder as mod
 from torch import subtract, true_divide
 
-from ._detail import _dtypes_impl, _util
+from . import _dtypes_impl, _util
 
 
 # work around torch limitations w.r.t. numpy

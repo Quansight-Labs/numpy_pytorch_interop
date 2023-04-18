@@ -2,8 +2,7 @@ import operator
 
 import torch
 
-from . import _dtypes, _funcs, _funcs_impl, _helpers, _ufuncs
-from ._detail import _dtypes_impl, _util
+from . import _dtypes, _dtypes_impl, _funcs, _funcs_impl, _helpers, _ufuncs, _util
 from ._normalizations import ArrayLike, normalizer
 
 newaxis = None

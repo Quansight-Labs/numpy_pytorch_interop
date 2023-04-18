@@ -86,7 +86,7 @@ def _atleast_float(dtype, other_dtype):
     if dtype is None:
         dtype = other_dtype
     if not (dtype.is_floating_point or dtype.is_complex):
-        return _dtypes_impl.default_float_dtype
+        return _dtypes_impl.default_dtypes.float_dtype
     return dtype
 
 
@@ -175,7 +175,7 @@ def sum(tensor, axis=None, dtype=None, initial=None, where=None):
     assert dtype is None or isinstance(dtype, torch.dtype)
 
     if dtype == torch.bool:
-        dtype = _dtypes_impl.default_int_dtype
+        dtype = _dtypes_impl.default_dtypes.int_dtype
 
     if axis is None:
         result = tensor.sum(dtype=dtype)
@@ -191,7 +191,7 @@ def prod(tensor, axis=None, dtype=None, initial=None, where=None):
     axis = _util.allow_only_single_axis(axis)
 
     if dtype == torch.bool:
-        dtype = _dtypes_impl.default_int_dtype
+        dtype = _dtypes_impl.default_dtypes.int_dtype
 
     if axis is None:
         result = tensor.prod(dtype=dtype)
@@ -250,7 +250,7 @@ def var(tensor, axis=None, dtype=None, ddof=0, *, where=None):
 @deco_axis_ravel
 def cumprod(tensor, axis, dtype=None):
     if dtype == torch.bool:
-        dtype = _dtypes_impl.default_int_dtype
+        dtype = _dtypes_impl.default_dtypes.int_dtype
     if dtype is None:
         dtype = tensor.dtype
 
@@ -262,7 +262,7 @@ def cumprod(tensor, axis, dtype=None):
 @deco_axis_ravel
 def cumsum(tensor, axis, dtype=None):
     if dtype == torch.bool:
-        dtype = _dtypes_impl.default_int_dtype
+        dtype = _dtypes_impl.default_dtypes.int_dtype
     if dtype is None:
         dtype = tensor.dtype
 
@@ -354,7 +354,7 @@ def quantile(
         pass
 
     if not a.dtype.is_floating_point:
-        dtype = _dtypes_impl.default_float_dtype
+        dtype = _dtypes_impl.default_dtypes.float_dtype
         a = a.to(dtype)
 
     # edge case: torch.quantile only supports float32 and float64

@@ -2,13 +2,14 @@ import pytest
 from pytest import raises as assert_raises
 
 import torch_np as np
-import torch_np._detail._util as _util
 from torch_np.testing import (
     assert_allclose,
     assert_almost_equal,
     assert_array_equal,
     assert_equal,
 )
+
+from .. import _util
 
 
 class TestFlatnonzero:
