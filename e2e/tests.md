@@ -34,5 +34,10 @@ Source: `e2e/maze`
 Tweaks
 ------
 
-Seed the numpy random generator.
+Seed the numpy random generator, use the same random stream.
+
+For plotting with matplotlib, convert torch_numpy arrays to numpy via
+`Z = Z.tensor.numpy()`.
+
+
 

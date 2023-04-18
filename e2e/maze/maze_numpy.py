@@ -3,12 +3,14 @@
 # Copyright (2017) Nicolas P. Rougier - BSD license
 # More information at https://github.com/rougier/numpy-book
 # -----------------------------------------------------------------------------
-import numpy as np
+import numpy as _np
+import torch_np as np
+
 from collections import deque
 import matplotlib.pyplot as plt
 ## from scipy.ndimage import generic_filter
 
-np.random.seed(1234)
+_np.random.seed(1234)
 
 
 def build_maze(shape=(65,65), complexity=0.75, density = 0.50):
@@ -43,7 +45,9 @@ def build_maze(shape=(65,65), complexity=0.75, density = 0.50):
     Z[0,:] = Z[-1,:] = Z[:,0] = Z[:,-1] = 1
 
     # Islands starting point with a bias in favor of border
-    P = np.random.normal(0, 0.5, (n_density,2))
+    P = _np.random.normal(0, 0.5, (n_density,2))
+    P = np.asarray(P)
+
     P = 0.5 - np.maximum(-0.5, np.minimum(P, +0.5))
     P = (P*[shape[1],shape[0]]).astype(int)
     P = 2*(P//2)
@@ -70,7 +74,8 @@ def build_maze(shape=(65,65), complexity=0.75, density = 0.50):
             if y < shape[0]-2:
                 neighbours.append([(y+1, x), (y+2, x)])
             if len(neighbours):
-                choice = np.random.randint(len(neighbours))
+                choice = _np.random.randint(len(neighbours))
+                choice = np.asarray(choice)
                 next_1, next_2 = neighbours[choice]
                 if Z[next_2] == 0:
                     Z[next_1] = Z[next_2] = 1
@@ -187,6 +192,11 @@ if __name__ == '__main__':
     print("Z = ", Z)
     print("P = ", P)
 
+    X = X.tensor.numpy()
+    Y = Y.tensor.numpy()    
+    Z = Z.tensor.numpy()
+    G = G.tensor.numpy()
+
     # Visualization maze, gradient and shortest path
     plt.figure(figsize=(13, 13*Z.shape[0]/Z.shape[1]))
     ax = plt.subplot(1, 1, 1, frameon=False)
@@ -201,5 +211,5 @@ if __name__ == '__main__':
     ax.set_xticks([])
     ax.set_yticks([])
     plt.tight_layout()
-    plt.savefig("maze.png")
+    plt.savefig("maze_tnp.png")
     plt.show()
