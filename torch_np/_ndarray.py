@@ -442,6 +442,9 @@ class ndarray:
         index = _helpers.ndarrays_to_tensors(index)
         index = ndarray._upcast_int_indices(index)
         value = _helpers.ndarrays_to_tensors(value)
+
+        if isinstance(value, torch.Tensor):
+            value = _util.cast_if_needed(value, self.tensor.dtype)
         return self.tensor.__setitem__(index, value)
 
     take = _funcs.take
