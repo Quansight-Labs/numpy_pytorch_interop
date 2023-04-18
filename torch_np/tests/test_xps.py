@@ -139,10 +139,7 @@ def test_put(np_x, data):
     note(f"{tnp_ind=}")
     tnp_v = tnp.asarray(v.copy()).astype(v.dtype.name)
     note(f"{tnp_v=}")
-    try:
-        tnp.put(tnp_x, tnp_ind, tnp_v)
-    except NotImplementedError:
-        return
+    tnp.put(tnp_x, tnp_ind, tnp_v)
     note(f"(after put) {tnp_x=}")
 
     assert_array_equal(tnp_x, tnp.asarray(np_x).astype(tnp_x.dtype))

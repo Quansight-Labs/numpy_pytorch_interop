@@ -896,29 +896,15 @@ def take_along_axis(arr: ArrayLike, indices: ArrayLike, axis):
 
 def put(
     a: ArrayLike,
-    ind: Sequence[ArrayLike],
+    ind: ArrayLike,
     v: ArrayLike,
     mode: NotImplementedType = "raise",
 ):
-    indexes = list(ind)
-    for i, index in enumerate(indexes):
-        if not isinstance(index, torch.Tensor):
-            indexes[i] = torch.as_tensor(index)
-    index = torch.concat(indexes)
-    index[index < 0] += a.numel()  # normalise negative indices
-    index_u, index_c = torch.unique(index, return_counts=True)
-    duplicated_indices = index_u[index_c > 1]
-    if duplicated_indices.numel() > 0:
-        raise NotImplementedError(
-            "duplicated indices are not supported. duplicated indices: "
-            f"{duplicated_indices}"
-        )
-    source = v
-    if source.numel() < index.numel():
-        numel_ratio = float(index.numel() / source.numel())
+    if v.numel() < ind.numel():
+        numel_ratio = float(ind.numel() / v.numel())
         if numel_ratio.is_integer():
-            source = torch.stack([source for _ in range(int(numel_ratio))])
-    a.put_(index, source)
+            v = torch.stack([v for _ in range(int(numel_ratio))])
+    a.put_(ind, v)
     return None
 
 
