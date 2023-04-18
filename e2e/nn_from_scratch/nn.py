@@ -72,6 +72,9 @@ def f_forward(x, w1, w2):
 
 # initializing the weights randomly
 def generate_wt(x, y):
+
+    np.random.seed(1234)
+
     l =[]
     for i in range(x * y):
         l.append(np.random.randn())
