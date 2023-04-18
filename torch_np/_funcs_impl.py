@@ -900,10 +900,11 @@ def put(
     v: ArrayLike,
     mode: NotImplementedType = "raise",
 ):
-    if v.numel() < ind.numel():
-        numel_ratio = float(ind.numel() / v.numel())
-        if numel_ratio.is_integer():
-            v = torch.stack([v for _ in range(int(numel_ratio))])
+    numel_ratio = ind.numel() / v.numel()
+    if numel_ratio.is_integer():
+        sizes = [int(numel_ratio)]
+        sizes.extend([1 for _ in range(v.dim() - 1)])
+        v = v.repeat(*sizes)
     a.put_(ind, v)
     return None
 
