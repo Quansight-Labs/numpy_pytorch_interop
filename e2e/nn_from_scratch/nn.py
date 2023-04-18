@@ -1,8 +1,8 @@
 # from https://www.geeksforgeeks.org/implementation-of-neural-network-from-scratch-using-numpy/
 
 
-import numpy as np
-#import torch_np as np
+import numpy as _np
+import torch_np as np
 
 # Creating data set
  
@@ -73,11 +73,11 @@ def f_forward(x, w1, w2):
 # initializing the weights randomly
 def generate_wt(x, y):
 
-    np.random.seed(1234)
+    _np.random.seed(1234)
 
     l =[]
     for i in range(x * y):
-        l.append(np.random.randn())
+        l.append(_np.random.randn())
     return(np.array(l).reshape(x, y))
     
 # for loss we will be using mean square error(MSE)
