@@ -2670,7 +2670,7 @@ class TestMethods:
         # when calling np.put, make sure a
         # TypeError is raised if the object
         # isn't an ndarray
-        pytest.xfail("XXX: Argument normalisation prevents catching this")
+        pytest.xfail(reason="XXX: Argument normalisation prevents catching this")
         bad_array = [1, 2, 3]
         assert_raises(TypeError, np.put, bad_array, [0, 2], 5)
 
@@ -7377,7 +7377,6 @@ class TestFormat:
 from numpy.testing import IS_PYPY
 
 
-@pytest.mark.skip(reason="not going to implement WRITEBACKIFCOPY")
 class TestWritebackIfCopy:
     # all these tests use the WRITEBACKIFCOPY mechanism
     def test_argmax_with_out(self):
@@ -7392,6 +7391,7 @@ class TestWritebackIfCopy:
         res = np.argmin(mat, 0, out=out)
         assert_equal(res, range(5))
 
+    @pytest.mark.xfail(reason="XXX: place()")
     def test_insert_noncontiguous(self):
         a = np.arange(6).reshape(2,3).T # force non-c-contiguous
         # uses arr_insert
@@ -7402,9 +7402,11 @@ class TestWritebackIfCopy:
 
     def test_put_noncontiguous(self):
         a = np.arange(6).reshape(2,3).T # force non-c-contiguous
+        assert not a.flags["C_CONTIGUOUS"]  # sanity check
         np.put(a, [0, 2], [44, 55])
         assert_equal(a, np.array([[44, 3], [55, 4], [2, 5]]))
 
+    @pytest.mark.xfail(reason="XXX: putmask()")
     def test_putmask_noncontiguous(self):
         a = np.arange(6).reshape(2,3).T # force non-c-contiguous
         # uses arr_putmask
@@ -7417,6 +7419,7 @@ class TestWritebackIfCopy:
         np.take(a, [0, 2], out=out, mode='raise')
         assert_equal(out, np.array([0, 2]))
 
+    @pytest.mark.xfail(reason="XXX: choose()")
     def test_choose_mod_raise(self):
         a = np.array([[1, 0, 1], [0, 1, 0], [1, 0, 1]])
         out = np.empty((3,3), dtype='int')
@@ -7426,6 +7429,7 @@ class TestWritebackIfCopy:
                                     [-10,  10, -10],
                                     [ 10, -10,  10]]))
 
+    @pytest.mark.xfail(reason="XXX: ndarray.flat")
     def test_flatiter__array__(self):
         a = np.arange(9).reshape(3,3)
         b = a.T.flat
@@ -7439,6 +7443,7 @@ class TestWritebackIfCopy:
         b = np.dot(a, a, out=a)
         assert_equal(b, np.array([[15, 18, 21], [42, 54, 66], [69, 90, 111]]))
 
+    @pytest.mark.skip(reason="XXX: npy_create_writebackifcopy()")
     def test_view_assign(self):
         from numpy.core._multiarray_tests import npy_create_writebackifcopy, npy_resolve
 
@@ -7457,6 +7462,7 @@ class TestWritebackIfCopy:
         arr_wb[...] = 100
         assert_equal(arr, -100)
 
+    @pytest.mark.skip(reason="XXX: npy_create_writebackifcopy()")
     @pytest.mark.leaks_references(
             reason="increments self in dealloc; ignore since deprecated path.")
     def test_dealloc_warning(self):
@@ -7467,6 +7473,7 @@ class TestWritebackIfCopy:
             _multiarray_tests.npy_abuse_writebackifcopy(v)
             assert len(sup.log) == 1
 
+    @pytest.mark.skip(reason="XXX: npy_create_writebackifcopy()")
     def test_view_discard_refcount(self):
         from numpy.core._multiarray_tests import npy_create_writebackifcopy, npy_discard
 
