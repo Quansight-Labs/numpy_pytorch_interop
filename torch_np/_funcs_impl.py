@@ -901,11 +901,16 @@ def put(
     mode: NotImplementedType = "raise",
 ):
     v = v.type(a.dtype)
-    numel_ratio = ind.numel() / v.numel()
-    if numel_ratio.is_integer():
-        sizes = [int(numel_ratio)]
-        sizes.extend([1 for _ in range(v.dim() - 1)])
-        v = v.repeat(*sizes)
+    # If ind is larger than v, broadcast v to the would-be resulting shape. Any
+    # unnecessary trailing elements are then trimmed.
+    if ind.numel() > v.numel():
+        result_shape = torch.broadcast_shapes(v.shape, ind.shape)
+        v = torch.broadcast_to(v, result_shape)
+    # Trim unnecessary elements, regarldess if v was broadcasted or not. Note
+    # np.put() trims v to match ind by default too.
+    if ind.numel() < v.numel():
+        v = v.flatten()
+        v = v[: ind.numel()]
     a.put_(ind, v)
     return None
 
