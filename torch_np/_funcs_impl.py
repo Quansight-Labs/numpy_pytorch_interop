@@ -1135,18 +1135,18 @@ def fill_diagonal(a: ArrayLike, val: ArrayLike, wrap=False):
         if not wrap or not tall:
             # Never wraps
             diag = a.diagonal()
-            diag.copy_(val[:diag.numel()])
+            diag.copy_(val[: diag.numel()])
         else:
             # wraps and tall... leaving one empty line between diagonals?!
             max_, min_ = a.shape
             idx = torch.arange(max_ - max_ // (min_ + 1))
             mod = idx % min_
             div = idx // min_
-            a[(div * (min_ + 1) + mod, mod)] = val[:idx.numel()]
+            a[(div * (min_ + 1) + mod, mod)] = val[: idx.numel()]
     else:
         idx = diag_indices_from(a)
         # a.shape = (n, n, ..., n)
-        a[idx] = val[:a.shape[0]]
+        a[idx] = val[: a.shape[0]]
 
     return a
 
@@ -1855,7 +1855,6 @@ array_precision = {
 
 
 def common_type(*tensors: ArrayLike):
-
     import builtins
 
     is_complex = False
