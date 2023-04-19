@@ -439,6 +439,7 @@ __all__ += [
     "csingle",
     "cdouble",
     "float_",
+    "complex_",
 ]
 __all__ += ["sctypes"]
 __all__ += [
