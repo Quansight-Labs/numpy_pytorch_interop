@@ -2637,7 +2637,6 @@ class TestMethods:
         ret = a.trace(out=out)
         assert ret is out
 
-    @pytest.mark.xfail(reason="TODO: implement put")
     def test_put(self):
         icodes = np.typecodes['AllInteger']
         fcodes = np.typecodes['AllFloat']
@@ -2670,7 +2669,6 @@ class TestMethods:
         # when calling np.put, make sure a
         # TypeError is raised if the object
         # isn't an ndarray
-        pytest.xfail(reason="XXX: Argument normalisation prevents catching this")
         bad_array = [1, 2, 3]
         assert_raises(TypeError, np.put, bad_array, [0, 2], 5)
 

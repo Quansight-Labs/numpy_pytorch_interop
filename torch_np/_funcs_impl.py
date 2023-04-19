@@ -895,7 +895,7 @@ def take_along_axis(arr: ArrayLike, indices: ArrayLike, axis):
 
 
 def put(
-    a: ArrayLike,
+    a: NDArray,
     ind: ArrayLike,
     v: ArrayLike,
     mode: NotImplementedType = "raise",
