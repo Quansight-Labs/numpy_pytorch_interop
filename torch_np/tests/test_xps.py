@@ -96,6 +96,9 @@ def test_integer_indexing(x, data):
     assert result.shape == result_shape
 
 
+@pytest.mark.filterwarnings(
+    "ignore:Creating a tensor from a list of numpy.ndarrays.*:UserWarning"
+)
 @given(
     np_x=nps.arrays(
         # We specifically use namespaced dtypes to prevent non-native byte-order issues
@@ -124,22 +127,7 @@ def test_put(np_x, data):
     assert_array_equal(tnp_x, tnp_x_copy)  # sanity check
 
     note(f"{tnp_x=}")
-    tnp_ind = []
-    list_at_ind = data.draw(
-        st.lists(st.booleans(), min_size=len(ind), max_size=len(ind)),
-        label="list_at_ind",
-    )
-    for np_indices, use_list in zip(ind, list_at_ind):
-        if use_list:
-            indices = np_indices.tolist()
-        else:
-            indices = tnp.asarray(np_indices).astype(np_indices.dtype.name)
-        tnp_ind.append(indices)
-    tnp_ind = tuple(tnp_ind)
-    note(f"{tnp_ind=}")
-    tnp_v = tnp.asarray(v.copy()).astype(v.dtype.name)
-    note(f"{tnp_v=}")
-    tnp.put(tnp_x, tnp_ind, tnp_v)
+    tnp.put(tnp_x, ind, v)
     note(f"(after put) {tnp_x=}")
 
     assert_array_equal(tnp_x, tnp.asarray(np_x).astype(tnp_x.dtype))
