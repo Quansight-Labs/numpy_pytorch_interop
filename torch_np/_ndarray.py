@@ -67,6 +67,7 @@ def create_method(fn, name=None):
     f.__qualname__ = f"ndarray.{name}"
     return f
 
+
 # Map ndarray.name_method -> np.name_func
 # If name_func == None, it means that name_method == name_func
 methods = {
@@ -137,6 +138,7 @@ ri_dunder = {
 
 ##################### ndarray class ###########################
 
+
 class ndarray:
     def __init__(self, t=None):
         if t is None:
@@ -170,7 +172,9 @@ class ndarray:
         rvar = f"__r{method}__"
         vars()[rvar] = create_method(lambda self, other, fn=fn: fn(other, self), rvar)
         ivar = f"__i{method}__"
-        vars()[ivar] = create_method(lambda self, other, fn=fn: fn(self, other, out=self), ivar)
+        vars()[ivar] = create_method(
+            lambda self, other, fn=fn: fn(self, other, out=self), ivar
+        )
 
     @property
     def shape(self):
@@ -384,6 +388,7 @@ class ndarray:
         index = ndarray._upcast_int_indices(index)
         value = _helpers.ndarrays_to_tensors(value)
         return self.tensor.__setitem__(index, value)
+
 
 # This is the ideally the only place which talks to ndarray directly.
 # The rest goes through asarray (preferred) or array.
