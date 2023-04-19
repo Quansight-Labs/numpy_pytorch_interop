@@ -54,3 +54,20 @@ Tweaks
 
  - fix a bug in bool array minus bool array (fails on numpy 1.24)
  - inline np.fromfunction into a call to np.indices
+
+
+Mandelbrot fractal
+------------------
+
+Origin: N. Rougier, From python to numpy, 
+https://github.com/rougier/from-python-to-numpy/blob/master/code/mandelbrot.py
+https://github.com/rougier/from-python-to-numpy/blob/master/code/mandelbrot_numpy_1.py
+
+source: `e2e/mandelbrot.py`
+
+Tweaks
+------
+
+  - use `mandelbrot_numpy_1.py` version (slightly slower, but no mgrid)
+  - complex abs in float32 runs into https://github.com/pytorch/pytorch/pull/99550
+
