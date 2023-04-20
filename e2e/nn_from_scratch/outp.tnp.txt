@@ -1,0 +1,146 @@
+[array_w([[0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1,
+         1, 0, 0, 0, 0, 1]]), array_w([[0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0,
+         0, 1, 1, 1, 1, 0]]), array_w([[0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+         0, 1, 1, 1, 1, 0]])] 
+
+ array_w([[1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]])
+array_w([[ 4.7144e-01, -1.1910e+00,  1.4327e+00, -3.1265e-01, -7.2059e-01],
+        [ 8.8716e-01,  8.5959e-01, -6.3652e-01,  1.5696e-02, -2.2427e+00],
+        [ 1.1500e+00,  9.9195e-01,  9.5332e-01, -2.0213e+00, -3.3408e-01],
+        [ 2.1184e-03,  4.0545e-01,  2.8909e-01,  1.3212e+00, -1.5469e+00],
+        [-2.0265e-01, -6.5597e-01,  1.9342e-01,  5.5344e-01,  1.3182e+00],
+        [-4.6931e-01,  6.7555e-01, -1.8170e+00, -1.8311e-01,  1.0590e+00],
+        [-3.9784e-01,  3.3744e-01,  1.0476e+00,  1.0459e+00,  8.6372e-01],
+        [-1.2209e-01,  1.2471e-01, -3.2279e-01,  8.4167e-01,  2.3910e+00],
+        [ 7.6200e-02, -5.6645e-01,  3.6142e-02, -2.0750e+00,  2.4779e-01],
+        [-8.9716e-01, -1.3679e-01,  1.8289e-02,  7.5541e-01,  2.1527e-01],
+        [ 8.4101e-01, -1.4458e+00, -1.4020e+00, -1.0092e-01, -5.4824e-01],
+        [-1.4462e-01,  3.5402e-01, -3.5513e-02,  5.6574e-01,  1.5457e+00],
+        [-9.7424e-01, -7.0345e-02,  3.0797e-01, -2.0850e-01,  1.0338e+00],
+        [-2.4005e+00,  2.0306e+00, -1.1426e+00,  2.1188e-01,  7.0472e-01],
+        [-7.8544e-01,  4.6206e-01,  7.0423e-01,  5.2351e-01, -9.2625e-01],
+        [ 2.0078e+00,  2.2696e-01, -1.1527e+00,  6.3198e-01,  3.9513e-02],
+        [ 4.6439e-01, -3.5635e+00,  1.3211e+00,  1.5263e-01,  1.6453e-01],
+        [-4.3010e-01,  7.6737e-01,  9.8492e-01,  2.7084e-01,  1.3920e+00],
+        [ 7.9842e-02, -3.9996e-01, -1.0279e+00, -5.8472e-01,  8.1659e-01],
+        [-8.1947e-02, -3.4477e-01,  5.2829e-01, -1.0690e+00, -5.1188e-01],
+        [ 2.9121e-01,  5.6653e-01,  5.0359e-01,  2.8530e-01,  4.8429e-01],
+        [ 1.3635e+00, -7.8111e-01, -4.6802e-01,  1.2246e+00, -1.2811e+00],
+        [ 8.7548e-01, -1.7107e+00, -4.5077e-01,  7.4916e-01, -2.0393e-01],
+        [-1.8218e-01,  6.8066e-01, -1.8185e+00,  4.7072e-02,  3.9484e-01],
+        [-2.4843e-01, -6.1771e-01, -6.8288e-01,  4.3626e-01, -1.7030e+00],
+        [ 3.9371e-01, -4.7932e-01, -2.9902e-01,  6.9410e-01,  6.7863e-01],
+        [ 2.3956e-01,  1.5123e-01,  8.1613e-01,  1.8935e+00,  6.3963e-01],
+        [-9.6203e-01, -2.0853e+00,  1.9302e+00, -1.7353e+00,  1.2104e+00],
+        [ 7.9744e-01, -3.7981e-01,  7.0256e-01, -8.5035e-01,  1.1768e+00],
+        [-5.2434e-01,  7.0091e-01,  9.8419e-01, -1.2173e-01,  2.3658e+00]],
+       dtype=float64) 
+
+ array_w([[ 0.4714, -1.1910,  1.4327],
+        [-0.3127, -0.7206,  0.8872],
+        [ 0.8596, -0.6365,  0.0157],
+        [-2.2427,  1.1500,  0.9919],
+        [ 0.9533, -2.0213, -0.3341]], dtype=float64)
+epochs: 1 ======== acc: array_w(60.3975, dtype=float64)
+epochs: 2 ======== acc: array_w(65.1661, dtype=float64)
+epochs: 3 ======== acc: array_w(69.3356, dtype=float64)
+epochs: 4 ======== acc: array_w(73.2338, dtype=float64)
+epochs: 5 ======== acc: array_w(76.9046, dtype=float64)
+epochs: 6 ======== acc: array_w(79.9503, dtype=float64)
+epochs: 7 ======== acc: array_w(82.1532, dtype=float64)
+epochs: 8 ======== acc: array_w(83.7056, dtype=float64)
+epochs: 9 ======== acc: array_w(84.8537, dtype=float64)
+epochs: 10 ======== acc: array_w(85.7562, dtype=float64)
+epochs: 11 ======== acc: array_w(86.5028, dtype=float64)
+epochs: 12 ======== acc: array_w(87.1439, dtype=float64)
+epochs: 13 ======== acc: array_w(87.7095, dtype=float64)
+epochs: 14 ======== acc: array_w(88.2183, dtype=float64)
+epochs: 15 ======== acc: array_w(88.6824, dtype=float64)
+epochs: 16 ======== acc: array_w(89.1102, dtype=float64)
+epochs: 17 ======== acc: array_w(89.5077, dtype=float64)
+epochs: 18 ======== acc: array_w(89.8793, dtype=float64)
+epochs: 19 ======== acc: array_w(90.2284, dtype=float64)
+epochs: 20 ======== acc: array_w(90.5576, dtype=float64)
+epochs: 21 ======== acc: array_w(90.8690, dtype=float64)
+epochs: 22 ======== acc: array_w(91.1645, dtype=float64)
+epochs: 23 ======== acc: array_w(91.4455, dtype=float64)
+epochs: 24 ======== acc: array_w(91.7131, dtype=float64)
+epochs: 25 ======== acc: array_w(91.9686, dtype=float64)
+epochs: 26 ======== acc: array_w(92.2129, dtype=float64)
+epochs: 27 ======== acc: array_w(92.4466, dtype=float64)
+epochs: 28 ======== acc: array_w(92.6707, dtype=float64)
+epochs: 29 ======== acc: array_w(92.8856, dtype=float64)
+epochs: 30 ======== acc: array_w(93.0920, dtype=float64)
+epochs: 31 ======== acc: array_w(93.2904, dtype=float64)
+epochs: 32 ======== acc: array_w(93.4813, dtype=float64)
+epochs: 33 ======== acc: array_w(93.6651, dtype=float64)
+epochs: 34 ======== acc: array_w(93.8421, dtype=float64)
+epochs: 35 ======== acc: array_w(94.0128, dtype=float64)
+epochs: 36 ======== acc: array_w(94.1774, dtype=float64)
+epochs: 37 ======== acc: array_w(94.3363, dtype=float64)
+epochs: 38 ======== acc: array_w(94.4897, dtype=float64)
+epochs: 39 ======== acc: array_w(94.6379, dtype=float64)
+epochs: 40 ======== acc: array_w(94.7811, dtype=float64)
+epochs: 41 ======== acc: array_w(94.9195, dtype=float64)
+epochs: 42 ======== acc: array_w(95.0534, dtype=float64)
+epochs: 43 ======== acc: array_w(95.1829, dtype=float64)
+epochs: 44 ======== acc: array_w(95.3082, dtype=float64)
+epochs: 45 ======== acc: array_w(95.4294, dtype=float64)
+epochs: 46 ======== acc: array_w(95.5468, dtype=float64)
+epochs: 47 ======== acc: array_w(95.6605, dtype=float64)
+epochs: 48 ======== acc: array_w(95.7706, dtype=float64)
+epochs: 49 ======== acc: array_w(95.8772, dtype=float64)
+epochs: 50 ======== acc: array_w(95.9805, dtype=float64)
+epochs: 51 ======== acc: array_w(96.0806, dtype=float64)
+epochs: 52 ======== acc: array_w(96.1776, dtype=float64)
+epochs: 53 ======== acc: array_w(96.2716, dtype=float64)
+epochs: 54 ======== acc: array_w(96.3628, dtype=float64)
+epochs: 55 ======== acc: array_w(96.4511, dtype=float64)
+epochs: 56 ======== acc: array_w(96.5368, dtype=float64)
+epochs: 57 ======== acc: array_w(96.6199, dtype=float64)
+epochs: 58 ======== acc: array_w(96.7005, dtype=float64)
+epochs: 59 ======== acc: array_w(96.7787, dtype=float64)
+epochs: 60 ======== acc: array_w(96.8546, dtype=float64)
+epochs: 61 ======== acc: array_w(96.9282, dtype=float64)
+epochs: 62 ======== acc: array_w(96.9997, dtype=float64)
+epochs: 63 ======== acc: array_w(97.0691, dtype=float64)
+epochs: 64 ======== acc: array_w(97.1364, dtype=float64)
+epochs: 65 ======== acc: array_w(97.2018, dtype=float64)
+epochs: 66 ======== acc: array_w(97.2654, dtype=float64)
+epochs: 67 ======== acc: array_w(97.3271, dtype=float64)
+epochs: 68 ======== acc: array_w(97.3870, dtype=float64)
+epochs: 69 ======== acc: array_w(97.4452, dtype=float64)
+epochs: 70 ======== acc: array_w(97.5018, dtype=float64)
+epochs: 71 ======== acc: array_w(97.5568, dtype=float64)
+epochs: 72 ======== acc: array_w(97.6103, dtype=float64)
+epochs: 73 ======== acc: array_w(97.6623, dtype=float64)
+epochs: 74 ======== acc: array_w(97.7128, dtype=float64)
+epochs: 75 ======== acc: array_w(97.7620, dtype=float64)
+epochs: 76 ======== acc: array_w(97.8098, dtype=float64)
+epochs: 77 ======== acc: array_w(97.8564, dtype=float64)
+epochs: 78 ======== acc: array_w(97.9016, dtype=float64)
+epochs: 79 ======== acc: array_w(97.9457, dtype=float64)
+epochs: 80 ======== acc: array_w(97.9886, dtype=float64)
+epochs: 81 ======== acc: array_w(98.0303, dtype=float64)
+epochs: 82 ======== acc: array_w(98.0710, dtype=float64)
+epochs: 83 ======== acc: array_w(98.1106, dtype=float64)
+epochs: 84 ======== acc: array_w(98.1491, dtype=float64)
+epochs: 85 ======== acc: array_w(98.1867, dtype=float64)
+epochs: 86 ======== acc: array_w(98.2232, dtype=float64)
+epochs: 87 ======== acc: array_w(98.2589, dtype=float64)
+epochs: 88 ======== acc: array_w(98.2936, dtype=float64)
+epochs: 89 ======== acc: array_w(98.3275, dtype=float64)
+epochs: 90 ======== acc: array_w(98.3604, dtype=float64)
+epochs: 91 ======== acc: array_w(98.3926, dtype=float64)
+epochs: 92 ======== acc: array_w(98.4240, dtype=float64)
+epochs: 93 ======== acc: array_w(98.4546, dtype=float64)
+epochs: 94 ======== acc: array_w(98.4844, dtype=float64)
+epochs: 95 ======== acc: array_w(98.5135, dtype=float64)
+epochs: 96 ======== acc: array_w(98.5419, dtype=float64)
+epochs: 97 ======== acc: array_w(98.5695, dtype=float64)
+epochs: 98 ======== acc: array_w(98.5966, dtype=float64)
+epochs: 99 ======== acc: array_w(98.6229, dtype=float64)
+epochs: 100 ======== acc: array_w(98.6487, dtype=float64)
+Image is of letter B.
