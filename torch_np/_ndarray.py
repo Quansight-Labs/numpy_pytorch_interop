@@ -107,7 +107,7 @@ methods = {
 }
 
 dunder = {
-    "abs": "invert",
+    "abs": "absolute",
     "invert": None,
     "pos": "positive",
     "neg": "negative",
