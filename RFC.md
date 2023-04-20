@@ -87,12 +87,24 @@ def fn(x, y):
 
 ### Design decisions
 
-The two main ideas driving the design of this compatibility layer are the following:
+The main ideas driving the design of this compatibility layer are the following:
 
-1. The behavior of the layer should be as close to that of NumPy as possible
-2. The layer follows the most recent NumPy release
+1. The goal is to transform valid NumPy programs into their equivalent PyTorch
+2. The behavior of the layer should be as close to that of NumPy as possible
+3. The layer follows the most recent NumPy release
 
 The following design decisions follow from these:
+
+**A superset of NumPy**. Same as PyTorch has spotty support for `float16` on
+CPU, and less-than-good support for `complex32`, NumPy has a number of
+well-known edge-cases. The decision of translating just valid NumPy programs,
+often allows us to implement a superset of the functionality of NumPy with more
+predictable and consistent behavior than NumPy itself.
+
+**Exceptions may be different**. We avoid entirely modelling the exception
+system in NumPy. As seen in the implementation of PrimTorch, modelling the
+error cases of a given system is terribly difficult. We avoid this altogether
+and we choose not to offer any guarantee here.
 
 **Default dtypes**. One of the most common issues that bites people when migrating their
 codebases from NumPy to JAX is the default dtype changing from `float64` to
@@ -100,13 +112,6 @@ codebases from NumPy to JAX is the default dtype changing from `float64` to
 [JAX's shap edges](https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html#double-64bit-precision).
 Following the spirit of making everything match NumPy by default, we choose the
 NumPy defaults whenever the `dtype` was not made explicit in a factory function.
-
-**TODO(Lezcano)**: I just realized that we do not have a clean way to change
-the default dtype of `torch_np` to those from PyTorch. We should implement
-that utility flag, similar to
-[`torch.set_default_dtype`](https://pytorch.org/docs/stable/generated/torch.set_default_dtype.html).
-Perhaps call it `torch_np.use_torch_defaults()` and then add a way for users
-to be able to set their own int/float/complex defaults.
 
 **NumPy scalars**. NumPy's type system is tricky. At first sight, it looks
 like PyTorch's, but with few more dtypes like `np.uint16` or `np.longdouble`.
@@ -130,6 +135,9 @@ array([2, 4, 6])
 
 but we don't expect these to pose a big issue in practice. Note that in the
 proposed implementation `np.int32(2)` would return the same as `np.asarray(2)`.
+In general, we try to avoid unnecessary graph breaks whenever we can. For
+example, we may choose to return a tensor of shape `(2, *)` rather than a list
+of pairs, to avoid unnecessary graph breaks.
 
 **Type promotion**. Another not-so-well-known fact of NumPy's cast system is
 that it is data-dependent. Python scalars can be used in pretty much any NumPy
@@ -325,8 +333,6 @@ find some good examples on which to test it, but it should be a simple
 corollary of all this effort. If the original tensors fed into the function do
 have `requires_grad=True`, the tensors will track the gradients of the internal
 implementation and then the user could differentiate through the NumPy code.
-
-**TODO(Lezcano)**. Picking up simple NumPy programs from the internet would be good for these autograd tests.
 
 ### Bindings to TorchDyamo
 
