@@ -108,7 +108,7 @@ normalizers = {
     "Optional[NDArray]": normalize_ndarray,
     "Optional[OutArray]": normalize_outarray,
     "NDArray": normalize_ndarray,
-    "DTypeLike": normalize_dtype,
+    "Optional[DTypeLike]": normalize_dtype,
     "AxisLike": normalize_axis_like,
     "NotImplementedType": normalize_not_implemented,
 }
