@@ -17,6 +17,6 @@ For numpy tests, see `torch_np/testing/numpy_tests` folder.
 In short, the main changes to examples are:
 
 - With random number generators, our `random` module is a drop-in replacement to NumPy's, but exact streams of random variates is different. Therefore, to preserve exact bit-to-bit identity, one needs to use NumPy's `random` numbers.
-- Interaction with matplotlib: for plotting, we need to convert our wrapper ndarrays to PyTorch tensors or original NumPy arrays. This of course is expected, as extrenal libraries do not know about our wrapper out of the box.
+- Interaction with matplotlib: for plotting, we need to convert our wrapper ndarrays to PyTorch tensors or original NumPy arrays. In practice, this will be done automatically by TorchDynamo.
 
 Specific details of our tests can be seen in https://github.com/Quansight-Labs/numpy_pytorch_interop/blob/main/e2e/tests.md
