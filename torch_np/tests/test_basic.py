@@ -33,7 +33,7 @@ one_arg_funcs = [
     w.i0,
     w.copy,
     w.array,
-    w.round_,
+    w.round,
     w.around,
     w.flip,
     w.vstack,
