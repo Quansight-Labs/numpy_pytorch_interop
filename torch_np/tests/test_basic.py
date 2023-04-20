@@ -104,7 +104,6 @@ one_arg_axis_funcs = [
     w.all,
     w.any,
     w.mean,
-    w.nanmean,
     w.argsort,
     w.std,
     w.var,

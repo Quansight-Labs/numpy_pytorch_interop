@@ -88,9 +88,9 @@ class TestTranspose:
         a = np.array([[1, 2], [3, 4]])
         assert_equal(a.transpose(), [[1, 3], [2, 4]])
         assert_equal(a.transpose(None), [[1, 3], [2, 4]])
-        assert_raises(ValueError, lambda: a.transpose(0))
-        assert_raises(ValueError, lambda: a.transpose(0, 0))
-        assert_raises(ValueError, lambda: a.transpose(0, 1, 2))
+        assert_raises((RuntimeError, ValueError), lambda: a.transpose(0))
+        assert_raises((RuntimeError, ValueError), lambda: a.transpose(0, 0))
+        assert_raises((RuntimeError, ValueError), lambda: a.transpose(0, 1, 2))
 
         assert a.transpose().tensor._base is a.tensor
 

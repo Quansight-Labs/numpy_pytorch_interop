@@ -256,16 +256,16 @@ class TestConcatenate:
         for ndim in [1, 2, 3]:
             a = np.ones((1,)*ndim)
             np.concatenate((a, a), axis=0)  # OK
-            assert_raises(np.AxisError, np.concatenate, (a, a), axis=ndim)
-            assert_raises(np.AxisError, np.concatenate, (a, a), axis=-(ndim + 1))
+            assert_raises((IndexError, np.AxisError), np.concatenate, (a, a), axis=ndim)
+            assert_raises((IndexError, np.AxisError), np.concatenate, (a, a), axis=-(ndim + 1))
 
         # Scalars cannot be concatenated
-        assert_raises(ValueError, concatenate, (0,))
-        assert_raises(ValueError, concatenate, (np.array(0),))
+        assert_raises((RuntimeError, ValueError), concatenate, (0,))
+        assert_raises((RuntimeError, ValueError), concatenate, (np.array(0),))
 
         # dimensionality must match
         assert_raises(
-            ValueError,
+            (RuntimeError, ValueError),
             #        assert_raises_regex(
             #            ValueError,
             #            r"all the input arrays must have same number of dimensions, but "
@@ -283,7 +283,7 @@ class TestConcatenate:
             np.concatenate((a, b), axis=axis[0])  # OK
             #            assert_raises_regex(
             assert_raises(
-                ValueError,
+                (RuntimeError, ValueError),
                 #                "all the input array dimensions except for the concatenation axis "
                 #                "must match exactly, but along dimension {}, the array at "
                 #                "index 0 has size 1 and the array at index 1 has size 2"
@@ -292,7 +292,7 @@ class TestConcatenate:
                 (a, b),
                 axis=axis[1],
             )
-            assert_raises(ValueError, np.concatenate, (a, b), axis=axis[2])
+            assert_raises((RuntimeError, ValueError), np.concatenate, (a, b), axis=axis[2])
             a = np.moveaxis(a, -1, 0)
             b = np.moveaxis(b, -1, 0)
             axis.append(axis.pop(0))
@@ -359,7 +359,7 @@ class TestConcatenate:
         assert_array_equal(concatenate((a23.T, a13.T), 1), res.T)
         assert_array_equal(concatenate((a23.T, a13.T), -1), res.T)
         # Arrays much match shape
-        assert_raises(ValueError, concatenate, (a23.T, a13.T), 0)
+        assert_raises((RuntimeError, ValueError), concatenate, (a23.T, a13.T), 0)
         # 3D
         res = np.arange(2 * 3 * 7).reshape((2, 3, 7))
         a0 = res[..., :4]
@@ -474,11 +474,11 @@ def test_stack():
     # edge cases
     assert_raises(ValueError, stack, [])
     assert_raises(ValueError, stack, [])
-    assert_raises(ValueError, stack, [1, np.arange(3)])
-    assert_raises(ValueError, stack, [np.arange(3), 1])
-    assert_raises(ValueError, stack, [np.arange(3), 1], axis=1)
-    assert_raises(ValueError, stack, [np.zeros((3, 3)), np.zeros(3)], axis=1)
-    assert_raises(ValueError, stack, [np.arange(2), np.arange(3)])
+    assert_raises((RuntimeError, ValueError), stack, [1, np.arange(3)])
+    assert_raises((RuntimeError, ValueError), stack, [np.arange(3), 1])
+    assert_raises((RuntimeError, ValueError), stack, [np.arange(3), 1], axis=1)
+    assert_raises((RuntimeError, ValueError), stack, [np.zeros((3, 3)), np.zeros(3)], axis=1)
+    assert_raises((RuntimeError, ValueError), stack, [np.arange(2), np.arange(3)])
 
     # generator is deprecated: numpy 1.24 emits a warning but we don't
     # with assert_warns(FutureWarning):

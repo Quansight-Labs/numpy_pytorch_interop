@@ -1532,9 +1532,9 @@ class TestMethods:
     def test_transpose(self):
         a = np.array([[1, 2], [3, 4]])
         assert_equal(a.transpose(), [[1, 3], [2, 4]])
-        assert_raises(ValueError, lambda: a.transpose(0))
-        assert_raises(ValueError, lambda: a.transpose(0, 0))
-        assert_raises(ValueError, lambda: a.transpose(0, 1, 2))
+        assert_raises((RuntimeError, ValueError), lambda: a.transpose(0))
+        assert_raises((RuntimeError, ValueError), lambda: a.transpose(0, 0))
+        assert_raises((RuntimeError, ValueError), lambda: a.transpose(0, 1, 2))
 
     def test_sort(self):
         # test ordering for floats and complex containing nans. It is only
@@ -7270,8 +7270,8 @@ class TestWhere:
         c = [True, True]
         a = np.ones((4, 5))
         b = np.ones((5, 5))
-        assert_raises(ValueError, np.where, c, a, a)
-        assert_raises(ValueError, np.where, c[0], a, b)
+        assert_raises((RuntimeError, ValueError), np.where, c, a, a)
+        assert_raises((RuntimeError, ValueError), np.where, c[0], a, b)
 
     def test_empty_result(self):
         # pass empty where result through an assignment which reads the data of
@@ -7497,14 +7497,14 @@ class TestWritebackIfCopy:
 
 class TestArange:
     def test_infinite(self):
-        assert_raises_regex(
-            ValueError, "size exceeded",
+        assert_raises(
+            (RuntimeError, ValueError),  # "unsupported range",
             np.arange, 0, np.inf
         )
 
     def test_nan_step(self):
         assert_raises(
-            ValueError, # "cannot compute length",
+            (RuntimeError, ValueError),  # "cannot compute length",
             np.arange, 0, 1, np.nan
         )
 

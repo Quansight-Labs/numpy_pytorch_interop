@@ -71,14 +71,16 @@ def atleast_3d(*arys: ArrayLike):
 
 
 def _concat_check(tup, dtype, out):
+    if tup == ():
+        raise ValueError("need at least one array to concatenate")
+
     """Check inputs in concatenate et al."""
-    if out is not None:
-        if dtype is not None:
-            # mimic numpy
-            raise TypeError(
-                "concatenate() only takes `out` or `dtype` as an "
-                "argument, but both were provided."
-            )
+    if out is not None and dtype is not None:
+        # mimic numpy
+        raise TypeError(
+            "concatenate() only takes `out` or `dtype` as an "
+            "argument, but both were provided."
+        )
 
 
 def _concat_cast_helper(tensors, out=None, dtype=None, casting="same_kind"):
@@ -343,6 +345,11 @@ def arange(
 
     # work around RuntimeError: "arange_cpu" not implemented for 'ComplexFloat'
     work_dtype = torch.float64 if target_dtype.is_complex else target_dtype
+
+    if (step > 0 and start > stop) or (step < 0 and start < stop):
+        # empty range
+        return torch.empty(0, dtype=target_dtype)
+
     result = torch.arange(start, stop, step, dtype=work_dtype)
     result = _util.cast_if_needed(result, target_dtype)
     return result
