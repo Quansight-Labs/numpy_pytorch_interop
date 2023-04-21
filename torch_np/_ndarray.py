@@ -124,7 +124,6 @@ ri_dunder = {
     "mul": "multiply",
     "truediv": "divide",
     "floordiv": "floor_divide",
-    "divmod": None,
     "pow": "float_power",
     "mod": "remainder",
     "and": "bitwise_and",
@@ -175,6 +174,12 @@ class ndarray:
         vars()[ivar] = create_method(
             lambda self, other, fn=fn: fn(self, other, out=self), ivar
         )
+
+    # There's no __idivmod__
+    __divmod__ = create_method(_ufuncs.divmod, "__divmod__")
+    __rdivmod__ = create_method(
+        lambda self, other: _ufuncs.divmod(other, self), "__rdivmod__"
+    )
 
     @property
     def shape(self):
