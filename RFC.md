@@ -280,8 +280,6 @@ Note that none of the code in this implementation  makes use of NumPy. We are
 writing `torch_np.ndarray` above to make more explicit our intents, but there
 shouldn't be any ambiguity.
 
-**OBS(Lezcano)**: `DTypeLike` should be `Optional[DTypeLike]`
-
 **Implmenting out**: In PyTorch, the `out` kwarg is, as the name says, a
 keyword-only argument. It is for this reason that, in PrimTorch, we were able
 to implement it as [a decorator](https://github.com/pytorch/pytorch/blob/ce4df4cc596aa10534ac6d54912f960238264dfd/torch/_prims_common/wrappers.py#L187-L282).
@@ -325,8 +323,6 @@ between NumPy and `torch_np`.
 CPU. We expect GPU coverage to be as good as the coverage we have with CPU
 matching GPU. If the original tensors are on GPU, the whole execution should
 be performed on the GPU.
-
-**TODO(Lezcano)**. We should probably test CUDA on the tests.
 
 **Gradients**. We have not tested gradient tracking either as we are still to
 find some good examples on which to test it, but it should be a simple
