@@ -1686,6 +1686,7 @@ def round(a: ArrayLike, decimals=0, out: Optional[OutArray] = None):
 
 
 around = round
+round_ = round
 
 
 def real_if_close(a: ArrayLike, tol=100):

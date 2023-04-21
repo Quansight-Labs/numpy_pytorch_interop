@@ -335,7 +335,13 @@ class TestSequenceOfArraysToSingle:
         assert isinstance(result, w.ndarray)
 
 
-single_to_seq_funcs = [w.nonzero, w.tril_indices_from, w.triu_indices_from, w.where]
+single_to_seq_funcs = (
+    w.nonzero,
+    # https://github.com/Quansight-Labs/numpy_pytorch_interop/pull/121#discussion_r1172824545
+    # w.tril_indices_from,
+    # w.triu_indices_from,
+    w.where,
+)
 
 
 @pytest.mark.parametrize("func", single_to_seq_funcs)
