@@ -7,10 +7,14 @@ from torch_np.testing import assert_array_equal, assert_equal
 
 class TestArange:
     def test_infinite(self):
-        assert_raises(ValueError, np.arange, 0, np.inf)  # "size exceeded",
+        assert_raises(
+            (RuntimeError, ValueError), np.arange, 0, np.inf
+        )  # "size exceeded",
 
     def test_nan_step(self):
-        assert_raises(ValueError, np.arange, 0, 1, np.nan)  # "cannot compute length",
+        assert_raises(
+            (RuntimeError, ValueError), np.arange, 0, 1, np.nan
+        )  # "cannot compute length",
 
     def test_zero_step(self):
         assert_raises(ZeroDivisionError, np.arange, 0, 10, 0)

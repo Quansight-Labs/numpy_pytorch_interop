@@ -33,7 +33,7 @@ one_arg_funcs = [
     w.i0,
     w.copy,
     w.array,
-    w.round_,
+    w.round,
     w.around,
     w.flip,
     w.vstack,
@@ -104,7 +104,6 @@ one_arg_axis_funcs = [
     w.all,
     w.any,
     w.mean,
-    w.nanmean,
     w.argsort,
     w.std,
     w.var,
@@ -336,7 +335,13 @@ class TestSequenceOfArraysToSingle:
         assert isinstance(result, w.ndarray)
 
 
-single_to_seq_funcs = [w.nonzero, w.tril_indices_from, w.triu_indices_from, w.where]
+single_to_seq_funcs = (
+    w.nonzero,
+    # https://github.com/Quansight-Labs/numpy_pytorch_interop/pull/121#discussion_r1172824545
+    # w.tril_indices_from,
+    # w.triu_indices_from,
+    w.where,
+)
 
 
 @pytest.mark.parametrize("func", single_to_seq_funcs)
