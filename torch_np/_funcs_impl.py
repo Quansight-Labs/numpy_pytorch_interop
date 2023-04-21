@@ -116,7 +116,7 @@ def concatenate(
     ar_tuple: Sequence[ArrayLike],
     axis=0,
     out: Optional[OutArray] = None,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     casting="same_kind",
 ):
     _concat_check(ar_tuple, dtype, out=out)
@@ -124,7 +124,9 @@ def concatenate(
     return result
 
 
-def vstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"):
+def vstack(
+    tup: Sequence[ArrayLike], *, dtype: Optional[DTypeLike] = None, casting="same_kind"
+):
     _concat_check(tup, dtype, out=None)
     tensors = _concat_cast_helper(tup, dtype=dtype, casting=casting)
     return torch.vstack(tensors)
@@ -133,13 +135,17 @@ def vstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_k
 row_stack = vstack
 
 
-def hstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"):
+def hstack(
+    tup: Sequence[ArrayLike], *, dtype: Optional[DTypeLike] = None, casting="same_kind"
+):
     _concat_check(tup, dtype, out=None)
     tensors = _concat_cast_helper(tup, dtype=dtype, casting=casting)
     return torch.hstack(tensors)
 
 
-def dstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"):
+def dstack(
+    tup: Sequence[ArrayLike], *, dtype: Optional[DTypeLike] = None, casting="same_kind"
+):
     # XXX: in numpy 1.24 dstack does not have dtype and casting keywords
     # but {h,v}stack do.  Hence add them here for consistency.
     _concat_check(tup, dtype, out=None)
@@ -148,7 +154,7 @@ def dstack(tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_k
 
 
 def column_stack(
-    tup: Sequence[ArrayLike], *, dtype: DTypeLike = None, casting="same_kind"
+    tup: Sequence[ArrayLike], *, dtype: Optional[DTypeLike] = None, casting="same_kind"
 ):
     # XXX: in numpy 1.24 column_stack does not have dtype and casting keywords
     # but row_stack does. (because row_stack is an alias for vstack, really).
@@ -163,7 +169,7 @@ def stack(
     axis=0,
     out: Optional[OutArray] = None,
     *,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     casting="same_kind",
 ):
     _concat_check(arrays, dtype, out=out)
@@ -279,7 +285,7 @@ def linspace(
     num=50,
     endpoint=True,
     retstep=False,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     axis=0,
 ):
     if axis != 0 or retstep or not endpoint:
@@ -293,7 +299,7 @@ def geomspace(
     stop: ArrayLike,
     num=50,
     endpoint=True,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     axis=0,
 ):
     if axis != 0 or not endpoint:
@@ -309,7 +315,13 @@ def geomspace(
 
 
 def logspace(
-    start, stop, num=50, endpoint=True, base=10.0, dtype: DTypeLike = None, axis=0
+    start,
+    stop,
+    num=50,
+    endpoint=True,
+    base=10.0,
+    dtype: Optional[DTypeLike] = None,
+    axis=0,
 ):
     if axis != 0 or not endpoint:
         raise NotImplementedError
@@ -320,7 +332,7 @@ def arange(
     start: Optional[ArrayLike] = None,
     stop: Optional[ArrayLike] = None,
     step: Optional[ArrayLike] = 1,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     *,
     like: NotImplementedType = None,
 ):
@@ -366,7 +378,7 @@ def arange(
 
 def empty(
     shape,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     order: NotImplementedType = "C",
     *,
     like: NotImplementedType = None,
@@ -382,7 +394,7 @@ def empty(
 
 def empty_like(
     prototype: ArrayLike,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     order: NotImplementedType = "K",
     subok: NotImplementedType = False,
     shape=None,
@@ -396,7 +408,7 @@ def empty_like(
 def full(
     shape,
     fill_value: ArrayLike,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     order: NotImplementedType = "C",
     *,
     like: NotImplementedType = None,
@@ -413,7 +425,7 @@ def full(
 def full_like(
     a: ArrayLike,
     fill_value,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     order: NotImplementedType = "K",
     subok: NotImplementedType = False,
     shape=None,
@@ -427,7 +439,7 @@ def full_like(
 
 def ones(
     shape,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     order: NotImplementedType = "C",
     *,
     like: NotImplementedType = None,
@@ -439,7 +451,7 @@ def ones(
 
 def ones_like(
     a: ArrayLike,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     order: NotImplementedType = "K",
     subok: NotImplementedType = False,
     shape=None,
@@ -452,7 +464,7 @@ def ones_like(
 
 def zeros(
     shape,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     order: NotImplementedType = "C",
     *,
     like: NotImplementedType = None,
@@ -464,7 +476,7 @@ def zeros(
 
 def zeros_like(
     a: ArrayLike,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     order: NotImplementedType = "K",
     subok: NotImplementedType = False,
     shape=None,
@@ -510,7 +522,7 @@ def corrcoef(
     bias=None,
     ddof=None,
     *,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
 ):
     if bias is not None or ddof is not None:
         # deprecated in NumPy
@@ -540,7 +552,7 @@ def cov(
     fweights: Optional[ArrayLike] = None,
     aweights: Optional[ArrayLike] = None,
     *,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
 ):
     m = _xy_helper_corrcoef(m, y, rowvar)
 
@@ -684,7 +696,7 @@ def meshgrid(*xi: ArrayLike, copy=True, sparse=False, indexing="xy"):
     return list(output)  # match numpy, return a list
 
 
-def indices(dimensions, dtype: DTypeLike = int, sparse=False):
+def indices(dimensions, dtype: Optional[DTypeLike] = int, sparse=False):
     # https://github.com/numpy/numpy/blob/v1.24.0/numpy/core/numeric.py#L1691-L1791
     dimensions = tuple(dimensions)
     N = len(dimensions)
@@ -742,7 +754,14 @@ def triu_indices_from(arr: ArrayLike, k=0):
     return tuple(result)
 
 
-def tri(N, M=None, k=0, dtype: DTypeLike = None, *, like: NotImplementedType = None):
+def tri(
+    N,
+    M=None,
+    k=0,
+    dtype: Optional[DTypeLike] = None,
+    *,
+    like: NotImplementedType = None,
+):
     if M is None:
         M = N
     tensor = torch.ones((N, M), dtype=dtype)
@@ -756,7 +775,7 @@ def tri(N, M=None, k=0, dtype: DTypeLike = None, *, like: NotImplementedType = N
 def nanmean(
     a: ArrayLike,
     axis=None,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     out: Optional[OutArray] = None,
     keepdims=None,
     *,
@@ -1072,7 +1091,7 @@ def trace(
     offset=0,
     axis1=0,
     axis2=1,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     out: Optional[OutArray] = None,
 ):
     result = torch.diagonal(a, offset, dim1=axis1, dim2=axis2).sum(-1, dtype=dtype)
@@ -1083,7 +1102,7 @@ def eye(
     N,
     M=None,
     k=0,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     order: NotImplementedType = "C",
     *,
     like: NotImplementedType = None,
@@ -1097,7 +1116,7 @@ def eye(
     return z
 
 
-def identity(n, dtype: DTypeLike = None, *, like: NotImplementedType = None):
+def identity(n, dtype: Optional[DTypeLike] = None, *, like: NotImplementedType = None):
     return torch.eye(n, dtype=dtype)
 
 
@@ -1413,7 +1432,7 @@ round = round_
 def sum(
     a: ArrayLike,
     axis: AxisLike = None,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     out: Optional[OutArray] = None,
     keepdims=None,
     initial: NotImplementedType = None,
@@ -1428,7 +1447,7 @@ def sum(
 def prod(
     a: ArrayLike,
     axis: AxisLike = None,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     out: Optional[OutArray] = None,
     keepdims=None,
     initial: NotImplementedType = None,
@@ -1446,7 +1465,7 @@ product = prod
 def mean(
     a: ArrayLike,
     axis: AxisLike = None,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     out: Optional[OutArray] = None,
     keepdims=None,
     *,
@@ -1459,7 +1478,7 @@ def mean(
 def var(
     a: ArrayLike,
     axis: AxisLike = None,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     out: Optional[OutArray] = None,
     ddof=0,
     keepdims=None,
@@ -1475,7 +1494,7 @@ def var(
 def std(
     a: ArrayLike,
     axis: AxisLike = None,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     out: Optional[OutArray] = None,
     ddof=0,
     keepdims=None,
@@ -1582,7 +1601,7 @@ def count_nonzero(a: ArrayLike, axis: AxisLike = None, *, keepdims=False):
 def cumsum(
     a: ArrayLike,
     axis: AxisLike = None,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     out: Optional[OutArray] = None,
 ):
     result = _impl.cumsum(a, axis=axis, dtype=dtype)
@@ -1592,7 +1611,7 @@ def cumsum(
 def cumprod(
     a: ArrayLike,
     axis: AxisLike = None,
-    dtype: DTypeLike = None,
+    dtype: Optional[DTypeLike] = None,
     out: Optional[OutArray] = None,
 ):
     result = _impl.cumprod(a, axis=axis, dtype=dtype)
