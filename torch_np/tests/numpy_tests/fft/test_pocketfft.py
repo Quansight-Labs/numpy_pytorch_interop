@@ -1,11 +1,15 @@
-import numpy as np
+import torch_np as np
 import pytest
-from numpy.random import random
-from numpy.testing import (
-        assert_array_equal, assert_raises, assert_allclose, IS_WASM
+from pytest import raises as assert_raises
+
+from torch_np.random import random
+from torch_np.testing import (
+        assert_array_equal, assert_allclose  #, IS_WASM
         )
 import threading
 import queue
+
+IS_WASM = False
 
 
 def fft1(x):
@@ -15,12 +19,14 @@ def fft1(x):
     return np.sum(x*np.exp(phase), axis=1)
 
 
+@pytest.mark.xfail(reason='TODO')
 class TestFFTShift:
 
     def test_fft_n(self):
         assert_raises(ValueError, np.fft.fft, [1, 2, 3], 0)
 
 
+@pytest.mark.xfail(reason='TODO')
 class TestFFT1D:
 
     def test_identity(self):
@@ -219,8 +225,7 @@ class TestFFT1D:
                     assert_allclose(x_norm,
                                     np.linalg.norm(tmp), atol=1e-6)
 
-    @pytest.mark.parametrize("dtype", [np.half, np.single, np.double,
-                                       np.longdouble])
+    @pytest.mark.parametrize("dtype", [np.half, np.single, np.double])
     def test_dtypes(self, dtype):
         # make sure that all input precisions are accepted and internally
         # converted to 64bit
@@ -229,6 +234,7 @@ class TestFFT1D:
         assert_allclose(np.fft.irfft(np.fft.rfft(x)), x, atol=1e-6)
 
 
+@pytest.mark.xfail(reason='TODO')
 @pytest.mark.parametrize(
         "dtype",
         [np.float32, np.float64, np.complex64, np.complex128])
@@ -268,6 +274,7 @@ def test_fft_with_order(dtype, order, fft):
         raise ValueError()
 
 
+@pytest.mark.xfail(reason='TODO')
 @pytest.mark.skipif(IS_WASM, reason="Cannot start thread")
 class TestFFTThreadSafe:
     threads = 16

@@ -1,4 +1,4 @@
-from . import linalg, random
+from . import fft, linalg, random
 from ._dtypes import *
 from ._funcs import *
 from ._getlimits import errstate, finfo, iinfo
