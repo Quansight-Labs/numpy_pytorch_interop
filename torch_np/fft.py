@@ -1,19 +1,26 @@
 from __future__ import annotations
 
 import functools
+
 import torch
 
+from . import _dtypes_impl, _util
 from ._normalizations import ArrayLike, normalizer
-from . import _util
 
 
 def upcast(func):
     """NumPy fft casts inputs to 64 bit and *returns 64-bit results*."""
+
     @functools.wraps(func)
     def wrapped(tensor, *args, **kwds):
-        target_dtype = torch.complex128 if tensor.is_complex() else torch.float64
+        target_dtype = (
+            _dtypes_impl.default_dtypes.complex_dtype
+            if tensor.is_complex()
+            else _dtypes_impl.default_dtypes.float_dtype
+        )
         tensor = _util.cast_if_needed(tensor, target_dtype)
         return func(tensor, *args, **kwds)
+
     return wrapped
 
 
@@ -70,6 +77,7 @@ def irfftn(a: ArrayLike, s=None, axes=None, norm=None):
 def fft2(a: ArrayLike, s=None, axes=(-2, -1), norm=None):
     return torch.fft.fft2(a, s, dim=axes, norm=norm)
 
+
 @normalizer
 @upcast
 def ifft2(a: ArrayLike, s=None, axes=(-2, -1), norm=None):
@@ -93,9 +101,8 @@ def irfft2(a: ArrayLike, s=None, axes=(-2, -1), norm=None):
 def hfft(a: ArrayLike, n=None, axis=-1, norm=None):
     return torch.fft.hfft(a, n, dim=axis, norm=norm)
 
+
 @normalizer
 @upcast
 def ihfft(a: ArrayLike, n=None, axis=-1, norm=None):
     return torch.fft.ihfft(a, n, dim=axis, norm=norm)
-
-
