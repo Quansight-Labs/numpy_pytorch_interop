@@ -7,9 +7,7 @@ import torch_np as np
 from torch_np.testing import assert_array_almost_equal
 from torch_np import fft, pi
 
-import pytest
 
-@pytest.mark.xfail(reason="TODO")
 class TestFFTShift:
 
     def test_definition(self):
@@ -135,7 +133,6 @@ class TestFFTShift:
                                               original_ifftshift(inp, axes_keyword))
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestFFTFreq:
 
     def test_definition(self):
@@ -147,7 +144,6 @@ class TestFFTFreq:
         assert_array_almost_equal(10*pi*fft.fftfreq(10, pi), x)
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestRFFTFreq:
 
     def test_definition(self):
@@ -159,7 +155,6 @@ class TestRFFTFreq:
         assert_array_almost_equal(10*pi*fft.rfftfreq(10, pi), x)
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestIRFFTN:
 
     def test_not_last_axis_success(self):
