@@ -106,3 +106,23 @@ def hfft(a: ArrayLike, n=None, axis=-1, norm=None):
 @upcast
 def ihfft(a: ArrayLike, n=None, axis=-1, norm=None):
     return torch.fft.ihfft(a, n, dim=axis, norm=norm)
+
+
+@normalizer
+def fftfreq(n, d=1.0):
+    return torch.fft.fftfreq(n, d)
+
+
+@normalizer
+def rfftfreq(n, d=1.0):
+    return torch.fft.rfftfreq(n, d)
+
+
+@normalizer
+def fftshift(x: ArrayLike, axes=None):
+    return torch.fft.fftshift(x, axes)
+
+
+@normalizer
+def ifftshift(x: ArrayLike, axes=None):
+    return torch.fft.ifftshift(x, axes)
