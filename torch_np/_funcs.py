@@ -31,10 +31,13 @@ for name in __all__ + semi_private:
     func = getattr(_funcs_impl, name)
     if name in ["percentile", "quantile", "median"]:
         decorated = normalizer(func, promote_scalar_result=True)
+    elif name == "einsum":
+        # normalized manually
+        decorated = func
     else:
         decorated = normalizer(func)
 
-    decorated.__qualname__ = name  # XXX: is this really correct?
+    decorated.__qualname__ = name
     decorated.__name__ = name
     vars()[name] = decorated
 

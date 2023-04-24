@@ -8,6 +8,7 @@ pytorch tensors.
 from __future__ import annotations
 
 import builtins
+import itertools
 import math
 import operator
 from typing import Optional, Sequence
@@ -20,6 +21,7 @@ from . import _util
 from ._normalizations import (
     ArrayLike,
     AxisLike,
+    CastingModes,
     DTypeLike,
     NDArray,
     NotImplementedType,
@@ -39,7 +41,7 @@ def copy(
 def copyto(
     dst: NDArray,
     src: ArrayLike,
-    casting="same_kind",
+    casting: Optional[CastingModes] = "same_kind",
     where: NotImplementedType = None,
 ):
     (src,) = _util.typecast_tensors((src,), dst.dtype, casting=casting)
@@ -98,7 +100,9 @@ def _concat_cast_helper(tensors, out=None, dtype=None, casting="same_kind"):
     return tensors
 
 
-def _concatenate(tensors, axis=0, out=None, dtype=None, casting="same_kind"):
+def _concatenate(
+    tensors, axis=0, out=None, dtype=None, casting: Optional[CastingModes] = "same_kind"
+):
     # pure torch implementation, used below and in cov/corrcoef below
     tensors, axis = _util.axis_none_ravel(*tensors, axis=axis)
     tensors = _concat_cast_helper(tensors, out, dtype, casting)
@@ -110,7 +114,7 @@ def concatenate(
     axis=0,
     out: Optional[OutArray] = None,
     dtype: Optional[DTypeLike] = None,
-    casting="same_kind",
+    casting: Optional[CastingModes] = "same_kind",
 ):
     _concat_check(ar_tuple, dtype, out=out)
     result = _concatenate(ar_tuple, axis=axis, out=out, dtype=dtype, casting=casting)
@@ -118,7 +122,10 @@ def concatenate(
 
 
 def vstack(
-    tup: Sequence[ArrayLike], *, dtype: Optional[DTypeLike] = None, casting="same_kind"
+    tup: Sequence[ArrayLike],
+    *,
+    dtype: Optional[DTypeLike] = None,
+    casting: Optional[CastingModes] = "same_kind",
 ):
     _concat_check(tup, dtype, out=None)
     tensors = _concat_cast_helper(tup, dtype=dtype, casting=casting)
@@ -129,7 +136,10 @@ row_stack = vstack
 
 
 def hstack(
-    tup: Sequence[ArrayLike], *, dtype: Optional[DTypeLike] = None, casting="same_kind"
+    tup: Sequence[ArrayLike],
+    *,
+    dtype: Optional[DTypeLike] = None,
+    casting: Optional[CastingModes] = "same_kind",
 ):
     _concat_check(tup, dtype, out=None)
     tensors = _concat_cast_helper(tup, dtype=dtype, casting=casting)
@@ -137,7 +147,10 @@ def hstack(
 
 
 def dstack(
-    tup: Sequence[ArrayLike], *, dtype: Optional[DTypeLike] = None, casting="same_kind"
+    tup: Sequence[ArrayLike],
+    *,
+    dtype: Optional[DTypeLike] = None,
+    casting: Optional[CastingModes] = "same_kind",
 ):
     # XXX: in numpy 1.24 dstack does not have dtype and casting keywords
     # but {h,v}stack do.  Hence add them here for consistency.
@@ -147,7 +160,10 @@ def dstack(
 
 
 def column_stack(
-    tup: Sequence[ArrayLike], *, dtype: Optional[DTypeLike] = None, casting="same_kind"
+    tup: Sequence[ArrayLike],
+    *,
+    dtype: Optional[DTypeLike] = None,
+    casting: Optional[CastingModes] = "same_kind",
 ):
     # XXX: in numpy 1.24 column_stack does not have dtype and casting keywords
     # but row_stack does. (because row_stack is an alias for vstack, really).
@@ -163,7 +179,7 @@ def stack(
     out: Optional[OutArray] = None,
     *,
     dtype: Optional[DTypeLike] = None,
-    casting="same_kind",
+    casting: Optional[CastingModes] = "same_kind",
 ):
     _concat_check(arrays, dtype, out=out)
 
@@ -1166,6 +1182,11 @@ def vdot(a: ArrayLike, b: ArrayLike, /):
 def tensordot(a: ArrayLike, b: ArrayLike, axes=2):
     if isinstance(axes, (list, tuple)):
         axes = [[ax] if isinstance(ax, int) else ax for ax in axes]
+
+    target_dtype = _dtypes_impl.result_type_impl((a.dtype, b.dtype))
+    a = _util.cast_if_needed(a, target_dtype)
+    b = _util.cast_if_needed(b, target_dtype)
+
     return torch.tensordot(a, b, dims=axes)
 
 
@@ -1206,6 +1227,74 @@ def inner(a: ArrayLike, b: ArrayLike, /):
 
 def outer(a: ArrayLike, b: ArrayLike, out: Optional[OutArray] = None):
     return torch.outer(a, b)
+
+
+def einsum(*operands, out=None, optimize=False, **kwargs):
+    # Have to manually normalize *operands and **kwargs, following the NumPy signature
+    # >>> np.einsum?
+    # Signature: np.einsum(*operands, out=None, optimize=False, **kwargs)
+    # Docstring:
+    # einsum(subscripts, *operands, out=None, dtype=None, order='K',
+    #       casting='safe', optimize=False)
+
+    from ._normalizations import (
+        maybe_copy_to,
+        normalize_casting,
+        normalize_dtype,
+        normalize_not_implemented,
+        normalize_outarray,
+        wrap_tensors,
+    )
+
+    dtype = normalize_dtype(kwargs.pop("dtype", None))
+    casting = normalize_casting(kwargs.pop("casting", "safe"))
+
+    parm = lambda _: None  # a fake duck-typed inspect.Parameter stub
+    parm.name = "out"
+    out = normalize_outarray(out, parm=parm)
+
+    parm.default = "K"
+    parm.name = "order"
+    order = normalize_not_implemented(kwargs.pop("order", "K"), parm=parm)
+    if kwargs:
+        raise TypeError("unknown arguments: ", kwargs)
+
+    # parse arrays and normalize them
+    if isinstance(operands[0], str):
+        # ("ij->", arrays) format
+        sublist_format = False
+        subscripts, array_operands = operands[0], operands[1:]
+    else:
+        # op, str, op, str ... format: normalize every other argument
+        sublist_format = True
+        array_operands = operands[:-1][::2]
+
+    tensors = [normalize_array_like(op) for op in array_operands]
+    target_dtype = (
+        _dtypes_impl.result_type_impl([op.dtype for op in tensors])
+        if dtype is None
+        else dtype
+    )
+    tensors = _util.typecast_tensors(tensors, target_dtype, casting)
+
+    if sublist_format:
+        # recombine operands
+        sublists = operands[1::2]
+        has_sublistout = len(operands) % 2 == 1
+        if has_sublistout:
+            sublistout = operands[-1]
+        operands = list(itertools.chain(*zip(tensors, sublists)))
+        if has_sublistout:
+            operands.append(sublistout)
+
+        result = torch.einsum(*operands)
+    else:
+        result = torch.einsum(subscripts, *tensors)
+
+
+
+    result = maybe_copy_to(out, result)
+    return wrap_tensors(result)
 
 
 # ### sort and partition ###
@@ -1798,8 +1887,6 @@ array_precision = {
 
 
 def common_type(*tensors: ArrayLike):
-    import builtins
-
     is_complex = False
     precision = 0
     for a in tensors:
