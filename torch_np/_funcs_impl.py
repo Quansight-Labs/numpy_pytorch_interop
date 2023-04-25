@@ -901,14 +901,12 @@ def put(
     mode: NotImplementedType = "raise",
 ):
     v = v.type(a.dtype)
-    # If ind is larger than v, broadcast v to the would-be resulting shape. Any
+    # If ind is larger than v, expand v to at least the size of ind. Any
     # unnecessary trailing elements are then trimmed.
     if ind.numel() > v.numel():
         ratio = (ind.numel() + v.numel() - 1) // v.numel()
-        sizes = [ratio]
-        sizes.extend([1 for _ in range(v.dim() - 1)])
-        v = v.repeat(*sizes)
-    # Trim unnecessary elements, regarldess if v was broadcasted or not. Note
+        v = v.unsqueeze(0).expand((ratio,) + v.shape)
+    # Trim unnecessary elements, regarldess if v was expanded or not. Note
     # np.put() trims v to match ind by default too.
     if ind.numel() < v.numel():
         v = v.flatten()

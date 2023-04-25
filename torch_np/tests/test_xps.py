@@ -117,9 +117,12 @@ def test_put(np_x, data):
     tnp_x = tnp.asarray(np_x.copy()).astype(np_x.dtype.name)
 
     result_shape = data.draw(nps.array_shapes(), label="result_shape")
-    ind_strat = nps.integer_array_indices(
-        np_x.shape, result_shape=st.just(result_shape)
-    )
+    if result_shape == ():
+        ind_strat = st.integers(np_x.size)
+    else:
+        ind_strat = nps.integer_array_indices(
+            np_x.shape, result_shape=st.just(result_shape)
+        )
     ind = data.draw(ind_strat | ind_strat.map(np.asarray), label="ind")
     v = data.draw(
         nps.arrays(
