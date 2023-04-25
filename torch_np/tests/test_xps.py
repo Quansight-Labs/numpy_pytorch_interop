@@ -4,6 +4,7 @@ Tests which use hypothesis.extra.array_api
 These tests aren't specifically for testing Array API adoption!
 """
 import cmath
+import math
 import warnings
 
 import pytest
@@ -115,11 +116,20 @@ def test_put(np_x, data):
 
     tnp_x = tnp.asarray(np_x.copy()).astype(np_x.dtype.name)
 
-    result_shapes = st.shared(nps.array_shapes())
-    ind = data.draw(
-        nps.integer_array_indices(np_x.shape, result_shape=result_shapes), label="ind"
+    result_shape = data.draw(nps.array_shapes(), label="result_shape")
+    ind_strat = nps.integer_array_indices(
+        np_x.shape, result_shape=st.just(result_shape)
     )
-    v = data.draw(nps.arrays(dtype=np_x.dtype, shape=result_shapes), label="v")
+    ind = data.draw(ind_strat | ind_strat.map(np.asarray), label="ind")
+    v = data.draw(
+        nps.arrays(
+            dtype=np_x.dtype,
+            shape=nps.array_shapes().filter(
+                lambda s: math.prod(s) > math.prod(result_shape)
+            ),
+        ),
+        label="v",
+    )
 
     tnp_x_copy = tnp_x.copy()
     np.put(np_x, ind, v)

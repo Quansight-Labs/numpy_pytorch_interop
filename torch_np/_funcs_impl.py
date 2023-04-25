@@ -904,8 +904,10 @@ def put(
     # If ind is larger than v, broadcast v to the would-be resulting shape. Any
     # unnecessary trailing elements are then trimmed.
     if ind.numel() > v.numel():
-        result_shape = torch.broadcast_shapes(v.shape, ind.shape)
-        v = torch.broadcast_to(v, result_shape)
+        ratio = (ind.numel() + v.numel() - 1) // v.numel()
+        sizes = [ratio]
+        sizes.extend([1 for _ in range(v.dim() - 1)])
+        v = v.repeat(*sizes)
     # Trim unnecessary elements, regarldess if v was broadcasted or not. Note
     # np.put() trims v to match ind by default too.
     if ind.numel() < v.numel():
