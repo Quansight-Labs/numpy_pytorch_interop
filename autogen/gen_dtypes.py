@@ -10,6 +10,7 @@ import torch
 
 np._set_promotion_state("weak")
 
+
 class dtype:
     def __init__(self, name):
         self._name = name
