@@ -1229,45 +1229,33 @@ def outer(a: ArrayLike, b: ArrayLike, out: Optional[OutArray] = None):
     return torch.outer(a, b)
 
 
-def einsum(*operands, out=None, optimize=False, **kwargs):
+def einsum(*operands, out=None, dtype=None, order='K',
+           casting='safe', optimize=False):
     # Have to manually normalize *operands and **kwargs, following the NumPy signature
-    # >>> np.einsum?
-    # Signature: np.einsum(*operands, out=None, optimize=False, **kwargs)
-    # Docstring:
-    # einsum(subscripts, *operands, out=None, dtype=None, order='K',
-    #       casting='safe', optimize=False)
 
     from ._normalizations import (
         maybe_copy_to,
         normalize_casting,
         normalize_dtype,
-        normalize_not_implemented,
-        normalize_outarray,
         wrap_tensors,
     )
+    from ._ndarray import ndarray
 
-    dtype = normalize_dtype(kwargs.pop("dtype", None))
-    casting = normalize_casting(kwargs.pop("casting", "safe"))
-
-    parm = lambda _: None  # a fake duck-typed inspect.Parameter stub
-    parm.name = "out"
-    out = normalize_outarray(out, parm=parm)
-
-    parm.default = "K"
-    parm.name = "order"
-    order = normalize_not_implemented(kwargs.pop("order", "K"), parm=parm)
-    if kwargs:
-        raise TypeError("unknown arguments: ", kwargs)
+    dtype = normalize_dtype(dtype)
+    casting = normalize_casting(casting)
+    if out is not None and not isinstance(out, ndarray):
+        raise TypeError("'out' must be an array")
+    if order != "K":
+        raise NotImplementedError("'order' parameter is not supported.")
 
     # parse arrays and normalize them
-    if isinstance(operands[0], str):
-        # ("ij->", arrays) format
-        sublist_format = False
-        subscripts, array_operands = operands[0], operands[1:]
-    else:
+    sublist_format = not isinstance(operands[0], str)
+    if sublist_format:
         # op, str, op, str ... format: normalize every other argument
-        sublist_format = True
         array_operands = operands[:-1][::2]
+    else:
+        # ("ij->", arrays) format
+        subscripts, array_operands = operands[0], operands[1:]
 
     tensors = [normalize_array_like(op) for op in array_operands]
     target_dtype = (
@@ -1290,8 +1278,6 @@ def einsum(*operands, out=None, optimize=False, **kwargs):
         result = torch.einsum(*operands)
     else:
         result = torch.einsum(subscripts, *tensors)
-
-
 
     result = maybe_copy_to(out, result)
     return wrap_tensors(result)
