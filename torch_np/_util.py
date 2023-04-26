@@ -119,18 +119,17 @@ def apply_keepdims(tensor, axis, ndim):
     if axis is None:
         # tensor was a scalar
         shape = (1,) * ndim
-        tensor = tensor.expand(shape).contiguous()  # avoid CUDA synchronization
+        tensor = tensor.expand(shape).contiguous()
     else:
         shape = expand_shape(tensor.shape, axis)
         tensor = tensor.reshape(shape)
     return tensor
 
 
-def axis_none_ravel(*tensors, axis=None):
-    """Ravel the arrays if axis is none."""
-    # XXX: is only used at `concatenate` and cumsum/cumprod. Inline unless reused more widely
+def axis_none_flatten(*tensors, axis=None):
+    """Flatten the arrays if axis is None else normalize the axis."""
     if axis is None:
-        tensors = tuple(ar.ravel() for ar in tensors)
+        tensors = tuple(ar.flatten() for ar in tensors)
         return tensors, 0
     else:
         return tensors, axis
