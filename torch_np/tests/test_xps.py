@@ -144,3 +144,13 @@ def test_put(np_x, data):
     note(f"(after put) {tnp_x=}")
 
     assert_array_equal(tnp_x, tnp.asarray(np_x).astype(tnp_x.dtype))
+
+
+@pytest.mark.xfail(reason="XXX: support converting namespaced dtypes")
+@given(a=nps.arrays(dtype=nps.scalar_dtypes(), shape=nps.array_shapes()))
+def test_asarray_np_arrays(a):
+    x = tnp.asarray(a)
+    if a.dtype == np.bool_:
+        assert x.dtype == tnp.bool
+    else:
+        assert x.dtype.name == a.dtype.name
