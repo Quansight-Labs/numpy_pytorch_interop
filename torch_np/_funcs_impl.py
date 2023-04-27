@@ -18,7 +18,9 @@ import torch
 from . import _dtypes_impl
 from . import _reductions as _impl
 from . import _util
-from ._normalizations import (
+
+# these imports are for einsum only
+from ._normalizations import (  # isort: skip
     ArrayLike,
     AxisLike,
     CastingModes,
@@ -26,7 +28,11 @@ from ._normalizations import (
     NDArray,
     NotImplementedType,
     OutArray,
+    maybe_copy_to,
     normalize_array_like,
+    normalize_casting,
+    normalize_dtype,
+    wrap_tensors,
 )
 
 # ###### array creation routines
@@ -1233,12 +1239,6 @@ def einsum(*operands, out=None, dtype=None, order="K", casting="safe", optimize=
     # Have to manually normalize *operands and **kwargs, following the NumPy signature
 
     from ._ndarray import ndarray
-    from ._normalizations import (
-        maybe_copy_to,
-        normalize_casting,
-        normalize_dtype,
-        wrap_tensors,
-    )
 
     dtype = normalize_dtype(dtype)
     casting = normalize_casting(casting)
@@ -1276,7 +1276,7 @@ def einsum(*operands, out=None, dtype=None, order="K", casting="safe", optimize=
 
     is_short_int = target_dtype in [torch.uint8, torch.int8, torch.int16, torch.int32]
     if is_short_int:
-        target_dtype, result_dtype = torch.int64, target_dtype
+        target_dtype = torch.int64
 
     tensors = _util.typecast_tensors(tensors, target_dtype, casting)
 
