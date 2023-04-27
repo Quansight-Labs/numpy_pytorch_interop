@@ -56,6 +56,18 @@ class Flags:
         else:
             raise KeyError(f"No flag key '{key}'")
 
+    def __setattr__(self, attr, value):
+        if attr.islower() and attr.upper() in FLAGS:
+            self[attr.upper()] = value
+        else:
+            super().__setattr__(attr, value)
+
+    def __setitem__(self, key, value):
+        if key in FLAGS or key in SHORTHAND_TO_FLAGS.keys():
+            raise NotImplementedError("Modifying flags is not implemented")
+        else:
+            raise KeyError(f"No flag key '{key}'")
+
 
 def create_method(fn, name=None):
     name = name or fn.__name__
@@ -396,6 +408,9 @@ class ndarray:
         if isinstance(value, torch.Tensor):
             value = _util.cast_if_needed(value, self.tensor.dtype)
         return self.tensor.__setitem__(index, value)
+
+    take = _funcs.take
+    put = _funcs.put
 
 
 # This is the ideally the only place which talks to ndarray directly.

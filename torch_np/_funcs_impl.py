@@ -894,6 +894,27 @@ def take_along_axis(arr: ArrayLike, indices: ArrayLike, axis):
     return torch.take_along_dim(arr, indices, axis)
 
 
+def put(
+    a: NDArray,
+    ind: ArrayLike,
+    v: ArrayLike,
+    mode: NotImplementedType = "raise",
+):
+    v = v.type(a.dtype)
+    # If ind is larger than v, expand v to at least the size of ind. Any
+    # unnecessary trailing elements are then trimmed.
+    if ind.numel() > v.numel():
+        ratio = (ind.numel() + v.numel() - 1) // v.numel()
+        v = v.unsqueeze(0).expand((ratio,) + v.shape)
+    # Trim unnecessary elements, regarldess if v was expanded or not. Note
+    # np.put() trims v to match ind by default too.
+    if ind.numel() < v.numel():
+        v = v.flatten()
+        v = v[: ind.numel()]
+    a.put_(ind, v)
+    return None
+
+
 def put_along_axis(arr: ArrayLike, indices: ArrayLike, values: ArrayLike, axis):
     (arr,), axis = _util.axis_none_ravel(arr, axis=axis)
     axis = _util.normalize_axis_index(axis, arr.ndim)

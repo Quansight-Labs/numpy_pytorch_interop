@@ -679,7 +679,7 @@ def assert_array_compare(
 
             ##            with errstate(all='ignore'):
             # ignore errors for non-numeric types
-            with contextlib.suppress(TypeError):
+            with contextlib.suppress(TypeError, RuntimeError):
                 error = abs(x - y)
                 if np.issubdtype(x.dtype, np.unsignedinteger):
                     error2 = abs(y - x)
