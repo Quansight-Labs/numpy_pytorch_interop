@@ -1280,19 +1280,27 @@ def einsum(*operands, out=None, dtype=None, order="K", casting="safe", optimize=
 
     tensors = _util.typecast_tensors(tensors, target_dtype, casting)
 
-    if sublist_format:
-        # recombine operands
-        sublists = operands[1::2]
-        has_sublistout = len(operands) % 2 == 1
-        if has_sublistout:
-            sublistout = operands[-1]
-        operands = list(itertools.chain(*zip(tensors, sublists)))
-        if has_sublistout:
-            operands.append(sublistout)
+    try:
+        # set the global state to handle the optimize=... argument, restore on exit
+        old_strategy = torch.backends.opt_einsum.strategy
+        torch.backends.opt_einsum.strategy = optimize
 
-        result = torch.einsum(*operands)
-    else:
-        result = torch.einsum(subscripts, *tensors)
+        if sublist_format:
+            # recombine operands
+            sublists = operands[1::2]
+            has_sublistout = len(operands) % 2 == 1
+            if has_sublistout:
+                sublistout = operands[-1]
+            operands = list(itertools.chain(*zip(tensors, sublists)))
+            if has_sublistout:
+                operands.append(sublistout)
+
+            result = torch.einsum(*operands)
+        else:
+            result = torch.einsum(subscripts, *tensors)
+
+    finally:
+        torch.backends.opt_einsum.strategy = old_strategy
 
     result = maybe_copy_to(out, result)
     return wrap_tensors(result)
