@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import builtins
 import itertools
-import math
 import operator
 from typing import Optional, Sequence
 
