@@ -541,24 +541,26 @@ class TestEinsum:
         assert_array_equal(np.einsum("ij,i->", x, y, optimize=optimize),
                            [2.])  # contig_stride0_outstride0_two
 
+    @pytest.mark.xfail(reason="int overflow differs in numpy and pytorch")
     def test_einsum_sums_int8(self):
         self.check_einsum_sums('i1')
 
+    @pytest.mark.xfail(reason="int overflow differs in numpy and pytorch")
     def test_einsum_sums_uint8(self):
         self.check_einsum_sums('u1')
 
+    @pytest.mark.xfail(reason="int overflow differs in numpy and pytorch")
     def test_einsum_sums_int16(self):
         self.check_einsum_sums('i2')
-
 
     def test_einsum_sums_int32(self):
         self.check_einsum_sums('i4')
         self.check_einsum_sums('i4', True)
 
-
     def test_einsum_sums_int64(self):
         self.check_einsum_sums('i8')
 
+    @pytest.mark.xfail(reason="np.float16(4641) == 4640.0")
     def test_einsum_sums_float16(self):
         self.check_einsum_sums('f2')
 
@@ -780,6 +782,10 @@ class TestEinsum:
         # Use einsum to compare to not have difference due to sum round-offs:
         assert res == np.einsum('i->', scalar * arr)
         # contig + contig + contig -> scalar
+
+        if dtype in ['e', 'B', 'b']:
+            pytest.xfail(reason='overflow differs in pytorch and numpy')
+
         arr = np.array([0.5, 0.5, 0.25, 4.5, 3.], dtype=dtype)
         res = np.einsum('i,i,i->', arr, arr, arr)
         assert_array_equal(res, (arr * arr * arr).sum())

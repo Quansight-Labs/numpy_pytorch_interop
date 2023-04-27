@@ -1229,17 +1229,16 @@ def outer(a: ArrayLike, b: ArrayLike, out: Optional[OutArray] = None):
     return torch.outer(a, b)
 
 
-def einsum(*operands, out=None, dtype=None, order='K',
-           casting='safe', optimize=False):
+def einsum(*operands, out=None, dtype=None, order="K", casting="safe", optimize=False):
     # Have to manually normalize *operands and **kwargs, following the NumPy signature
 
+    from ._ndarray import ndarray
     from ._normalizations import (
         maybe_copy_to,
         normalize_casting,
         normalize_dtype,
         wrap_tensors,
     )
-    from ._ndarray import ndarray
 
     dtype = normalize_dtype(dtype)
     casting = normalize_casting(casting)
@@ -1251,7 +1250,13 @@ def einsum(*operands, out=None, dtype=None, order='K',
     # parse arrays and normalize them
     sublist_format = not isinstance(operands[0], str)
     if sublist_format:
-        # op, str, op, str ... format: normalize every other argument
+        # op, str, op, str ... [sublistout] format: normalize every other argument
+
+        # - if sublistout is not given, the length of operands is even, and we pick
+        #   odd-numbered elements, which are arrays.
+        # - if sublistout is given, the length of operands is odd, we peel off
+        #   the last one, and pick odd-numbered elements, which are arrays.
+        #   Without [:-1], we would have picked sublistout, too.
         array_operands = operands[:-1][::2]
     else:
         # ("ij->", arrays) format
@@ -1263,6 +1268,16 @@ def einsum(*operands, out=None, dtype=None, order='K',
         if dtype is None
         else dtype
     )
+
+    # work around 'bmm' not implemented for 'Half' etc
+    is_half = target_dtype == torch.float16
+    if is_half:
+        target_dtype = torch.float32
+
+    is_short_int = target_dtype in [torch.uint8, torch.int8, torch.int16, torch.int32]
+    if is_short_int:
+        target_dtype, result_dtype = torch.int64, target_dtype
+
     tensors = _util.typecast_tensors(tensors, target_dtype, casting)
 
     if sublist_format:
