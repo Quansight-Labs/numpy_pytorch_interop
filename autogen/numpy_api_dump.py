@@ -220,10 +220,6 @@ def ediff1d(ary, to_end=None, to_begin=None):
     raise NotImplementedError
 
 
-def einsum(*operands, out=None, optimize=False, **kwargs):
-    raise NotImplementedError
-
-
 def einsum_path(*operands, optimize="greedy", einsum_call=False):
     raise NotImplementedError
 
