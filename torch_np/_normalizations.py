@@ -15,6 +15,7 @@ ArrayLike = typing.TypeVar("ArrayLike")
 DTypeLike = typing.TypeVar("DTypeLike")
 AxisLike = typing.TypeVar("AxisLike")
 NDArray = typing.TypeVar("NDarray")
+CastingModes = typing.TypeVar("CastingModes")
 
 # OutArray is to annotate the out= array argument.
 #
@@ -97,6 +98,14 @@ def normalize_outarray(arg, parm=None):
     return arg
 
 
+def normalize_casting(arg, parm=None):
+    if arg not in ["no", "equiv", "safe", "same_kind", "unsafe"]:
+        raise ValueError(
+            f"casting must be one of 'no', 'equiv', 'safe', 'same_kind', or 'unsafe' (got '{arg}')"
+        )
+    return arg
+
+
 normalizers = {
     "ArrayLike": normalize_array_like,
     "Optional[ArrayLike]": normalize_optional_array_like,
@@ -107,6 +116,7 @@ normalizers = {
     "Optional[DTypeLike]": normalize_dtype,
     "AxisLike": normalize_axis_like,
     "NotImplementedType": normalize_not_implemented,
+    "Optional[CastingModes]": normalize_casting,
 }
 
 
