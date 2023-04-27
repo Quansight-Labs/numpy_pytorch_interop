@@ -19,15 +19,8 @@ __all__ = [
     if inspect.isfunction(getattr(_funcs_impl, x)) and not x.startswith("_")
 ]
 
-# these implement ndarray methods but need not be public functions
-semi_private = [
-    "_flatten",
-    "_ndarray_resize",
-]
-
-
 # decorate implementer functions with argument normalizers and export to the top namespace
-for name in __all__ + semi_private:
+for name in __all__:
     func = getattr(_funcs_impl, name)
     if name in ["percentile", "quantile", "median"]:
         decorated = normalizer(func, promote_scalar_result=True)

@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import functools
+import inspect
 import operator
 import typing
 
 import torch
 
-from . import _helpers
+from . import _dtypes
 
 ArrayLike = typing.TypeVar("ArrayLike")
 DTypeLike = typing.TypeVar("DTypeLike")
@@ -33,11 +34,6 @@ try:
     from typing import NotImplementedType
 except ImportError:
     NotImplementedType = typing.TypeVar("NotImplementedType")
-
-
-import inspect
-
-from . import _dtypes
 
 
 def normalize_array_like(x, parm=None):

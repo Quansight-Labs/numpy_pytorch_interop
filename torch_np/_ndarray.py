@@ -1,9 +1,13 @@
+from __future__ import annotations
+
+import builtins
+import math
 import operator
 
 import torch
 
 from . import _dtypes, _dtypes_impl, _funcs, _funcs_impl, _helpers, _ufuncs, _util
-from ._normalizations import ArrayLike, normalizer
+from ._normalizations import ArrayLike, NotImplementedType, normalizer
 
 newaxis = None
 
@@ -56,6 +60,18 @@ class Flags:
         else:
             raise KeyError(f"No flag key '{key}'")
 
+    def __setattr__(self, attr, value):
+        if attr.islower() and attr.upper() in FLAGS:
+            self[attr.upper()] = value
+        else:
+            super().__setattr__(attr, value)
+
+    def __setitem__(self, key, value):
+        if key in FLAGS or key in SHORTHAND_TO_FLAGS.keys():
+            raise NotImplementedError("Modifying flags is not implemented")
+        else:
+            raise KeyError(f"No flag key '{key}'")
+
 
 def create_method(fn, name=None):
     name = name or fn.__name__
@@ -72,7 +88,6 @@ def create_method(fn, name=None):
 # If name_func == None, it means that name_method == name_func
 methods = {
     "clip": None,
-    "flatten": "_flatten",
     "nonzero": None,
     "repeat": None,
     "round": None,
@@ -252,11 +267,47 @@ class ndarray:
         t = self.tensor.to(torch_dtype)
         return ndarray(t)
 
-    def copy(self, order="C"):
-        if order != "C":
-            raise NotImplementedError
-        tensor = self.tensor.clone()
-        return ndarray(tensor)
+    @normalizer
+    def copy(self: ArrayLike, order: NotImplementedType = "C"):
+        return self.clone()
+
+    @normalizer
+    def flatten(self: ArrayLike, order: NotImplementedType = "C"):
+        return torch.flatten(self)
+
+    def resize(self, *new_shape, refcheck=False):
+        a = self.tensor
+        # TODO(Lezcano) This is not done in-place
+        # implementation of ndarray.resize.
+        # NB: differs from np.resize: fills with zeros instead of making repeated copies of input.
+        if refcheck:
+            raise NotImplementedError(
+                f"resize(..., refcheck={refcheck} is not implemented."
+            )
+
+        if new_shape in [(), (None,)]:
+            return
+
+        # support both x.resize((2, 2)) and x.resize(2, 2)
+        if len(new_shape) == 1:
+            new_shape = new_shape[0]
+        if isinstance(new_shape, int):
+            new_shape = (new_shape,)
+
+        a = a.flatten()
+
+        if builtins.any(x < 0 for x in new_shape):
+            raise ValueError("all elements of `new_shape` must be non-negative")
+
+        new_numel = math.prod(new_shape)
+        if new_numel < a.numel():
+            # shrink
+            ret = a[:new_numel].reshape(new_shape)
+        else:
+            b = torch.zeros(new_numel)
+            b[: a.numel()] = a
+            ret = b.reshape(new_shape)
+        self.tensor = ret
 
     def view(self, dtype):
         torch_dtype = _dtypes.dtype(dtype).torch_dtype
@@ -327,11 +378,10 @@ class ndarray:
     def __int__(self):
         return int(self.tensor)
 
-    # XXX : are single-element ndarrays scalars?
-    # in numpy, only array scalars have the `is_integer` method
     def is_integer(self):
         try:
-            result = int(self.tensor) == self.tensor
+            v = self.tensor.item()
+            result = int(v) == v
         except Exception:
             result = False
         return result
@@ -348,14 +398,6 @@ class ndarray:
     def reshape(self, *shape, order="C"):
         # arr.reshape(shape) and arr.reshape(*shape)
         return _funcs.reshape(self, shape, order=order)
-
-    def resize(self, *new_shape, refcheck=False):
-        # ndarray.resize works in-place (may cause a reallocation though)
-        self.tensor = _funcs_impl._ndarray_resize(
-            self.tensor, new_shape, refcheck=refcheck
-        )
-
-    ### sorting ###
 
     def sort(self, axis=-1, kind=None, order=None):
         # ndarray.sort works in-place
@@ -397,6 +439,9 @@ class ndarray:
             value = _util.cast_if_needed(value, self.tensor.dtype)
         return self.tensor.__setitem__(index, value)
 
+    take = _funcs.take
+    put = _funcs.put
+
 
 # This is the ideally the only place which talks to ndarray directly.
 # The rest goes through asarray (preferred) or array.
@@ -408,9 +453,13 @@ def array(obj, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=N
         raise NotImplementedError
 
     # a happy path
-    if isinstance(obj, ndarray):
-        if copy is False and dtype is None and ndmin <= obj.ndim:
-            return obj
+    if (
+        isinstance(obj, ndarray)
+        and copy is False
+        and dtype is None
+        and ndmin <= obj.ndim
+    ):
+        return obj
 
     # lists of ndarrays: [1, [2, 3], ndarray(4)] convert to lists of lists
     if isinstance(obj, (list, tuple)):
