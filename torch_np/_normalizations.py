@@ -9,13 +9,14 @@ import typing
 
 import torch
 
-from . import _dtypes
+from . import _dtypes, _util
 
 ArrayLike = typing.TypeVar("ArrayLike")
 DTypeLike = typing.TypeVar("DTypeLike")
 AxisLike = typing.TypeVar("AxisLike")
 NDArray = typing.TypeVar("NDarray")
 CastingModes = typing.TypeVar("CastingModes")
+KeepDims = typing.TypeVar("KeepDims")
 
 # OutArray is to annotate the out= array argument.
 #
@@ -203,8 +204,24 @@ def normalizer(_func=None, *, promote_scalar_result=False):
             }
             result = func(*args, **kwds)
 
+            # keepdims
+            bound_args = None
+            if "keepdims" in params and params["keepdims"].annotation == "KeepDims":
+                # keepdims can be in any position so we need sig.bind
+                bound_args = sig.bind(*args, **kwds).arguments
+                if bound_args.get("keepdims", False):
+                    # In this case the first arg is the initial tensor and
+                    # the second arg is (optionally) the axis
+                    tensor = args[0]
+                    axis = bound_args.get("axis")
+                    result = _util.apply_keepdims(result, axis, tensor.ndim)
+
+            # out
             if "out" in params:
-                out = sig.bind(*args, **kwds).arguments.get("out")
+                # out can be in any position so we need sig.bind
+                if bound_args is None:
+                    bound_args = sig.bind(*args, **kwds).arguments
+                out = bound_args.get("out")
                 result = maybe_copy_to(out, result, promote_scalar_result)
             result = wrap_tensors(result)
 

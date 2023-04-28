@@ -7,7 +7,7 @@ from typing import Sequence
 import torch
 
 from . import _dtypes_impl, _util
-from ._normalizations import ArrayLike, normalizer
+from ._normalizations import ArrayLike, KeepDims, normalizer
 
 
 class LinAlgError(Exception):
@@ -47,7 +47,7 @@ def linalg_errors(func):
 @normalizer
 @linalg_errors
 def matrix_power(a: ArrayLike, n):
-    a = _atleat_float_1(a)
+    a = _atleast_float_1(a)
     return torch.linalg.matrix_power(a, n)
 
 
@@ -160,12 +160,9 @@ def matrix_rank(a: ArrayLike, tol=None, hermitian=False):
 
 @normalizer
 @linalg_errors
-def norm(x: ArrayLike, ord=None, axis=None, keepdims=False):
+def norm(x: ArrayLike, ord=None, axis=None, keepdims: KeepDims = False):
     x = _atleast_float_1(x)
-    result = torch.linalg.norm(x, ord=ord, dim=axis)
-    if keepdims:
-        result = _util.apply_keepdims(result, axis, x.ndim)
-    return result
+    return torch.linalg.norm(x, ord=ord, dim=axis)
 
 
 # ### Decompositions ###
@@ -210,10 +207,9 @@ def eig(a: ArrayLike):
     a = _atleast_float_1(a)
     w, vt = torch.linalg.eig(a)
 
-    if not a.is_complex():
-        if w.is_complex() and (w.imag == 0).all():
-            w = w.real
-            vt = vt.real
+    if not a.is_complex() and w.is_complex() and (w.imag == 0).all():
+        w = w.real
+        vt = vt.real
     return w, vt
 
 
@@ -229,9 +225,8 @@ def eigh(a: ArrayLike, UPLO="L"):
 def eigvals(a: ArrayLike):
     a = _atleast_float_1(a)
     result = torch.linalg.eigvals(a)
-    if not a.is_complex():
-        if result.is_complex() and (result.imag == 0).all():
-            result = result.real
+    if not a.is_complex() and result.is_complex() and (result.imag == 0).all():
+        result = result.real
     return result
 
 
