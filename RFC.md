@@ -92,23 +92,24 @@ def fn(x, y):
 
 Then, TorchDynamo would will cast `x` and `y` to our internal implementation of `ndarray`,
 and will dispatch `np.multiply` and `sum` to our implementations in terms of `torch`
-functions effectively turning this function into a pure PyTorch function.
+functions, effectively turning this function into a pure PyTorch function.
 
 ### Design decisions
 
 The main ideas driving the design of this compatibility layer are the following:
 
-1. The goal is to transform valid NumPy programs into their equivalent PyTorch
+1. The goal is to transform valid NumPy and mixed PyTorch-NumPy programs into
+   their equivalent PyTorch-only execution.
 2. The behavior of the layer should be as close to that of NumPy as possible
 3. The layer follows the most recent NumPy release
 
 The following design decisions follow from these:
 
-**A superset of NumPy**. Same as PyTorch has spotty support for `float16` on
-CPU, and less-than-good support for `complex32`, NumPy has a number of
-well-known edge-cases. The decision of translating just valid NumPy programs,
-often allows us to implement a superset of the functionality of NumPy with more
-predictable and consistent behavior than NumPy itself.
+**A superset of NumPy**. NumPy has a number of well-known edge-cases (as does
+PyTorch, like spotty support for `float16` on CPU and `complex32` in general).
+The decision to translate only valid NumPy programs, often allows us to
+implement a superset of the functionality of NumPy with more predictable and
+consistent behavior than NumPy itself has.
 
 **Exceptions may be different**. We avoid entirely modelling the exception
 system in NumPy. As seen in the implementation of PrimTorch, modelling the
@@ -118,9 +119,9 @@ and we choose not to offer any guarantee here.
 **Default dtypes**. One of the most common issues that bites people when migrating their
 codebases from NumPy to JAX is the default dtype changing from `float64` to
 `float32`. So much so that this is noted as one of
-[JAX's shap edges](https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html#double-64bit-precision).
+[JAX's sharp edges](https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html#double-64bit-precision).
 Following the spirit of making everything match NumPy by default, we choose the
-NumPy defaults whenever the `dtype` was not made explicit in a factory function.
+NumPy default dtype whenever the `dtype` was not made explicit in a factory function.
 We also provide a function `set_default_dtype` that allows to change this behavior
 dynamically.
 
@@ -128,9 +129,10 @@ dynamically.
 like PyTorch's, but with few more dtypes like `np.uint16` or `np.longdouble`.
 Upon closer inspection, one finds that it also has
 [NumPy scalar](https://numpy.org/doc/stable/reference/arrays.scalars.html) objects.
-NumPy scalars are similar to Python scalars but with a set width. NumPy scalars
-are NumPy's preferred return class for reductions and other operations that
-return just one element. NumPy scalars do not play particularly well with
+NumPy scalars are similar to Python scalars but with a fixed precision and
+array-like methods attached. NumPy scalars are NumPy's preferred return class
+for reductions and other operations that return just one element.
+NumPy scalars do not play particularly well with
 computations on devices like GPUs, as they live on CPU. Implementing NumPy
 scalars would mean that we need to synchronize after every `sum()` call, which
 would be terrible performance-wise. In this implementation, we choose to represent
@@ -149,13 +151,13 @@ We don't expect these to pose a big issue in practice. Note that in the
 proposed implementation `np.int32(2)` would return the same as `np.asarray(2)`.
 In general, we try to avoid unnecessary graph breaks whenever we can. For
 example, we may choose to return a tensor of shape `(2, *)` rather than a list
-of pairs, to avoid unnecessary graph breaks.
+of pairs, to avoid a graph break.
 
-**Type promotion**. Another not-so-well-known fact of NumPy's cast system is
-that it is data-dependent. Python scalars can be used in pretty much any NumPy
+**Type promotion**. Another not-so-well-known fact of NumPy's dtype system  and casting rules
+is that it is data-dependent. Python scalars can be used in pretty much any NumPy
 operation, being able to call any operation that accepts a 0-D array with a
 Python scalar. If you provide an operation with a Python scalar, these will be
-casted to the smallest dtype they can be represented in, and then, they will
+cast to the smallest dtype they can be represented in, and only then will they
 participate in type promotion. This allows for for some rather interesting behaviour
 ```python
 >>> np.asarray([1], dtype=np.int8) + 127
@@ -163,11 +165,12 @@ array([128], dtype=int8)
 >>> np.asarray([1], dtype=np.int8) + 128
 array([129], dtype=int16)
 ```
-This data-dependent type promotion will be deprecated NumPy 2.0, and will be
-replaced with [NEP 50](https://numpy.org/neps/nep-0050-scalar-promotion.html).
+This data-dependent type promotion will be removed in NumPy 2.0 (planned for Dec'23), and will be
+replaced with [NEP 50](https://numpy.org/neps/nep-0050-scalar-promotion.html)
+(already implemented in NumPy, it needs to be enabled via a private global switch now).
 For simplicity and to be forward-looking, we chose to implement the
 type promotion behaviour proposed in NEP 50, which is much closer to that of
-Pytorch.
+PyTorch.
 
 Note that the decision of going with NEP 50 complements the previous one of
 returning 0-D arrays in place of NumPy scalars as, currently, 0-D arrays do not
@@ -178,24 +181,22 @@ np.result_type(np.int8, int64_0d_array) == np.int8
 ```
 
 **Versioning**. It should be clear from the previous points that NumPy has a
-fair amount of questionable and legacy pain points. It is for this reason that
+fair amount of questionable behavior and legacy pain points. It is for this reason that
 we decided that rather than fighting these, we would declare that the compat
-layer follows the behavior of Numpy's most recent release (even, in some cases,
+layer follows the behavior of NumPy's most recent release (even, in some cases,
 of NumPy 2.0). Given the stability of NumPy's API and how battle-tested its
 main functions are, we do not expect this to become a big maintenance burden.
 If anything, it should make our lives easier, as some parts of NumPy will soon
 be simplified, saving us the pain of having to implement all the pre-existing
 corner-cases.
 
-For reference NumPy 2.0 is expected to land at the end of this year.
-
 **Randomness**. PyTorch and NumPy use different random number generation methods.
 In particular, NumPy recently moved to a [new API](https://numpy.org/doc/stable/reference/random/index.html)
-with a `Generator` object which has sampling methods on it. The current compat.
-layer does not implement this new API, as the default bit generator in NumPy is a
-`PCG64`, while on PyTorch we use a `MT19937` on CPU and a `Philox`. From this, it
-follows that this API will not give any reproducibility guarantees when it comes
-to randomness.
+with a `Generator` object which has sampling methods on it. The current compat
+layer does not implement this new API, as the default bit generator in NumPy is
+`PCG64`, while on PyTorch we use `MT19937` on CPU and `Philox` on non-CPU devices.
+From this, it follows that this API will not give any reproducibility
+guarantees when it comes to randomness.
 
 
 ## The `torch_np` module
@@ -210,20 +211,21 @@ here were
 We say *most* of NumPy's API, because NumPy's API is not only massive, but also
 there are parts of it which cannot be implemented in PyTorch. For example,
 NumPy has support for arrays of string, datetime, structured and other dtypes.
-Negative strides are other example of a feature that is just not supported in PyTorch.
+Negative strides are another example of a feature that is not supported in PyTorch.
 We put together a list of things that are out of the scope of this project in the
 [following issue](https://github.com/Quansight-Labs/numpy_pytorch_interop/issues/73).
 
 For the bulk of the functions, we started by prioritizing the most common
-operations. Then, when bringing tests from the NumPy test suite, we would triage
-and prioritize how important was to fix each failure we found. Iterating this
-process, we ended up with a small list of differences between the NumPy and the
-PyTorch API which we prioritized by hand. That list and the prioritization
+operations. Then, when bringing tests from the NumPy test suite, we triaged
+and prioritized how important it was to fix each failure we found. Doing this
+iteratively, we ended up with a small list of differences between the NumPy and
+PyTorch APIs, which we prioritized by hand. That list and the prioritization
 discussion can be found in [this issue](https://github.com/Quansight-Labs/numpy_pytorch_interop/issues/87).
 
 **Visibility of the module** For simplicity, this RFC assumes that the
-`torch_np` module will not be public, as the decision for it to be made public
-was met with different opinions.
+`torch_np` module will not be public, as the initial suggestion for it to be
+made public was met with mixed opinions. This topic can be revisited in the
+future if desired.
 We discuss these in the section [unresolved questions](#unresolved-questions).
 
 ### Annotation-based preprocessing
@@ -261,7 +263,7 @@ internally), we can simply vendor its implementation, and have it call our
 PyTorch-land implementations of these functions. In other words, at this level,
 functions are composable, as they are simply regular PyTorch functions.
 All these implementations are internal, and are not meant to be seen or used
-by the final user.
+by the end user.
 
 The second step is then done via type annotations and a decorator. Each type
 annotation has an associated function from NumPy-land into PyTorch-land. This
@@ -287,41 +289,43 @@ We currently have four annotations (and small variations of them):
 - `AxisLike`: Takes anything that can be accepted as an axis (e.g. a tuple or
   an `ndarray`) and returns a tuple.
 - `OutArray`: Asserts that the input is a `torch_np.ndarray`. This is used
-  to implement the `out` arg.
+  to implement the `out` keyword.
 
 Note that none of the code in this implementation  makes use of NumPy. We are
-writing `torch_np.ndarray` above to make more explicit our intents, but there
+writing `torch_np.ndarray` above to make more explicit our intent, but there
 shouldn't be any ambiguity.
 
-**Implmenting out**: In PyTorch, the `out` kwarg is, as the name says, a
-keyword-only argument. It is for this reason that, in PrimTorch, we were able
-to implement it as [a decorator](https://github.com/pytorch/pytorch/blob/ce4df4cc596aa10534ac6d54912f960238264dfd/torch/_prims_common/wrappers.py#L187-L282).
-This is not the case in NumPy. In NumPy `out` is a positional arg that is often
-interleaved with other parameters. This is the reason why we use the `OutArray`
-annotation to mark these. We then implement the `out` semantics in the `@normalizer`
-wrapper in a generic way.
+**Implementing `out`**: In PyTorch, the `out` kwarg is a keyword-only argument.
+It is for this reason that, in PrimTorch, we were able to implement it as [a
+decorator](https://github.com/pytorch/pytorch/blob/ce4df4cc596aa10534ac6d54912f960238264dfd/torch/_prims_common/wrappers.py#L187-L282).
+This is not the case in NumPy. In NumPy, `out` can be used both as a positional
+and a keyword argument, and is often interleaved with other parameters. This is
+the reason why we use the `OutArray` annotation to mark these. We then
+implement the `out` semantics in the `@normalizer` wrapper in a generic way.
 
 **Ufuncs and reductions**: Ufuncs (unary and binary) and reductions are two
 sets of functions that are particularly regular. For these functions, we
-implement their args in a generic way as a preprocessing or postprocessing.
+implement support for their arguments in a generic way as a preprocessing or
+postprocessing step.
 
-**The ndarray class** Once we have all the free functions implemented as
-functions form `torch_np.ndarray`s to `torch_np.ndarray`s, implementing the
+**The `ndarray` class** Once we have all the free functions implemented as
+functions from `torch_np.ndarray`s to `torch_np.ndarray`s, implementing the
 methods from the `ndarray` class is rather simple. We simply register all the
 free functions as methods or dunder methods appropriately. We also forward the
-properties to the properties within the PyTorch tensor and we are done.
-This creates a circular dependency which we break with a local import.
+properties of `ndarray to the corresponding properties of `torch.Tensor` and we
+are done. This creates a circular dependency which we break with a local
+import.
 
 ### Testing
 
 The testing of the framework was done via ~~copying~~ vendoring tests from the
 NumPy test suite. Then, we would replace the NumPy imports with `torch_np`
-imports. The failures on these tests were then triaged and discussed the
-priority of fixing each of them.
+imports. The failures on these tests were then triaged, and either fixed or marked
+`xfail` depending on our assessment of the priority of implementing a fix.
 
 In the end, to have a last check that this tool was sound, we pulled five
-examples of NumPy code from different sources and we run it with this library.
-We were able to successfully the five examples successfully with close to no code changes.
+examples of NumPy code from different sources and ran it with this library (eager mode execution).
+We were able to run the five examples successfully with close to no code changes.
 You can read about these in the [README](https://github.com/Quansight-Labs/numpy_pytorch_interop).
 
 ### Limitations
@@ -331,25 +335,26 @@ A number of known limitations are tracked in the second part of the
 When landing this RFC, we will create a comprehensive document with the differences
 between NumPy and `torch_np`.
 
-### Beyond Plain NumPy
+### Beyond plain NumPy
 
-**GPU**. The current implementation has just been implemented and tested on
-CPU. We expect GPU coverage to be as good as the coverage we have with CPU
-matching GPU. If the original tensors are on GPU, the whole execution should
-be performed on the GPU.
+**GPU**. The current implementation so far only been implemented and tested on
+CPU. We expect GPU coverage to be as good as the coverage we have with CPU-GPU
+matching tests in the PyTorch test suite. If the original tensors are on GPU,
+the execution should be performed fully on GPU.
 
 **Gradients**. We have not tested gradient tracking either as we are still to
 find some good examples on which to test it, but it should be a simple
-corollary of all this effort. If the original tensors fed into the function do
+corollary of all this effort. If the original tensors fed into a function
 have `requires_grad=True`, the tensors will track the gradients of the internal
-implementation and then the user could differentiate through the NumPy code.
+implementation and then the user can differentiate through their NumPy code.
 
-### Bindings to TorchDyamo
+### Bindings to TorchDynamo
 
-The bindings for NumPy at the TorchDynamo level are currently being developed at [#95849](https://github.com/pytorch/pytorch/pull/95849).
+The bindings for NumPy at the TorchDynamo level are currently being developed in
+[pytorch#95849](https://github.com/pytorch/pytorch/pull/95849).
 
 
-## Unresolved Questions
+## Unresolved questions
 
 A question was left open in the initial discussion. Should the module
 `torch_np` be publicly exposed as `torch.numpy` or not?
@@ -369,7 +374,7 @@ A few arguments in favor of making it public:
 A few arguments against:
 * The compat introduces a number of type conversions that may produce somewhat
   slow code when used in eager mode.
-  * [Note] Keeping this in mind, we tried to use in the implementations as few
-    operators as possible, to make it reasonably fast in eager mode.
+  * [Note] Keeping this in mind, we tried to use as few operators as possible,
+    in the implementation, to make it reasonably fast in eager mode.
 * Exposing `torch.numpy` would create a less performant secondary entry point
   to many of the functions in PyTorch. This could be a trap for new users.
