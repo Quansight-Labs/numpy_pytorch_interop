@@ -85,6 +85,10 @@ def fn(x, y):
     return np.multiply(x, y).sum()
 ```
 
+Then, TorchDynamo would will cast `x` and `y` to our internal implementation of `ndarray`,
+and will dispatch `np.multiply` and `sum` to our implementations in terms of `torch`
+functions effectively turning this function into a pure PyTorch function.
+
 ### Design decisions
 
 The main ideas driving the design of this compatibility layer are the following:
@@ -112,6 +116,8 @@ codebases from NumPy to JAX is the default dtype changing from `float64` to
 [JAX's shap edges](https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html#double-64bit-precision).
 Following the spirit of making everything match NumPy by default, we choose the
 NumPy defaults whenever the `dtype` was not made explicit in a factory function.
+We also provide a function `set_default_dtype` that allows to change this behavior
+dynamically.
 
 **NumPy scalars**. NumPy's type system is tricky. At first sight, it looks
 like PyTorch's, but with few more dtypes like `np.uint16` or `np.longdouble`.
@@ -123,7 +129,8 @@ return just one element. NumPy scalars do not play particularly well with
 computations on devices like GPUs, as they live on CPU. Implementing NumPy
 scalars would mean that we need to synchronize after every `sum()` call, which
 would be terrible performance-wise. In this implementation, we choose to represent
-NumPy scalars as 0-D arrays. This may cause small divergences in some cases like
+NumPy scalars as 0-D arrays. This may cause small divergences in some cases. For example,
+consider the following NumPy behavior:
 
 ```python
 >>> np.int32(2) * [1, 2, 3]       # scalar decays to a python int
@@ -133,7 +140,7 @@ NumPy scalars as 0-D arrays. This may cause small divergences in some cases like
 array([2, 4, 6])
 ```
 
-but we don't expect these to pose a big issue in practice. Note that in the
+We don't expect these to pose a big issue in practice. Note that in the
 proposed implementation `np.int32(2)` would return the same as `np.asarray(2)`.
 In general, we try to avoid unnecessary graph breaks whenever we can. For
 example, we may choose to return a tensor of shape `(2, *)` rather than a list
@@ -151,7 +158,7 @@ array([128], dtype=int8)
 >>> np.asarray([1], dtype=np.int8) + 128
 array([129], dtype=int16)
 ```
-This dependent type promotion will be deprecated NumPy 2.0, and will be
+This data-dependent type promotion will be deprecated NumPy 2.0, and will be
 replaced with [NEP 50](https://numpy.org/neps/nep-0050-scalar-promotion.html).
 For simplicity and to be forward-looking, we chose to implement the
 type promotion behaviour proposed in NEP 50, which is much closer to that of
@@ -270,7 +277,8 @@ objects to PyTorch counterparts) according to their annotations.
 We currently have four annotations (and small variations of them):
 - `ArrayLike`: The input can be a `torch_np.array`, a list of lists, a
   scalar, or anything that NumPy would accept. It returns a `torch.Tensor`.
-- `DTypeLike`: Takes a `torch_np` dtype and returns a PyTorch dtype.
+- `DTypeLike`: Takes a `torch_np` dtype, and any other object that Numpy dtypes
+  accept (strings, typecodes...) and returns a PyTorch dtype.
 - `AxisLike`: Takes anything that can be accepted as an axis (e.g. a tuple or
   an `ndarray`) and returns a tuple.
 - `OutArray`: Asserts that the input is a `torch_np.ndarray`. This is used
@@ -302,18 +310,19 @@ This creates a circular dependency which we break with a local import.
 ### Testing
 
 The testing of the framework was done via ~~copying~~ vendoring tests from the
-NumPy test suit. Then, we would replace the NumPy imports with `torch_np`
+NumPy test suite. Then, we would replace the NumPy imports with `torch_np`
 imports. The failures on these tests were then triaged and discussed the
 priority of fixing each of them.
 
-In the (near) future, we plan to get some real world examples and run them
-through the library, to test its coverage and correctness.
+In the end, to have a last check that this tool was sound, we pulled five
+examples of NumPy code from different sources and we run it with this library.
+We were able to successfully the five examples successfully with close to no code changes.
+You can read about these in the [README](https://github.com/Quansight-Labs/numpy_pytorch_interop).
 
 ### Limitations
 
 A number of known limitations are tracked in the second part of the
 [OP of this issue](https://github.com/Quansight-Labs/numpy_pytorch_interop/issues/73).
-There are some more in [this issue](https://github.com/Quansight-Labs/numpy_pytorch_interop/issues/86).
 When landing this RFC, we will create a comprehensive document with the differences
 between NumPy and `torch_np`.
 
