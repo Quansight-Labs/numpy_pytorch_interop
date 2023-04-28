@@ -11,10 +11,15 @@ In simple terms, this accounts for implementing most of NumPy's API (`ndarray`,
 the `numpy`, `numpy.linalg`, `numpy.fft`  modules, etc) using `torch.Tensor`
 and PyTorch ops as backend.
 
-
-The this project has a main goal as per the
-[initial design document](https://docs.google.com/document/d/1gdUDgZNbumFORRcUaZUVw790CtNYweAM20C1fbWMNd8):
-1. Make TorchDynamo understand NumPy calls
+The main goal is: **make TorchDynamo understand NumPy calls**.
+This should enable an end user to combine code that uses the PyTorch API with
+code that uses the NumPy API, in a way that allows TorchDynamo to understand
+those function calls and build up an execution graph. To enable this, it is key
+that there is a translation layer from NumPy to PyTorch function calls, which
+TorchDynamo can use in order to build up its execution graph from PyTorch
+functions/primitives only. For niche functions in NumPy that don’t have a
+PyTorch equivalent, it’s okay to graph break and still call NumPy to execute
+the function call.
 
 The work is currently being done at [numpy_pytorch_interop](https://github.com/Quansight-Labs/numpy_pytorch_interop/).
 
