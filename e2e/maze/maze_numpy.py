@@ -12,6 +12,9 @@ import matplotlib.pyplot as plt
 
 _np.random.seed(1234)
 
+import torch
+torch.set_default_device("cuda")
+
 
 def build_maze(shape=(65,65), complexity=0.75, density = 0.50):
     """
@@ -30,7 +33,7 @@ def build_maze(shape=(65,65), complexity=0.75, density = 0.50):
       Mean numbers of highland (as a ratio of maze surface)
 
     """
-    
+
     # Only odd shapes
     shape = ((shape[0]//2)*2+1, (shape[1]//2)*2+1)
 
@@ -192,10 +195,10 @@ if __name__ == '__main__':
     print("Z = ", Z)
     print("P = ", P)
 
-    X = X.tensor.numpy()
-    Y = Y.tensor.numpy()    
-    Z = Z.tensor.numpy()
-    G = G.tensor.numpy()
+    X = X.tensor.cpu().numpy()
+    Y = Y.tensor.cpu().numpy()
+    Z = Z.tensor.cpu().numpy()
+    G = G.tensor.cpu().numpy()
 
     # Visualization maze, gradient and shortest path
     plt.figure(figsize=(13, 13*Z.shape[0]/Z.shape[1]))

@@ -4,6 +4,9 @@
 import numpy as _np
 import torch_np as np
 
+import torch
+torch.set_default_device('cuda')
+
 # Creating data set
  
 # A

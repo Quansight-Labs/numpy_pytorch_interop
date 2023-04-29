@@ -12,6 +12,9 @@ https://github.com/albertosantini/python-fluid
 """
 import torch_np as np
 
+import torch
+torch.set_default_device("cuda")
+
 
 def set_bnd(N, b, x):
     """We assume that the fluid is contained in a box with solid walls.

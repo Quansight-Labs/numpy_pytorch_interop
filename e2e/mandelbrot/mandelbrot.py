@@ -6,6 +6,9 @@
 #import numpy as np
 import torch_np as np
 
+import torch
+torch.set_default_device("cuda")
+
 # from mandelbrot_numpy_1 import mandelbrot  # copy-paste below
 
 def mandelbrot(xmin, xmax, ymin, ymax, xn, yn, maxiter, horizon=2.0):
@@ -58,7 +61,7 @@ if __name__ == '__main__':
 
     light = colors.LightSource(azdeg=315, altdeg=10)
 
-    plt.imshow(light.shade(M.tensor.numpy(), cmap=plt.cm.hot, vert_exag=1.5,
+    plt.imshow(light.shade(M.tensor.cpu().numpy(), cmap=plt.cm.hot, vert_exag=1.5,
                            norm = colors.PowerNorm(0.3), blend_mode='hsv'),
                extent=[xmin, xmax, ymin, ymax], interpolation="bicubic")
     ax.set_xticks([])

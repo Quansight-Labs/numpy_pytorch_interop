@@ -58,7 +58,7 @@ def update(*args):
 
     vel_step(N, u, v, u_prev, v_prev, visc, dt)
     dens_step(N, dens, dens_prev, u, v, diff, dt)
-    im.set_data(dens.tensor.numpy())
+    im.set_data(dens.tensor.cpu().numpy())
     im.set_clim(vmin=dens.min(), vmax=dens.max())
 
 
@@ -74,11 +74,11 @@ if __name__ == '__main__':
     ax.set_yticks([])
 
     initialization()
-    im = ax.imshow(dens[1:-1, 1:-1].tensor.numpy(),
+    im = ax.imshow(dens[1:-1, 1:-1].tensor.cpu().numpy(),
                    interpolation='bicubic', extent=[0, 1, 0, 1],
                    cmap=plt.cm.magma, origin="lower", vmin=0, vmax=1)
     animation = FuncAnimation(fig, update, interval=10, frames=800)
-    # animation.save('smoke-1.mp4', fps=40, dpi=80, bitrate=-1,
-    #                codec="libx264", extra_args=['-pix_fmt', 'yuv420p'],
-    #                metadata={'artist':'Nicolas P. Rougier'})
+    animation.save('smoke-1.mp4', fps=40, dpi=80, bitrate=-1,
+                    codec="libx264") #, extra_args=['-pix_fmt', 'yuv420p'],
+                    # metadata={'artist':'Nicolas P. Rougier'})
     plt.show()
