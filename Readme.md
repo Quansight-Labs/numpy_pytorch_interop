@@ -20,6 +20,12 @@ In short, the main changes to examples are:
 - Interaction with matplotlib: for plotting, we need to convert our wrapper ndarrays to PyTorch tensors or original NumPy arrays. In practice, this will be done automatically by TorchDynamo.
 
 
+We checked that our examples run on both CPU and GPU by setting the PyTorch global state
+
+```
+torch.set_default_device("cuda")    # or "cpu"
+```
+
 More specifics for the examples we run:
 
 
