@@ -79,6 +79,6 @@ if __name__ == '__main__':
                    cmap=plt.cm.magma, origin="lower", vmin=0, vmax=1)
     animation = FuncAnimation(fig, update, interval=10, frames=800)
     animation.save('smoke-1.mp4', fps=40, dpi=80, bitrate=-1,
-                    codec="libx264") #, extra_args=['-pix_fmt', 'yuv420p'],
-                    # metadata={'artist':'Nicolas P. Rougier'})
+                    codec="libx264", extra_args=['-pix_fmt', 'yuv420p'],
+                    metadata={'artist':'Nicolas P. Rougier'})
     plt.show()
