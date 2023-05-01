@@ -14,12 +14,8 @@ from typing import Optional, Sequence
 
 import torch
 
-from . import _dtypes_impl
-from . import _reductions as _impl
-from . import _util
-
-# these imports are for einsum only
-from ._normalizations import (  # isort: skip
+from . import _dtypes_impl, _util
+from ._normalizations import (
     ArrayLike,
     AxisLike,
     CastingModes,
@@ -27,12 +23,10 @@ from ._normalizations import (  # isort: skip
     NDArray,
     NotImplementedType,
     OutArray,
-    maybe_copy_to,
-    normalize_array_like,
-    normalize_casting,
-    normalize_dtype,
-    wrap_tensors,
 )
+
+# Export all the functios from _reductions, which will be picked up at funcs.py
+from ._reductions import *
 
 # ###### array creation routines
 
@@ -1223,8 +1217,16 @@ def outer(a: ArrayLike, b: ArrayLike, out: Optional[OutArray] = None):
 
 def einsum(*operands, out=None, dtype=None, order="K", casting="safe", optimize=False):
     # Have to manually normalize *operands and **kwargs, following the NumPy signature
-
+    # We have a local import to avoid poluting the global space, as it will be then
+    # exported in funcs.py
     from ._ndarray import ndarray
+    from ._normalizations import (
+        maybe_copy_to,
+        normalize_array_like,
+        normalize_casting,
+        normalize_dtype,
+        wrap_tensors,
+    )
 
     dtype = normalize_dtype(dtype)
     casting = normalize_casting(casting)
@@ -1415,279 +1417,6 @@ def ravel(a: ArrayLike, order: NotImplementedType = "C"):
     return torch.flatten(a)
 
 
-# ### reductions ###
-
-
-def sum(
-    a: ArrayLike,
-    axis: AxisLike = None,
-    dtype: Optional[DTypeLike] = None,
-    out: Optional[OutArray] = None,
-    keepdims=None,
-    initial: NotImplementedType = None,
-    where: NotImplementedType = None,
-):
-    result = _impl.sum(
-        a, axis=axis, dtype=dtype, initial=initial, where=where, keepdims=keepdims
-    )
-    return result
-
-
-def prod(
-    a: ArrayLike,
-    axis: AxisLike = None,
-    dtype: Optional[DTypeLike] = None,
-    out: Optional[OutArray] = None,
-    keepdims=None,
-    initial: NotImplementedType = None,
-    where: NotImplementedType = None,
-):
-    result = _impl.prod(
-        a, axis=axis, dtype=dtype, initial=initial, where=where, keepdims=keepdims
-    )
-    return result
-
-
-product = prod
-
-
-def mean(
-    a: ArrayLike,
-    axis: AxisLike = None,
-    dtype: Optional[DTypeLike] = None,
-    out: Optional[OutArray] = None,
-    keepdims=None,
-    *,
-    where: NotImplementedType = None,
-):
-    result = _impl.mean(a, axis=axis, dtype=dtype, where=None, keepdims=keepdims)
-    return result
-
-
-def var(
-    a: ArrayLike,
-    axis: AxisLike = None,
-    dtype: Optional[DTypeLike] = None,
-    out: Optional[OutArray] = None,
-    ddof=0,
-    keepdims=None,
-    *,
-    where: NotImplementedType = None,
-):
-    result = _impl.var(
-        a, axis=axis, dtype=dtype, ddof=ddof, where=where, keepdims=keepdims
-    )
-    return result
-
-
-def std(
-    a: ArrayLike,
-    axis: AxisLike = None,
-    dtype: Optional[DTypeLike] = None,
-    out: Optional[OutArray] = None,
-    ddof=0,
-    keepdims=None,
-    *,
-    where: NotImplementedType = None,
-):
-    result = _impl.std(
-        a, axis=axis, dtype=dtype, ddof=ddof, where=where, keepdims=keepdims
-    )
-    return result
-
-
-def argmin(
-    a: ArrayLike,
-    axis: AxisLike = None,
-    out: Optional[OutArray] = None,
-    *,
-    keepdims=None,
-):
-    result = _impl.argmin(a, axis=axis, keepdims=keepdims)
-    return result
-
-
-def argmax(
-    a: ArrayLike,
-    axis: AxisLike = None,
-    out: Optional[OutArray] = None,
-    *,
-    keepdims=None,
-):
-    result = _impl.argmax(a, axis=axis, keepdims=keepdims)
-    return result
-
-
-def amax(
-    a: ArrayLike,
-    axis: AxisLike = None,
-    out: Optional[OutArray] = None,
-    keepdims=None,
-    initial: NotImplementedType = None,
-    where: NotImplementedType = None,
-):
-    result = _impl.max(a, axis=axis, initial=initial, where=where, keepdims=keepdims)
-    return result
-
-
-max = amax
-
-
-def amin(
-    a: ArrayLike,
-    axis: AxisLike = None,
-    out: Optional[OutArray] = None,
-    keepdims=None,
-    initial: NotImplementedType = None,
-    where: NotImplementedType = None,
-):
-    result = _impl.min(a, axis=axis, initial=initial, where=where, keepdims=keepdims)
-    return result
-
-
-min = amin
-
-
-def ptp(
-    a: ArrayLike,
-    axis: AxisLike = None,
-    out: Optional[OutArray] = None,
-    keepdims=None,
-):
-    result = _impl.ptp(a, axis=axis, keepdims=keepdims)
-    return result
-
-
-def all(
-    a: ArrayLike,
-    axis: AxisLike = None,
-    out: Optional[OutArray] = None,
-    keepdims=None,
-    *,
-    where: NotImplementedType = None,
-):
-    result = _impl.all(a, axis=axis, where=where, keepdims=keepdims)
-    return result
-
-
-def any(
-    a: ArrayLike,
-    axis: AxisLike = None,
-    out: Optional[OutArray] = None,
-    keepdims=None,
-    *,
-    where: NotImplementedType = None,
-):
-    result = _impl.any(a, axis=axis, where=where, keepdims=keepdims)
-    return result
-
-
-def count_nonzero(a: ArrayLike, axis: AxisLike = None, *, keepdims=False):
-    result = _impl.count_nonzero(a, axis=axis, keepdims=keepdims)
-    return result
-
-
-def cumsum(
-    a: ArrayLike,
-    axis: AxisLike = None,
-    dtype: Optional[DTypeLike] = None,
-    out: Optional[OutArray] = None,
-):
-    result = _impl.cumsum(a, axis=axis, dtype=dtype)
-    return result
-
-
-def cumprod(
-    a: ArrayLike,
-    axis: AxisLike = None,
-    dtype: Optional[DTypeLike] = None,
-    out: Optional[OutArray] = None,
-):
-    result = _impl.cumprod(a, axis=axis, dtype=dtype)
-    return result
-
-
-cumproduct = cumprod
-
-
-def quantile(
-    a: ArrayLike,
-    q: ArrayLike,
-    axis: AxisLike = None,
-    out: Optional[OutArray] = None,
-    overwrite_input=False,
-    method="linear",
-    keepdims=False,
-    *,
-    interpolation: NotImplementedType = None,
-):
-    result = _impl.quantile(
-        a,
-        q,
-        axis,
-        overwrite_input=overwrite_input,
-        method=method,
-        keepdims=keepdims,
-        interpolation=interpolation,
-    )
-    return result
-
-
-def percentile(
-    a: ArrayLike,
-    q: ArrayLike,
-    axis: AxisLike = None,
-    out: Optional[OutArray] = None,
-    overwrite_input=False,
-    method="linear",
-    keepdims=False,
-    *,
-    interpolation: NotImplementedType = None,
-):
-    result = _impl.percentile(
-        a,
-        q,
-        axis,
-        overwrite_input=overwrite_input,
-        method=method,
-        keepdims=keepdims,
-        interpolation=interpolation,
-    )
-    return result
-
-
-def median(
-    a: ArrayLike,
-    axis=None,
-    out: Optional[OutArray] = None,
-    overwrite_input=False,
-    keepdims=False,
-):
-    return quantile(
-        a,
-        torch.as_tensor(0.5),
-        axis=axis,
-        overwrite_input=overwrite_input,
-        out=out,
-        keepdims=keepdims,
-    )
-
-
-def average(
-    a: ArrayLike,
-    axis=None,
-    weights: ArrayLike = None,
-    returned=False,
-    *,
-    keepdims=None,
-):
-    result, wsum = _impl.average(a, axis, weights, returned=returned, keepdims=keepdims)
-    if returned:
-        return result, wsum
-    else:
-        return result
-
-
 def diff(
     a: ArrayLike,
     n=1,
@@ -1809,6 +1538,9 @@ def i0(x: ArrayLike):
 
 
 def isscalar(a):
+    # We need to use normalize_array_like, but we don't want to export it in funcs.py
+    from ._normalizations import normalize_array_like
+
     try:
         t = normalize_array_like(a)
         return t.numel() == 1

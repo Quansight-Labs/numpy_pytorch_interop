@@ -1,4 +1,5 @@
 import functools
+import inspect
 
 import numpy as _np
 import pytest
@@ -539,3 +540,16 @@ class TestDefaultDtype:
         finally:
             # restore the
             w.set_default_dtype(fp_dtype="numpy")
+
+
+class TestExport:
+    def test_exported_objects(self):
+        exported_fns = (
+            x
+            for x in dir(w)
+            if inspect.isfunction(getattr(w, x))
+            and not x.startswith("_")
+            and x != "set_default_dtype"
+        )
+        diff = set(exported_fns).difference(set(dir(_np)))
+        assert len(diff) == 0
