@@ -307,7 +307,6 @@ def cumprod(
 cumproduct = cumprod
 
 
-@_deco_axis_expand
 def average(
     a: ArrayLike,
     axis=None,
@@ -320,7 +319,33 @@ def average(
         result = mean(a, axis=axis)
         wsum = torch.as_tensor(a.numel() / result.numel(), dtype=result.dtype)
     else:
-        result, wsum = _average_weights(a, axis, weights)
+        if not a.dtype.is_floating_point:
+            a = a.double()
+
+        # axis & weights
+        if a.shape != weights.shape:
+            if axis is None:
+                raise TypeError(
+                    "Axis must be specified when shapes of a and weights " "differ."
+                )
+            if weights.ndim != 1:
+                raise TypeError(
+                    "1D weights expected when shapes of a and weights differ."
+                )
+            if weights.shape[0] != a.shape[axis]:
+                raise ValueError(
+                    "Length of weights not compatible with specified axis."
+                )
+
+            # setup weight to broadcast along axis
+            weights = torch.broadcast_to(weights, (a.ndim - 1) * (1,) + weights.shape)
+            weights = weights.swapaxes(-1, axis)
+
+        # do the work
+        result_dtype = _dtypes_impl.result_type_impl([a.dtype, weights.dtype])
+        numerator = sum(a * weights, axis, dtype=result_dtype)
+        wsum = sum(weights, axis, dtype=result_dtype)
+        result = numerator / wsum
 
     # We process keepdims manually because the decorator does not deal with variadic returns
     if keepdims:
@@ -332,35 +357,6 @@ def average(
         return result, wsum
     else:
         return result
-
-
-def _average_weights(a, axis, w):
-    if not a.dtype.is_floating_point:
-        a = a.double()
-
-    result_dtype = _dtypes_impl.result_type_impl([a.dtype, w.dtype])
-
-    # axis & weights
-    if a.shape != w.shape:
-        if axis is None:
-            raise TypeError(
-                "Axis must be specified when shapes of a and weights " "differ."
-            )
-        if w.ndim != 1:
-            raise TypeError("1D weights expected when shapes of a and weights differ.")
-        if w.shape[0] != a.shape[axis]:
-            raise ValueError("Length of weights not compatible with specified axis.")
-
-        # setup weight to broadcast along axis
-        w = torch.broadcast_to(w, (a.ndim - 1) * (1,) + w.shape)
-        w = w.swapaxes(-1, axis)
-
-    # do the work
-    numerator = torch.mul(a, w).sum(axis, dtype=result_dtype)
-    denominator = w.sum(axis, dtype=result_dtype)
-    result = numerator / denominator
-
-    return result, denominator
 
 
 # Not using deco_axis_expand as it assumes that axis is the second arg
