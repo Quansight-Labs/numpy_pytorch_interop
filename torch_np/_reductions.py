@@ -181,12 +181,8 @@ def sum(
     if dtype == torch.bool:
         dtype = _dtypes_impl.default_dtypes.int_dtype
 
-    if axis is None:
-        result = a.sum(dtype=dtype)
-    else:
-        result = a.sum(dtype=dtype, dim=axis)
-
-    return result
+    axis_kw = {} if axis is None else {"dim": axis}
+    return a.sum(dtype=dtype, **axis_kw)
 
 
 @_deco_axis_expand
@@ -204,12 +200,8 @@ def prod(
     if dtype == torch.bool:
         dtype = _dtypes_impl.default_dtypes.int_dtype
 
-    if axis is None:
-        result = a.prod(dtype=dtype)
-    else:
-        result = a.prod(dtype=dtype, dim=axis)
-
-    return result
+    axis_kw = {} if axis is None else {"dim": axis}
+    return a.prod(dtype=dtype, **axis_kw)
 
 
 product = prod
@@ -232,10 +224,8 @@ def mean(
         # XXX revisit when the pytorch version has pytorch/pytorch#95166
         dtype = torch.float32
 
-    if axis is None:
-        result = a.mean(dtype=dtype)
-    else:
-        result = a.mean(dtype=dtype, dim=axis)
+    axis_kw = {} if axis is None else {"dim": axis}
+    result = a.mean(dtype=dtype, **axis_kw)
 
     if is_half:
         result = result.to(torch.float16)
@@ -327,10 +317,12 @@ def average(
     keepdims=False,
 ):
     if weights is None:
-        result, wsum = _average_noweights(a, axis)
+        result = mean(a, axis=axis)
+        wsum = torch.as_tensor(a.numel() / result.numel(), dtype=result.dtype)
     else:
         result, wsum = _average_weights(a, axis, weights)
 
+    # We process keepdims manually because the decorator does not deal with variadic returns
     if keepdims:
         result = _util.apply_keepdims(result, axis, a.ndim)
 
@@ -340,12 +332,6 @@ def average(
         return result, wsum
     else:
         return result
-
-
-def _average_noweights(a, axis):
-    result = mean(a, axis=axis)
-    scl = torch.as_tensor(a.numel() / result.numel(), dtype=result.dtype)
-    return result, scl
 
 
 def _average_weights(a, axis, w):
@@ -377,6 +363,7 @@ def _average_weights(a, axis, w):
     return result, denominator
 
 
+# Not using deco_axis_expand as it assumes that axis is the second arg
 def quantile(
     a: ArrayLike,
     q: ArrayLike,
