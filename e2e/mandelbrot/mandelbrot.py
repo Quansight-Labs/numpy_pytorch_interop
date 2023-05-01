@@ -6,8 +6,11 @@
 #import numpy as np
 import torch_np as np
 
+
+# To run on CUDA, change "cpu" to "cuda" below.
 import torch
-torch.set_default_device("cuda")
+torch.set_default_device("cpu")
+
 
 # from mandelbrot_numpy_1 import mandelbrot  # copy-paste below
 

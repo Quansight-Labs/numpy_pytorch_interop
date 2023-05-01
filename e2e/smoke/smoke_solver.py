@@ -12,8 +12,9 @@ https://github.com/albertosantini/python-fluid
 """
 import torch_np as np
 
+# To run on CUDA, change "cpu" to "cuda" below.
 import torch
-torch.set_default_device("cuda")
+torch.set_default_device("cpu")
 
 
 def set_bnd(N, b, x):

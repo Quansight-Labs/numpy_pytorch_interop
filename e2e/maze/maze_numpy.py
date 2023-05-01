@@ -12,8 +12,10 @@ import matplotlib.pyplot as plt
 
 _np.random.seed(1234)
 
+
+# To run on CUDA, change "cpu" to "cuda" below.
 import torch
-torch.set_default_device("cuda")
+torch.set_default_device("cpu")
 
 
 def build_maze(shape=(65,65), complexity=0.75, density = 0.50):
