@@ -4,6 +4,11 @@
 import numpy as _np
 import torch_np as np
 
+# To run on CUDA, change "cpu" to "cuda" below.
+import torch
+torch.set_default_device("cpu")
+
+
 # Creating data set
  
 # A
