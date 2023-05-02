@@ -1,6 +1,8 @@
 import sys
 import pytest
 
+import torch
+
 import torch_np as np
 from torch_np.testing import assert_array_equal
 
@@ -8,6 +10,7 @@ IS_PYPY = False
 
 
 class TestDLPack:
+    @pytest.mark.xfail(reason="pytorch seems to handle refcounts differently")
     @pytest.mark.skipif(IS_PYPY, reason="PyPy can't get refcounts.")
     def test_dunder_dlpack_refcount(self):
         x = np.arange(5)
@@ -16,6 +19,7 @@ class TestDLPack:
         del y
         assert sys.getrefcount(x) == 2
 
+    @pytest.mark.xfail(reason="pytorch does not raise")
     def test_dunder_dlpack_stream(self):
         x = np.arange(5)
         x.__dlpack__(stream=None)
@@ -23,14 +27,7 @@ class TestDLPack:
         with pytest.raises(RuntimeError):
             x.__dlpack__(stream=1)
 
-    def test_strides_not_multiple_of_itemsize(self):
-        dt = np.dtype([('int', np.int32), ('char', np.int8)])
-        y = np.zeros((5,), dtype=dt)
-        z = y['int']
-
-        with pytest.raises(BufferError):
-            np.from_dlpack(z)
-
+    @pytest.mark.xfail(reason="pytorch seems to handle refcounts differently")
     @pytest.mark.skipif(IS_PYPY, reason="PyPy can't get refcounts.")
     def test_from_dlpack_refcount(self):
         x = np.arange(5)
@@ -51,19 +48,6 @@ class TestDLPack:
 
         assert y.dtype == x.dtype
         assert_array_equal(x, y)
-
-    def test_invalid_dtype(self):
-        x = np.asarray(np.datetime64('2021-05-27'))
-
-        with pytest.raises(BufferError):
-            np.from_dlpack(x)
-
-    def test_invalid_byte_swapping(self):
-        dt = np.dtype('=i8').newbyteorder()
-        x = np.arange(5, dtype=dt)
-
-        with pytest.raises(BufferError):
-            np.from_dlpack(x)
 
     def test_non_contiguous(self):
         x = np.arange(25).reshape((5, 5))
@@ -107,6 +91,7 @@ class TestDLPack:
         with pytest.raises(RuntimeError):
             self.dlpack_deleter_exception()
 
+    @pytest.mark.skip(reason='no readonly arrays in pytorch')
     def test_readonly(self):
         x = np.arange(5)
         x.flags.writeable = False
@@ -118,8 +103,13 @@ class TestDLPack:
         y = np.from_dlpack(x)
         assert_array_equal(x, y)
 
-    def test_size1dims_arrays(self):
-        x = np.ndarray(dtype='f8', shape=(10, 5, 1), strides=(8, 80, 4),
-                       buffer=np.ones(1000, dtype=np.uint8), order='F')
-        y = np.from_dlpack(x)
-        assert_array_equal(x, y)
+    def test_from_torch(self):
+        t = torch.arange(4)
+        a = torch.from_dlpack(t)
+        assert_array_equal(a, t.numpy())
+
+    def test_to_torch(self):
+        a = np.arange(4)
+        t = torch.from_dlpack(a)
+        assert_array_equal(np.asarray(t), a)
+

@@ -442,6 +442,12 @@ class ndarray:
     take = _funcs.take
     put = _funcs.put
 
+    def __dlpack__(self, *, stream=None):
+        return self.tensor.__dlpack__(stream=stream)
+
+    def __dlpack_device__(self):
+        return self.tensor.__dlpack_device__()
+
 
 # This is the ideally the only place which talks to ndarray directly.
 # The rest goes through asarray (preferred) or array.
@@ -486,6 +492,11 @@ def array(obj, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=N
 
 def asarray(a, dtype=None, order="K", *, like=None):
     return array(a, dtype=dtype, order=order, like=like, copy=False, ndmin=0)
+
+
+def from_dlpack(x, /):
+    t = torch.from_dlpack(x)
+    return ndarray(t)
 
 
 ###### dtype routines
