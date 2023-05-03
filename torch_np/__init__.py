@@ -2,7 +2,15 @@ from . import fft, linalg, random
 from ._dtypes import *
 from ._funcs import *
 from ._getlimits import errstate, finfo, iinfo
-from ._ndarray import array, asarray, can_cast, ndarray, newaxis, result_type
+from ._ndarray import (
+    array,
+    asarray,
+    can_cast,
+    from_dlpack,
+    ndarray,
+    newaxis,
+    result_type,
+)
 from ._ufuncs import *
 from ._util import AxisError, UFuncTypeError
 
