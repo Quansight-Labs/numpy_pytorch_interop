@@ -105,8 +105,8 @@ class TestDLPack:
 
     def test_from_torch(self):
         t = torch.arange(4)
-        a = torch.from_dlpack(t)
-        assert_array_equal(a, t.numpy())
+        a = np.from_dlpack(t)
+        assert_array_equal(a, np.asarray(t))
 
     def test_to_torch(self):
         a = np.arange(4)
