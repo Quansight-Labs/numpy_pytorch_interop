@@ -6124,13 +6124,25 @@ class TestWarnings:
             assert_equal(x, [1, 2])
 
 
-@pytest.mark.xfail(reason='TODO')
 class TestMinScalarType:
 
     def test_usigned_shortshort(self):
         dt = np.min_scalar_type(2**8-1)
         wanted = np.dtype('uint8')
         assert_equal(wanted, dt)
+
+    # three tests below are added based on what numpy does
+    def test_complex(self):
+        dt = np.min_scalar_type(0+0j)
+        assert dt == np.dtype('complex64')
+
+    def test_float(self):
+        dt = np.min_scalar_type(0.1)
+        assert dt == np.dtype('float16')
+
+    def test_nonscalar(self):
+        dt = np.min_scalar_type([0, 1, 2])
+        assert dt == np.dtype('int64')
 
 
 from numpy.core._internal import _dtype_from_pep3118
