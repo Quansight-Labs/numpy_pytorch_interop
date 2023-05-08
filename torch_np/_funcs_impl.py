@@ -570,6 +570,39 @@ def cov(
     return result
 
 
+def _conv_corr_impl(a, v, mode):
+    dt = _dtypes_impl.result_type_impl((a.dtype, v.dtype))
+    a = _util.cast_if_needed(a, dt)
+    v = _util.cast_if_needed(v, dt)
+
+    padding = v.shape[0] - 1 if mode == "full" else mode
+
+    # NumPy only accepts 1D arrays; PyTorch requires 2D inputs and 3D weights
+    aa = a[None, :]
+    vv = v[None, None, :]
+
+    result = torch.nn.functional.conv1d(aa, vv, padding=padding)
+
+    # torch returns a 2D result, numpy returns a 1D array
+    return result[0, :]
+
+
+def convolve(a: ArrayLike, v: ArrayLike, mode="full"):
+    # NumPy: if v is longer than a, the arrays are swapped before computation
+    if a.shape[0] < v.shape[0]:
+        a, v = v, a
+
+    # flip the weights since numpy does and torch does not
+    v = torch.flip(v, (0,))
+
+    return _conv_corr_impl(a, v, mode)
+
+
+def correlate(a: ArrayLike, v: ArrayLike, mode="valid"):
+    v = torch.conj_physical(v)
+    return _conv_corr_impl(a, v, mode)
+
+
 # ### logic & element selection ###
 
 

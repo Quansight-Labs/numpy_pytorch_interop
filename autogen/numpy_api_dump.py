@@ -176,18 +176,6 @@ def compress(condition, a, axis=None, out=None):
     raise NotImplementedError
 
 
-def convolve(a, v, mode="full"):
-    raise NotImplementedError
-
-
-def copyto(dst, src, casting="same_kind", where=True):
-    raise NotImplementedError
-
-
-def correlate(a, v, mode="valid"):
-    raise NotImplementedError
-
-
 def cross(a, b, axisa=-1, axisb=-1, axisc=-1, axis=None):
     raise NotImplementedError
 
