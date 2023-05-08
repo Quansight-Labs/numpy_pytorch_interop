@@ -570,6 +570,28 @@ def cov(
     return result
 
 
+def convolve(a: ArrayLike, v: ArrayLike, mode="full"):
+    # NumPy: if v is longer than a, the arrays are swapped before computation
+    if a.shape[0] < v.shape[0]:
+        a, v = v, a
+
+    dt = _dtypes_impl.result_type_impl((a.dtype, v.dtype))
+    a = _util.cast_if_needed(a, dt)
+    v = _util.cast_if_needed(v, dt)
+
+    padding = v.shape[0] - 1 if mode == "full" else mode
+
+    # 1. NumPy only accepts 1D arrays; PyTorch requires 2D inputs and 3D weights
+    # 2. flip the weights since numpy does and torch does not
+    aa = a[None, :]
+    vv = torch.flip(v, (0,))[None, None, :]
+
+    result = torch.nn.functional.conv1d(aa, vv, padding=padding)
+
+    # torch returns a 2D result, numpy returns a 1D array
+    return result[0, :]
+
+
 # ### logic & element selection ###
 
 

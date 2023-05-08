@@ -13,6 +13,7 @@ from torch_np.testing import (
     assert_, assert_equal, assert_raises_regex,
     assert_array_equal, assert_almost_equal, assert_array_almost_equal,
     assert_warns, # assert_array_max_ulp, HAS_REFCOUNT, IS_WASM
+    assert_allclose,
     )
 from numpy.core._rational_tests import rational
 
@@ -2441,7 +2442,6 @@ class TestCorrelate:
             np.correlate(d, k, mode=None)
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestConvolve:
     def test_object(self):
         d = [1.] * 100
@@ -2455,6 +2455,7 @@ class TestConvolve:
         assert_array_equal(d, np.ones(100))
         assert_array_equal(k, np.ones(3))
 
+    @pytest.mark.skip(reason='do not implement deprecated behavior')
     def test_mode(self):
         d = np.ones(100)
         k = np.ones(3)
@@ -2469,6 +2470,16 @@ class TestConvolve:
         # illegal arguments
         with assert_raises(TypeError):
             np.convolve(d, k, mode=None)
+
+    def test_numpy_doc_examples(self):
+        conv = np.convolve([1, 2, 3], [0, 1, 0.5])
+        assert_allclose(conv, [0., 1., 2.5, 4., 1.5], atol=1e-15)
+
+        conv = np.convolve([1, 2, 3], [0, 1, 0.5], 'same')
+        assert_allclose(conv, [1., 2.5, 4.], atol=1e-15)
+
+        conv = np.convolve([1, 2, 3], [0, 1, 0.5], 'valid')
+        assert_allclose(conv, [2.5], atol=1e-15)
 
 
 class TestDtypePositional:
