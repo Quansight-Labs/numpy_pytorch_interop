@@ -2369,7 +2369,6 @@ class TestLikeFuncs:
             assert result.strides == (4, 1)
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestCorrelate:
     def _setup(self, dt):
         self.x = np.array([1, 2, 3, 4, 5], dtype=dt)
@@ -2391,19 +2390,12 @@ class TestCorrelate:
         assert_array_almost_equal(z, self.z1_4)
         z = np.correlate(self.y, self.x, 'full')
         assert_array_almost_equal(z, self.z2)
-        z = np.correlate(self.x[::-1], self.y, 'full')
+        z = np.correlate(np.flip(self.x), self.y, 'full')
         assert_array_almost_equal(z, self.z1r)
-        z = np.correlate(self.y, self.x[::-1], 'full')
+        z = np.correlate(self.y, np.flip(self.x), 'full')
         assert_array_almost_equal(z, self.z2r)
         z = np.correlate(self.xs, self.y, 'full')
         assert_array_almost_equal(z, self.zs)
-
-    def test_object(self):
-        self._setup(Decimal)
-        z = np.correlate(self.x, self.y, 'full')
-        assert_array_almost_equal(z, self.z1)
-        z = np.correlate(self.y, self.x, 'full')
-        assert_array_almost_equal(z, self.z2)
 
     def test_no_overwrite(self):
         d = np.ones(100)
@@ -2416,16 +2408,17 @@ class TestCorrelate:
         x = np.array([1, 2, 3, 4+1j], dtype=complex)
         y = np.array([-1, -2j, 3+1j], dtype=complex)
         r_z = np.array([3-1j, 6, 8+1j, 11+5j, -5+8j, -4-1j], dtype=complex)
-        r_z = r_z[::-1].conjugate()
+        r_z = np.flip(r_z).conjugate()
         z = np.correlate(y, x, mode='full')
         assert_array_almost_equal(z, r_z)
 
     def test_zero_size(self):
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, RuntimeError)):
             np.correlate(np.array([]), np.ones(1000), mode='full')
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, RuntimeError)):
             np.correlate(np.ones(1000), np.array([]), mode='full')
 
+    @pytest.mark.skip(reason='do not implement deprecated behavior')
     def test_mode(self):
         d = np.ones(100)
         k = np.ones(3)

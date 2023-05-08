@@ -176,10 +176,6 @@ def compress(condition, a, axis=None, out=None):
     raise NotImplementedError
 
 
-def correlate(a, v, mode="valid"):
-    raise NotImplementedError
-
-
 def cross(a, b, axisa=-1, axisb=-1, axisc=-1, axis=None):
     raise NotImplementedError
 
