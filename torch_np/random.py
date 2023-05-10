@@ -7,6 +7,7 @@ Q: default dtype is float64 in numpy
 """
 from __future__ import annotations
 
+import functools
 from math import sqrt
 from typing import Optional
 
@@ -29,14 +30,36 @@ __all__ = [
     "randint",
     "shuffle",
     "uniform",
+    "RANDOM_STREAM",
 ]
 
 
+RANDOM_STREAM = "pytorch"
+
+
+def deco_stream(func):
+    @functools.wraps(func)
+    def inner(*args, **kwds):
+        if RANDOM_STREAM == "pytorch":
+            return func(*args, **kwds)
+        elif RANDOM_STREAM == "numpy":
+            from numpy import random as nr
+
+            f = getattr(nr, func.__name__)
+            return f(*args, **kwds)
+        else:
+            raise ValueError(f"RANDOM_STREAM={RANDOM_STREAM} not understood.")
+
+    return inner
+
+
+@deco_stream
 def seed(seed=None):
     if seed is not None:
         torch.random.manual_seed(seed)
 
 
+@deco_stream
 def random_sample(size=None):
     if size is None:
         size = ()
@@ -44,6 +67,7 @@ def random_sample(size=None):
     return array_or_scalar(values, return_scalar=size is None)
 
 
+@deco_stream
 def rand(*size):
     return random_sample(size)
 
@@ -52,6 +76,7 @@ sample = random_sample
 random = random_sample
 
 
+@deco_stream
 def uniform(low=0.0, high=1.0, size=None):
     if size is None:
         size = ()
@@ -59,11 +84,13 @@ def uniform(low=0.0, high=1.0, size=None):
     return array_or_scalar(values, return_scalar=size is None)
 
 
+@deco_stream
 def randn(*size):
     values = torch.randn(size, dtype=_default_dtype)
     return array_or_scalar(values, return_scalar=size is None)
 
 
+@deco_stream
 def normal(loc=0.0, scale=1.0, size=None):
     if size is None:
         size = ()
@@ -71,6 +98,7 @@ def normal(loc=0.0, scale=1.0, size=None):
     return array_or_scalar(values, return_scalar=size is None)
 
 
+@deco_stream
 @normalizer
 def shuffle(x: ArrayLike):
     perm = torch.randperm(x.shape[0])
@@ -78,6 +106,7 @@ def shuffle(x: ArrayLike):
     x.copy_(xp)
 
 
+@deco_stream
 def randint(low, high=None, size=None):
     if size is None:
         size = ()
@@ -89,6 +118,7 @@ def randint(low, high=None, size=None):
     return array_or_scalar(values, int, return_scalar=size is None)
 
 
+@deco_stream
 @normalizer
 def choice(a: ArrayLike, size=None, replace=True, p: Optional[ArrayLike] = None):
 
