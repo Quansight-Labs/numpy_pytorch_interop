@@ -16,7 +16,7 @@ def test_shuffle():
 
 
 def test_numpy_global():
-    tnp.random.RANDOM_STREAM = "numpy"
+    tnp.random.USE_NUMPY_RANDOM = True
     tnp.random.seed(12345)
     x = tnp.random.uniform(0, 1, size=11)
 
@@ -29,7 +29,7 @@ def test_numpy_global():
     assert_equal(x, tnp.asarray(x_np))
 
     # switch to the pytorch stream, variates differ
-    tnp.random.RANDOM_STREAM = "pytorch"
+    tnp.random.USE_NUMPY_RANDOM = False
     tnp.random.seed(12345)
 
     x_1 = tnp.random.uniform(0, 1, size=11)
@@ -37,6 +37,6 @@ def test_numpy_global():
 
 
 def test_wrong_global():
-    tnp.random.RANDOM_STREAM = "oops"
+    tnp.random.USE_NUMPY_RANDOM = "oops"
     with pytest.raises(ValueError):
         tnp.random.rand()

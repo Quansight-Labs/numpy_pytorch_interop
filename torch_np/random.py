@@ -30,25 +30,25 @@ __all__ = [
     "randint",
     "shuffle",
     "uniform",
-    "RANDOM_STREAM",
+    "USE_NUMPY_RANDOM",
 ]
 
 
-RANDOM_STREAM = "pytorch"
+USE_NUMPY_RANDOM = False
 
 
 def deco_stream(func):
     @functools.wraps(func)
     def inner(*args, **kwds):
-        if RANDOM_STREAM == "pytorch":
+        if USE_NUMPY_RANDOM is False:
             return func(*args, **kwds)
-        elif RANDOM_STREAM == "numpy":
+        elif USE_NUMPY_RANDOM is True:
             from numpy import random as nr
 
             f = getattr(nr, func.__name__)
             return f(*args, **kwds)
         else:
-            raise ValueError(f"RANDOM_STREAM={RANDOM_STREAM} not understood.")
+            raise ValueError(f"USE_NUMPY_RANDOM={USE_NUMPY_RANDOM} not understood.")
 
     return inner
 
