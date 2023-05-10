@@ -37,6 +37,12 @@ def test_numpy_global():
 
 
 def test_wrong_global():
-    tnp.random.USE_NUMPY_RANDOM = "oops"
-    with pytest.raises(ValueError):
-        tnp.random.rand()
+    try:
+        oldstate = tnp.random.USE_NUMPY_RANDOM
+
+        tnp.random.USE_NUMPY_RANDOM = "oops"
+        with pytest.raises(ValueError):
+            tnp.random.rand()
+
+    finally:
+        tnp.random.USE_NUMPY_RANDOM = oldstate
