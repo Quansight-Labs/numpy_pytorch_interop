@@ -135,37 +135,49 @@ def axis_none_flatten(*tensors, axis=None):
         return tensors, axis
 
 
-def typecast_tensors(tensors, target_dtype, casting):
-    """Dtype-cast tensors to target_dtype.
+def typecast_tensor(t, target_dtype, casting):
+    """Dtype-cast tensor to target_dtype.
 
     Parameters
     ----------
-    tensors : iterable
-            tuple or list of torch.Tensors to typecast
-    target_dtype : torch dtype object, optional
+    tensor : torch.Tensor
+        The tensor to typecast
+    target_dtype : torch dtype object
         The array dtype to cast all tensors to
     casting : str
         The casting mode, see `np.can_cast`
 
     Returns
     -------
-    a tuple of torch.Tensors with dtype being the PyTorch counterpart
-    of the `target_dtype`
+    a torch.Tensors of the `target_dtype` dtype
+
+    Raises
+    ------
+    ValueError
+        if the argument cannot be cast according to the `casting` rule
+
     """
-    # check if we can dtype-cast all arguments
-    cast_tensors = []
+    # check if we can dtype-cast the argument
     can_cast = _dtypes_impl.can_cast_impl
 
-    for tensor in tensors:
-        if not can_cast(tensor.dtype, target_dtype, casting=casting):
-            raise TypeError(
-                f"Cannot cast array data from {tensor.dtype} to"
-                f" {target_dtype} according to the rule '{casting}'"
-            )
-        tensor = cast_if_needed(tensor, target_dtype)
-        cast_tensors.append(tensor)
+    if not can_cast(t.dtype, target_dtype, casting=casting):
+        raise TypeError(
+            f"Cannot cast array data from {t.dtype} to"
+            f" {target_dtype} according to the rule '{casting}'"
+        ) 
+    return cast_if_needed(t, target_dtype)
 
-    return tuple(cast_tensors)
+
+def typecast_tensors(tensors, target_dtype, casting):
+    """Dtype-cast tensors to target_dtype.
+
+    Apply `typecast_tensor` to each element of the `tensors` iterable.
+    """
+    return tuple(typecast_tensor(t, target_dtype, casting) for t in tensors)
+
+
+def _dtype_for_scalar(py_type):
+    return {bool: torch.bool, int: torch.int64, float: torch.float64}[py_type]
 
 
 def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
@@ -191,19 +203,26 @@ def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
     ndarrays (those should be handled in the ndarray-aware layer prior to
     invoking this function).
     """
-    if isinstance(obj, torch.Tensor):
+    obj_type = type(obj)
+
+    if obj_type is torch.Tensor:
         tensor = obj
-        base = None
+        is_weakly_typed = getattr(obj, "is_weakly_typed", False)
+
+    elif obj_type in (bool, int, float):
+        # Make python scalars weakly typed.
+        is_weakly_typed = True
+        dtype = _dtype_for_scalar(obj_type)
+        tensor = torch.as_tensor(obj, dtype=dtype)        
+
     else:
+        is_weakly_typed = False
         tensor = torch.as_tensor(obj)
-        base = None
 
-        # At this point, `tensor.dtype` is the pytorch default. Our default may
-        # differ, so need to typecast. However, we cannot just do `tensor.to`,
-        # because if our desired dtype is wider then pytorch's, `tensor`
-        # may have lost precision:
-
-        # int(torch.as_tensor(1e12)) - 1e12 equals -4096 (try it!)
+        # tensor.dtype is the pytorch default, typically float32. If obj's elements
+        # are not exactly representable in float32, we've lost precision:
+        # >>> torch.as_tensor(1e12).item() - 1e12
+        # -4096.0
 
         # Therefore, we treat `tensor.dtype` as a hint, and convert the
         # original object *again*, this time with an explicit dtype.
@@ -222,4 +241,6 @@ def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
     if copy:
         tensor = tensor.clone()
 
+    # Attach the flag *to the tensor* (will be used after normalizations)
+    tensor.is_weakly_typed = is_weakly_typed
     return tensor

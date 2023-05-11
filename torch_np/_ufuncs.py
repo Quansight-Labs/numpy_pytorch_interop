@@ -198,10 +198,10 @@ def deco_unary_ufunc(torch_func):
         signature=None,
         extobj=None,
     ):
-        tensors = _ufunc_preprocess(
-            (x,), where, casting, order, dtype, subok, signature, extobj
-        )
-        result = torch_func(*tensors)
+        if dtype is not None:
+            x = _util.typecast_tensor(x, dtype, casting)
+
+        result = torch_func(x)
         result = _ufunc_postprocess(result, out, casting)
         return result
 

@@ -44,7 +44,7 @@ examples = {
 
 
 fails = [
-    "uint8(1) + 2",
+#    "uint8(1) + 2",
     "array([1], uint8) + 1",
     "array([1], uint8) + 200",
     "array([1], uint8) + array(1, int64)",
