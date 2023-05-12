@@ -160,7 +160,9 @@ def typecast_tensor(t, target_dtype, casting):
     # check if we can dtype-cast the argument
     can_cast = _dtypes_impl.can_cast_impl
 
-    if not can_cast(t.dtype, target_dtype, casting=casting):
+    is_weakly_typed = getattr(t, "is_weakly_typed", False)
+
+    if not (is_weakly_typed or can_cast(t.dtype, target_dtype, casting=casting)):
         raise TypeError(
             f"Cannot cast array data from {t.dtype} to"
             f" {target_dtype} according to the rule '{casting}'"

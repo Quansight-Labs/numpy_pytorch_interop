@@ -40,12 +40,19 @@ def can_cast_impl(from_torch_dtype, to_torch_dtype, casting):
 
 
 def result_type_impl(*tensors):
+
+    # exclude weakly typed scalar from type promotion
+    tensors_ = tuple(t for t in tensors if not getattr(t, 'is_weakly_typed', False))
+    if not tensors_:
+        # edge case: all tensors are weakly typed, type promote them
+        tensors_ = tensors
+
     # NB: torch dtypes here
-    dtyp = tensors[0].dtype
-    if len(tensors) == 1:
+    dtyp = tensors_[0].dtype
+    if len(tensors_) == 1:
         return dtyp
 
-    for curr in tensors[1:]:
+    for curr in tensors_[1:]:
         dtyp = _cd._result_type_dict[dtyp][curr.dtype]
 
     return dtyp

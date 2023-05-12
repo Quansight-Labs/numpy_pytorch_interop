@@ -6,7 +6,7 @@ import builtins
 
 import torch
 
-from . import _dtypes_impl
+from . import _dtypes_impl, _util
 
 # more __all__ manipulations at the bottom
 __all__ = ["dtype", "DType", "typecodes", "issubdtype", "set_default_dtype"]
@@ -35,6 +35,7 @@ class generic(abc.ABC):
         else:
             try:
                 tensor = torch.as_tensor(value, dtype=self.torch_dtype)
+               # tensor = _util._coerce_to_tensor(value, dtype=self.torch_dtype)
             except RuntimeError as e:
                 if "Overflow" in str(e):
                     raise OverflowError(e.args)

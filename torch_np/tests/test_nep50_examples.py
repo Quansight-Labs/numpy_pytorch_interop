@@ -1,5 +1,6 @@
 """Test examples for NEP 50."""
 
+import torch_np as tnp
 from torch_np import array, float32, float64, inf, int64, uint8
 from torch_np.testing import assert_allclose
 
@@ -77,3 +78,18 @@ def test_nep50_exceptions(example):
 
         assert_allclose(result, new, atol=1e-16)
         assert result.dtype == new.dtype
+
+
+class TestScalarsWeakTyping:
+    def test_asarray_scalars(self):
+        assert tnp.asarray(3).tensor.is_weakly_typed is False
+
+    def test_asarray_asarray_scalars(self):
+        a = tnp.asarray(3)
+        assert tnp.asarray(a).tensor.is_weakly_typed is False
+
+    def test_scalar_scalar(self):
+        a = tnp.uint8(3)
+        is_weakly_typed = getattr(a.tensor, 'is_weakly_typed', False)
+        assert is_weakly_typed is False
+
