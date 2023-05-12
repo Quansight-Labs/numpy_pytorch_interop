@@ -38,9 +38,15 @@ except ImportError:
 
 
 def normalize_array_like(x, parm=None):
-    from ._ndarray import asarray
+    from ._ndarray import _asarray
 
-    return asarray(x).tensor
+    # special case: python scalars are weakly typed
+    is_py_scalar = type(x) in (int, bool, float)
+    if is_py_scalar:
+        dtype = _util._dtype_for_scalar(type(x))
+        return _asarray(x, dtype=dtype, is_weak=True).tensor
+
+    return _asarray(x).tensor
 
 
 def normalize_optional_array_like(x, parm=None):

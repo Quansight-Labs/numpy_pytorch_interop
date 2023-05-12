@@ -380,13 +380,19 @@ class TestUfuncDtypeKwd:
         assert r32.dtype == "float32"
         assert r32 == 1
 
-        # casting of floating inputs to booleans
+        # casting of floating inputs to booleans: activate casting check
         with assert_raises(TypeError):
-            np.add(1.0, 1e-15, dtype=bool)
+            np.add(np.asarray(1.0), 1e-15, dtype=bool)
 
         # now force the cast
         rb = np.add(1.0, 1e-15, dtype=bool, casting="unsafe")
         assert rb.dtype == bool
+
+    @pytest.mark.xfail(reason="two weak scalars do not raise")
+    def test_binary_ufunc_dtype_2(self):
+        # casting of floating inputs to booleans: fails in numpy
+        with assert_raises(TypeError):
+            np.add(1.0, 1e-15, dtype=bool)
 
     def test_binary_ufunc_dtype_and_out(self):
 

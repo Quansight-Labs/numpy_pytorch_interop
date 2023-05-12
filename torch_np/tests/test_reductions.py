@@ -30,8 +30,8 @@ class TestAny:
     def test_nd(self):
         y1 = [[0, 0, 0], [0, 1, 0], [1, 1, 0]]
         assert np.any(y1)
-        assert_equal(np.any(y1, axis=0), [1, 1, 0])
-        assert_equal(np.any(y1, axis=1), [0, 1, 1])
+        assert_equal(np.any(y1, axis=0), [True, True, False])
+        assert_equal(np.any(y1, axis=1), [False, True, True])
         assert_equal(np.any(y1), True)
         assert isinstance(np.any(y1, axis=1), np.ndarray)
 
@@ -54,8 +54,8 @@ class TestAll:
     def test_nd(self):
         y1 = [[0, 0, 1], [0, 1, 1], [1, 1, 1]]
         assert not np.all(y1)
-        assert_equal(np.all(y1, axis=0), [0, 0, 1])
-        assert_equal(np.all(y1, axis=1), [0, 0, 1])
+        assert_equal(np.all(y1, axis=0), [False, False, True])
+        assert_equal(np.all(y1, axis=1), [False, False, True])
         assert_equal(np.all(y1), False)
 
     def test_method_vs_function(self):

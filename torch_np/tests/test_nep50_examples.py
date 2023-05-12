@@ -46,15 +46,15 @@ examples = {
 
 fails = [
     #    "uint8(1) + 2",
-    "array([1], uint8) + 1",
-    "array([1], uint8) + 200",
-    "array([1], uint8) + array(1, int64)",
-    "array([100], uint8) + 200",
-    "array([1], uint8) + 300",
+    # "array([1], uint8) + 1",
+    # "array([1], uint8) + 200",
+    # "array([1], uint8) + array(1, int64)",
+    # "array([100], uint8) + 200",
+     "array([1], uint8) + 300",
     "uint8(1) + 300",
-    "uint8(100) + 200",
-    "float32(1) + 3e100",
-    "array([1.], float32) + 3",
+    # "uint8(100) + 200",
+    # "float32(1) + 3e100",
+    # "array([1.], float32) + 3",
 ]
 
 
