@@ -467,7 +467,10 @@ def _tolist(obj):
 
 
 def array(obj, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=None):
-    _util.subok_not_ok(like, subok)
+    if subok is not False:
+        raise NotImplementedError(f"'subok' parameter is not supported.")
+    if like is not None:
+        raise NotImplementedError(f"'like' parameter is not supported.")
     if order != "K":
         raise NotImplementedError
 
