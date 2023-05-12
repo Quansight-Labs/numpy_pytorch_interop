@@ -19,13 +19,6 @@ def is_sequence(seq):
     return True
 
 
-def subok_not_ok(like=None, subok=False):
-    if like is not None:
-        raise ValueError("like=... parameter is not supported.")
-    if subok:
-        raise ValueError("subok parameter is not supported.")
-
-
 class AxisError(ValueError, IndexError):
     pass
 
