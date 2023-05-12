@@ -51,7 +51,7 @@ def matmul(x, y):
     #  - RuntimeError: expected scalar type Int but found Double
     #  - RuntimeError: "addmm_impl_cpu_" not implemented for 'Bool'
     #  - RuntimeError: "addmm_impl_cpu_" not implemented for 'Half'
-    dtype = _dtypes_impl.result_type_impl((x.dtype, y.dtype))
+    dtype = _dtypes_impl.result_type_impl(x, y)
     is_bool = dtype == torch.bool
     is_half = dtype == torch.float16
 

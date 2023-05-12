@@ -212,7 +212,7 @@ def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
     elif obj_type in (bool, int, float):
         # Make python scalars weakly typed.
         is_weakly_typed = True
-        dtype = _dtype_for_scalar(obj_type)
+        dtype = dtype or _dtype_for_scalar(obj_type)
         tensor = torch.as_tensor(obj, dtype=dtype)        
 
     else:

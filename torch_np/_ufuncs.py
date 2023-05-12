@@ -17,7 +17,7 @@ from ._normalizations import (
 
 def _ufunc_preprocess(tensors, where, casting, order, dtype, subok, signature, extobj):
     if dtype is None:
-        dtype = _dtypes_impl.result_type_impl([t.dtype for t in tensors])
+        dtype = _dtypes_impl.result_type_impl(*tensors)
 
     tensors = _util.typecast_tensors(tensors, dtype, casting)
 
