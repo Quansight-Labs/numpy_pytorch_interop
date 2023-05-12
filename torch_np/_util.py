@@ -135,37 +135,40 @@ def axis_none_flatten(*tensors, axis=None):
         return tensors, axis
 
 
-def typecast_tensors(tensors, target_dtype, casting):
-    """Dtype-cast tensors to target_dtype.
+def typecast_tensor(t, target_dtype, casting):
+    """Dtype-cast tensor to target_dtype.
 
     Parameters
     ----------
-    tensors : iterable
-            tuple or list of torch.Tensors to typecast
-    target_dtype : torch dtype object, optional
+    t : torch.Tensor
+        The tensor to cast
+    target_dtype : torch dtype object
         The array dtype to cast all tensors to
     casting : str
         The casting mode, see `np.can_cast`
 
-    Returns
-    -------
-    a tuple of torch.Tensors with dtype being the PyTorch counterpart
-    of the `target_dtype`
+     Returns
+     -------
+    `torch.Tensor` of the `target_dtype` dtype
+
+     Raises
+     ------
+     ValueError
+        if the argument cannot be cast according to the `casting` rule
+
     """
-    # check if we can dtype-cast all arguments
-    cast_tensors = []
     can_cast = _dtypes_impl.can_cast_impl
 
-    for tensor in tensors:
-        if not can_cast(tensor.dtype, target_dtype, casting=casting):
-            raise TypeError(
-                f"Cannot cast array data from {tensor.dtype} to"
-                f" {target_dtype} according to the rule '{casting}'"
-            )
-        tensor = cast_if_needed(tensor, target_dtype)
-        cast_tensors.append(tensor)
+    if not can_cast(t.dtype, target_dtype, casting=casting):
+        raise TypeError(
+            f"Cannot cast array data from {t.dtype} to"
+            f" {target_dtype} according to the rule '{casting}'"
+        )
+    return cast_if_needed(t, target_dtype)
 
-    return tuple(cast_tensors)
+
+def typecast_tensors(tensors, target_dtype, casting):
+    return tuple(typecast_tensor(t, target_dtype, casting) for t in tensors)
 
 
 def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
@@ -193,7 +196,6 @@ def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
     """
     if isinstance(obj, torch.Tensor):
         tensor = obj
-        base = None
     else:
         tensor = torch.as_tensor(obj)
         base = None

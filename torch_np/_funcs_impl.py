@@ -91,7 +91,7 @@ def _concat_cast_helper(tensors, out=None, dtype=None, casting="same_kind"):
         # figure out the type of the inputs and outputs
         out_dtype = out.dtype.torch_dtype if dtype is None else dtype
     else:
-        out_dtype = _dtypes_impl.result_type_impl([t.dtype for t in tensors])
+        out_dtype = _dtypes_impl.result_type_impl(*tensors)
 
     # cast input arrays if necessary; do not broadcast them agains `out`
     tensors = _util.typecast_tensors(tensors, out_dtype, casting)
@@ -354,9 +354,11 @@ def arange(
     # the dtype of the result
     if dtype is None:
         dtype = _dtypes_impl.default_dtypes.int_dtype
-    dt_list = [_util._coerce_to_tensor(x).dtype for x in (start, stop, step)]
-    dt_list.append(dtype)
-    target_dtype = _dtypes_impl.result_type_impl(dt_list)
+    # XXX: default values do not get normalized
+    start, stop, step = (_util._coerce_to_tensor(x) for x in (start, stop, step))
+
+    dummy = torch.empty(1, dtype=dtype)
+    target_dtype = _dtypes_impl.result_type_impl(start, stop, step, dummy)
 
     # work around RuntimeError: "arange_cpu" not implemented for 'ComplexFloat'
     work_dtype = torch.float64 if target_dtype.is_complex else target_dtype
@@ -571,7 +573,7 @@ def cov(
 
 
 def _conv_corr_impl(a, v, mode):
-    dt = _dtypes_impl.result_type_impl((a.dtype, v.dtype))
+    dt = _dtypes_impl.result_type_impl(a, v)
     a = _util.cast_if_needed(a, dt)
     v = _util.cast_if_needed(v, dt)
 
@@ -857,15 +859,14 @@ def nanpercentile():
 
 
 def isclose(a: ArrayLike, b: ArrayLike, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
-    dtype = _dtypes_impl.result_type_impl((a.dtype, b.dtype))
+    dtype = _dtypes_impl.result_type_impl(a, b)
     a = _util.cast_if_needed(a, dtype)
     b = _util.cast_if_needed(b, dtype)
-    result = torch.isclose(a, b, rtol=rtol, atol=atol, equal_nan=equal_nan)
-    return result
+    return torch.isclose(a, b, rtol=rtol, atol=atol, equal_nan=equal_nan)
 
 
 def allclose(a: ArrayLike, b: ArrayLike, rtol=1e-05, atol=1e-08, equal_nan=False):
-    dtype = _dtypes_impl.result_type_impl((a.dtype, b.dtype))
+    dtype = _dtypes_impl.result_type_impl(a, b)
     a = _util.cast_if_needed(a, dtype)
     b = _util.cast_if_needed(b, dtype)
     return torch.allclose(a, b, rtol=rtol, atol=atol, equal_nan=equal_nan)
@@ -1175,7 +1176,7 @@ def vdot(a: ArrayLike, b: ArrayLike, /):
     if t_b.ndim > 1:
         t_b = t_b.flatten()
 
-    dtype = _dtypes_impl.result_type_impl((t_a.dtype, t_b.dtype))
+    dtype = _dtypes_impl.result_type_impl(t_a, t_b)
     is_half = dtype == torch.float16
     is_bool = dtype == torch.bool
 
@@ -1202,7 +1203,7 @@ def tensordot(a: ArrayLike, b: ArrayLike, axes=2):
     if isinstance(axes, (list, tuple)):
         axes = [[ax] if isinstance(ax, int) else ax for ax in axes]
 
-    target_dtype = _dtypes_impl.result_type_impl((a.dtype, b.dtype))
+    target_dtype = _dtypes_impl.result_type_impl(a, b)
     a = _util.cast_if_needed(a, target_dtype)
     b = _util.cast_if_needed(b, target_dtype)
 
@@ -1210,7 +1211,7 @@ def tensordot(a: ArrayLike, b: ArrayLike, axes=2):
 
 
 def dot(a: ArrayLike, b: ArrayLike, out: Optional[OutArray] = None):
-    dtype = _dtypes_impl.result_type_impl((a.dtype, b.dtype))
+    dtype = _dtypes_impl.result_type_impl(a, b)
     a = _util.cast_if_needed(a, dtype)
     b = _util.cast_if_needed(b, dtype)
 
@@ -1222,7 +1223,7 @@ def dot(a: ArrayLike, b: ArrayLike, out: Optional[OutArray] = None):
 
 
 def inner(a: ArrayLike, b: ArrayLike, /):
-    dtype = _dtypes_impl.result_type_impl((a.dtype, b.dtype))
+    dtype = _dtypes_impl.result_type_impl(a, b)
     is_half = dtype == torch.float16
     is_bool = dtype == torch.bool
 
@@ -1284,11 +1285,7 @@ def einsum(*operands, out=None, dtype=None, order="K", casting="safe", optimize=
         subscripts, array_operands = operands[0], operands[1:]
 
     tensors = [normalize_array_like(op) for op in array_operands]
-    target_dtype = (
-        _dtypes_impl.result_type_impl([op.dtype for op in tensors])
-        if dtype is None
-        else dtype
-    )
+    target_dtype = _dtypes_impl.result_type_impl(*tensors) if dtype is None else dtype
 
     # work around 'bmm' not implemented for 'Half' etc
     is_half = target_dtype == torch.float16
