@@ -164,7 +164,7 @@ def typecast_tensor(t, target_dtype, casting):
         raise TypeError(
             f"Cannot cast array data from {t.dtype} to"
             f" {target_dtype} according to the rule '{casting}'"
-        ) 
+        )
     return cast_if_needed(t, target_dtype)
 
 
@@ -213,7 +213,7 @@ def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
         # Make python scalars weakly typed.
         is_weakly_typed = True
         dtype = dtype or _dtype_for_scalar(obj_type)
-        tensor = torch.as_tensor(obj, dtype=dtype)        
+        tensor = torch.as_tensor(obj, dtype=dtype)
 
     else:
         is_weakly_typed = False

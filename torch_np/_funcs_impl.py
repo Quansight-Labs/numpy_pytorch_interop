@@ -1286,11 +1286,7 @@ def einsum(*operands, out=None, dtype=None, order="K", casting="safe", optimize=
         subscripts, array_operands = operands[0], operands[1:]
 
     tensors = [normalize_array_like(op) for op in array_operands]
-    target_dtype = (
-        _dtypes_impl.result_type_impl(*tensors)
-        if dtype is None
-        else dtype
-    )
+    target_dtype = _dtypes_impl.result_type_impl(*tensors) if dtype is None else dtype
 
     # work around 'bmm' not implemented for 'Half' etc
     is_half = target_dtype == torch.float16

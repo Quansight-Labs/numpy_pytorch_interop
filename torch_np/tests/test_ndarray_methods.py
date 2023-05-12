@@ -143,7 +143,7 @@ class TestNonzero:
             c[i::20] = True
             assert_equal(np.nonzero(c)[0], np.arange(i, 200 + i, 20))
             assert_equal(c.nonzero()[0], np.arange(i, 200 + i, 20))
- 
+
             c = np.zeros(400, dtype=bool)
             c[10 + i : 20 + i] = True
             c[20 + i * 2] = True
