@@ -39,13 +39,13 @@ def can_cast_impl(from_torch_dtype, to_torch_dtype, casting):
     return _cd._can_cast_dict[casting][from_torch_dtype][to_torch_dtype]
 
 
-def result_type_impl(dtypes):
+def result_type_impl(*tensors):
     # NB: torch dtypes here
-    dtyp = dtypes[0]
-    if len(dtypes) == 1:
+    dtyp = tensors[0].dtype
+    if len(tensors) == 1:
         return dtyp
 
-    for curr in dtypes[1:]:
-        dtyp = _cd._result_type_dict[dtyp][curr]
+    for curr in tensors[1:]:
+        dtyp = _cd._result_type_dict[dtyp][curr.dtype]
 
     return dtyp

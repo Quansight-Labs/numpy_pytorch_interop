@@ -17,7 +17,7 @@ from ._normalizations import (
 
 def _ufunc_preprocess(tensors, where, casting, order, dtype, subok, signature, extobj):
     if dtype is None:
-        dtype = _dtypes_impl.result_type_impl([t.dtype for t in tensors])
+        dtype = _dtypes_impl.result_type_impl(*tensors)
 
     tensors = _util.typecast_tensors(tensors, dtype, casting)
 
@@ -26,7 +26,7 @@ def _ufunc_preprocess(tensors, where, casting, order, dtype, subok, signature, e
 
 def _ufunc_postprocess(result, out, casting):
     if out is not None:
-        (result,) = _util.typecast_tensors((result,), out.dtype.torch_dtype, casting)
+        result = _util.typecast_tensor(result, out.dtype.torch_dtype, casting)
         result = torch.broadcast_to(result, out.shape)
     return result
 
@@ -198,10 +198,9 @@ def deco_unary_ufunc(torch_func):
         signature=None,
         extobj=None,
     ):
-        tensors = _ufunc_preprocess(
-            (x,), where, casting, order, dtype, subok, signature, extobj
-        )
-        result = torch_func(*tensors)
+        if dtype is not None:
+            x = _util.typecast_tensor(x, dtype, casting)
+        result = torch_func(x)
         result = _ufunc_postprocess(result, out, casting)
         return result
 

@@ -342,7 +342,7 @@ def average(
             weights = weights.swapaxes(-1, axis)
 
         # do the work
-        result_dtype = _dtypes_impl.result_type_impl([a.dtype, weights.dtype])
+        result_dtype = _dtypes_impl.result_type_impl(a, weights)
         numerator = sum(a * weights, axis, dtype=result_dtype)
         wsum = sum(weights, axis, dtype=result_dtype)
         result = numerator / wsum
