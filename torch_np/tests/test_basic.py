@@ -553,3 +553,9 @@ class TestExport:
         )
         diff = set(exported_fns).difference(set(dir(_np)))
         assert len(diff) == 0
+
+
+class TestCtorNested:
+    def test_arrays_in_lists(self):
+        lst = [[1, 2], [3, w.array(4)]]
+        assert_equal(w.asarray(lst), [[1, 2], [3, 4]])
