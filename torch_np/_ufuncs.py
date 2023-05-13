@@ -68,6 +68,14 @@ def deco_binary_ufunc(torch_func):
         result = torch_func(*tensors)
 
         result = _ufunc_postprocess(result, out, casting)
+
+        # if any of original inputs is weak, undo its effect on the result dtype
+        non_weaks = tuple(
+            x for x in (x1, x2) if not getattr(x, "is_weakly_typed", False)
+        )
+        if len(non_weaks) == 1:
+            result = _util.cast_if_needed(result, non_weaks[0].dtype)
+
         return result
 
     wrapped.__qualname__ = torch_func.__name__

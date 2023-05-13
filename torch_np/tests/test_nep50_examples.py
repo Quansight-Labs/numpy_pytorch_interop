@@ -1,7 +1,20 @@
 """Test examples for NEP 50."""
 
+import torch_np as tnp
 from torch_np import array, float32, float64, inf, int64, uint8
-from torch_np.testing import assert_allclose
+
+# from torch_np.testing import assert_allclose
+
+
+def assert_allclose(actual, desired, rtol=1e-07, atol=0):
+    import torch
+
+    from torch_np import asarray
+
+    actual = asarray(actual).tensor
+    desired = asarray(desired).tensor
+    return torch.testing.assert_close(actual, desired, rtol=rtol, atol=atol)
+
 
 uint16 = uint8  # can be anything here, see below
 
@@ -44,16 +57,16 @@ examples = {
 
 
 fails = [
-    "uint8(1) + 2",
-    "array([1], uint8) + 1",
-    "array([1], uint8) + 200",
-    "array([1], uint8) + array(1, int64)",
-    "array([100], uint8) + 200",
+    #    "uint8(1) + 2",
+    # "array([1], uint8) + 1",
+    # "array([1], uint8) + 200",
+    # "array([1], uint8) + array(1, int64)",
+    # "array([100], uint8) + 200",
     "array([1], uint8) + 300",
     "uint8(1) + 300",
-    "uint8(100) + 200",
-    "float32(1) + 3e100",
-    "array([1.], float32) + 3",
+    # "uint8(100) + 200",
+    # "float32(1) + 3e100",
+    # "array([1.], float32) + 3",
 ]
 
 
@@ -64,6 +77,8 @@ def test_nep50_exceptions(example):
         pytest.xfail(reason="scalars")
 
     old, new = examples[example]
+
+    ###  breakpoint()
 
     if new == Exception:
         with assert_raises(OverflowError):
@@ -77,3 +92,17 @@ def test_nep50_exceptions(example):
 
         assert_allclose(result, new, atol=1e-16)
         assert result.dtype == new.dtype
+
+
+class TestScalarsWeakTyping:
+    def test_asarray_scalars(self):
+        assert tnp.asarray(3).tensor.is_weakly_typed is False
+
+    def test_asarray_asarray_scalars(self):
+        a = tnp.asarray(3)
+        assert tnp.asarray(a).tensor.is_weakly_typed is False
+
+    def test_scalar_scalar(self):
+        a = tnp.uint8(3)
+        is_weakly_typed = getattr(a.tensor, "is_weakly_typed", False)
+        assert is_weakly_typed is False
