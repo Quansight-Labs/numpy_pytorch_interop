@@ -92,7 +92,7 @@ class TestIinfo:
 class TestRepr:
     def test_iinfo_repr(self):
         expected = "iinfo(min=-32768, max=32767, dtype=int16)"
-        assert_equal(repr(np.iinfo(np.int16)), expected)
+        assert repr(np.iinfo(np.int16)) == expected
 
     def test_finfo_repr(self):
         repr_f32 = repr(np.finfo(np.float32))

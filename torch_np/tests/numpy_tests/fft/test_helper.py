@@ -141,7 +141,7 @@ class TestFFTFreq:
         assert_array_almost_equal(9*pi*fft.fftfreq(9, pi), x)
         x = [0, 1, 2, 3, 4, -5, -4, -3, -2, -1]
         assert_array_almost_equal(10*fft.fftfreq(10), x)
-        assert_array_almost_equal(10*pi*fft.fftfreq(10, pi), x)
+        assert_array_almost_equal(10*pi*fft.fftfreq(10, pi), x, decimal=6)
 
 
 class TestRFFTFreq:
@@ -152,7 +152,7 @@ class TestRFFTFreq:
         assert_array_almost_equal(9*pi*fft.rfftfreq(9, pi), x)
         x = [0, 1, 2, 3, 4, 5]
         assert_array_almost_equal(10*fft.rfftfreq(10), x)
-        assert_array_almost_equal(10*pi*fft.rfftfreq(10, pi), x)
+        assert_array_almost_equal(10*pi*fft.rfftfreq(10, pi), x, decimal=6)
 
 
 class TestIRFFTN:
