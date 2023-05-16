@@ -1,9 +1,19 @@
 """Test examples for NEP 50."""
 
 import torch_np as tnp
-from torch_np import array, float32, float64, inf, int64, uint8
+from torch_np import (
+    array,
+    bool_,
+    complex64,
+    complex128,
+    float32,
+    float64,
+    inf,
+    int16,
+    int64,
+    uint8,
+)
 from torch_np.testing import assert_allclose
-
 
 uint16 = uint8  # can be anything here, see below
 
@@ -38,17 +48,27 @@ examples = {
     "uint8(1) + 300": (int64(301), Exception),
     "uint8(100) + 200": (int64(301), uint8(44)),  # and RuntimeWarning
     "float32(1) + 3e100": (float64(3e100), float32(inf)),  # and RuntimeWarning [T7]
-    "array([0.1], float32) == 0.1": (array([False]),      unchanged),         # XXX: a typo in NEP50?
+    "array([0.1], float32) == 0.1": (
+        array([False]),
+        unchanged,
+    ),  # XXX: a typo in NEP50?
     "array([0.1], float32) == float64(0.1)": (array([True]), array([False])),
     "array([1.], float32) + 3": (array([4.0], float32), unchanged),
     "array([1.], float32) + int64(3)": (array([4.0], float32), array([4.0], float64)),
+    # additional examples from the NEP text
+    "int16(2) + 2": (int64(4), int16(4)),
+    "int16(4) + 4j": (complex128(4 + 4j), unchanged),
+    "float32(5) + 5j": (complex128(5 + 5j), complex64(5 + 5j)),
+    "bool_(True) + 1": (int64(2), unchanged),
+    "True + uint8(2)": (uint8(3), unchanged),
 }
 
 
 fails = [
     "array([1], uint8) + 300",
     "uint8(1) + 300",
-    "array([0.1], float32) == 0.1",
+    "array([0.1], float32) == 0.1",  # TODO: fix the example
+    "float32(5) + 5j",  # TODO: implement
 ]
 
 
