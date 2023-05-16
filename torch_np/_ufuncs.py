@@ -15,7 +15,9 @@ from ._normalizations import (
 )
 
 
-def _ufunc_preprocess(tensors, where, casting, order, dtype, subok, signature, extobj, scalars=False):
+def _ufunc_preprocess(
+    tensors, where, casting, order, dtype, subok, signature, extobj, scalars=False
+):
 
     if scalars:
         # if one of the original inputs is a weak scalar, activate the NEP 50 dance
@@ -30,9 +32,11 @@ def _ufunc_preprocess(tensors, where, casting, order, dtype, subok, signature, e
             cat_weak = _dtypes_impl.category(weak.dtype)
             cat_non_weak = _dtypes_impl.category(non_weak.dtype)
 
-            dt_weak = (non_weak.dtype
-                       if cat_weak <= cat_non_weak
-                       else _dtypes_impl.dtype_for_cat[cat_weak])
+            dt_weak = (
+                non_weak.dtype
+                if cat_weak <= cat_non_weak
+                else _dtypes_impl.dtype_for_cat[cat_weak]
+            )
 
             # TODO: special-case complex + float32
 
@@ -86,7 +90,15 @@ def deco_binary_ufunc(torch_func):
         extobj=None,
     ):
         tensors = _ufunc_preprocess(
-            (x1, x2), where, casting, order, dtype, subok, signature, extobj, scalars=True
+            (x1, x2),
+            where,
+            casting,
+            order,
+            dtype,
+            subok,
+            signature,
+            extobj,
+            scalars=True,
         )
         result = torch_func(*tensors)
 
