@@ -15,7 +15,30 @@ from ._normalizations import (
 )
 
 
-def _ufunc_preprocess(tensors, where, casting, order, dtype, subok, signature, extobj):
+def _ufunc_preprocess(tensors, where, casting, order, dtype, subok, signature, extobj, scalars=False):
+
+    if scalars:
+        # if one of the original inputs is a weak scalar, activate the NEP 50 dance
+        # XXX: this is only needed for binops
+        x1, x2 = tensors
+        x1_is_weak = getattr(x1, "is_weakly_typed", False)
+        x2_is_weak = getattr(x2, "is_weakly_typed", False)
+        if x1_is_weak != x2_is_weak:
+            # scalar <op> array: NEP50; nothing to do otherwise
+            weak, non_weak = (x1, x2) if x1_is_weak else (x2, x1)
+
+            cat_weak = _dtypes_impl.category(weak.dtype)
+            cat_non_weak = _dtypes_impl.category(non_weak.dtype)
+
+            dt_weak = (non_weak.dtype
+                       if cat_weak <= cat_non_weak
+                       else _dtypes_impl.dtype_for_cat[cat_weak])
+
+            # TODO: special-case complex + float32
+
+            weak = _util.cast_if_needed(weak, dt_weak)
+            tensors = (weak, non_weak) if x1_is_weak else (non_weak, weak)
+
     if dtype is None:
         dtype = _dtypes_impl.result_type_impl(*tensors)
 
@@ -63,18 +86,11 @@ def deco_binary_ufunc(torch_func):
         extobj=None,
     ):
         tensors = _ufunc_preprocess(
-            (x1, x2), where, casting, order, dtype, subok, signature, extobj
+            (x1, x2), where, casting, order, dtype, subok, signature, extobj, scalars=True
         )
         result = torch_func(*tensors)
 
         result = _ufunc_postprocess(result, out, casting)
-
-        # if any of original inputs is weak, undo its effect on the result dtype
-        non_weaks = tuple(
-            x for x in (x1, x2) if not getattr(x, "is_weakly_typed", False)
-        )
-        if len(non_weaks) == 1:
-            result = _util.cast_if_needed(result, non_weaks[0].dtype)
 
         return result
 

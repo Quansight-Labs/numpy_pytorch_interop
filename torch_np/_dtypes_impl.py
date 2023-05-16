@@ -49,3 +49,24 @@ def result_type_impl(*tensors):
         dtyp = _cd._result_type_dict[dtyp][curr.dtype]
 
     return dtyp
+
+
+# ### NEP 50 helpers ###
+
+categories = [(torch.bool,),
+              (torch.uint8, torch.int8, torch.int16, torch.int32, torch.int64),
+              (torch.float16, torch.float32, torch.float64),
+              (torch.complex64, torch.complex128)]
+
+
+def category(dtyp):
+    for j, cat in enumerate(categories):
+        if dtyp in cat:
+            return j
+    raise ValueError(f"unknown dtype {dtyp}")
+
+
+dtype_for_cat = {0: torch.bool,
+                 1: torch.int64,
+                 2: torch.float64,
+                 3: torch.complex128}
