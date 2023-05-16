@@ -2,18 +2,7 @@
 
 import torch_np as tnp
 from torch_np import array, float32, float64, inf, int64, uint8
-
-# from torch_np.testing import assert_allclose
-
-
-def assert_allclose(actual, desired, rtol=1e-07, atol=0):
-    import torch
-
-    from torch_np import asarray
-
-    actual = asarray(actual).tensor
-    desired = asarray(desired).tensor
-    return torch.testing.assert_close(actual, desired, rtol=rtol, atol=atol)
+from torch_np.testing import assert_allclose
 
 
 uint16 = uint8  # can be anything here, see below
@@ -49,7 +38,7 @@ examples = {
     "uint8(1) + 300": (int64(301), Exception),
     "uint8(100) + 200": (int64(301), uint8(44)),  # and RuntimeWarning
     "float32(1) + 3e100": (float64(3e100), float32(inf)),  # and RuntimeWarning [T7]
-    #      "array([0.1], float32) == 0.1": (array([False]),      unchanged),         # XXX: a typo in NEP50?
+    "array([0.1], float32) == 0.1": (array([False]),      unchanged),         # XXX: a typo in NEP50?
     "array([0.1], float32) == float64(0.1)": (array([True]), array([False])),
     "array([1.], float32) + 3": (array([4.0], float32), unchanged),
     "array([1.], float32) + int64(3)": (array([4.0], float32), array([4.0], float64)),
@@ -59,6 +48,7 @@ examples = {
 fails = [
     "array([1], uint8) + 300",
     "uint8(1) + 300",
+    "array([0.1], float32) == 0.1",
 ]
 
 
@@ -69,8 +59,6 @@ def test_nep50_exceptions(example):
         pytest.xfail(reason="scalars")
 
     old, new = examples[example]
-
-    ###  breakpoint()
 
     if new == Exception:
         with assert_raises(OverflowError):
