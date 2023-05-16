@@ -481,6 +481,22 @@ class TestConversion:
                 assert_(not np.array(1, dtype=dt1)[()] < np.array(0, dtype=dt2)[()],
                         "type %s and %s failed" % (dt1, dt2))
 
+        #Signed integers and floats
+        for dt1 in 'bhl' + np.typecodes['Float']:
+            assert_(1 > np.array(-1, dtype=dt1)[()], "type %s failed" % (dt1,))
+            assert_(not 1 < np.array(-1, dtype=dt1)[()], "type %s failed" % (dt1,))
+            assert_(-1 == np.array(-1, dtype=dt1)[()], "type %s failed" % (dt1,))
+
+            for dt2 in 'bhl' + np.typecodes['Float']:
+                assert_(np.array(1, dtype=dt1)[()] > np.array(-1, dtype=dt2)[()],
+                        "type %s and %s failed" % (dt1, dt2))
+                assert_(not np.array(1, dtype=dt1)[()] < np.array(-1, dtype=dt2)[()],
+                        "type %s and %s failed" % (dt1, dt2))
+                assert_(np.array(-1, dtype=dt1)[()] == np.array(-1, dtype=dt2)[()],
+                        "type %s and %s failed" % (dt1, dt2))
+
+    @pytest.mark.xfail(reason="pytorch unsigned wraps around")
+    def test_numpy_scalar_relational_operators_2(self):
         #Unsigned integers
         for dt1 in 'B':
             assert_(-1 < np.array(1, dtype=dt1)[()], "type %s failed" % (dt1,))
@@ -496,19 +512,6 @@ class TestConversion:
                 assert_(np.array(1, dtype=dt1)[()] != np.array(-1, dtype=dt2)[()],
                         "type %s and %s failed" % (dt1, dt2))
 
-        #Signed integers and floats
-        for dt1 in 'bhl' + np.typecodes['Float']:
-            assert_(1 > np.array(-1, dtype=dt1)[()], "type %s failed" % (dt1,))
-            assert_(not 1 < np.array(-1, dtype=dt1)[()], "type %s failed" % (dt1,))
-            assert_(-1 == np.array(-1, dtype=dt1)[()], "type %s failed" % (dt1,))
-
-            for dt2 in 'bhl' + np.typecodes['Float']:
-                assert_(np.array(1, dtype=dt1)[()] > np.array(-1, dtype=dt2)[()],
-                        "type %s and %s failed" % (dt1, dt2))
-                assert_(not np.array(1, dtype=dt1)[()] < np.array(-1, dtype=dt2)[()],
-                        "type %s and %s failed" % (dt1, dt2))
-                assert_(np.array(-1, dtype=dt1)[()] == np.array(-1, dtype=dt2)[()],
-                        "type %s and %s failed" % (dt1, dt2))
 
     def test_scalar_comparison_to_none(self):
         # Scalars should just return False and not give a warnings.
