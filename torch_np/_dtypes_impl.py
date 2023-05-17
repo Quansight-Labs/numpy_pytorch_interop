@@ -84,6 +84,12 @@ dtype_for_cat = {0: torch.bool, 1: torch.int64, 2: torch.float64, 3: torch.compl
 
 
 def nep50_to_tensors(x1, x2):
+    """If either of inputs is a python scalar, type-promote with NEP 50.
+
+    NB: NEP 50 mandates RuntimeWarnings on some overflows. We do not emit them:
+    we either raise OverflowError or just do the computation.
+    """
+
     x1_type, x2_type = type(x1), type(x2)
     x1_is_weak = x1_type in SCALAR_TYPES
     x2_is_weak = x2_type in SCALAR_TYPES
@@ -112,6 +118,11 @@ def nep50_to_tensors(x1, x2):
             dt = torch.complex64
 
         # finally, can cast make `weak` into a 0D tensor
-        weak = torch.as_tensor(weak, dtype=dt)
+        weak_ = torch.as_tensor(weak, dtype=dt)
 
-        return (weak, not_weak) if x1_is_weak else (not_weak, weak)
+        # detect uint overflow: in PyTorch, uint8(-1) wraps around to 255,
+        # while NEP50 mandates an exception.
+        if weak_.dtype == torch.uint8 and weak_.item() != weak:
+            raise OverflowError(f"Python integer {weak} out of bounds for {weak_.dtype}")
+
+        return (weak_, not_weak) if x1_is_weak else (not_weak, weak_)
