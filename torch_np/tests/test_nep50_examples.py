@@ -68,7 +68,6 @@ fails = [
     "array([1], uint8) + 300",
     "uint8(1) + 300",
     "array([0.1], float32) == 0.1",  # TODO: fix the example
-    "float32(5) + 5j",  # TODO: implement
 ]
 
 

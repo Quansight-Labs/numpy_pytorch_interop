@@ -172,7 +172,7 @@ def typecast_tensors(tensors, target_dtype, casting):
 
 
 def _dtype_for_scalar(py_type):
-    return {bool: torch.bool, int: torch.int64, float: torch.float64}[py_type]
+    return {bool: torch.bool, int: torch.int64, float: torch.float64, complex: torch.complex128}[py_type]
 
 
 def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0, is_weak=False):

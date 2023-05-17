@@ -38,7 +38,9 @@ def _ufunc_preprocess(
                 else _dtypes_impl.dtype_for_cat[cat_weak]
             )
 
-            # TODO: special-case complex + float32
+            # special-case complex + float32
+            if weak.dtype.is_complex and non_weak.dtype == torch.float32:
+                dt_weak = torch.complex64
 
             weak = _util.cast_if_needed(weak, dt_weak)
             tensors = (weak, non_weak) if x1_is_weak else (non_weak, weak)

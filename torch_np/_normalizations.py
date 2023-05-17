@@ -41,7 +41,7 @@ def normalize_array_like(x, parm=None):
     from ._ndarray import _asarray
 
     # special case: python scalars are weakly typed
-    is_py_scalar = type(x) in (int, bool, float)
+    is_py_scalar = type(x) in (int, bool, float, complex)
     if is_py_scalar:
         dtype = _util._dtype_for_scalar(type(x))
         return _asarray(x, dtype=dtype, is_weak=True).tensor
