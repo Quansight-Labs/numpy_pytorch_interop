@@ -87,7 +87,7 @@ def nep50_to_tensors(x1, x2):
     """If either of inputs is a python scalar, type-promote with NEP 50.
 
     NB: NEP 50 mandates RuntimeWarnings on some overflows. We do not emit them:
-    we either raise OverflowError or just do the computation.
+    we either raise an OverflowError or silently do the computation.
     """
 
     x1_type, x2_type = type(x1), type(x2)
@@ -123,6 +123,8 @@ def nep50_to_tensors(x1, x2):
         # detect uint overflow: in PyTorch, uint8(-1) wraps around to 255,
         # while NEP50 mandates an exception.
         if weak_.dtype == torch.uint8 and weak_.item() != weak:
-            raise OverflowError(f"Python integer {weak} out of bounds for {weak_.dtype}")
+            raise OverflowError(
+                f"Python integer {weak} out of bounds for {weak_.dtype}"
+            )
 
         return (weak_, not_weak) if x1_is_weak else (not_weak, weak_)
