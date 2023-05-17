@@ -453,17 +453,7 @@ class ndarray:
 # The rest goes through asarray (preferred) or array.
 
 
-def _array(
-    obj,
-    dtype=None,
-    *,
-    copy=True,
-    order="K",
-    subok=False,
-    ndmin=0,
-    like=None,
-    is_weak=False,
-):
+def array(obj, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=None):
     _util.subok_not_ok(like, subok)
     if order != "K":
         raise NotImplementedError
@@ -496,35 +486,12 @@ def _array(
     if dtype is not None:
         torch_dtype = _dtypes.dtype(dtype).torch_dtype
 
-    tensor = _util._coerce_to_tensor(obj, torch_dtype, copy, ndmin, is_weak)
+    tensor = _util._coerce_to_tensor(obj, torch_dtype, copy, ndmin)
     return ndarray(tensor)
 
 
-def array(obj, dtype=None, *, copy=True, order="K", subok=False, ndmin=0, like=None):
-    # The result of the public `np.array(obj)` is not weakly typed.
-    return _array(
-        obj,
-        dtype,
-        copy=copy,
-        order=order,
-        subok=subok,
-        ndmin=ndmin,
-        like=like,
-        is_weak=False,
-    )
-
-
-def _asarray(a, dtype=None, order="K", *, like=None, is_weak=False):
-    return _array(
-        a, dtype=dtype, order=order, like=like, copy=False, ndmin=0, is_weak=is_weak
-    )
-
-
 def asarray(a, dtype=None, order="K", *, like=None):
-    # The result of the public `np.asarray(obj)` is not weakly typed.
-    return _array(
-        a, dtype=dtype, order=order, like=like, copy=False, ndmin=0, is_weak=False
-    )
+    return array(a, dtype=dtype, order=order, like=like, copy=False, ndmin=0)
 
 
 def from_dlpack(x, /):

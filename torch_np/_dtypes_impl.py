@@ -53,6 +53,18 @@ def result_type_impl(*tensors):
 
 # ### NEP 50 helpers ###
 
+SCALAR_TYPES = (int, bool, float, complex)
+
+
+def _dtype_for_scalar(py_type):
+    return {
+        bool: torch.bool,
+        int: torch.int64,
+        float: torch.float64,
+        complex: torch.complex128,
+    }[py_type]
+
+
 categories = [
     (torch.bool,),
     (torch.uint8, torch.int8, torch.int16, torch.int32, torch.int64),
@@ -69,3 +81,37 @@ def category(dtyp):
 
 
 dtype_for_cat = {0: torch.bool, 1: torch.int64, 2: torch.float64, 3: torch.complex128}
+
+
+def nep50_to_tensors(x1, x2):
+    x1_type, x2_type = type(x1), type(x2)
+    x1_is_weak = x1_type in SCALAR_TYPES
+    x2_is_weak = x2_type in SCALAR_TYPES
+    if x1_is_weak and x2_is_weak:
+        # two scalars: promote
+        x1 = torch.as_tensor(x1, dtype=_dtype_for_scalar(x1_type))
+        x2 = torch.as_tensor(x2, dtype=_dtype_for_scalar(x2_type))
+        return x1, x2
+    elif not (x1_is_weak or x2_is_weak):
+        # two tensors: nothing to do here
+        return x1, x2
+    else:
+        # scalar <op> scalar: NEP 50
+        weak, not_weak = (x1, x2) if x1_is_weak else (x2, x1)
+
+        # find the dtype for the weak's type
+        weak_dtype = _dtype_for_scalar(type(weak))
+
+        cat_weak = category(weak_dtype)
+        cat_not_weak = category(not_weak.dtype)
+
+        dt = not_weak.dtype if cat_weak <= cat_not_weak else dtype_for_cat[cat_weak]
+
+        # special-case complex + float32
+        if weak_dtype.is_complex and not_weak.dtype == torch.float32:
+            dt = torch.complex64
+
+        # finally, can cast make `weak` into a 0D tensor
+        weak = torch.as_tensor(weak, dtype=dt)
+
+        return (weak, not_weak) if x1_is_weak else (not_weak, weak)

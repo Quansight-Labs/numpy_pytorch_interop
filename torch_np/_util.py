@@ -171,11 +171,7 @@ def typecast_tensors(tensors, target_dtype, casting):
     return tuple(typecast_tensor(t, target_dtype, casting) for t in tensors)
 
 
-def _dtype_for_scalar(py_type):
-    return {bool: torch.bool, int: torch.int64, float: torch.float64, complex: torch.complex128}[py_type]
-
-
-def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0, is_weak=False):
+def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
     """The core logic of the array(...) function.
 
     Parameters
@@ -205,22 +201,17 @@ def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0, is_weak=False):
     if isinstance(obj, torch.Tensor):
         tensor = obj
     else:
-        if is_weak:
-            # obj is a python scalar
-            dtype = dtype or _dtype_for_scalar(obj_type)
-            tensor = torch.as_tensor(obj, dtype=dtype)
-        else:
-            tensor = torch.as_tensor(obj)
+        tensor = torch.as_tensor(obj)
 
-            # tensor.dtype is the pytorch default, typically float32. If obj's elements
-            # are not exactly representable in float32, we've lost precision:
-            # >>> torch.as_tensor(1e12).item() - 1e12
-            # -4096.0
+        # tensor.dtype is the pytorch default, typically float32. If obj's elements
+        # are not exactly representable in float32, we've lost precision:
+        # >>> torch.as_tensor(1e12).item() - 1e12
+        # -4096.0
 
-            # Therefore, we treat `tensor.dtype` as a hint, and convert the
-            # original object *again*, this time with an explicit dtype.
-            torch_dtype = _dtypes_impl.get_default_dtype_for(tensor.dtype)
-            tensor = torch.as_tensor(obj, dtype=torch_dtype)
+        # Therefore, we treat `tensor.dtype` as a hint, and convert the
+        # original object *again*, this time with an explicit dtype.
+        torch_dtype = _dtypes_impl.get_default_dtype_for(tensor.dtype)
+        tensor = torch.as_tensor(obj, dtype=torch_dtype)
 
     # type cast if requested
     tensor = cast_if_needed(tensor, dtype)
@@ -234,6 +225,4 @@ def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0, is_weak=False):
     if copy:
         tensor = tensor.clone()
 
-    # Attach the flag *to the tensor* (will be used after normalizations)
-    tensor.is_weakly_typed = is_weak
     return tensor

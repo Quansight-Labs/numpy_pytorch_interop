@@ -9,9 +9,12 @@ import typing
 
 import torch
 
-from . import _dtypes, _util
+from . import _dtypes, _dtypes_impl, _util
 
 ArrayLike = typing.TypeVar("ArrayLike")
+Scalar = typing.Union[int, float, complex, bool]
+ArrayLikeOrScalar = typing.Union[ArrayLike, Scalar]
+
 DTypeLike = typing.TypeVar("DTypeLike")
 AxisLike = typing.TypeVar("AxisLike")
 NDArray = typing.TypeVar("NDarray")
@@ -38,15 +41,15 @@ except ImportError:
 
 
 def normalize_array_like(x, parm=None):
-    from ._ndarray import _asarray
+    from ._ndarray import asarray
 
-    # special case: python scalars are weakly typed
-    is_py_scalar = type(x) in (int, bool, float, complex)
-    if is_py_scalar:
-        dtype = _util._dtype_for_scalar(type(x))
-        return _asarray(x, dtype=dtype, is_weak=True).tensor
+    return asarray(x).tensor
 
-    return _asarray(x).tensor
+
+def normalize_array_like_or_scalar(x, parm=None):
+    if type(x) in _dtypes_impl.SCALAR_TYPES:
+        return x
+    return normalize_array_like(x, parm)
 
 
 def normalize_optional_array_like(x, parm=None):
@@ -115,6 +118,7 @@ def normalize_casting(arg, parm=None):
 
 normalizers = {
     "ArrayLike": normalize_array_like,
+    "ArrayLike | Scalar": normalize_array_like_or_scalar,
     "Optional[ArrayLike]": normalize_optional_array_like,
     "Sequence[ArrayLike]": normalize_seq_array_like,
     "Optional[NDArray]": normalize_ndarray,
