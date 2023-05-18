@@ -84,11 +84,7 @@ dtype_for_cat = {0: torch.bool, 1: torch.int64, 2: torch.float64, 3: torch.compl
 
 
 def nep50_to_tensors(x1, x2, handle_weaks):
-    """If either of inputs is a python scalar, type-promote with NEP 50.
-
-    NB: NEP 50 mandates RuntimeWarnings on some overflows. We do not emit them:
-    we either raise an OverflowError or silently do the computation.
-    """
+    """If either of inputs is a python scalar, type-promote with NEP 50."""
     x1_type, x2_type = type(x1), type(x2)
     if x1_type == torch.Tensor and x2_type == torch.Tensor:
         # two tensors: nothing to do here
@@ -120,6 +116,11 @@ def nep50_to_tensors(x1, x2, handle_weaks):
 
             # detect overflows: in PyTorch, uint8(-1) wraps around to 255,
             # while NEP50 mandates an exception.
+            #
+            # Note that we only check if each element of the binop overflows,
+            # not the result. Consider, e.g. `uint8(100) + 200`. Operands are OK
+            # in uint8, but the result overflows and wrap around 255.
+            # Numpy emits a RuntimeWarning, PyTorch does not, and we do not either.
             if cat_weak == 1 and cat_not_weak == 1:
                 # integers
                 iinfo = torch.iinfo(not_weak.dtype)
