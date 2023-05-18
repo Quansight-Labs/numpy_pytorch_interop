@@ -495,7 +495,6 @@ class TestConversion:
                 assert_(np.array(-1, dtype=dt1)[()] == np.array(-1, dtype=dt2)[()],
                         "type %s and %s failed" % (dt1, dt2))
 
-    @pytest.mark.xfail(reason="NEP50")
     def test_numpy_scalar_relational_operators_2(self):
         #Unsigned integers
         for dt1 in 'B':

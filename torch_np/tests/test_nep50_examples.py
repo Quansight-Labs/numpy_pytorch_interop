@@ -131,3 +131,55 @@ def test_direct_compare(scalar, array):
 
     finally:
         _np._set_promotion_state(state)
+
+
+# ufunc name: [array.dtype]
+corners = {
+    "true_divide": ["bool_", "uint8", "int8", "int16", "int32", "int64"],
+    "divide": ["bool_", "uint8", "int8", "int16", "int32", "int64"],
+    "arctan2": ["bool_", "uint8", "int8", "int16", "int32", "int64"],
+    "copysign": ["bool_", "uint8", "int8", "int16", "int32", "int64"],
+    "heaviside": ["bool_", "uint8", "int8", "int16", "int32", "int64"],
+    "ldexp": ["bool_", "uint8", "int8", "int16", "int32", "int64"],
+    "power": ["uint8"],
+    "nextafter": ["float32"],
+}
+
+
+@pytest.mark.skipif(not HAVE_NUMPY, reason="NumPy not found")
+@pytest.mark.parametrize("name", tnp._ufuncs._binary)
+@pytest.mark.parametrize("scalar, array", itertools.product(weaks, non_weaks))
+def test_compare_ufuncs(name, scalar, array):
+
+    if name in corners and (
+        array.dtype.name in corners[name]
+        or tnp.asarray(scalar).dtype.name in corners[name]
+    ):
+        return pytest.skip(f"{name}(..., dtype=array.dtype)")
+
+    try:
+        state = _np._get_promotion_state()
+        _np._set_promotion_state("weak")
+
+        if name in ["matmul", "modf", "divmod"]:
+            return
+        ufunc = getattr(tnp, name)
+        ufunc_numpy = getattr(_np, name)
+
+        try:
+            result = ufunc(scalar, array)
+        except RuntimeError:
+            # RuntimeError: "bitwise_xor_cpu" not implemented for 'ComplexDouble' etc
+            result = None
+
+        try:
+            result_numpy = ufunc_numpy(scalar, array.tensor.numpy())
+        except TypeError:
+            # TypeError: ufunc 'hypot' not supported for the input types
+            result_numpy = None
+
+        if result is not None and result_numpy is not None:
+            assert result.tensor.numpy().dtype == result_numpy.dtype
+
+    finally:
+        _np._set_promotion_state(state)
