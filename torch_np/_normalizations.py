@@ -118,7 +118,7 @@ def normalize_casting(arg, parm=None):
 
 normalizers = {
     "ArrayLike": normalize_array_like,
-    "ArrayLike | Scalar": normalize_array_like_or_scalar,
+    "Union[ArrayLike, Scalar]": normalize_array_like_or_scalar,
     "Optional[ArrayLike]": normalize_optional_array_like,
     "Sequence[ArrayLike]": normalize_seq_array_like,
     "Optional[NDArray]": normalize_ndarray,

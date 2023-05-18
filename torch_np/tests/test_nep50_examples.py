@@ -1,5 +1,13 @@
 """Test examples for NEP 50."""
 
+import itertools
+
+try:
+    import numpy as _np
+    HAVE_NUMPY = True
+except ImportError:
+    HAVE_NUMPY = False
+
 import torch_np as tnp
 from torch_np import (
     array,
@@ -89,3 +97,30 @@ def test_nep50_exceptions(example):
 
         assert_allclose(result, new, atol=1e-16)
         assert result.dtype == new.dtype
+
+
+
+# ### Directly compare to numpy ###
+
+weaks = [True, 1, 2.0, 3j]
+non_weaks = [tnp.asarray(True),
+             tnp.uint8(1), tnp.int8(1), tnp.int32(1), tnp.int64(1),
+             tnp.float32(1), tnp.float64(1),
+             tnp.complex64(1), tnp.complex128(1)]
+
+@pytest.mark.skipif(not HAVE_NUMPY, reason="NumPy not found")
+@pytest.mark.parametrize("scalar, array", itertools.product(weaks, non_weaks))
+def test_direct_compare(scalar, array):
+    # compare to NumPy w/ NEP 50.
+    try:
+        state = _np._get_promotion_state()
+        _np._set_promotion_state("weak")
+
+        result = (scalar + array).tensor.numpy()
+        result_numpy = scalar + array.tensor.numpy()
+        assert result.dtype == result_numpy.dtype
+        assert result == result_numpy
+
+
+    finally:
+        _np._set_promotion_state(state)

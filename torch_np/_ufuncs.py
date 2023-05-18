@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Union
 
 import torch
 
@@ -32,6 +32,9 @@ _binary = [
 ]
 
 
+NEP50_FUNCS = ("add", "sub", "mul", "floordiv", "mod", "and", "or", "xor", "lshift", "rshift")
+
+
 def deco_binary_ufunc(torch_func):
     """Common infra for binary ufuncs.
 
@@ -41,8 +44,8 @@ def deco_binary_ufunc(torch_func):
 
     @normalizer
     def wrapped(
-        x1: ArrayLike | Scalar,
-        x2: ArrayLike | Scalar,
+        x1: Union[ArrayLike, Scalar],
+        x2: Union[ArrayLike, Scalar],
         /,
         out: Optional[OutArray] = None,
         *,
@@ -54,8 +57,7 @@ def deco_binary_ufunc(torch_func):
         signature=None,
         extobj=None,
     ):
-
-        x1, x2 = _dtypes_impl.nep50_to_tensors(x1, x2)
+        x1, x2 = _dtypes_impl.nep50_to_tensors(x1, x2, torch_func.__name__ in NEP50_FUNCS)
 
         if dtype is None:
             dtype = _dtypes_impl.result_type_impl(x1, x2)
