@@ -90,15 +90,16 @@ def nep50_to_tensors(x1, x2, handle_weaks):
     we either raise an OverflowError or silently do the computation.
     """
     x1_type, x2_type = type(x1), type(x2)
+    if x1_type == torch.Tensor and x2_type == torch.Tensor:
+        # two tensors: nothing to do here
+        return x1, x2
+
     x1_is_weak = x1_type in SCALAR_TYPES
     x2_is_weak = x2_type in SCALAR_TYPES
     if x1_is_weak and x2_is_weak:
         # two scalars: promote
         x1 = torch.as_tensor(x1, dtype=_dtype_for_scalar(x1_type))
         x2 = torch.as_tensor(x2, dtype=_dtype_for_scalar(x2_type))
-        return x1, x2
-    elif not (x1_is_weak or x2_is_weak):
-        # two tensors: nothing to do here
         return x1, x2
     else:
         # scalar <op> scalar: NEP 50
@@ -128,8 +129,10 @@ def nep50_to_tensors(x1, x2, handle_weaks):
                     )
 
         else:
-            # no NEP50 weak handling, fall back to the usual logic
+            # no NEP50 weak handling, fall back to the usual logic---which
+            # includes looking up the default dtypes being numpy's or torch's
             dt = _dtype_for_scalar(type(weak))
+            dt = get_default_dtype_for(dt)
 
         # finally, can cast make `weak` into a 0D tensor
         weak_ = torch.as_tensor(weak, dtype=dt)
