@@ -65,77 +65,74 @@ def _dtype_for_scalar(py_type):
     }[py_type]
 
 
-categories = [
-    (torch.bool,),
-    (torch.uint8, torch.int8, torch.int16, torch.int32, torch.int64),
-    (torch.float16, torch.float32, torch.float64),
-    (torch.complex64, torch.complex128),
-]
-
-
-def category(dtyp):
-    for j, cat in enumerate(categories):
-        if dtyp in cat:
-            return j
-    raise ValueError(f"unknown dtype {dtyp}")
-
-
-dtype_for_cat = {0: torch.bool, 1: torch.int64, 2: torch.float64, 3: torch.complex128}
+def _category(dtype):
+    return {
+        torch.bool: 0,
+        # int
+        torch.uint8: 1,
+        torch.int8: 1,
+        torch.int16: 1,
+        torch.int32: 1,
+        torch.int64: 1,
+        # float
+        torch.float16: 2,
+        torch.float32: 2,
+        torch.float64: 2,
+        # complex
+        torch.complex64: 3,
+        torch.complex128: 3,
+    }[dtype]
 
 
 def nep50_to_tensors(x1, x2, handle_weaks):
     """If either of inputs is a python scalar, type-promote with NEP 50."""
-    x1_type, x2_type = type(x1), type(x2)
-    if x1_type == torch.Tensor and x2_type == torch.Tensor:
-        # two tensors: nothing to do here
+
+    def to_tensor(scalar, dtype=None):
+        if dtype is None:
+            dtype = _dtype_for_scalar(type(scalar))
+            dtype = get_default_dtype_for(dtype)
+        return torch.as_tensor(scalar, dtype=dtype)
+
+    x1_is_weak = not isinstance(x1, torch.Tensor)
+    x2_is_weak = not isinstance(x2, torch.Tensor)
+    if not handle_weaks or (x1_is_weak and x2_is_weak):
+        x1 = to_tensor(x1) if x1_is_weak else x1
+        x2 = to_tensor(x2) if x2_is_weak else x2
         return x1, x2
 
-    x1_is_weak = x1_type in SCALAR_TYPES
-    x2_is_weak = x2_type in SCALAR_TYPES
-    if x1_is_weak and x2_is_weak:
-        # two scalars: promote
-        x1 = torch.as_tensor(x1, dtype=_dtype_for_scalar(x1_type))
-        x2 = torch.as_tensor(x2, dtype=_dtype_for_scalar(x2_type))
-        return x1, x2
-    else:
-        # scalar <op> scalar: NEP 50
-        weak, not_weak = (x1, x2) if x1_is_weak else (x2, x1)
+    # scalar <op> tensor: NEP 50
+    assert x1_is_weak != x2_is_weak
 
-        if handle_weaks:
-            # find the dtype for the weak's type
-            weak_dtype = _dtype_for_scalar(type(weak))
+    weak, not_weak = (x1, x2) if x1_is_weak else (x2, x1)
 
-            cat_weak = category(weak_dtype)
-            cat_not_weak = category(not_weak.dtype)
+    # find the dtype for the weak's type
+    weak_dtype = _dtype_for_scalar(type(weak))
 
-            dt = not_weak.dtype if cat_weak <= cat_not_weak else dtype_for_cat[cat_weak]
+    cat_weak = _category(weak_dtype)
+    cat_not_weak = _category(not_weak.dtype)
 
-            # special-case complex + float32
-            if weak_dtype.is_complex and not_weak.dtype == torch.float32:
-                dt = torch.complex64
+    dt = not_weak.dtype if cat_weak <= cat_not_weak else None
 
-            # detect overflows: in PyTorch, uint8(-1) wraps around to 255,
-            # while NEP50 mandates an exception.
-            #
-            # Note that we only check if each element of the binop overflows,
-            # not the result. Consider, e.g. `uint8(100) + 200`. Operands are OK
-            # in uint8, but the result overflows and wrap around 255.
-            # Numpy emits a RuntimeWarning, PyTorch does not, and we do not either.
-            if cat_weak == 1 and cat_not_weak == 1:
-                # integers
-                iinfo = torch.iinfo(not_weak.dtype)
-                if weak < iinfo.min or weak > iinfo.max:
-                    raise OverflowError(
-                        f"Python integer {weak} out of bounds for {not_weak.dtype}"
-                    )
+    # special-case complex + float32
+    if weak_dtype.is_complex and not_weak.dtype == torch.float32:
+        dt = torch.complex64
 
-        else:
-            # no NEP50 weak handling, fall back to the usual logic---which
-            # includes looking up the default dtypes being numpy's or torch's
-            dt = _dtype_for_scalar(type(weak))
-            dt = get_default_dtype_for(dt)
+    # detect overflows: in PyTorch, uint8(-1) wraps around to 255,
+    # while NEP50 mandates an exception.
+    #
+    # Note that we only check if each element of the binop overflows,
+    # not the result. Consider, e.g. `uint8(100) + 200`. Operands are OK
+    # in uint8, but the result overflows and wrap around 255.
+    # Numpy emits a RuntimeWarning, PyTorch does not, and we do not either.
+    if cat_weak == 1 and cat_not_weak == 1:
+        # integers
+        iinfo = torch.iinfo(not_weak.dtype)
+        if not (iinfo.min <= weak <= iinfo.max):
+            raise OverflowError(
+                f"Python integer {weak} out of bounds for {not_weak.dtype}"
+            )
 
-        # finally, can cast make `weak` into a 0D tensor
-        weak_ = torch.as_tensor(weak, dtype=dt)
+    # finally, can make `weak` into a 0D tensor
+    weak = to_tensor(weak, dt)
 
-        return (weak_, not_weak) if x1_is_weak else (not_weak, weak_)
+    return (weak, not_weak) if x1_is_weak else (not_weak, weak)

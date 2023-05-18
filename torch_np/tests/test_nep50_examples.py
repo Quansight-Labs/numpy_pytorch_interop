@@ -141,10 +141,13 @@ def test_direct_compare(scalar, array, dtype):
         state = _np._get_promotion_state()
         _np._set_promotion_state("weak")
 
+        if dtype is not None:
+            kwargs = {"dtype": dtype}
         try:
-            result_numpy = _np.add(scalar, array.tensor.numpy(), dtype=_np.dtype(dtype))
+            result_numpy = _np.add(scalar, array.tensor.numpy(), **kwargs)
         except Exception:
             return
+
         kwargs = {}
         if dtype is not None:
             kwargs = {"dtype": getattr(tnp, dtype.__name__)}
