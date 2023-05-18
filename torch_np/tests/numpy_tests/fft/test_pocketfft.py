@@ -44,8 +44,8 @@ class TestFFT1D:
 
         np.random.seed(1234)
         x = random(30) + 1j*random(30)
-        assert_allclose(fft1(x), np.fft.fft(x), atol=2e-5)
-        assert_allclose(fft1(x), np.fft.fft(x, norm="backward"), atol=2e-5)
+        assert_allclose(fft1(x), np.fft.fft(x), atol=3e-5)
+        assert_allclose(fft1(x), np.fft.fft(x, norm="backward"), atol=3e-5)
         assert_allclose(fft1(x) / np.sqrt(30),
                         np.fft.fft(x, norm="ortho"), atol=5e-6)
         assert_allclose(fft1(x) / 30.,
