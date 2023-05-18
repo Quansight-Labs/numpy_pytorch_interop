@@ -32,8 +32,18 @@ _binary = [
 ]
 
 
-NEP50_FUNCS = ("add", "subtract", "multiply", "floor_divide", "remainder", "bitwise_and", "bitwise_or", "bitwise_xor", "left_shift", "right_shift")
-
+NEP50_FUNCS = (
+    "add",
+    "subtract",
+    "multiply",
+    "floor_divide",
+    "remainder",
+    "bitwise_and",
+    "bitwise_or",
+    "bitwise_xor",
+    "left_shift",
+    "right_shift",
+)
 
 
 def deco_binary_ufunc(torch_func):
@@ -58,8 +68,10 @@ def deco_binary_ufunc(torch_func):
         signature=None,
         extobj=None,
     ):
-        flag = (torch_func.__name__ in NEP50_FUNCS and
-                _dtypes_impl.default_dtypes == _dtypes_impl.default_dtypes_numpy)
+        flag = (
+            torch_func.__name__ in NEP50_FUNCS
+            and _dtypes_impl.default_dtypes == _dtypes_impl.default_dtypes_numpy
+        )
         x1, x2 = _dtypes_impl.nep50_to_tensors(x1, x2, flag)
 
         if dtype is None:

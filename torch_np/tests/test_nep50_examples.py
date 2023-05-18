@@ -4,6 +4,7 @@ import itertools
 
 try:
     import numpy as _np
+
     HAVE_NUMPY = True
 except ImportError:
     HAVE_NUMPY = False
@@ -99,14 +100,21 @@ def test_nep50_exceptions(example):
         assert result.dtype == new.dtype
 
 
-
 # ### Directly compare to numpy ###
 
 weaks = [True, 1, 2.0, 3j]
-non_weaks = [tnp.asarray(True),
-             tnp.uint8(1), tnp.int8(1), tnp.int32(1), tnp.int64(1),
-             tnp.float32(1), tnp.float64(1),
-             tnp.complex64(1), tnp.complex128(1)]
+non_weaks = [
+    tnp.asarray(True),
+    tnp.uint8(1),
+    tnp.int8(1),
+    tnp.int32(1),
+    tnp.int64(1),
+    tnp.float32(1),
+    tnp.float64(1),
+    tnp.complex64(1),
+    tnp.complex128(1),
+]
+
 
 @pytest.mark.skipif(not HAVE_NUMPY, reason="NumPy not found")
 @pytest.mark.parametrize("scalar, array", itertools.product(weaks, non_weaks))
@@ -120,7 +128,6 @@ def test_direct_compare(scalar, array):
         result_numpy = scalar + array.tensor.numpy()
         assert result.dtype == result_numpy.dtype
         assert result == result_numpy
-
 
     finally:
         _np._set_promotion_state(state)

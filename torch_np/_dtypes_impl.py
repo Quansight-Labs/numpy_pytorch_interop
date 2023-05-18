@@ -123,7 +123,7 @@ def nep50_to_tensors(x1, x2, handle_weaks):
             if cat_weak == 1 and cat_not_weak == 1:
                 # integers
                 iinfo = torch.iinfo(not_weak.dtype)
-                if weak < iinfo.min or weak > iinfo.max: 
+                if weak < iinfo.min or weak > iinfo.max:
                     raise OverflowError(
                         f"Python integer {weak} out of bounds for {not_weak.dtype}"
                     )
