@@ -53,7 +53,7 @@ def result_type_impl(*tensors):
 
 # ### NEP 50 helpers ###
 
-SCALAR_TYPES = (int, bool, float, complex)
+SCALAR_TYPES = {int, bool, float, complex}
 
 
 def _dtype_for_scalar(py_type):
