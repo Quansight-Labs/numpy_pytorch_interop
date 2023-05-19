@@ -175,6 +175,10 @@ def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
         Coerce to this torch dtype
     copy : bool
         Copy or not
+    ndmin : int
+        The results as least this many dimensions
+    is_weak : bool
+        Whether obj is a weakly typed python scalar.
 
     Returns
     -------
@@ -191,14 +195,11 @@ def _coerce_to_tensor(obj, dtype=None, copy=False, ndmin=0):
         tensor = obj
     else:
         tensor = torch.as_tensor(obj)
-        base = None
 
-        # At this point, `tensor.dtype` is the pytorch default. Our default may
-        # differ, so need to typecast. However, we cannot just do `tensor.to`,
-        # because if our desired dtype is wider then pytorch's, `tensor`
-        # may have lost precision:
-
-        # int(torch.as_tensor(1e12)) - 1e12 equals -4096 (try it!)
+        # tensor.dtype is the pytorch default, typically float32. If obj's elements
+        # are not exactly representable in float32, we've lost precision:
+        # >>> torch.as_tensor(1e12).item() - 1e12
+        # -4096.0
 
         # Therefore, we treat `tensor.dtype` as a hint, and convert the
         # original object *again*, this time with an explicit dtype.

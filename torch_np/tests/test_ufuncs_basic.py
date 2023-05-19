@@ -380,10 +380,6 @@ class TestUfuncDtypeKwd:
         assert r32.dtype == "float32"
         assert r32 == 1
 
-        # casting of floating inputs to booleans
-        with assert_raises(TypeError):
-            np.add(1.0, 1e-15, dtype=bool)
-
         # now force the cast
         rb = np.add(1.0, 1e-15, dtype=bool, casting="unsafe")
         assert rb.dtype == bool

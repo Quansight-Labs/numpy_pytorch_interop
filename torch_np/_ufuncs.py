@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Union
 
 import torch
 
@@ -11,17 +11,9 @@ from ._normalizations import (
     DTypeLike,
     NotImplementedType,
     OutArray,
+    Scalar,
     normalizer,
 )
-
-
-def _ufunc_preprocess(tensors, where, casting, order, dtype, subok, signature, extobj):
-    if dtype is None:
-        dtype = _dtypes_impl.result_type_impl(*tensors)
-
-    tensors = _util.typecast_tensors(tensors, dtype, casting)
-
-    return tensors
 
 
 def _ufunc_postprocess(result, out, casting):
@@ -40,6 +32,36 @@ _binary = [
 ]
 
 
+NEP50_FUNCS = (
+    "add",
+    "subtract",
+    "multiply",
+    "floor_divide",
+    "true_divide",
+    "divide",
+    "remainder",
+    "bitwise_and",
+    "bitwise_or",
+    "bitwise_xor",
+    "bitwise_left_shift",
+    "bitwise_right_shift",
+    "hypot",
+    "arctan2",
+    "logaddexp",
+    "logaddexp2",
+    "heaviside",
+    "copysign",
+    "fmax",
+    "minimum",
+    "fmin",
+    "maximum",
+    "fmod",
+    "gcd",
+    "lcm",
+    "pow",
+)
+
+
 def deco_binary_ufunc(torch_func):
     """Common infra for binary ufuncs.
 
@@ -49,8 +71,8 @@ def deco_binary_ufunc(torch_func):
 
     @normalizer
     def wrapped(
-        x1: ArrayLike,
-        x2: ArrayLike,
+        x1: Union[ArrayLike, Scalar],
+        x2: Union[ArrayLike, Scalar],
         /,
         out: Optional[OutArray] = None,
         *,
@@ -62,13 +84,28 @@ def deco_binary_ufunc(torch_func):
         signature=None,
         extobj=None,
     ):
-        tensors = _ufunc_preprocess(
-            (x1, x2), where, casting, order, dtype, subok, signature, extobj
-        )
-        result = torch_func(*tensors)
 
-        result = _ufunc_postprocess(result, out, casting)
-        return result
+        if dtype is not None:
+
+            def cast(x, dtype):
+                if isinstance(x, torch.Tensor):
+                    return _util.typecast_tensors((x,), dtype, casting)[0]
+                else:
+                    return torch.as_tensor(x, dtype=dtype)
+
+            x1 = cast(x1, dtype)
+            x2 = cast(x2, dtype)
+        elif isinstance(x1, torch.Tensor) and isinstance(x2, torch.Tensor):
+            dtype = _dtypes_impl.result_type_impl(x1, x2)
+            x1, x2 = _util.typecast_tensors((x1, x2), dtype, casting)
+        else:
+            x1, x2 = _dtypes_impl.nep50_to_tensors(
+                x1, x2, torch_func.__name__ in NEP50_FUNCS
+            )
+
+        result = torch_func(x1, x2)
+
+        return _ufunc_postprocess(result, out, casting)
 
     wrapped.__qualname__ = torch_func.__name__
     wrapped.__name__ = torch_func.__name__
@@ -80,6 +117,7 @@ def deco_binary_ufunc(torch_func):
 # matmul's signature is _slightly_ different from other ufuncs:
 # - no where=...
 # - additional axis=..., axes=...
+# - no NEP50 scalars in or out
 #
 @normalizer
 def matmul(
@@ -97,10 +135,12 @@ def matmul(
     axes: NotImplementedType = None,
     axis: NotImplementedType = None,
 ):
-    tensors = _ufunc_preprocess(
-        (x1, x2), True, casting, order, dtype, subok, signature, extobj
-    )
-    result = _binary_ufuncs_impl.matmul(*tensors)
+
+    if dtype is None:
+        dtype = _dtypes_impl.result_type_impl(x1, x2)
+    x1, x2 = _util.typecast_tensors((x1, x2), dtype, casting)
+
+    result = _binary_ufuncs_impl.matmul(x1, x2)
 
     result = _ufunc_postprocess(result, out, casting)
     return result
@@ -140,11 +180,11 @@ def divmod(
     else:
         out1, out2 = out
 
-    tensors = _ufunc_preprocess(
-        (x1, x2), True, casting, order, dtype, subok, signature, extobj
-    )
+    if dtype is None:
+        dtype = _dtypes_impl.result_type_impl(x1, x2)
+    x1, x2 = _util.typecast_tensors((x1, x2), dtype, casting)
 
-    quot, rem = _binary_ufuncs_impl.divmod(*tensors)
+    quot, rem = _binary_ufuncs_impl.divmod(x1, x2)
 
     quot = _ufunc_postprocess(quot, out1, casting)
     rem = _ufunc_postprocess(rem, out2, casting)
