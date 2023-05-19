@@ -84,20 +84,28 @@ def deco_binary_ufunc(torch_func):
         signature=None,
         extobj=None,
     ):
-        flag = (
-            torch_func.__name__ in NEP50_FUNCS
-            and _dtypes_impl.default_dtypes == _dtypes_impl.default_dtypes_numpy
-        )
-        x1, x2 = _dtypes_impl.nep50_to_tensors(x1, x2, flag)
 
-        if dtype is None:
+        if dtype is not None:
+
+            def cast(x, dtype):
+                if isinstance(x, torch.Tensor):
+                    return _util.typecast_tensors((x,), dtype, casting)[0]
+                else:
+                    return torch.as_tensor(x, dtype=dtype)
+
+            x1 = cast(x1, dtype)
+            x2 = cast(x2, dtype)
+        elif isinstance(x1, torch.Tensor) and isinstance(x2, torch.Tensor):
             dtype = _dtypes_impl.result_type_impl(x1, x2)
-        x1, x2 = _util.typecast_tensors((x1, x2), dtype, casting)
+            x1, x2 = _util.typecast_tensors((x1, x2), dtype, casting)
+        else:
+            x1, x2 = _dtypes_impl.nep50_to_tensors(
+                x1, x2, torch_func.__name__ in NEP50_FUNCS
+            )
 
         result = torch_func(x1, x2)
 
-        result = _ufunc_postprocess(result, out, casting)
-        return result
+        return _ufunc_postprocess(result, out, casting)
 
     wrapped.__qualname__ = torch_func.__name__
     wrapped.__name__ = torch_func.__name__

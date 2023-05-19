@@ -102,8 +102,8 @@ def test_nep50_exceptions(example):
 
 # ### Directly compare to numpy ###
 
-weaks = [True, 1, 2.0, 3j]
-non_weaks = [
+weaks = (True, 1, 2.0, 3j)
+non_weaks = (
     tnp.asarray(True),
     tnp.uint8(1),
     tnp.int8(1),
@@ -113,19 +113,45 @@ non_weaks = [
     tnp.float64(1),
     tnp.complex64(1),
     tnp.complex128(1),
-]
+)
+if HAVE_NUMPY:
+    dtypes = (
+        None,
+        _np.bool_,
+        _np.uint8,
+        _np.int8,
+        _np.int32,
+        _np.int64,
+        _np.float32,
+        _np.float64,
+        _np.complex64,
+        _np.complex128,
+    )
+else:
+    dtypes = (None,)
 
 
 @pytest.mark.skipif(not HAVE_NUMPY, reason="NumPy not found")
-@pytest.mark.parametrize("scalar, array", itertools.product(weaks, non_weaks))
-def test_direct_compare(scalar, array):
+@pytest.mark.parametrize(
+    "scalar, array, dtype", itertools.product(weaks, non_weaks, dtypes)
+)
+def test_direct_compare(scalar, array, dtype):
     # compare to NumPy w/ NEP 50.
     try:
         state = _np._get_promotion_state()
         _np._set_promotion_state("weak")
 
-        result = (scalar + array).tensor.numpy()
-        result_numpy = scalar + array.tensor.numpy()
+        if dtype is not None:
+            kwargs = {"dtype": dtype}
+        try:
+            result_numpy = _np.add(scalar, array.tensor.numpy(), **kwargs)
+        except Exception:
+            return
+
+        kwargs = {}
+        if dtype is not None:
+            kwargs = {"dtype": getattr(tnp, dtype.__name__)}
+        result = tnp.add(scalar, array, **kwargs).tensor.numpy()
         assert result.dtype == result_numpy.dtype
         assert result == result_numpy
 
