@@ -7,7 +7,12 @@ import operator
 import torch
 
 from . import _dtypes, _dtypes_impl, _funcs, _funcs_impl, _helpers, _ufuncs, _util
-from ._normalizations import ArrayLike, NotImplementedType, normalizer
+from ._normalizations import (
+    ArrayLike,
+    NotImplementedType,
+    normalize_array_like,
+    normalizer,
+)
 
 newaxis = None
 
@@ -433,16 +438,11 @@ class ndarray:
     def __setitem__(self, index, value):
         index = _helpers.ndarrays_to_tensors(index)
         index = ndarray._upcast_int_indices(index)
-        value = _helpers.ndarrays_to_tensors(value)
 
-        if isinstance(value, torch.Tensor):
-            value = _util.cast_if_needed(value, self.tensor.dtype)
+        value = normalize_array_like(value)
+        value = _util.cast_if_needed(value, self.tensor.dtype)
 
-        try:
-            return self.tensor.__setitem__(index, value)
-        except TypeError:
-            value = torch.as_tensor(value, dtype=self.tensor.dtype)
-            return self.tensor.__setitem__(index, value)
+        return self.tensor.__setitem__(index, value)
 
     take = _funcs.take
     put = _funcs.put
