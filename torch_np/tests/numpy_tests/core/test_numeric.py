@@ -2723,7 +2723,6 @@ class TestMoveaxis:
         assert_(isinstance(result, np.ndarray))
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestCross:
     def test_2x2(self):
         u = [1, 2]
