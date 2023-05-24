@@ -2987,7 +2987,6 @@ class TestTensordot:
         td = np.tensordot(a, b, (1, 0))
         assert_array_equal(td, np.dot(a, b))
 
-    @pytest.mark.xfail(reason="no einsum")
     def test_zero_dimension_einsum(self):
         # Test resolution to issue #5663
         a = np.zeros((3,0))
