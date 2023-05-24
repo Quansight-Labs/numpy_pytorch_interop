@@ -1325,7 +1325,6 @@ class TestBool:
             a[:o] = False
             assert_equal(np.count_nonzero(a), builtins.sum(a.tolist()))
 
-
     def _test_cast_from_flexible(self, dtype):
         # empty string -> false
         for n in range(3):
@@ -1346,7 +1345,7 @@ class TestBool:
                 assert_(isinstance(v.astype(bool), np.ndarray))
                 assert_(v[()].astype(bool) is np.True_)
 
-    @pytest.mark.xfail(reason="np.void")
+    @pytest.mark.skip(reason="np.void")
     def test_cast_from_void(self):
         self._test_cast_from_flexible(np.void)
 
