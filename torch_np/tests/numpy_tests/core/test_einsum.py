@@ -1126,7 +1126,7 @@ class TestEinsumPath:
             # no error for any spacing
             np.einsum('{}...a{}->{}...a{}'.format(*sp), arr)
 
-@pytest.mark.xfail
+
 def test_overlap():
     a = np.arange(9, dtype=int).reshape(3, 3)
     b = np.arange(9, dtype=int).reshape(3, 3)
