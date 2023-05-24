@@ -176,10 +176,6 @@ def compress(condition, a, axis=None, out=None):
     raise NotImplementedError
 
 
-def cross(a, b, axisa=-1, axisb=-1, axisc=-1, axis=None):
-    raise NotImplementedError
-
-
 def datetime_as_string(arr, unit=None, timezone="naive", casting="same_kind"):
     raise NotImplementedError
 
