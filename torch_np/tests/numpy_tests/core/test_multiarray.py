@@ -7714,7 +7714,6 @@ class TestViewDtype:
 
 
 # Test various array sizes that hit different code paths in quicksort-avx512
-@pytest.mark.xfail(reason='TODO')
 @pytest.mark.parametrize("N", [8, 16, 24, 32, 48, 64, 96, 128, 151, 191,
                                256, 383, 512, 1023, 2047])
 def test_sort_float(N):
@@ -7741,14 +7740,14 @@ def test_sort_float(N):
     assert_equal(np.sort(infarr, kind='quick'), np.sort(infarr, kind='heap'))
 
 
-@pytest.mark.xfail(reason='TODO')
 def test_sort_int():
     # Random data with NPY_MAX_INT32 and NPY_MIN_INT32 sprinkled
-    rng = np.random.default_rng(42)
+    #rng = np.random.default_rng(42)
+    np.random.seed(1234)
     N = 2047
     minv = np.iinfo(np.int32).min
     maxv = np.iinfo(np.int32).max
-    arr = rng.integers(low=minv, high=maxv, size=N).astype('int32')
+    arr = np.random.randint(low=minv, high=maxv, size=N).astype('int32')
     arr[np.random.choice(arr.shape[0], 10)] = minv
     arr[np.random.choice(arr.shape[0], 10)] = maxv
     assert_equal(np.sort(arr, kind='quick'), np.sort(arr, kind='heap'))

@@ -143,7 +143,7 @@ def choice(a: ArrayLike, size=None, replace=True, p: Optional[ArrayLike] = None)
         p = torch.ones_like(a) / a.shape[0]
 
     # cf https://github.com/numpy/numpy/blob/main/numpy/random/mtrand.pyx#L973
-    atol = sqrt(torch.finfo(torch.float64).eps)
+    atol = sqrt(torch.finfo(p.dtype).eps)
     if abs(p.sum() - 1.0) > atol:
         raise ValueError("probabilities do not sum to 1.")
 
