@@ -5,6 +5,7 @@ from ._getlimits import errstate, finfo, iinfo
 from ._ndarray import (
     array,
     asarray,
+    ascontiguousarray,
     can_cast,
     from_dlpack,
     ndarray,

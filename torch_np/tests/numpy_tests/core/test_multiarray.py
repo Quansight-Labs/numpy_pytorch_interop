@@ -79,7 +79,6 @@ def temppath(*args, **kwargs):
 
 # FIXME
 np.asanyarray = np.asarray
-np.ascontiguousarray = np.asarray
 np.asfortranarray = np.asarray
 
 # #### end stubs
@@ -461,7 +460,6 @@ class TestAttributes:
             a.fill(0)
 
 
-@pytest.mark.xfail(reason='TODO: array_construction')
 class TestArrayConstruction:
     def test_array(self):
         d = np.ones(6)
@@ -488,12 +486,6 @@ class TestArrayConstruction:
         r = np.array([d, d])
         assert_equal(r, np.ones((2, 6, 6)))
 
-        d = np.ones((6, ))
-        r = np.array([[d, d + 1], d + 2], dtype=object)
-        assert_equal(len(r), 2)
-        assert_equal(r[0], [d, d + 1])
-        assert_equal(r[1], d + 2)
-
         tgt = np.ones((2, 3), dtype=bool)
         tgt[0, 2] = False
         tgt[1, 0:2] = False
@@ -501,6 +493,14 @@ class TestArrayConstruction:
         assert_equal(r, tgt)
         r = np.array([[True, False], [True, False], [False, True]])
         assert_equal(r, tgt.T)
+
+    @pytest.mark.skip(reason="object arrays")
+    def test_array_object(self):
+        d = np.ones((6, ))
+        r = np.array([[d, d + 1], d + 2], dtype=object)
+        assert_equal(len(r), 2)
+        assert_equal(r[0], [d, d + 1])
+        assert_equal(r[1], d + 2)
 
     def test_array_empty(self):
         assert_raises(TypeError, np.array)
@@ -513,6 +513,10 @@ class TestArrayConstruction:
         e = np.array(d, copy=False)
         d[1] = 3
         assert_array_equal(e, [1, 3, 3])
+
+    @pytest.mark.xfail(reason="order='F'")
+    def test_array_copy_false_2(self):
+        d = np.array([1, 2, 3])
         e = np.array(d, copy=False, order='F')
         d[1] = 4
         assert_array_equal(e, [1, 4, 3])
@@ -526,6 +530,10 @@ class TestArrayConstruction:
         e[0, 2] = -7
         assert_array_equal(e, [[1, 2, -7], [1, 2, 3]])
         assert_array_equal(d, [[1, 3, 3], [1, 2, 3]])
+
+    @pytest.mark.xfail(reason="order='F'")
+    def test_array_copy_true_2(self):
+        d = np.array([[1,2,3], [1, 2, 3]])
         e = np.array(d, copy=True, order='F')
         d[0, 1] = 5
         e[0, 2] = 7
@@ -537,10 +545,10 @@ class TestArrayConstruction:
         assert_(np.ascontiguousarray(d).flags.c_contiguous)
         assert_(np.ascontiguousarray(d).flags.f_contiguous)
         assert_(np.asfortranarray(d).flags.c_contiguous)
-        assert_(np.asfortranarray(d).flags.f_contiguous)
+        # assert_(np.asfortranarray(d).flags.f_contiguous)   # XXX: f ordering
         d = np.ones((10, 10))[::2,::2]
         assert_(np.ascontiguousarray(d).flags.c_contiguous)
-        assert_(np.asfortranarray(d).flags.f_contiguous)
+        # assert_(np.asfortranarray(d).flags.f_contiguous)
 
     @pytest.mark.parametrize("func",
             [np.array,
@@ -556,6 +564,7 @@ class TestArrayConstruction:
         with pytest.raises(TypeError):
             func(1, 2, 3, 4, 5, 6, 7, 8)  # too many arguments
 
+    @pytest.mark.skip(reason="np.array w/keyword argument")
     @pytest.mark.parametrize("func",
             [np.array,
              np.asarray,
