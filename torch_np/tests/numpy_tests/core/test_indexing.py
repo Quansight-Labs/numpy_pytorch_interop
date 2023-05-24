@@ -237,9 +237,9 @@ class TestIndexing:
         def f(a, v):
             a[a > -1] = v
 
-        assert_raises((ValueError, TypeError), f, a, [])
-        assert_raises((ValueError, TypeError), f, a, [1, 2, 3])
-        assert_raises((ValueError, TypeError), f, a[:1], [1, 2, 3])
+        assert_raises((RuntimeError, ValueError, TypeError), f, a, [])
+        assert_raises((RuntimeError, ValueError, TypeError), f, a, [1, 2, 3])
+        assert_raises((RuntimeError, ValueError, TypeError), f, a[:1], [1, 2, 3])
 
     def test_boolean_indexing_twodim(self):
         # Indexing a 2-dimensional array with
@@ -552,7 +552,6 @@ class TestBroadcastedAssignments:
         )
         assert re.search(fr"[\(\[]{r_inner_shape}[\]\)]$", str(e.value))
 
-    @pytest.mark.xfail(reason="XXX: deal with awkward put-like set operations")
     def test_index_is_larger(self):
         # Simple case of fancy index broadcasting of the index.
         a = np.zeros((5, 5))

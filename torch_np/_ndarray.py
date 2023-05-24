@@ -437,7 +437,12 @@ class ndarray:
 
         if isinstance(value, torch.Tensor):
             value = _util.cast_if_needed(value, self.tensor.dtype)
-        return self.tensor.__setitem__(index, value)
+
+        try:
+            return self.tensor.__setitem__(index, value)
+        except TypeError:
+            value = torch.as_tensor(value, dtype=self.tensor.dtype)
+            return self.tensor.__setitem__(index, value)
 
     take = _funcs.take
     put = _funcs.put
