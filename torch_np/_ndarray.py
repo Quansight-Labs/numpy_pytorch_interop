@@ -439,8 +439,9 @@ class ndarray:
         index = _helpers.ndarrays_to_tensors(index)
         index = ndarray._upcast_int_indices(index)
 
-        value = normalize_array_like(value)
-        value = _util.cast_if_needed(value, self.tensor.dtype)
+        if type(value) not in _dtypes_impl.SCALAR_TYPES:
+            value = normalize_array_like(value)
+            value = _util.cast_if_needed(value, self.tensor.dtype)
 
         return self.tensor.__setitem__(index, value)
 
