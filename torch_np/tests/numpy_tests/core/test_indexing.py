@@ -137,7 +137,6 @@ class TestIndexing:
         assert_array_equal(arr[index], arr[u_index])
 
         arr[u_index] = np.arange(5)[:,None]
-        pytest.xfail("XXX: repeat() not implemented")
         assert_array_equal(arr, np.arange(5)[:,None].repeat(2, axis=1))
 
         arr = np.arange(25).reshape(5, 5)
