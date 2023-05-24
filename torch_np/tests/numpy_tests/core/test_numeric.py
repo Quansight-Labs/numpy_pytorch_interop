@@ -221,7 +221,6 @@ class TestNonarrayArgs:
         f = 5.1 * 10**73
         assert_equal(round(np.float64(f), -73), round(f, -73))
 
-    @pytest.mark.xfail(reason="TODO implement searchsorted(...)")
     def test_searchsorted(self):
         arr = [-8, -5, -1, 3, 6, 10]
         out = np.searchsorted(arr, 0)
@@ -438,7 +437,6 @@ class TestBoolArray:
         assert_array_equal(self.im ^ False, self.im)
 
 
-@pytest.mark.xfail(reason="TODO: needs fancy indexing")
 class TestBoolCmp:
     def setup_method(self):
         self.f = np.ones(256, dtype=np.float32)
@@ -1111,7 +1109,6 @@ class TestNonzeroAndCountNonzero:
         assert isinstance(np.count_nonzero(a, axis=1, keepdims=True), np.ndarray)
 
 
-@pytest.mark.xfail(reason="TODO")
 class TestIndex:
     def test_boolean(self):
         a = rand(3, 5, 8)
