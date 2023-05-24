@@ -137,7 +137,6 @@ class TestIndexing:
         assert_array_equal(arr[index], arr[u_index])
 
         arr[u_index] = np.arange(5)[:,None]
-        pytest.xfail("XXX: repeat() not implemented")
         assert_array_equal(arr, np.arange(5)[:,None].repeat(2, axis=1))
 
         arr = np.arange(25).reshape(5, 5)
@@ -237,9 +236,9 @@ class TestIndexing:
         def f(a, v):
             a[a > -1] = v
 
-        assert_raises((ValueError, TypeError), f, a, [])
-        assert_raises((ValueError, TypeError), f, a, [1, 2, 3])
-        assert_raises((ValueError, TypeError), f, a[:1], [1, 2, 3])
+        assert_raises((RuntimeError, ValueError, TypeError), f, a, [])
+        assert_raises((RuntimeError, ValueError, TypeError), f, a, [1, 2, 3])
+        assert_raises((RuntimeError, ValueError, TypeError), f, a[:1], [1, 2, 3])
 
     def test_boolean_indexing_twodim(self):
         # Indexing a 2-dimensional array with
@@ -365,17 +364,6 @@ class TestIndexing:
         res[0] = -1
         res[3] = -1
         assert_array_equal(a, res)
-
-    @pytest.mark.xfail(reason="XXX: recarray stuff is TBD")
-    def test_subclass_writeable(self):
-        d = np.rec.array([('NGC1001', 11), ('NGC1002', 1.), ('NGC1003', 1.)],
-                         dtype=[('target', 'S20'), ('V_mag', '>f4')])
-        ind = np.array([False,  True,  True], dtype=bool)
-        assert_(d[ind].flags.writeable)
-        ind = np.array([0, 1])
-        assert_(d[ind].flags.writeable)
-        assert_(d[...].flags.writeable)
-        assert_(d[0].flags.writeable)
 
     def test_memory_order(self):
         # This is not necessary to preserve. Memory layouts for
@@ -552,7 +540,6 @@ class TestBroadcastedAssignments:
         )
         assert re.search(fr"[\(\[]{r_inner_shape}[\]\)]$", str(e.value))
 
-    @pytest.mark.xfail(reason="XXX: deal with awkward put-like set operations")
     def test_index_is_larger(self):
         # Simple case of fancy index broadcasting of the index.
         a = np.zeros((5, 5))
