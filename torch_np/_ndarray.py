@@ -504,6 +504,13 @@ def asarray(a, dtype=None, order="K", *, like=None):
     return array(a, dtype=dtype, order=order, like=like, copy=False, ndmin=0)
 
 
+def ascontiguousarray(a, dtype=None, *, like=None):
+    arr = asarray(a, dtype=dtype, like=like)
+    if not arr.tensor.is_contiguous():
+        arr.tensor = arr.tensor.contiguous()
+    return arr
+
+
 def from_dlpack(x, /):
     t = torch.from_dlpack(x)
     return ndarray(t)
