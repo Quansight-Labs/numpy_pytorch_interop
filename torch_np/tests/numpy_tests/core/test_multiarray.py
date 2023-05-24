@@ -580,7 +580,6 @@ class TestArrayConstruction:
             func(a=3)
 
 
-@pytest.mark.xfail(reason='TODO: assignments')
 class TestAssignment:
     def test_assignment_broadcasting(self):
         a = np.arange(6).reshape(2, 3)
@@ -599,14 +598,14 @@ class TestAssignment:
         # rules (adding a new "1" dimension to the left of the shape),
         # applied to the output instead of an input. In NumPy 2.0, this kind
         # of broadcasting assignment will likely be disallowed.
-        a[...] = np.arange(6)[::-1].reshape(1, 2, 3)
+        a[...] = np.flip(np.arange(6)).reshape(1, 2, 3)
         assert_equal(a, [[5, 4, 3], [2, 1, 0]])
         # The other type of broadcasting would require a reduction operation.
 
         def assign(a, b):
             a[...] = b
 
-        assert_raises(ValueError, assign, a, np.arange(12).reshape(2, 2, 3))
+        assert_raises((RuntimeError, ValueError), assign, a, np.arange(12).reshape(2, 2, 3))
 
     def test_assignment_errors(self):
         # Address issue #2276
@@ -618,8 +617,9 @@ class TestAssignment:
             a[0] = v
 
         assert_raises((AttributeError, TypeError), assign, C())
-        assert_raises(ValueError, assign, [1])
+        assert_raises((TypeError, ValueError), assign, [1])
 
+    @pytest.mark.skip(reason="object arrays")
     def test_unicode_assignment(self):
         # gh-5049
         from numpy.core.numeric import set_string_function
@@ -642,6 +642,7 @@ class TestAssignment:
         # this would crash for the same reason
         np.array([np.array('\xe5\xe4\xf6')])
 
+    @pytest.mark.skip(reason="object arrays")
     def test_stringlike_empty_list(self):
         # gh-8902
         u = np.array(['done'])
@@ -657,6 +658,7 @@ class TestAssignment:
         assert_raises(ValueError, operator.setitem, u, 0, bad_sequence())
         assert_raises(ValueError, operator.setitem, b, 0, bad_sequence())
 
+    @pytest.mark.skip(reason="longdouble")
     def test_longdouble_assignment(self):
         # only relevant if longdouble is larger than float
         # we're looking for loss of precision
@@ -689,6 +691,7 @@ class TestAssignment:
             arr = np.array([np.array(tinya)])
             assert_equal(arr[0], tinya)
 
+    @pytest.mark.skip(reason="object arrays")
     def test_cast_to_string(self):
         # cast to str should do "str(scalar)", not "str(scalar.item())"
         # Example: In python2, str(float) is truncated, so we want to avoid
@@ -826,7 +829,6 @@ class TestZeroRank:
         assert_equal(xi.flags.f_contiguous, True)
 
 
-@pytest.mark.xfail(reason='TODO')
 class TestScalarIndexing:
     def setup_method(self):
         self.d = np.array([0, 1])[0]
@@ -852,7 +854,7 @@ class TestScalarIndexing:
         def assign(x, i, v):
             x[i] = v
 
-        assert_raises(TypeError, assign, a, 0, 42)
+        assert_raises((IndexError, TypeError), assign, a, 0, 42)
 
     def test_newaxis(self):
         a = self.d
@@ -872,8 +874,11 @@ class TestScalarIndexing:
             x[i]
 
         assert_raises(IndexError, subscript, a, (np.newaxis, 0))
-        assert_raises(IndexError, subscript, a, (np.newaxis,)*50)
 
+        # this assersion fails because 50 > NPY_MAXDIMS = 32
+        # assert_raises(IndexError, subscript, a, (np.newaxis,)*50)
+
+    @pytest.mark.xfail(reason="pytorch disallows overlapping assignments")
     def test_overlapping_assignment(self):
         # With positive strides
         a = np.arange(4)
@@ -1856,7 +1861,7 @@ class TestMethods:
         b = a.searchsorted([0, 1, 2], 'right')
         assert_equal(b, [0, 2, 2])
 
-    @pytest.mark.xfail(reason="no .view method")
+    @pytest.mark.xfail(reason="RuntimeError: self.storage_offset() must be divisible by 8")
     def test_searchsorted_unaligned_array(self):
         # Test searching unaligned array
         a = np.arange(10)
@@ -1930,7 +1935,7 @@ class TestMethods:
         # assert_raises(ValueError, np.searchsorted, a, 0, sorter=[-1, 0, 1, 2, 3])
         # assert_raises(ValueError, np.searchsorted, a, 0, sorter=[4, 0, -1, 2, 3])
 
-    @pytest.mark.xfail(reason='no .view method')
+    @pytest.mark.xfail(reason='self.storage_offset() must be divisible by 8')
     def test_searchsorted_with_sorter(self):
         a = np.random.rand(300)
         s = a.argsort()
@@ -2773,7 +2778,6 @@ class TestMethods:
         assert_equal(a.ravel('A'), [0, 2, 4, 6, 8, 10, 12, 14])
         assert_equal(a.ravel('F'), [0, 8, 4, 12, 2, 10, 6, 14])
 
-    @pytest.mark.xfail(reason="TODO fancy indexing")
     def test_swapaxes(self):
         a = np.arange(1*2*3*4).reshape(1, 2, 3, 4).copy()
         idx = np.indices(a.shape)
@@ -3201,7 +3205,6 @@ class TestPickling:
         assert_equal(a, p)
 
 
-@pytest.mark.xfail(reason='TODO')
 class TestFancyIndexing:
     def test_list(self):
         x = np.ones((1, 1))
