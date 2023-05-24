@@ -10,10 +10,6 @@ def asanyarray(a, dtype=None, order=None, *, like=None):
     raise NotImplementedError
 
 
-def ascontiguousarray(a, dtype=None, *, like=None):
-    raise NotImplementedError
-
-
 def asfortranarray(a, dtype=None, *, like=None):
     raise NotImplementedError
 
