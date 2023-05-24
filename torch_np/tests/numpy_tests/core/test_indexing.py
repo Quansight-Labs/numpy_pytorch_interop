@@ -366,17 +366,6 @@ class TestIndexing:
         res[3] = -1
         assert_array_equal(a, res)
 
-    @pytest.mark.xfail(reason="XXX: recarray stuff is TBD")
-    def test_subclass_writeable(self):
-        d = np.rec.array([('NGC1001', 11), ('NGC1002', 1.), ('NGC1003', 1.)],
-                         dtype=[('target', 'S20'), ('V_mag', '>f4')])
-        ind = np.array([False,  True,  True], dtype=bool)
-        assert_(d[ind].flags.writeable)
-        ind = np.array([0, 1])
-        assert_(d[ind].flags.writeable)
-        assert_(d[...].flags.writeable)
-        assert_(d[0].flags.writeable)
-
     def test_memory_order(self):
         # This is not necessary to preserve. Memory layouts for
         # more complex indices are not as simple.
