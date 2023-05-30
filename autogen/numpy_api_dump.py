@@ -540,10 +540,6 @@ def packbits(a, /, axis=None, bitorder="big"):
     raise NotImplementedError
 
 
-def pad(array, pad_width, mode="constant", **kwargs):
-    raise NotImplementedError
-
-
 def partition(a, kth, axis=-1, kind="introselect", order=None):
     raise NotImplementedError
 
