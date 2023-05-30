@@ -1814,9 +1814,7 @@ def pad(array: ArrayLike, pad_width: ArrayLike, mode="constant", **kwargs):
         typ = int
     value = typ(value)
 
-
     pad_width = torch.broadcast_to(pad_width, (array.ndim, 2))
     pad_width = torch.flip(pad_width, (0,)).flatten()
 
     return torch.nn.functional.pad(array, tuple(pad_width), value=value)
-
