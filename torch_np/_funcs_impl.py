@@ -1798,3 +1798,23 @@ def min_scalar_type(a: ArrayLike, /):
                 break
 
     return DType(dtype)
+
+
+def pad(array: ArrayLike, pad_width: ArrayLike, mode="constant", **kwargs):
+    if mode != "constant":
+        raise NotImplementedError
+    value = kwargs.get("constant_values", 0)
+    if array.dtype.is_floating_point:
+        typ = float
+    elif array.dtype.is_complex:
+        typ = complex
+    elif array.dtype == torch.bool:
+        typ = bool
+    else:
+        typ = int
+    value = typ(value)
+
+    pad_width = torch.broadcast_to(pad_width, (array.ndim, 2))
+    pad_width = torch.flip(pad_width, (0,)).flatten()
+
+    return torch.nn.functional.pad(array, tuple(pad_width), value=value)
