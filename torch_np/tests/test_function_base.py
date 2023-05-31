@@ -75,3 +75,17 @@ class TestArange:
         with pytest.raises((ValueError, RuntimeError)):
             # Fails discovering start dtype
             np.arange(*args)
+
+
+class TestAppend:
+    # tests taken from np.append docstring
+    def test_basic(self):
+        result = np.append([1, 2, 3], [[4, 5, 6], [7, 8, 9]])
+        assert_equal(result, np.arange(1, 10, dtype=int))
+
+        # When `axis` is specified, `values` must have the correct shape.
+        result = np.append([[1, 2, 3], [4, 5, 6]], [[7, 8, 9]], axis=0)
+        assert_equal(result, np.arange(1, 10, dtype=int).reshape((3, 3)))
+
+        with pytest.raises((RuntimeError, ValueError)):
+            np.append([[1, 2, 3], [4, 5, 6]], [7, 8, 9], axis=0)
