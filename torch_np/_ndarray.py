@@ -6,7 +6,7 @@ import operator
 
 import torch
 
-from . import _dtypes, _dtypes_impl, _funcs, _funcs_impl, _helpers, _ufuncs, _util
+from . import _dtypes, _dtypes_impl, _funcs, _funcs_impl, _ufuncs, _util
 from ._normalizations import (
     ArrayLike,
     NotImplementedType,
@@ -431,12 +431,12 @@ class ndarray:
         return index
 
     def __getitem__(self, index):
-        index = _helpers.ndarrays_to_tensors(index)
+        index = _util.ndarrays_to_tensors(index)
         index = ndarray._upcast_int_indices(index)
         return ndarray(self.tensor.__getitem__(index))
 
     def __setitem__(self, index, value):
-        index = _helpers.ndarrays_to_tensors(index)
+        index = _util.ndarrays_to_tensors(index)
         index = ndarray._upcast_int_indices(index)
 
         if type(value) not in _dtypes_impl.SCALAR_TYPES:

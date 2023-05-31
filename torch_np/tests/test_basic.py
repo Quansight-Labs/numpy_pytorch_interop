@@ -9,6 +9,7 @@ from pytest import raises as assert_raises
 import torch_np as w
 import torch_np._ufuncs as _ufuncs
 from torch_np.testing import assert_equal
+import torch_np._util as _util
 
 # These function receive one array_like arg and return one array_like result
 one_arg_funcs = [
@@ -559,3 +560,10 @@ class TestCtorNested:
     def test_arrays_in_lists(self):
         lst = [[1, 2], [3, w.array(4)]]
         assert_equal(w.asarray(lst), [[1, 2], [3, 4]])
+
+
+def test_ndarrays_to_tensors():
+    out = _util.ndarrays_to_tensors(((w.asarray(42), 7), 3))
+    assert len(out) == 2
+    assert isinstance(out[0], tuple) and len(out[0]) == 2
+    assert isinstance(out[0][0], torch.Tensor)
