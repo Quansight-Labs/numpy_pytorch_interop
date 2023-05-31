@@ -62,10 +62,6 @@ def seterrobj(errobj):
     raise NotImplementedError
 
 
-def append(arr, values, axis=None):
-    raise NotImplementedError
-
-
 def apply_along_axis(func1d, axis, arr, *args, **kwargs):
     raise NotImplementedError
 
