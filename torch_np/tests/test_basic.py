@@ -8,8 +8,8 @@ from pytest import raises as assert_raises
 
 import torch_np as w
 import torch_np._ufuncs as _ufuncs
-from torch_np.testing import assert_equal
 import torch_np._util as _util
+from torch_np.testing import assert_equal
 
 # These function receive one array_like arg and return one array_like result
 one_arg_funcs = [
