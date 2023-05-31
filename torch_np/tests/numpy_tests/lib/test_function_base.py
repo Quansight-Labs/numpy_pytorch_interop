@@ -26,7 +26,7 @@ from torch_np.random import rand
 
 # FIXME: make from torch_np
 from numpy.lib import (
-    delete, digitize, extract, gradient,
+    delete, digitize, extract,
     insert, interp, msort, piecewise, place,
     select, setxor1d, trapz, trim_zeros, unwrap, vectorize
     )
@@ -34,6 +34,7 @@ from torch_np._util import normalize_axis_tuple
 
 from torch_np import corrcoef, cov, i0, angle, sinc, diff, meshgrid, unique
 from torch_np import flipud, hamming, hanning, kaiser, blackman, bartlett
+from torch_np import gradient
 
 
 def get_mat(n):
@@ -893,7 +894,6 @@ class TestDelete:
         assert_array_equal(res, x[:, :0])
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestGradient:
 
     def test_basic(self):
