@@ -648,7 +648,8 @@ class TestHistogramdd:
 
             h1, e1 = histogramdd(r, b, weights=np.ones(10))
             assert_equal(H, h1)
-            assert_equal(edges, e1)
+            for edge, e in zip(edges, e1):
+                assert (edge == e).all()
 
     def test_weights(self):
         v = np.random.rand(100, 2)

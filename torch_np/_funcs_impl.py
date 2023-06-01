@@ -1984,8 +1984,8 @@ def histogramdd(
 
     if weights is not None:
         # range=... is required : interleave min and max values per dimension
-        mm = sample.amin(0), sample.amax(0)
-        range = torch.cat(mm).reshape(sample.ndim, -1).T.flatten()
+        mm = sample.aminmax(dim=0)
+        range = torch.cat(mm).reshape(2, -1).T.flatten()
         range = tuple(range.tolist())
         weights = _util.cast_if_needed(weights, sample.dtype)
         w_kwd = {"weight": weights}
