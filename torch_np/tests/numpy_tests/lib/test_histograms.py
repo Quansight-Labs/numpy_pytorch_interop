@@ -367,7 +367,6 @@ class TestHistogram:
         self.do_precision(np.half, np.double)
         self.do_precision(np.single, np.double)
 
-
     @pytest.mark.xfail(reason="histogram_bin_edges")
     def test_histogram_bin_edges(self):
         hist, e = histogram([1, 2, 3, 4], [1, 2])
@@ -807,3 +806,9 @@ class TestHistogramdd:
         hist_dd, edges_dd = histogramdd((v,), (bins,), density=True)
         assert_equal(hist, hist_dd)
         assert_equal(edges, edges_dd[0])
+
+    def test_bins_array(self):
+        x = np.array([[-.5, .5, 1.5], [-.5, 1.5, 2.5], [-.5, 2.5, .5],
+                      [.5,  .5, 1.5], [.5,  1.5, 2.5], [.5,  2.5, 2.5]])
+        H, edges = histogramdd(x, (2, 3, 3))
+        assert all(type(e) is np.ndarray for e in edges)
