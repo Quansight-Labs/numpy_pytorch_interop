@@ -170,9 +170,7 @@ def wrap_tensors(result):
     if isinstance(result, torch.Tensor):
         return ndarray(result)
     elif isinstance(result, (tuple, list)):
-        result = type(result)(
-            ndarray(x) if isinstance(x, torch.Tensor) else x for x in result
-        )
+        result = type(result)(wrap_tensors(x) for x in result)
     return result
 
 
