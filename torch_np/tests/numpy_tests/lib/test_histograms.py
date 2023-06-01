@@ -1,5 +1,5 @@
 import torch_np as np
-from torch_np import histogram
+from torch_np import histogram, histogramdd
 
 #from numpy.lib.histograms import histogram, histogramdd, histogram_bin_edges
 from torch_np.testing import (
@@ -584,7 +584,6 @@ class TestHistogramOptimBinNums:
                           estimator, weights=[1, 2, 3])
 
 
-@pytest.mark.xfail(reason='TODO')
 class TestHistogramdd:
 
     def test_simple(self):
@@ -665,20 +664,28 @@ class TestHistogramdd:
 
     def test_empty(self):
         a, b = histogramdd([[], []], bins=([0, 1], [0, 1]))
-        assert_array_max_ulp(a, np.array([[0.]]))
+        # assert_array_max_ulp(a, np.array([[0.]]))
+        assert_allclose(a, np.array([[0.]]), atol=1e-15)
         a, b = np.histogramdd([[], [], []], bins=2)
-        assert_array_max_ulp(a, np.zeros((2, 2, 2)))
+        # assert_array_max_ulp(a, np.zeros((2, 2, 2)))
+        assert_allclose(a, np.zeros((2, 2, 2)), atol=1e-15)
 
     def test_bins_errors(self):
         # There are two ways to specify bins. Check for the right errors
         # when mixing those.
         x = np.arange(8).reshape(2, 4)
-        assert_raises(ValueError, np.histogramdd, x, bins=[-1, 2, 4, 5])
-        assert_raises(ValueError, np.histogramdd, x, bins=[1, 0.99, 1, 1])
+        assert_raises((RuntimeError, ValueError), np.histogramdd, x, bins=[-1, 2, 4, 5])
+        assert_raises((RuntimeError, ValueError), np.histogramdd, x, bins=[1, 0.99, 1, 1])
         assert_raises(
-            ValueError, np.histogramdd, x, bins=[1, 1, 1, [1, 2, 3, -3]])
+            (RuntimeError, ValueError), np.histogramdd, x, bins=[1, 1, 1, [1, 2, 3, -3]])
+
+    @pytest.mark.xfail(reason='pytorch does not support bins = [int, int, array]')
+    def test_bins_error_2(self):
+        # mixing scalar (# of bins) and explicit bin arrays, ugh
+        x = np.arange(8).reshape(2, 4)
         assert_(np.histogramdd(x, bins=[1, 1, 1, [1, 2, 3, 4]]))
 
+    @pytest.mark.xfail(reason='pytorch does not support bins = [int, int, array]')
     def test_inf_edges(self):
         # Test using +/-inf bin edges works. See #1788.
         with np.errstate(invalid='ignore'):
@@ -717,11 +724,12 @@ class TestHistogramdd:
     def test_finite_range(self):
         vals = np.random.random((100, 3))
         histogramdd(vals, range=[[0.0, 1.0], [0.25, 0.75], [0.25, 0.5]])
-        assert_raises(ValueError, histogramdd, vals,
+        assert_raises((RuntimeError, ValueError), histogramdd, vals,
                       range=[[0.0, 1.0], [0.25, 0.75], [0.25, np.inf]])
-        assert_raises(ValueError, histogramdd, vals,
+        assert_raises((RuntimeError, ValueError), histogramdd, vals,
                       range=[[0.0, 1.0], [np.nan, 0.75], [0.25, 0.5]])
 
+    @pytest.mark.xfail(reason="pytorch does not allow equal entries")
     def test_equal_edges(self):
         """ Test that adjacent entries in an edge array can be equal """
         x = np.array([0, 1, 2])
