@@ -301,10 +301,6 @@ def geterrcall():
     raise NotImplementedError
 
 
-def histogram2d(x, y, bins=10, range=None, normed=None, weights=None, density=None):
-    raise NotImplementedError
-
-
 def histogram_bin_edges(a, bins=10, range=None, weights=None):
     raise NotImplementedError
 
