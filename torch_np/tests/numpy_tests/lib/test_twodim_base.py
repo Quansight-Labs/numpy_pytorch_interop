@@ -3,12 +3,12 @@
 """
 from torch_np.testing import (
     assert_equal, assert_array_equal, # assert_array_max_ulp,
-    assert_array_almost_equal, assert_
+    assert_array_almost_equal, assert_, assert_allclose
     )
 from pytest import raises as assert_raises
 
 from torch_np import (
-    arange, add, fliplr, flipud, zeros, ones, eye, array, diag, #histogram2d,
+    arange, add, fliplr, flipud, zeros, ones, eye, array, diag, histogram2d,
     tri, # mask_indices,
     triu_indices, triu_indices_from, tril_indices,
     tril_indices_from, vander,
@@ -180,7 +180,6 @@ class TestFlipud:
         assert_equal(flipud(a), b)
 
 
-@pytest.mark.xfail(reason="TODO: implement histogram2d(...)")
 class TestHistogram2d:
     def test_simple(self):
         x = array(
@@ -241,11 +240,14 @@ class TestHistogram2d:
 
     def test_empty(self):
         a, edge1, edge2 = histogram2d([], [], bins=([0, 1], [0, 1]))
-        assert_array_max_ulp(a, array([[0.]]))
+        # assert_array_max_ulp(a, array([[0.]]))
+        assert_allclose(a, np.array([[0.]]), atol=1e-15)
 
         a, edge1, edge2 = histogram2d([], [], bins=4)
-        assert_array_max_ulp(a, np.zeros((4, 4)))
+        # assert_array_max_ulp(a, np.zeros((4, 4)))
+        assert_allclose(a, np.zeros((4, 4)), atol=1e-15)
 
+    @pytest.mark.xfail(reason='pytorch does not support bins = [int, array]')
     def test_binparameter_combination(self):
         x = array(
             [0, 0.09207008, 0.64575234, 0.12875982, 0.47390599,

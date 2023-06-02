@@ -119,7 +119,6 @@ class TestHistogram:
         h, b = histogram(a, weights=np.ones(10, float))
         assert_(np.issubdtype(h.dtype, np.floating))
 
-    @pytest.mark.xfail(reason="TODO: histogram2d")
     def test_f32_rounding(self):
         # gh-4799, check that the rounding of the edges works with float32
         x = np.array([276.318359, -69.593948, 21.329449], dtype=np.float32)
@@ -382,8 +381,8 @@ class TestHistogram:
         edges = histogram_bin_edges(arr, bins='auto', range=(0, 1))
         assert_array_equal(edges, e)
 
-  ##  @requires_memory(free_bytes=1e10)
-    @pytest.mark.xfail(reason="TODO histogramdd")
+    ##  @requires_memory(free_bytes=1e10)
+    @pytest.mark.xfail(reason='pytorch does not support bins = [int, int, array]')
     @pytest.mark.slow
     def test_big_arrays(self):
         sample = np.zeros([100000000, 3])
