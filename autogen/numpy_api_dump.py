@@ -156,10 +156,6 @@ def byte_bounds(a):
     raise NotImplementedError
 
 
-def choose(a, choices, out=None, mode="raise"):
-    raise NotImplementedError
-
-
 def common_type(*arrays):
     raise NotImplementedError
 
