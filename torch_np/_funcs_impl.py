@@ -1002,8 +1002,8 @@ def choose(
     n_dims = choices.ndim
 
     idx_list = [
-        torch.arange(input_shape[i])[(None,) * i + (...,) + (None,) * (n_dims - i - 1)]
-        for i in range(n_dims)
+        torch.arange(dim).view((1,) * i + (dim,) + (1,) * (n_dims - i - 1))
+        for i, dim in enumerate(input_shape)
     ]
 
     idx_list[0] = a
