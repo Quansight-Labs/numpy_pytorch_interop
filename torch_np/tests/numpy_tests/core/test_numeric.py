@@ -78,7 +78,6 @@ class TestResize:
 
 class TestNonarrayArgs:
     # check that non-array arguments to functions wrap them in arrays
-    @pytest.mark.xfail(reason="TODO implement choose")
     def test_choose(self):
         choices = [[0, 1, 2],
                    [3, 4, 5],

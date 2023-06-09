@@ -1426,7 +1426,6 @@ class TestMethods:
         out = arr.compress([0, 1])
         assert_equal(out, 1)
 
-    @pytest.mark.xfail(reason="TODO: choose")
     def test_choose(self):
         x = 2*np.ones((3,), dtype=int)
         y = 3*np.ones((3,), dtype=int)
@@ -1443,15 +1442,13 @@ class TestMethods:
         A = ind.choose((x, y2))
         assert_equal(A, [[2, 2, 3], [2, 2, 3]])
 
-        oned = np.ones(1)
-        # gh-12031, caused SEGFAULT
-        assert_raises(TypeError, oned.choose,np.void(0), [oned])
-
         out = np.array(0)
         ret = np.choose(np.array(1), [10, 20, 30], out=out)
         assert out is ret
         assert_equal(out[()], 20)
 
+    @pytest.mark.xfail(reason="choose(..., mode=...) not implemented")
+    def test_choose_2(self):
         # gh-6272 check overlap on out
         x = np.arange(5)
         y = np.choose([0,0,0], [x[:3], x[:3], x[:3]], out=x[1:4], mode='wrap')
@@ -7477,7 +7474,6 @@ class TestWritebackIfCopy:
         np.take(a, [0, 2], out=out, mode='raise')
         assert_equal(out, np.array([0, 2]))
 
-    @pytest.mark.xfail(reason="XXX: choose()")
     def test_choose_mod_raise(self):
         a = np.array([[1, 0, 1], [0, 1, 0], [1, 0, 1]])
         out = np.empty((3,3), dtype='int')

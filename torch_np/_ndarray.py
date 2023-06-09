@@ -124,6 +124,7 @@ methods = {
     "cumprod": None,
     # advanced indexing
     "take": None,
+    "choose": None,
 }
 
 dunder = {
