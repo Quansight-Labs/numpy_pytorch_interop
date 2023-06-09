@@ -997,13 +997,9 @@ def choose(
 
     # Use an analog of `gather(choices, 0, a)` which broadcasts `choices` vs `a`:
     # (taken from https://github.com/pytorch/pytorch/issues/9407#issuecomment-1427907939)
-
-    input_shape = choices.shape
-    n_dims = choices.ndim
-
     idx_list = [
-        torch.arange(dim).view((1,) * i + (dim,) + (1,) * (n_dims - i - 1))
-        for i, dim in enumerate(input_shape)
+        torch.arange(dim).view((1,) * i + (dim,) + (1,) * (choices.ndim - i - 1))
+        for i, dim in enumerate(choices.shape)
     ]
 
     idx_list[0] = a
