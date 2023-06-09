@@ -986,18 +986,23 @@ def put_along_axis(arr: ArrayLike, indices: ArrayLike, values: ArrayLike, axis):
     return None
 
 
-def choose(a: ArrayLike, choices: Sequence[ArrayLike], out: Optional[OutArray]=None, mode: NotImplementedType="raise"):
-    # from https://github.com/pytorch/pytorch/issues/9407#issuecomment-1427907939
-    # an analog for gather(choices, 0, a) which broadcasts `choices` vs `a`.
+def choose(
+    a: ArrayLike,
+    choices: Sequence[ArrayLike],
+    out: Optional[OutArray] = None,
+    mode: NotImplementedType = "raise",
+):
+    # First, broadcast elements of `choices`
     choices = torch.stack(torch.broadcast_tensors(*choices))
+
+    # Use an analog of `gather(choices, 0, a)` which broadcasts `choices` vs `a`:
+    # (taken from https://github.com/pytorch/pytorch/issues/9407#issuecomment-1427907939)
 
     input_shape = choices.shape
     n_dims = choices.ndim
 
     idx_list = [
-        torch.arange(input_shape[i])[
-            (None,) * i + (...,) + (None,) * (n_dims - i - 1)
-        ]
+        torch.arange(input_shape[i])[(None,) * i + (...,) + (None,) * (n_dims - i - 1)]
         for i in range(n_dims)
     ]
 
