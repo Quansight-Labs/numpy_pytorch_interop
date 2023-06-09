@@ -5815,7 +5815,6 @@ class TestInner:
             assert_equal(np.inner(b, a).transpose(2,3,0,1), desired)
 
 
-@pytest.mark.xfail(reason='TODO')
 class TestChoose:
     def setup_method(self):
         self.x = 2*np.ones((3,), dtype=int)
@@ -5844,6 +5843,36 @@ class TestChoose:
     def test_output_dtype(self, ops):
         expected_dt = np.result_type(*ops)
         assert(np.choose([0], ops).dtype == expected_dt)
+
+    def test_docstring_1(self):
+        # examples from the docstring,
+        # https://numpy.org/doc/1.23/reference/generated/numpy.choose.html
+        choices = [[0, 1, 2, 3], [10, 11, 12, 13],
+                   [20, 21, 22, 23], [30, 31, 32, 33]]
+        A = np.choose([2, 3, 1, 0], choices)
+
+        assert_equal(A, [20, 31, 12,  3])
+
+    def test_docstring_2(self):
+        a = [[1, 0, 1], [0, 1, 0], [1, 0, 1]]
+        choices = [-10, 10]
+        A = np.choose(a, choices)
+        assert_equal(A, [[ 10, -10,  10],
+                         [-10,  10, -10],
+                         [ 10, -10,  10]])
+
+    def test_docstring_3(self):
+        a = np.array([0, 1]).reshape((2, 1, 1))
+        c1 = np.array([1, 2, 3]).reshape((1, 3, 1))
+        c2 = np.array([-1, -2, -3, -4, -5]).reshape((1, 1, 5))
+        A = np.choose(a, (c1, c2)) # result is 2x3x5, res[0,:,:]=c1, res[1,:,:]=c2
+        expected = np.array([[[ 1,  1,  1,  1,  1],
+                              [ 2,  2,  2,  2,  2],
+                              [ 3,  3,  3,  3,  3]],
+                            [[-1, -2, -3, -4, -5],
+                             [-1, -2, -3, -4, -5],
+                             [-1, -2, -3, -4, -5]]])
+        assert_equal(A, expected)
 
 
 class TestRepeat:
