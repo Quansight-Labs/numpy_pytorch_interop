@@ -156,6 +156,15 @@ ri_dunder = {
 }
 
 
+def _upcast_int_indices(index):
+    if isinstance(index, torch.Tensor):
+        if index.dtype in (torch.int8, torch.int16, torch.int32, torch.uint8):
+            return index.to(torch.int64)
+    elif isinstance(index, tuple):
+        return tuple(_upcast_int_indices(i) for i in index)
+    return index
+
+
 ##################### ndarray class ###########################
 
 
@@ -428,23 +437,14 @@ class ndarray:
         else:
             return self.__getitem__(args)
 
-    @staticmethod
-    def _upcast_int_indices(index):
-        if isinstance(index, torch.Tensor):
-            if index.dtype in (torch.int8, torch.int16, torch.int32, torch.uint8):
-                return index.to(torch.int64)
-        elif isinstance(index, tuple):
-            return tuple(ndarray._upcast_int_indices(i) for i in index)
-        return index
-
     def __getitem__(self, index):
         index = _util.ndarrays_to_tensors(index)
-        index = ndarray._upcast_int_indices(index)
+        index = _upcast_int_indices(index)
         return ndarray(self.tensor.__getitem__(index))
 
     def __setitem__(self, index, value):
         index = _util.ndarrays_to_tensors(index)
-        index = ndarray._upcast_int_indices(index)
+        index = _upcast_int_indices(index)
 
         if type(value) not in _dtypes_impl.SCALAR_TYPES:
             value = normalize_array_like(value)
