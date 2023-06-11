@@ -4698,7 +4698,6 @@ class TestStats:
                 res = f(mat, axis=None).dtype.type
                 assert_(res is tgt)
 
-    @pytest.mark.xfail(reason='TODO: dtype in reductions')
     def test_dtype_from_dtype(self):
         mat = np.eye(3)
 

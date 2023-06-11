@@ -244,9 +244,11 @@ def std(
     *,
     where: NotImplementedType = None,
 ):
+    in_dtype = dtype
     dtype = _atleast_float(dtype, a.dtype)
     tensor = _util.cast_if_needed(a, dtype)
-    return tensor.std(dim=axis, correction=ddof)
+    result = tensor.std(dim=axis, correction=ddof)
+    return _util.cast_if_needed(result, in_dtype)
 
 
 @_deco_axis_expand
@@ -260,9 +262,11 @@ def var(
     *,
     where: NotImplementedType = None,
 ):
+    in_dtype = dtype
     dtype = _atleast_float(dtype, a.dtype)
     tensor = _util.cast_if_needed(a, dtype)
-    return tensor.var(dim=axis, correction=ddof)
+    result = tensor.var(dim=axis, correction=ddof)
+    return _util.cast_if_needed(result, in_dtype)
 
 
 # cumsum / cumprod are almost reductions:
