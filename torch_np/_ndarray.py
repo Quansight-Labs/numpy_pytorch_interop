@@ -202,6 +202,9 @@ class ndarray:
         lambda self, other: _ufuncs.divmod(other, self), "__rdivmod__"
     )
 
+    # prevent loop variables leaking into the ndarray class namespace
+    del ivar, rvar, name, plain, fn, method
+
     @property
     def shape(self):
         return tuple(self.tensor.shape)

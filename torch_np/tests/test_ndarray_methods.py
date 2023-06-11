@@ -567,3 +567,18 @@ class TestAmin:
 
         arr = np.asarray(a)
         assert_equal(np.amin(arr), arr.min())
+
+
+def test_contains():
+    a = np.arange(12).reshape(3, 4)
+    assert 2 in a
+    assert not 42 in a
+
+
+# make sure ndarray does not carry extra methods/attributes
+# >>> set(dir(a)) - set(dir(a.tensor.numpy()))
+@pytest.mark.parametrize("name", ["fn", "ivar", "method", "name", "plain", "rvar"])
+def test_extra_methods(name):
+    a = np.ones(3)
+    with pytest.raises(AttributeError):
+        getattr(a, name)
