@@ -19,6 +19,7 @@ from torch_np import (
     float64,
     inf,
     int16,
+    int32,
     int64,
     uint8,
 )
@@ -57,13 +58,14 @@ examples = {
     "uint8(1) + 300": (int64(301), Exception),
     "uint8(100) + 200": (int64(301), uint8(44)),  # and RuntimeWarning
     "float32(1) + 3e100": (float64(3e100), float32(inf)),  # and RuntimeWarning [T7]
-    "array([0.1], float32) == 0.1": (
-        array([False]),
-        unchanged,
-    ),  # XXX: a typo in NEP50?
+    "array([1.0], float32) + 1e-14 == 1.0": (array([True]), unchanged),
     "array([0.1], float32) == float64(0.1)": (array([True]), array([False])),
+    "array(1.0, float32) + 1e-14 == 1.0": (array(False), array(True)),
     "array([1.], float32) + 3": (array([4.0], float32), unchanged),
     "array([1.], float32) + int64(3)": (array([4.0], float32), array([4.0], float64)),
+    "3j + array(3, complex64)": (array(3 + 3j, complex128), array(3 + 3j, complex64)),
+    "float32(1) + 1j": (array(1 + 1j, complex128), array(1 + 1j, complex64)),
+    "int32(1) + 5j": (array(1 + 5j, complex128), unchanged),
     # additional examples from the NEP text
     "int16(2) + 2": (int64(4), int16(4)),
     "int16(4) + 4j": (complex128(4 + 4j), unchanged),
@@ -73,16 +75,8 @@ examples = {
 }
 
 
-fails = [
-    "array([0.1], float32) == 0.1",  # TODO: fix the example
-]
-
-
 @pytest.mark.parametrize("example", examples)
 def test_nep50_exceptions(example):
-
-    if example in fails:
-        pytest.xfail(reason="scalars")
 
     old, new = examples[example]
 
