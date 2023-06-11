@@ -396,6 +396,9 @@ class ndarray:
     def __len__(self):
         return self.tensor.shape[0]
 
+    def __contains__(self, x):
+        return self.tensor.__contains__(x)
+
     ### methods to match namespace functions
     def transpose(self, *axes):
         # np.transpose(arr, axis=None) but arr.transpose(*axes)
