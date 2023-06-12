@@ -2132,7 +2132,6 @@ class Test_I0:
             res = i0(a)
 
 
-@pytest.mark.xfail(reason='TODO: implement')
 class TestKaiser:
 
     def test_simple(self):

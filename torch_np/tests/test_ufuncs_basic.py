@@ -257,14 +257,12 @@ class TestNdarrayDunderVsUfunc:
         assert_equal(result, ufunc(a, b))
 
         if result.dtype != np.result_type(a, b):
-            pytest.xfail(reason="prob need weak type promotion (scalars)")
             assert result.dtype == np.result_type(a, b)
 
         # __rop__
         result = op(b, a)
         assert_equal(result, ufunc(b, a))
         if result.dtype != np.result_type(a, b):
-            pytest.xfail(reason="prob need weak type promotion (scalars)")
             assert result.dtype == np.result_type(a, b)
 
         # __iop__ : casts the result to self.dtype, raises if cannot
@@ -276,7 +274,6 @@ class TestNdarrayDunderVsUfunc:
             result = iop(a, b)
             assert_equal(result, ufunc(a0, b))
             if result.dtype != np.result_type(a, b):
-                pytest.xfail(reason="prob need weak type promotion (scalars)")
                 assert result.dtype == np.result_type(a0, b)
 
         else:
@@ -297,14 +294,12 @@ class TestNdarrayDunderVsUfunc:
         result = op(a, b)
         assert_equal(result, ufunc(a, b))
         if result.dtype != np.result_type(a, b):
-            pytest.xfail(reason="prob need weak type promotion (scalars)")
             assert result.dtype == np.result_type(a, b)
 
         # __rop__(other array)
         result = op(b, a)
         assert_equal(result, ufunc(b, a))
         if result.dtype != np.result_type(a, b):
-            pytest.xfail(reason="prob need weak type promotion (scalars)")
             assert result.dtype == np.result_type(a, b)
 
         # __iop__
@@ -316,7 +311,6 @@ class TestNdarrayDunderVsUfunc:
             result = iop(a, b)
             assert_equal(result, ufunc(a0, b))
             if result.dtype != np.result_type(a, b):
-                pytest.xfail(reason="prob need weak type promotion (scalars)")
                 assert result.dtype == np.result_type(a0, b)
         else:
             with assert_raises((TypeError, RuntimeError)):  # XXX np.UFuncTypeError
@@ -333,7 +327,6 @@ class TestNdarrayDunderVsUfunc:
         assert_equal(result_op, result_ufunc)
 
         if result_op.dtype != result_ufunc.dtype:
-            pytest.xfail(reason="prob need weak type promotion (scalars)")
             assert result_op.dtype == result_ufunc.dtype
 
         # __rop__
@@ -344,7 +337,6 @@ class TestNdarrayDunderVsUfunc:
         assert_equal(result_op, result_ufunc)
 
         if result_op.dtype != result_ufunc.dtype:
-            pytest.xfail(reason="prob need weak type promotion (scalars)")
             assert result_op.dtype == result_ufunc.dtype
 
         # __iop__ : in-place ops (`self += other` etc) do not broadcast self
@@ -363,7 +355,6 @@ class TestNdarrayDunderVsUfunc:
         assert_equal(result, result_ufunc)
 
         if result_op.dtype != result_ufunc.dtype:
-            pytest.xfail(reason="prob need weak type promotion (scalars)")
             assert result_op.dtype == result_ufunc.dtype
 
 

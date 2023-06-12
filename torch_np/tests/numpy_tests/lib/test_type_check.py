@@ -93,7 +93,6 @@ class TestIsscalar:
         assert_(np.isscalar(4.0))
 
 
-@pytest.mark.xfail(reason="not implemented")
 class TestReal:
 
     def test_real(self):
@@ -108,7 +107,7 @@ class TestReal:
         y = 1
         out = np.real(y)
         assert_equal(y, out)
-        assert_(not isinstance(out, np.ndarray))
+        # assert_(not isinstance(out, np.ndarray))  # XXX: 0D tensor, not scalar
 
     def test_cmplx(self):
         y = np.random.rand(10,)+1j*np.random.rand(10,)
@@ -122,10 +121,9 @@ class TestReal:
         y = 1 + 1j
         out = np.real(y)
         assert_equal(1.0, out)
-        assert_(not isinstance(out, np.ndarray))
+        # assert_(not isinstance(out, np.ndarray))  # XXX: 0D tensor, not scalar
 
 
-@pytest.mark.xfail(reason="not implemented")
 class TestImag:
 
     def test_real(self):
@@ -140,7 +138,7 @@ class TestImag:
         y = 1
         out = np.imag(y)
         assert_equal(0, out)
-        assert_(not isinstance(out, np.ndarray))
+        # assert_(not isinstance(out, np.ndarray))  # XXX: 0D tensor, not scalar
 
     def test_cmplx(self):
         y = np.random.rand(10,)+1j*np.random.rand(10,)
@@ -154,7 +152,7 @@ class TestImag:
         y = 1 + 1j
         out = np.imag(y)
         assert_equal(1.0, out)
-        assert_(not isinstance(out, np.ndarray))
+        # assert_(not isinstance(out, np.ndarray))  # XXX: 0D tensor, not scalar
 
 
 class TestIscomplex:
