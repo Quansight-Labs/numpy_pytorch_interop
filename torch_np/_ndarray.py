@@ -156,6 +156,15 @@ ri_dunder = {
 }
 
 
+def _upcast_int_indices(index):
+    if isinstance(index, torch.Tensor):
+        if index.dtype in (torch.int8, torch.int16, torch.int32, torch.uint8):
+            return index.to(torch.int64)
+    elif isinstance(index, tuple):
+        return tuple(_upcast_int_indices(i) for i in index)
+    return index
+
+
 ##################### ndarray class ###########################
 
 
@@ -201,6 +210,9 @@ class ndarray:
     __rdivmod__ = create_method(
         lambda self, other: _ufuncs.divmod(other, self), "__rdivmod__"
     )
+
+    # prevent loop variables leaking into the ndarray class namespace
+    del ivar, rvar, name, plain, fn, method
 
     @property
     def shape(self):
@@ -396,6 +408,9 @@ class ndarray:
     def __len__(self):
         return self.tensor.shape[0]
 
+    def __contains__(self, x):
+        return self.tensor.__contains__(x)
+
     ### methods to match namespace functions
     def transpose(self, *axes):
         # np.transpose(arr, axis=None) but arr.transpose(*axes)
@@ -422,23 +437,14 @@ class ndarray:
         else:
             return self.__getitem__(args)
 
-    @staticmethod
-    def _upcast_int_indices(index):
-        if isinstance(index, torch.Tensor):
-            if index.dtype in (torch.int8, torch.int16, torch.int32, torch.uint8):
-                return index.to(torch.int64)
-        elif isinstance(index, tuple):
-            return tuple(ndarray._upcast_int_indices(i) for i in index)
-        return index
-
     def __getitem__(self, index):
         index = _util.ndarrays_to_tensors(index)
-        index = ndarray._upcast_int_indices(index)
+        index = _upcast_int_indices(index)
         return ndarray(self.tensor.__getitem__(index))
 
     def __setitem__(self, index, value):
         index = _util.ndarrays_to_tensors(index)
-        index = ndarray._upcast_int_indices(index)
+        index = _upcast_int_indices(index)
 
         if type(value) not in _dtypes_impl.SCALAR_TYPES:
             value = normalize_array_like(value)
