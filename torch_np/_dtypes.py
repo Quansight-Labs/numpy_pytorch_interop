@@ -1,7 +1,6 @@
 """ Define analogs of numpy dtypes supported by pytorch.
 Define the scalar types and supported dtypes and numpy <--> torch dtype mappings.
 """
-import abc
 import builtins
 
 import torch
@@ -15,9 +14,8 @@ __all__ = ["dtype", "DType", "typecodes", "issubdtype", "set_default_dtype"]
 # ### Scalar types ###
 
 
-class generic(abc.ABC):
+class generic:
     @property
-    @abc.abstractmethod
     def name(self):
         return self.__class__.__name__
 
