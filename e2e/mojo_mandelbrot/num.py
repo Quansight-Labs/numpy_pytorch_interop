@@ -7,7 +7,20 @@ cfg.numpy_ndarray_as_tensor = True
 device="cpu"
 
 @torch.compile
-def mandelbrot_numpy(x_values, y_values, max_iter=200):
+def mandelbrot_numpy(max_iter=200):
+    # Define the boundaries of the complex plane
+    xn = 450
+    yn = 375
+    xmin = -2.25
+    xmax = 0.75
+    ymin = -1.25
+    ymax = 1.25
+
+    # Create the grid of complex numbers
+    x_values = np.linspace(xmin, xmax, xn, dtype='float64')
+    y_values = np.linspace(ymin, ymax, yn, dtype='float64')
+
+
     rx, iy = np.meshgrid(x_values, y_values, indexing='xy')
 
     x = rx.copy()
@@ -22,15 +35,4 @@ def mandelbrot_numpy(x_values, y_values, max_iter=200):
         mask += inside
     return mask
 
-# Define the boundaries of the complex plane
-xn = 450
-yn = 375
-xmin = -2.25
-xmax = 0.75
-ymin = -1.25
-ymax = 1.25
-
-# Create the grid of complex numbers
-x_values = torch.linspace(xmin, xmax, xn, dtype=torch.float64, device=device)
-y_values = torch.linspace(ymin, ymax, yn, dtype=torch.float64, device=device)
-print(mandelbrot_numpy(x_values, y_values, 3))
+print(mandelbrot_numpy(3))
