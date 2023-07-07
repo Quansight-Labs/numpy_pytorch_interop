@@ -4,8 +4,12 @@ import pytest
 import types
 from typing import Any
 
-import torch_np as np
-from torch_np.testing import (assert_, assert_equal, assert_array_equal)
+#import torch_np as np
+#from torch_np.testing import (assert_, assert_equal, assert_array_equal)
+
+import numpy as np
+from numpy.testing import (assert_, assert_equal, assert_array_equal)
+
 from pytest import raises as assert_raises
 
 import pickle

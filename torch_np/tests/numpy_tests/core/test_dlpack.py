@@ -4,7 +4,7 @@ import pytest
 import torch
 
 import numpy as np
-from torch_np.testing import assert_array_equal
+from numpy.testing import assert_array_equal
 
 IS_PYPY = False
 

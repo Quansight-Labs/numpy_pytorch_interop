@@ -81,5 +81,8 @@ import torch
 
 def pytest_runtest_call(item):
     compiled = torch.compile(item.function)
-    item.runtest()
+    # smoke test the compiled test
     compiled(item, **item.funcargs)     # the 1st argument is a placeholder
+
+    # run the original, non-compiled test
+    item.runtest()
