@@ -10,13 +10,18 @@ Copyright (c) 2015 Alberto Santini - MIT License
 Code adapted from Alberto Santini implementation available at:
 https://github.com/albertosantini/python-fluid
 """
-import torch_np as np
+import numpy as np
 
 # To run on CUDA, change "cpu" to "cuda" below.
 import torch
 torch.set_default_device("cpu")
 
 
+import torch._dynamo.config as cfg
+cfg.numpy_ndarray_as_tensor = True
+
+
+@torch.compile
 def set_bnd(N, b, x):
     """We assume that the fluid is contained in a box with solid walls.
 
@@ -46,6 +51,7 @@ def set_bnd(N, b, x):
     x[-1, -1] = 0.5 * (x[N, -1] + x[-1, N])
 
 
+@torch.compile
 def lin_solve(N, b, x, x0, a, c):
     """lin_solve."""
 
@@ -56,11 +62,13 @@ def lin_solve(N, b, x, x0, a, c):
         set_bnd(N, b, x)
 
 
+@torch.compile
 def add_source(N, x, s, dt):
     """Addition of forces: the density increases due to sources."""
     x += dt * s
 
 
+@torch.compile
 def diffuse(N, b, x, x0, diff, dt):
     """Diffusion: the density diffuses at a certain rate.
 
@@ -73,6 +81,7 @@ def diffuse(N, b, x, x0, diff, dt):
     lin_solve(N, b, x, x0, a, 1 + 4 * a)
 
 
+@torch.compile
 def advect(N, b, d, d0, u, v, dt):
     """Advection: the density follows the velocity field.
 
@@ -108,6 +117,7 @@ def advect(N, b, d, d0, u, v, dt):
     set_bnd(N, b, d)
 
 
+@torch.compile
 def project(N, u, v, p, div):
     """ Projection """
 
@@ -125,6 +135,7 @@ def project(N, u, v, p, div):
     set_bnd(N, 2, v)
 
 
+@torch.compile
 def dens_step(N, x, x0, u, v, diff, dt):
     # Density step: advection, diffusion & addition of sources.
     add_source(N, x, x0, dt)
@@ -134,6 +145,7 @@ def dens_step(N, x, x0, u, v, diff, dt):
     advect(N, 0, x, x0, u, v, dt)
 
 
+@torch.compile
 def vel_step(N, u, v, u0, v0, visc, dt):
     # Velocity step: self-advection, viscous diffusion & addition of forces
 
