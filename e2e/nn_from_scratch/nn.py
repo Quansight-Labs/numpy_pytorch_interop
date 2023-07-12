@@ -48,13 +48,10 @@ these vectors are then stored in a list x.
 x =[np.array(a).reshape(1, 30), np.array(b).reshape(1, 30),
                                 np.array(c).reshape(1, 30)]
  
- 
 # Labels are also converted into NumPy array
 y = np.array(y)
  
- 
 print(x, "\n\n", y)
-
 
 # activation function
 
@@ -121,9 +118,8 @@ def back_prop(x, y, w1, w2, alpha):
     
     return(w1, w2)
 
-
 @torch.compile
-def train(x, Y, w1, w2, alpha = 0.01, epoch = 10):
+def train(x, Y, w1, w2, y, alpha = 0.01, epoch = 10):   # https://github.com/pytorch/pytorch/issues/105074
     acc =[]
     losss =[]
     for j in range(epoch):
@@ -132,7 +128,7 @@ def train(x, Y, w1, w2, alpha = 0.01, epoch = 10):
             out = f_forward(x[i], w1, w2)
             l.append((loss(out, Y[i])))
             w1, w2 = back_prop(x[i], y[i], w1, w2, alpha)
- ##       print("epochs:", j + 1, "======== acc:", (1-(sum(l)/len(x)))*100)
+ ##       print("epochs:", j + 1, "======== acc:", (1-(sum(l)/len(x)))*100)  # graph breaks 
         acc.append((1-(sum(l)/len(x)))*100)
         losss.append(sum(l)/len(x))
     return(acc, losss, w1, w2)
@@ -152,10 +148,8 @@ def predict(x, w1, w2):
     else:
         print("Image is of letter C.")
 
-
 w1 = generate_wt(30, 5)
 w2 = generate_wt(5, 3)
-## print(w1, "\n\n", w2)
 
 
 """The arguments of train function are data set list x,
@@ -164,7 +158,7 @@ no of epochs or iteration.The function will return the
 matrix of accuracy and loss and also the matrix of
 trained weights w1, w2"""
 
-acc, losss, w1, w2 = train(x, y, w1, w2, 0.1, 1)   # was 100
+acc, losss, w1, w2 = train(x, y, w1, w2, y, 0.1, 100)
 
 
 """
