@@ -43,16 +43,26 @@ def disc(shape=(size, size), center=(size/2, size/2), radius=10):
 D = disc(radius=32) ^ disc(radius=16)
 dens[...] = D*source/10
 
+np.random.seed(1234)
 u[:, :] = force * 0.1 * np.random.uniform(-1, 1, u.shape)
 v[:, :] = force * 0.1 * np.random.uniform(-1, 1, u.shape)
 
 
 # update
+import torch
+torch.set_default_device("cpu")
+
+import torch._dynamo.config as cfg
+cfg.numpy_ndarray_as_tensor = True
+
+@torch.compile
 def update_single(N, dens, u, v, u_prev, v_prev, visc, diff, dt):
     vel_step(N, u, v, u_prev, v_prev, visc, dt)
     dens_step(N, dens, dens_prev, u, v, diff, dt)
 
-
-for _ in range(28):
+n_steps = 28
+for _ in range(n_steps):
     update_single(N, dens, u, v, u_prev, v_prev, visc, diff, dt)
 
+# dump the density field
+np.savez_compressed(f'smoke_density_compiled_{n_steps}.npy', dens)

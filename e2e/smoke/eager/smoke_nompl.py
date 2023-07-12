@@ -43,6 +43,7 @@ def disc(shape=(size, size), center=(size/2, size/2), radius=10):
 D = disc(radius=32) ^ disc(radius=16)
 dens[...] = D*source/10
 
+np.random.seed(1234)
 u[:, :] = force * 0.1 * np.random.uniform(-1, 1, u.shape)
 v[:, :] = force * 0.1 * np.random.uniform(-1, 1, u.shape)
 
@@ -58,4 +59,4 @@ for _ in range(n_steps):
 
 # dump the density field
 import numpy as _np
-_np.savez_compressed(f'smoke_density_eager_{n_steps}.npy', dens)
+_np.savez_compressed(f'smoke_density_eager_{n_steps}.npy', dens.tensor.numpy())
