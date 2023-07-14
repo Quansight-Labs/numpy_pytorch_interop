@@ -16,8 +16,8 @@ def init():
     ymax = 1.25
 
     # Create the grid of complex numbers
-    x_values = np.linspace(xmin, xmax, xn, dtype='float64')
-    y_values = np.linspace(ymin, ymax, yn, dtype='float64')
+    x_values = np.linspace(xmin, xmax, xn, dtype='float32')
+    y_values = np.linspace(ymin, ymax, yn, dtype='float32')
 
     rx, iy = np.meshgrid(x_values, y_values, indexing='xy')
 
@@ -58,7 +58,7 @@ import time
 
 rx, iy = init()
 start_time = time.time()
-mask = simulate(rx, iy, step, max_iter=100)
+mask = simulate(rx, iy, step, max_iter=1000)
 end_time = time.time()
 numpy_time = end_time - start_time
 print("\n\nnumpy:    elapsed=", numpy_time)
@@ -76,7 +76,7 @@ for _ in range(50):
 
 rx, iy = init()
 start_time = time.time()
-mask = simulate(rx, iy, step_c, max_iter=100)
+mask = simulate(rx, iy, step_c, max_iter=1000)
 end_time = time.time()
 
 
