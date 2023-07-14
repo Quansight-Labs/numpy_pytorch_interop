@@ -10,7 +10,12 @@ Copyright (c) 2015 Alberto Santini - MIT License
 Code adapted from Alberto Santini implementation available at:
 https://github.com/albertosantini/python-fluid
 """
-import numpy as np
+import torch_np as np
+
+# To run on CUDA, change "cpu" to "cuda" below.
+import torch
+torch.set_default_device("cpu")
+
 
 def set_bnd(N, b, x):
     """We assume that the fluid is contained in a box with solid walls.
@@ -86,13 +91,13 @@ def advect(N, b, d, d0, u, v, dt):
     Y = J - dt0 * v[I, J]
 
     X = np.minimum(np.maximum(X, 0.5), N+0.5)
-    I0 = X.astype('int')      # https://github.com/pytorch/pytorch/issues/105052
+    I0 = X.astype(int)
     I1 = I0+1
     S1 = X - I0
     S0 = 1 - S1
 
     Y = np.minimum(np.maximum(Y, 0.5), N+0.5)
-    J0 = Y.astype('int')
+    J0 = Y.astype(int)
     J1 = J0 + 1
     T1 = Y - J0
     T0 = 1 - T1

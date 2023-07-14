@@ -3,7 +3,7 @@
 # Copyright (2017) Nicolas P. Rougier - BSD license
 # More information at https://github.com/rougier/numpy-book
 # -----------------------------------------------------------------------------
-import torch_np as np
+import numpy as np
 from smoke_solver import vel_step, dens_step
 
 N = 128
@@ -58,7 +58,7 @@ def update(*args):
 
     vel_step(N, u, v, u_prev, v_prev, visc, dt)
     dens_step(N, dens, dens_prev, u, v, diff, dt)
-    im.set_data(dens.tensor.cpu().numpy())
+    im.set_data(dens)
     im.set_clim(vmin=dens.min(), vmax=dens.max())
 
 
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     ax.set_yticks([])
 
     initialization()
-    im = ax.imshow(dens[1:-1, 1:-1].tensor.cpu().numpy(),
+    im = ax.imshow(dens[1:-1, 1:-1],
                    interpolation='bicubic', extent=[0, 1, 0, 1],
                    cmap=plt.cm.magma, origin="lower", vmin=0, vmax=1)
     animation = FuncAnimation(fig, update, interval=10, frames=800)

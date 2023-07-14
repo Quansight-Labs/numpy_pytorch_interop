@@ -1,13 +1,12 @@
 # from https://www.geeksforgeeks.org/implementation-of-neural-network-from-scratch-using-numpy/
 
 
-import numpy as np
+import numpy as _np
+import torch_np as np
 
+# To run on CUDA, change "cpu" to "cuda" below.
 import torch
 torch.set_default_device("cpu")
-
-import torch._dynamo.config as cfg
-cfg.numpy_ndarray_as_tensor = True
 
 
 # Creating data set
@@ -48,14 +47,16 @@ these vectors are then stored in a list x.
 x =[np.array(a).reshape(1, 30), np.array(b).reshape(1, 30),
                                 np.array(c).reshape(1, 30)]
  
+ 
 # Labels are also converted into NumPy array
 y = np.array(y)
  
+ 
 print(x, "\n\n", y)
+
 
 # activation function
 
-@torch.compile
 def sigmoid(x):
     return(1/(1 + np.exp(-x)))
 
@@ -64,7 +65,6 @@ def sigmoid(x):
 # 1 hidden layer (1, 5)
 # 1 output layer(3, 3)
 
-@torch.compile
 def f_forward(x, w1, w2):
     # hidden
     z1 = x.dot(w1)# input from layer 1
@@ -78,22 +78,20 @@ def f_forward(x, w1, w2):
 # initializing the weights randomly
 def generate_wt(x, y):
 
-    np.random.seed(1234)
+    _np.random.seed(1234)
 
     l =[]
     for i in range(x * y):
-        l.append(np.random.randn())
+        l.append(_np.random.randn())
     return(np.array(l).reshape(x, y))
     
 # for loss we will be using mean square error(MSE)
-@torch.compile
 def loss(out, Y):
     s =(np.square(out-Y))
-    s = np.sum(s) / y.shape[0]   # https://github.com/pytorch/pytorch/issues/105054
+    s = np.sum(s)/len(y)
     return(s)
 
 # Back propagation of error
-@torch.compile
 def back_prop(x, y, w1, w2, alpha):
     
     # hidden layer
@@ -118,8 +116,7 @@ def back_prop(x, y, w1, w2, alpha):
     
     return(w1, w2)
 
-@torch.compile
-def train(x, Y, w1, w2, y, alpha = 0.01, epoch = 10):   # https://github.com/pytorch/pytorch/issues/105074
+def train(x, Y, w1, w2, alpha = 0.01, epoch = 10):
     acc =[]
     losss =[]
     for j in range(epoch):
@@ -128,7 +125,7 @@ def train(x, Y, w1, w2, y, alpha = 0.01, epoch = 10):   # https://github.com/pyt
             out = f_forward(x[i], w1, w2)
             l.append((loss(out, Y[i])))
             w1, w2 = back_prop(x[i], y[i], w1, w2, alpha)
- ##       print("epochs:", j + 1, "======== acc:", (1-(sum(l)/len(x)))*100)  # graph breaks 
+        print("epochs:", j + 1, "======== acc:", (1-(sum(l)/len(x)))*100)
         acc.append((1-(sum(l)/len(x)))*100)
         losss.append(sum(l)/len(x))
     return(acc, losss, w1, w2)
@@ -147,9 +144,12 @@ def predict(x, w1, w2):
         print("Image is of letter B.")
     else:
         print("Image is of letter C.")
+#    plt.imshow(x.reshape(5, 6))
+#    plt.show()
 
 w1 = generate_wt(30, 5)
 w2 = generate_wt(5, 3)
+print(w1, "\n\n", w2)
 
 
 """The arguments of train function are data set list x,
@@ -158,7 +158,7 @@ no of epochs or iteration.The function will return the
 matrix of accuracy and loss and also the matrix of
 trained weights w1, w2"""
 
-acc, losss, w1, w2 = train(x, y, w1, w2, y, 0.1, 100)
+acc, losss, w1, w2 = train(x, y, w1, w2, 0.1, 100)
 
 
 """
