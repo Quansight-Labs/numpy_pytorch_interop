@@ -3,7 +3,9 @@ To test our wrapper, we use two strategies:
 - port parts of the numpy test suite
 - run several small examples which use NumPy and check that the results are identical to original NumPy.
 
-We only run tests and examples in the eager mode by replacing `import numpy as np` by `import torch_np as np`.
+We only run tests in the eager mode by replacing `import numpy as np` by `import torch_np as np`.
+Examples we run in both eager and JIT modes. 
+
 
 For numpy tests, see `torch_np/testing/numpy_tests` folder.
 
@@ -13,6 +15,42 @@ For numpy tests, see `torch_np/testing/numpy_tests` folder.
 - Build a random maze and find a path in it
 - Simulate a diffusion/advection process
 - Construct and visualize the Mandelbrot fractal
+- Inner operation of the k-means clustering
+
+# JIT compiled mode
+
+The main observation is that `torch.dynamo` unrolls python-level loops. For
+iterative algorithms this leads to very long compile times. We therefore
+often only compile the inner loop.
+
+## Maze path-finding
+
+The Bellman-Ford algorithm simply does not compile because it contains a
+data-dependent loop `while point != start`.
+
+
+## CFD diffusion/advecton process
+
+We compile the inner loop of the diffusion-advection simulation. While the code
+compiles, the performance is on par or slightly worse than the original NumPy.
+
+## Mandelbrot fractal
+
+Results strongly depend on an implementation: a straighforward NumPy implementation
+uses a data-dependent loop, which does not compile.
+
+The implementation based on the [Mojo benchmark](https://shashankprasanna.com/benchmarking-modular-mojo-and-pytorch-torch.compile-on-mandelbrot-function/index.html#benchmarking-pytorch-cpu-with-torchcompile) allows to compile the inner loop. The performance
+increase relative to numpy is substantial and strongly data size and machine
+dependent: x8 for smaller inputs and up to x50 for unputs larger than the cache size of the machine.
+
+
+## K-means clustering
+
+The internal loop of the k-means algorithm compiles into a straighforward
+C++ loop and offers up to x30 speedups versus NumPy.
+
+
+# Eager mode
 
 In short, the main changes to examples are:
 
