@@ -2,20 +2,14 @@
 # https://realpython.com/numpy-array-programming/#clustering-algorithms
 import numpy as np
 import torch
-torch.set_default_device("cpu")
+torch.set_default_device("cuda")
 import torch._dynamo.config as cfg
 cfg.numpy_ndarray_as_tensor = True
 
 
-# np.linalg.norm replacement (2-norm only), https://github.com/pytorch/pytorch/issues/105269
-def norm(a, axis):
-    s = (a.conj() * a).real
-    return np.sqrt(s.sum(axis=axis))
-
-
-#@torch.compile
+# this will be compiled
 def get_labels(X, centroids) -> np.ndarray:
-    return np.argmin(norm(X - centroids[:, None], axis=2),
+    return np.argmin(np.linalg.norm(X - centroids[:, None, :], ord=2, axis=2),
                      axis=0)
 
 
@@ -31,7 +25,7 @@ def init(npts):
 import time
 
 # ### numpy ###
-npts = int(2e7)
+npts = int(1e8)
 X, centroids = init(npts)
 
 start_time = time.time()
@@ -53,6 +47,8 @@ for _ in range(5):
 start_time = time.time()
 labels = get_labels_c(X, centroids)
 end_time = time.time()
+torch.cuda.synchronize()
 compiled_time = end_time - start_time
 print("compiled: elapsed=", compiled_time, '  speedup = ', numpy_time / compiled_time)
+
 
