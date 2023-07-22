@@ -2,7 +2,7 @@
 # https://realpython.com/numpy-array-programming/#clustering-algorithms
 import numpy as np
 import torch
-torch.set_default_device("cuda")
+torch.set_default_device("cpu")
 import torch._dynamo.config as cfg
 cfg.numpy_ndarray_as_tensor = True
 
