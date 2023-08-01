@@ -171,9 +171,7 @@ def ldexp(
     else:
         if not isinstance(x1, torch.Tensor):
             x1 = torch.as_tensor(x1)
-        if _dtypes_impl._category(x1.dtype) < 2:
-            # cast integers to float64
-            x1 = x1.double()
+            x1 = _util.cast_int_to_float(x1)
 
     x2 = torch.as_tensor(x2)
     # the second arg must be integer
@@ -318,9 +316,7 @@ def deco_unary_ufunc(torch_func):
             x = _util.typecast_tensor(x, dtype, casting)
 
         if torch_func.__name__ in _fp_unary:
-            if _dtypes_impl._category(x.dtype) < 2:
-                # integers/bools: cast to the default float
-                x = x.to(_dtypes_impl.default_dtypes.float_dtype)
+            x = _util.cast_int_to_float(x)
 
         result = torch_func(x)
         result = _ufunc_postprocess(result, out, casting)
