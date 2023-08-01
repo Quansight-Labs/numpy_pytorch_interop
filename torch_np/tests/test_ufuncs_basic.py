@@ -13,6 +13,7 @@ import pytest
 from pytest import raises as assert_raises
 
 import torch_np as np
+from torch_np._ufuncs import _fp_unary
 from torch_np.testing import assert_equal
 
 # import numpy as np
@@ -31,7 +32,9 @@ except ImportError:
     HAVE_NUMPY = False
 
 
-parametrize_unary_ufuncs = pytest.mark.parametrize("ufunc", [np.sin])
+parametrize_unary_ufuncs = pytest.mark.parametrize(
+    "ufunc", [getattr(np, u) for u in _fp_unary]
+)
 parametrize_casting = pytest.mark.parametrize(
     "casting", ["no", "equiv", "safe", "same_kind", "unsafe"]
 )
@@ -99,6 +102,10 @@ class TestUnaryUfuncs:
         res_bcast = ufunc(x_b)
         assert_equal(res_out, res_bcast)
         assert res_out is out
+
+    @parametrize_unary_ufuncs
+    def test_dtype(self, ufunc):
+        assert ufunc(np.arange(5)).dtype == np.float64
 
 
 ufunc_op_iop_numeric = [
@@ -403,3 +410,9 @@ class TestUfuncDtypeKwd:
         r = np.add([1.0, 2.0], 1.0e-15, dtype=np.float64, out=out32)
         assert (r == [1, 2]).all()
         assert r.dtype == np.float32
+
+
+def test_ldexp_spec():
+    assert np.ldexp(1, 10).dtype == np.float64
+    for dtyp in [np.float16, np.float32, np.float64]:
+        assert np.ldexp(dtyp(1), 10).dtype == dtyp

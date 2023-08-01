@@ -181,7 +181,7 @@ def test_compare_ufuncs(name, scalar, array):
         state = _np._get_promotion_state()
         _np._set_promotion_state("weak")
 
-        if name in ["matmul", "modf", "divmod"]:
+        if name in ["matmul", "modf", "divmod", "ldexp"]:
             return
         ufunc = getattr(tnp, name)
         ufunc_numpy = getattr(_np, name)
