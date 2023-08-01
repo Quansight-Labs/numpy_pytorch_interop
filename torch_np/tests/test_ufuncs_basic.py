@@ -403,3 +403,9 @@ class TestUfuncDtypeKwd:
         r = np.add([1.0, 2.0], 1.0e-15, dtype=np.float64, out=out32)
         assert (r == [1, 2]).all()
         assert r.dtype == np.float32
+
+
+def test_ldexp_spec():
+    assert np.ldexp(1, 10).dtype == np.float64
+    for dtyp in [np.float16, np.float32, np.float64]:
+        assert np.ldexp(dtyp(1), 10).dtype == dtyp

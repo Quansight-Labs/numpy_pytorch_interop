@@ -23,7 +23,6 @@ from torch import (
     heaviside,
     hypot,
     lcm,
-    ldexp,
     less,
     less_equal,
     logaddexp,
