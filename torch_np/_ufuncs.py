@@ -76,20 +76,20 @@ def deco_binary_ufunc(torch_func):
         /,
         out: Optional[OutArray] = None,
         *,
-        where=True,
+        where: NotImplementedType = True,
         casting: Optional[CastingModes] = "same_kind",
-        order="K",
+        order: NotImplementedType = "K",
         dtype: Optional[DTypeLike] = None,
         subok: NotImplementedType = False,
-        signature=None,
-        extobj=None,
+        signature: NotImplementedType = None,
+        extobj: NotImplementedType = None,
     ):
 
         if dtype is not None:
 
             def cast(x, dtype):
                 if isinstance(x, torch.Tensor):
-                    return _util.typecast_tensors((x,), dtype, casting)[0]
+                    return _util.typecast_tensor(x, dtype, casting)
                 else:
                     return torch.as_tensor(x, dtype=dtype)
 
