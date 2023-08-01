@@ -28,7 +28,7 @@ def _ufunc_postprocess(result, out, casting):
 _binary = [
     name
     for name in dir(_binary_ufuncs_impl)
-    if not name.startswith("_") and name not in ["torch", "matmul", "divmod"]
+    if not name.startswith("_") and name not in ["torch", "matmul", "divmod", "ldexp"]
 ]
 
 
