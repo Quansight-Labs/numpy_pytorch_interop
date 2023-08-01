@@ -260,6 +260,39 @@ _unary = [
 ]
 
 
+# these are ufunc(int) -> float
+_fp_unary = [
+    "arccos",
+    "arccosh",
+    "arcsin",
+    "arcsinh",
+    "arctan",
+    "arctanh",
+    "cbrt",
+    "cos",
+    "cosh",
+    "deg2rad",
+    "degrees",
+    "exp",
+    "exp2",
+    "expm1",
+    "log",
+    "log10",
+    "log1p",
+    "log2",
+    "rad2deg",
+    "radians",
+    "reciprocal",
+    "sin",
+    "sinh",
+    "sqrt",
+    "square",
+    "tan",
+    "tanh",
+    "trunc",
+]
+
+
 def deco_unary_ufunc(torch_func):
     """Common infra for unary ufuncs.
 
@@ -283,6 +316,12 @@ def deco_unary_ufunc(torch_func):
     ):
         if dtype is not None:
             x = _util.typecast_tensor(x, dtype, casting)
+
+        if torch_func.__name__ in _fp_unary:
+            if _dtypes_impl._category(x.dtype) < 2:
+                # integers/bools: cast to the default float
+                x = x.to(_dtypes_impl.default_dtypes.float_dtype)
+
         result = torch_func(x)
         result = _ufunc_postprocess(result, out, casting)
         return result
