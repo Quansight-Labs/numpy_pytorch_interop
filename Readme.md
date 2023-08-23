@@ -1,3 +1,15 @@
+# This repository is obsolete
+
+The contents here has been upstreamed to PyTorch in https://github.com/pytorch/pytorch/pull/106211 and further development happens in PyTorch.
+
+The only non-obsolete things in this repository are:
+
+- Documentation issues are relevant and up-to-date, esp those documenting the differences between numpy and pytorch and our numpy-in-pytorch implementation.
+- End-to-end examples in the `e2e/` folder demo several worked examples and limitations of our approach.
+
+
+----------------------------
+
 To test our wrapper, we use two strategies:
 
 - port parts of the numpy test suite
