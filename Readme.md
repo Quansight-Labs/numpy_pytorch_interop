@@ -49,7 +49,8 @@ compiles, the performance is on par or slightly worse than the original NumPy.
 ## Mandelbrot fractal
 
 Results strongly depend on an implementation: a straighforward NumPy implementation
-uses a data-dependent loop, which does not compile.
+uses complex-valued arrays which are not supported by triton.
+Working around this and several other dynamo issues, leads to speedups of about x3 to x5.
 
 The implementation based on the [Mojo benchmark](https://shashankprasanna.com/benchmarking-modular-mojo-and-pytorch-torch.compile-on-mandelbrot-function/index.html#benchmarking-pytorch-cpu-with-torchcompile) allows to compile the inner loop. The performance
 increase relative to numpy is substantial and strongly data size and machine
