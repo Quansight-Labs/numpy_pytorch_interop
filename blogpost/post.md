@@ -1,13 +1,19 @@
 # Compiling NumPy into C++ or CUDA via `torch.compile`
 
-Tracing through NumPy code via `torch.compile` is now possible in PyTorch 2.1. This feature leverages PyTorch's compiler to generate efficient fused vectorized code without having to modify your original code. Even more,  it also allows for executing NumPy functions on CUDA just by running them through `torch.compile` under `torch.device("cuda")`!
+Tracing through NumPy code via `torch.compile` is now possible in PyTorch 2.1.
+This feature leverages PyTorch's compiler to generate efficient fused
+vectorized code without having to modify your original code. Even more,  it
+also allows for executing NumPy functions on CUDA just by running them through
+`torch.compile` under `torch.device("cuda")`!
 
-In this post, we go over how to use this feature and give a few tips and tricks to make the most of it.
+In this post, we go over how to use this feature and give a few tips and tricks
+to make the most of it.
 
 
 ## Compiling NumPy into Parallel C++
 
-We will take as our running example the iteration step in a K-Means algorithm presented in this [NumPy book](https://realpython.com/numpy-array-programming/#clustering-algorithms)
+We will take as our running example the iteration step in a K-Means algorithm
+presented in this [NumPy book](https://realpython.com/numpy-array-programming/#clustering-algorithms)
 
 ```python
 import numpy as np
@@ -16,7 +22,9 @@ def get_labels(X, means):
     return np.argmin(np.linalg.norm(X - means[:, None], axis=2), axis=0)
 ```
 
-We create a synthetic dataset with 10M random 2-D points. We can see that, given that the means are chosen appropriately, the function returns the correct cluster for all of them
+We create a synthetic dataset with 10M random 2-D points. We can see that,
+given that the means are chosen appropriately, the function returns the correct
+cluster for all of them
 
 ```python
 npts = 10_000_000
@@ -28,7 +36,8 @@ pred = get_labels(X, means)
 
 Benchmarking this function gives us a baseline of **1.26s** on an AMD 3970X.
 
-Compiling this function is now as easy as wrapping it with `torch.compile` and executing it with the example inputs
+Compiling this function is now as easy as wrapping it with `torch.compile` and
+executing it with the example inputs
 
 ```python
 compiled_fn = torch.compile(get_labels)
@@ -36,9 +45,15 @@ new_pred = compiled_fn(X, means)
 assert np.allclose(prediction, new_pred)
 ```
 
-The compiled function yields a 9x speed-up when running it on 1 core. Even better, since the compiled code also runs on multiple cores, we get a **57x speed-up** when running it on 32 cores. Note that vanilla NumPy always runs on just one core.
+The compiled function yields a 9x speed-up when running it on 1 core. Even
+better, since the compiled code also runs on multiple cores, we get a **57x speed-up**
+when running it on 32 cores. Note that vanilla NumPy always runs on
+just one core.
 
-We may inspect the generated C++ code by running the script with `TORCH_LOGS=output_code`, and we can see that `torch.compile` was able to compile the broadcasting, together with the two reductions into just one for-loop, and it parallelizes it using OpenMP
+We may inspect the generated C++ code by running the script with
+`TORCH_LOGS=output_code`, and we can see that `torch.compile` was able to
+compile the broadcasting, together with the two reductions into just one
+for-loop, and it parallelizes it using OpenMP
 ```c++
 extern "C" void kernel(const double* in_ptr0, const long* in_ptr1, long* out_ptr0) {
     #pragma omp parallel num_threads(32)
@@ -53,7 +68,8 @@ extern "C" void kernel(const double* in_ptr0, const long* in_ptr1, long* out_ptr
 
 ## Compiling NumPy into CUDA
 
-Compiling our code so that it runs on CUDA is as simple as setting locally the default dtype to be the CUDA
+Compiling our code so that it runs on CUDA is as simple as setting locally the
+default dtype to be the CUDA
 
 ```python
 with torch.device("cuda"):
@@ -61,7 +77,9 @@ with torch.device("cuda"):
 assert np.allclose(prediction, cuda_pred)
 ```
 
-By inspecting the generated code via `TORCH_LOGS=output_code`, we see that, rather than generating CUDA code directly, `torch.compile` generates rather readable [triton](https://triton-lang.org/main/index.html) code
+By inspecting the generated code via `TORCH_LOGS=output_code`, we see that,
+rather than generating CUDA code directly, `torch.compile` generates rather
+readable [triton](https://triton-lang.org/main/index.html) code
 
 ```python
 def triton_(in_ptr0, in_ptr1, out_ptr0, xnumel, XBLOCK : tl.constexpr):
@@ -75,18 +93,36 @@ def triton_(in_ptr0, in_ptr1, out_ptr0, xnumel, XBLOCK : tl.constexpr):
     ...
 ```
 
-Running this small snippet on an RTX 2060 gives an **8x speed-up** over the original NumPy code. This is something, but it is not particularly impressive, given the speed-ups we have seen on CPU. Let's have a look into how to get some proper speed-ups on CUDA via a couple minor changes.
+Running this small snippet on an RTX 2060 gives an **8x speed-up** over the
+original NumPy code. This is something, but it is not particularly impressive,
+given the speed-ups we have seen on CPU. Let's have a look into how to get some
+proper speed-ups on CUDA via a couple minor changes.
 
-**`float64`  vs `float32`**. Many GPUs, in particular consumer-grade ones, are rather sluggish when running operations on `float64`. For this reason, changing the data generation to `float32`, the original NumPy code just gets a bit faster, about a 9%, but our CUDA code gets **40% faster**, yielding a **11x speed-up** over the plain NumPy code.
+**`float64`  vs `float32`**. Many GPUs, in particular consumer-grade ones, are
+rather sluggish when running operations on `float64`. For this reason, changing
+the data generation to `float32`, the original NumPy code just gets a bit
+faster, about a 9%, but our CUDA code gets **40% faster**, yielding a **11x
+speed-up** over the plain NumPy code.
 
-`torch.compile`, by default, respects the NumPy semantics, and as such, it uses `np.float64` as its default dtype for all its creation ops. As discussed, this can hinder performance, so it is possible to change this default by setting
+`torch.compile`, by default, respects the NumPy semantics, and as such, it uses
+`np.float64` as its default dtype for all its creation ops. As discussed, this
+can hinder performance, so it is possible to change this default by setting
 
 ```python
 from torch._dynamo import config
 config.numpy_default_float = "float32"
 ```
 
-**CPU <> CUDA copies**. An 11x speed-up is good, but it is not even close to the CPU numbers. This is caused by a small transformation that `torch.compile` does behind the scenes. The code above takes NumPy arrays and returns NumPy arrays. All of these arrays are on CPU, but the computations are performed on the GPU. This means that every time the function is called, `torch.compie` has to copy all these arrays from CPU to the GPU, and then copy the result from CUDA back to CPU to preserve the original semantics. There is no native solution to this issue in NumPy, as NumPy does not have the notion of a `device`. That being said, we can work around it by creating a wrapper to this function so that it accepts PyTorch tensors and returns PyTorch tensors.
+**CPU <> CUDA copies**. An 11x speed-up is good, but it is not even close to
+the CPU numbers. This is caused by a small transformation that `torch.compile`
+does behind the scenes. The code above takes NumPy arrays and returns NumPy
+arrays. All of these arrays are on CPU, but the computations are performed on
+the GPU. This means that every time the function is called, `torch.compie` has
+to copy all these arrays from CPU to the GPU, and then copy the result from
+CUDA back to CPU to preserve the original semantics. There is no native
+solution to this issue in NumPy, as NumPy does not have the notion of a
+`device`. That being said, we can work around it by creating a wrapper to this
+function so that it accepts PyTorch tensors and returns PyTorch tensors.
 
 ```python
 @torch.compile
@@ -100,23 +136,60 @@ def cuda_fn(X, means):
         return tensor_fn(X, means)
 ```
 
-This function now takes tensors in CUDA memory and returns tensors in CUDA memory, but the function itself is written in NumPy! When we keep the tensors in CUDA and perform the computations in `float32`, we see a **200x speed-up** over the initial NumPy implementation on `float32` arrays.
+This function now takes tensors in CUDA memory and returns tensors in CUDA
+memory, but the function itself is written in NumPy! When we keep the tensors
+in CUDA and perform the computations in `float32`, we see a **200x speed-up**
+over the initial NumPy implementation on `float32` arrays.
 
-**Mixing NumPy and PyTorch**. In this example, we had to write a small adaptor to move the data from CPU to CUDA and back. In programs that mix PyTorch and NumPy this is already done by calling `x.detach().cpu().numpy()` (or simply `x.numpy(force=True)`). Since when running under `torch.compile` we can run NumPy code in CUDA, we can simply modify this code to call `x.numpy()` and when running it under `device("cuda")`, as we did above, it will generate efficient CUDA code from original NumPy calls without copying the data from CUDA to CPU at all.
+**Mixing NumPy and PyTorch**. In this example, we had to write a small adaptor
+to move the data from CPU to CUDA and back. In programs that mix PyTorch and
+NumPy this is already done by calling `x.detach().cpu().numpy()` (or simply
+`x.numpy(force=True)`). Since when running under `torch.compile` we can run
+NumPy code in CUDA, we can simply modify this code to call `x.numpy()` and when
+running it under `device("cuda")`, as we did above, it will generate efficient
+CUDA code from original NumPy calls without copying the data from CUDA to CPU
+at all.
 
 ## Further Speed-up tricks
 
-**General advice**. The CUDA code we have shown is already quite efficient, but it is true that this is a rather tiny program. When dealing with larger programs, we may need to tweak parts of it to make it more efficient. A good place to start is the [`torch.compile` troubleshooting page](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#performance-profiling). This showcases a number of ways to inspect the tracing process, and how to identify problematic code that may cause slow downs.
+**General advice**. The CUDA code we have shown is already quite efficient, but
+it is true that this is a rather tiny program. When dealing with larger
+programs, we may need to tweak parts of it to make it more efficient. A good
+place to start is the [`torch.compile` troubleshooting
+page](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#performance-profiling).
+This showcases a number of ways to inspect the tracing process, and how to
+identify problematic code that may cause slow downs.
 
-**Advice when compiling NumPy code**. NumPy, even if it is rather similar to PyTorch, it is often used very differently. It is rather common to perform computations in NumPy and then do an if/else depending on the value of the array, or perform operations in-place, perhaps via boolean masks. These constructions, while supported by `torch.compile`, hamper its performance. Changes like moving from in-place indexing to using `np.where`, writing the code in a branchless way, or avoid using in-place ops in favor of out-of-place ops can go a long way.
+**Advice when compiling NumPy code**. NumPy, even if it is rather similar to
+PyTorch, it is often used very differently. It is rather common to perform
+computations in NumPy and then do an if/else depending on the value of the
+array, or perform operations in-place, perhaps via boolean masks. These
+constructions, while supported by `torch.compile`, hamper its performance.
+Changes like moving from in-place indexing to using `np.where`, writing the
+code in a branchless way, or avoid using in-place ops in favor of out-of-place
+ops can go a long way.
 
-To write fast NumPy code, it is best to avoid loops, but sometimes they are unavoidable. When tracing through a loop, `torch.compile` will try to fully unroll it. This is sometimes desirable, but sometimes it may not even be possible, like when we have a dynamic stopping condition (like a while loop). In these cases, it may be best to just compile the body of the loop, perhaps compiling a few iterations at a time (loop unrolling).
+To write fast NumPy code, it is best to avoid loops, but sometimes they are
+unavoidable. When tracing through a loop, `torch.compile` will try to fully
+unroll it. This is sometimes desirable, but sometimes it may not even be
+possible, like when we have a dynamic stopping condition (like a while loop).
+In these cases, it may be best to just compile the body of the loop, perhaps
+compiling a few iterations at a time (loop unrolling).
 
-**Debugging NumPy code**. Debugging is rather tricky when a compiler is involved. To figure out whether an error you are hitting is a `torch.compile` error, or an error from the program, you can execute your NumPy program without `torch.compile` by replacing the NumPy import by `import torch._numpy as np`. This is should just be used for **debugging purposes** and is in no way a replacement for the PyTorch API, as it is **much slower**.
+**Debugging NumPy code**. Debugging is rather tricky when a compiler is
+involved. To figure out whether an error you are hitting is a `torch.compile`
+error, or an error from the program, you can execute your NumPy program without
+`torch.compile` by replacing the NumPy import by `import torch._numpy as np`.
+This is should just be used for **debugging purposes** and is in no way a
+replacement for the PyTorch API, as it is **much slower**.
 
 ## Differences between NumPy and `torch.compile`d NumPy
 
-**NumPy scalars**. NumPy returns NumPy scalars in almost any case where PyTorch would return a 0-D tensor (e.g. from `np.sum`). Under `torch.compile`, NumPy scalars are treated as 0-D arrays. This is just fine in most cases. The only case when their behavior diverges is when NumPy scalars are implicitly used as Python scalars. For example,
+**NumPy scalars**. NumPy returns NumPy scalars in almost any case where PyTorch
+would return a 0-D tensor (e.g. from `np.sum`). Under `torch.compile`, NumPy
+scalars are treated as 0-D arrays. This is just fine in most cases. The only
+case when their behavior diverges is when NumPy scalars are implicitly used as
+Python scalars. For example,
 ```python
 >>> np.asarray(2) * [1, 2, 3]  # 0-D array is an array-like
 array([2, 4, 6])
@@ -126,35 +199,54 @@ array([2, 4, 6])
 >>> torch.compile(lambda: u * [1, 2, 3])()
 array([2, 4, 6])               # acts as a 0-D array, not as a scalar ?!?!
 ```
-If we compile the first two lines, we see that `torch.compile` treats `u` as a 0-D array. To recover the eager semantics, we just need to make the casting explicit
+
+If we compile the first two lines, we see that `torch.compile` treats `u` as a
+0-D array. To recover the eager semantics, we just need to make the casting
+explicit
 ```python
 >>> torch.compile(lambda: int(u) * [1, 2, 3])()
 [1, 2, 3, 1, 2, 3]
 ```
 
-**Type promotion and versioning**. NumPy's type promotion rules may be, at times, a bit surprising
+**Type promotion and versioning**. NumPy's type promotion rules may be, at
+times, a bit surprising
 ```python
 >>> np.asarray([1], dtype=np.int8) + 127
 array([128], dtype=int8)
 >>> np.asarray([1], dtype=np.int8) + 128
 array([129], dtype=int16)
 ```
-These rules are changing to follow a set of rules that is closer to that of PyTorch in NumPy 2.0. The relevant technical document is [NEP 50](https://numpy.org/neps/nep-0050-scalar-promotion.html). `torch.compile` went ahead and implemented NEP 50 rather than the about-to-be-deprecated rules.
+These rules are changing to follow a set of rules that is closer to that of
+PyTorch in NumPy 2.0. The relevant technical document is [NEP 50](https://numpy.org/neps/nep-0050-scalar-promotion.html).
+`torch.compile` went ahead and implemented NEP 50 rather than the about-to-be-deprecated rules.
 
 In general, `torch.compile` will match the semantics of the last NumPy release.
 
 ## Beyond NumPy: SciPy and scikit-learn
 
-In parallel to this effort, other Quansight engineers have designed, proposed and got merged a way to support PyTorch arrays within SciPy and scikit-learn. This was encountered with a big enthusiasm by the other maintainers from these libraries, as it was shown that using PyTorch as a backend would often yield considerable speed-ups.
+In parallel to this effort, other Quansight engineers have designed, proposed
+and got merged a way to support PyTorch arrays within SciPy and scikit-learn.
+This was encountered with a big enthusiasm by the other maintainers from these
+libraries, as it was shown that using PyTorch as a backend would often yield
+considerable speed-ups.
 
-This can of course be combined with `torch.compile`  to be able to compile programs that rely on these other libraries.
+This can of course be combined with `torch.compile`  to be able to compile
+programs that rely on these other libraries.
 
-Note that the initial support is just restricted to a few algorithms in scikit-learn and to `scipy.cluster` in SciPy.
+Note that the initial support is just restricted to a few algorithms in
+scikit-learn and to `scipy.cluster` in SciPy.
 
-If you want to learn more about this effort, how to use it, or how to help moving it forward, see this post. [TODO link post]
+If you want to learn more about this effort, how to use it, or how to help
+moving it forward, see this post. [TODO link post]
 
-## Conclusion
-[TODO Make sure Greg approves this wording]
-PyTorch has committed since its inception to be a framework compatible with the rest of the Python ecosystem. Enabling compiling NumPy programs, and establishing the tools necessary to do the same for other prominent libraries are two more steps in this direction. Quansight and Meta continue working in this direction, improving the compatibility between PyTorch and the rest of the ecosystem.
+## Conclusion [TODO Make sure Greg approves this wording] PyTorch has committed
+since its inception to be a framework compatible with the rest of the Python
+ecosystem. Enabling compiling NumPy programs, and establishing the tools
+necessary to do the same for other prominent libraries are two more steps in
+this direction. Quansight and Meta continue working in this direction,
+improving the compatibility between PyTorch and the rest of the ecosystem.
 
-From Quansight, we would like to thank Meta for funding this project and all the previous work that lead to it, like improving the NumPy compatibility within PyTorch, and developing the [python Array API](https://data-apis.org/array-api/latest/). Without this consistent support, this would not have been possible.
+From Quansight, we would like to thank Meta for funding this project and all
+the previous work that lead to it, like improving the NumPy compatibility
+within PyTorch, and developing the [python Array API](https://data-apis.org/array-api/latest/).
+Without this consistent support, this would not have been possible.
