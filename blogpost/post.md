@@ -1,7 +1,7 @@
 # Compiling NumPy code into C++ or CUDA via `torch.compile`
 
-Quansight engineers have implemented the ability to trace through NumPy code via
-`torch.compile` for PyTorch 2.1.
+Quansight engineers have implemented support for tracing through NumPy code via
+`torch.compile` in PyTorch 2.1.
 This feature leverages PyTorch's compiler to generate efficient fused
 vectorized code without having to modify your original code. Even more, it
 also allows for executing NumPy functions on CUDA just by running them through
