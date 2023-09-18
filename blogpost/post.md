@@ -1,11 +1,10 @@
 # Compiling NumPy code into C++ or CUDA via `torch.compile`
 
 Quansight engineers have implemented support for tracing through NumPy code via
-`torch.compile` in PyTorch 2.1.
-This feature leverages PyTorch's compiler to generate efficient fused
-vectorized code without having to modify your original NumPy code. Even more, it
-also allows for executing NumPy functions on CUDA just by running them through
-`torch.compile` under `torch.device("cuda")`!
+`torch.compile` in PyTorch 2.1. This feature leverages PyTorch's compiler to
+generate efficient fused vectorized code without having to modify your original
+NumPy code. Even more, it also allows for executing NumPy functions on CUDA
+just by running them through `torch.compile` under `torch.device("cuda")`!
 
 In this post, we go over how to use this feature and give a few tips and tricks
 to make the most out of it.
@@ -48,14 +47,16 @@ assert np.allclose(prediction, new_pred)
 
 The compiled function yields a 9x speed-up when running it on 1 core. Even
 better, as opposed to NumPy, our generated code does take advantage of all the
-cores in a processor. As such, when we run it on 32 cores, we get a **57x speed-up**.
-Note that PyTorch always uses all the available cores unless explicitly restricted,
-so this is the default behavior you get when using `torch.compile`.
+cores in a processor. As such, when we run it on 32 cores, we get a **57x
+speed-up**. Note that PyTorch always uses all the available cores unless
+explicitly restricted, so this is the default behavior you get when using
+`torch.compile`.
 
 We may inspect the generated C++ code by running the script with the
 environment variable `TORCH_LOGS=output_code`. When doing so, we can see that
-`torch.compile` was able to compile the broadcasting and the two
-reductions into just one for-loop, and parallelize it using OpenMP
+`torch.compile` was able to compile the broadcasting and the two reductions
+into just one for-loop, and parallelize it using OpenMP
+
 ```c++
 extern "C" void kernel(const double* in_ptr0, const long* in_ptr1, long* out_ptr0) {
     #pragma omp parallel num_threads(32)
@@ -120,11 +121,11 @@ the CPU numbers. This is caused by a small transformation that `torch.compile`
 does behind the scenes. The code above takes NumPy arrays and returns NumPy
 arrays. All of these arrays are on CPU, but the computations are performed on
 the GPU. This means that every time the function is called, `torch.compile` has
-to copy all these arrays from CPU to the GPU, and then copy the result
-back to CPU to preserve the original semantics. There is no native
-solution to this issue in NumPy, as NumPy does not have the notion of a
-`device`. That being said, we can work around it by creating a wrapper to this
-function so that it accepts PyTorch tensors and returns PyTorch tensors.
+to copy all these arrays from CPU to the GPU, and then copy the result back to
+CPU to preserve the original semantics. There is no native solution to this
+issue in NumPy, as NumPy does not have the notion of a `device`. That being
+said, we can work around it by creating a wrapper to this function so that it
+accepts PyTorch tensors and returns PyTorch tensors.
 
 ```python
 @torch.compile
@@ -167,21 +168,20 @@ page](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#performance-pr
 This showcases a number of ways to inspect the tracing process, and how to
 identify problematic code that may cause slowdowns.
 
-**Advice when compiling NumPy code**. NumPy, even if rather similar to
-PyTorch, is often used very differently. It is rather common to perform
-computations in NumPy and then do an if/else depending on values within the
-array, or perform operations in-place, perhaps via boolean masks. These
-constructions, while supported by `torch.compile`, hamper its performance.
-Changes like moving from in-place indexing to using `np.where`, writing the
-code in a branchless way, or avoid using in-place ops in favor of out-of-place
-ops can go a long way.
+**Advice when compiling NumPy code**. NumPy, even if rather similar to PyTorch,
+is often used very differently. It is rather common to perform computations in
+NumPy and then do an if/else depending on values within the array, or perform
+operations in-place, perhaps via boolean masks. These constructions, while
+supported by `torch.compile`, hamper its performance. Changes like moving from
+in-place indexing to using `np.where`, writing the code in a branchless way, or
+avoid using in-place ops in favor of out-of-place ops can go a long way.
 
 To write fast NumPy code, it is best to avoid loops, but sometimes they are
 unavoidable. When tracing through a loop, `torch.compile` will try to fully
 unroll it. This is sometimes desirable, but sometimes it may not even be
 possible, like when we have a dynamic stopping condition, like in a while loop.
-In these cases, it may be best to just compile the body of the loop, perhaps
-a few iterations at a time (loop unrolling).
+In these cases, it may be best to just compile the body of the loop, perhaps a
+few iterations at a time (loop unrolling).
 
 **Debugging NumPy code**. Debugging is rather tricky when a compiler is
 involved. To figure out whether an error you are hitting is a `torch.compile`
@@ -198,6 +198,7 @@ would return a 0-D tensor (e.g. from `np.sum`). Under `torch.compile`, NumPy
 scalars are treated as 0-D arrays. This is just fine in most cases. The only
 case when their behavior diverges is when NumPy scalars are implicitly used as
 Python scalars. For example,
+
 ```python
 >>> np.asarray(2) * [1, 2, 3]  # 0-D array is an array-like
 array([2, 4, 6])
@@ -211,6 +212,7 @@ array([2, 4, 6])               # acts as a 0-D array, not as a scalar ?!?!
 If we compile the first two lines, we see that `torch.compile` treats `u` as a
 0-D array. To recover the eager semantics, we just need to make the casting
 explicit
+
 ```python
 >>> torch.compile(lambda: int(u) * [1, 2, 3])()
 [1, 2, 3, 1, 2, 3]
@@ -218,6 +220,7 @@ explicit
 
 **Type promotion and versioning**. NumPy's type promotion rules may be, at
 times, a bit surprising
+
 ```python
 >>> np.asarray([1], dtype=np.int8) + 126
 array([127], dtype=int8)
@@ -232,17 +235,16 @@ In general, `torch.compile` will match the semantics of the lastest NumPy releas
 
 ## Beyond NumPy: SciPy and scikit-learn
 
-In parallel to this effort of making `torch.compile` understand NumPy code, other
-Quansight engineers have designed and proposed a way to support PyTorch tensors
-within scikit-learn and SciPy. This was received enthusiastically by other
-maintainers from these libraries, as it was shown that using PyTorch as a
-backend would often yield considerable speed-ups.
-Both projects have now merged initial support for PyTorch tensors across a number of
-APIs and submodules.
+In parallel to this effort of making `torch.compile` understand NumPy code,
+other Quansight engineers have designed and proposed a way to support PyTorch
+tensors within scikit-learn and SciPy. This was received enthusiastically by
+other maintainers from these libraries, as it was shown that using PyTorch as a
+backend would often yield considerable speed-ups. Both projects have now merged
+initial support for PyTorch tensors across a number of APIs and submodules.
 
-This sets the stepping stone to move towards a future where PyTorch tensors
-can be used within other libraries in the Python data ecosystem. Even more,
-this will enable running these other libraries on GPUs and even compiling code
+This sets the stepping stone to move towards a future where PyTorch tensors can
+be used within other libraries in the Python data ecosystem. Even more, this
+will enable running these other libraries on GPUs and even compiling code
 mixing these libraries and PyTorch, similar to what we have been discussed in
 this post.
 
@@ -254,8 +256,8 @@ moving it forward, see this post. [TODO link post]
 PyTorch has committed since its inception to be a framework compatible with the
 rest of the Python ecosystem. Enabling compiling NumPy programs, and
 establishing the tools necessary to do the same for other prominent libraries
-are two more steps in this direction. Quansight and Meta continue working hand on
-hand, improving the compatibility between PyTorch and the rest of the
+are two more steps in this direction. Quansight and Meta continue working hand
+on hand, improving the compatibility between PyTorch and the rest of the
 ecosystem.
 
 From Quansight, we would like to thank Mengwei, Voz, and Ed for their
