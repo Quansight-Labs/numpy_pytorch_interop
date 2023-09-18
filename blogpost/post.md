@@ -85,7 +85,7 @@ rather than generating CUDA code directly, `torch.compile` generates rather
 readable [triton](https://triton-lang.org/main/index.html) code
 
 ```python
-def triton_(in_ptr0, in_ptr1, out_ptr0, xnumel, XBLOCK : tl.constexpr):
+def triton_(in_ptr0, in_ptr1, out_ptr0, XBLOCK : tl.constexpr):
     xnumel = 20000000
     xoffset = tl.program_id(0) * XBLOCK
     xindex = xoffset + tl.arange(0, XBLOCK)[:]
@@ -174,7 +174,7 @@ NumPy and then do an if/else depending on values within the array, or perform
 operations in-place, perhaps via boolean masks. These constructions, while
 supported by `torch.compile`, hamper its performance. Changes like moving from
 in-place indexing to using `np.where`, writing the code in a branchless way, or
-avoid using in-place ops in favor of out-of-place ops can go a long way.
+avoiding in-place ops in favor of out-of-place ops can go a long way.
 
 To write fast NumPy code, it is best to avoid loops, but sometimes they are
 unavoidable. When tracing through a loop, `torch.compile` will try to fully
@@ -222,10 +222,10 @@ explicit
 times, a bit surprising
 
 ```python
->>> np.asarray([1], dtype=np.int8) + 126
+>>> np.zeros(1, dtype=np.int8) + 127
 array([127], dtype=int8)
->>> np.asarray([1], dtype=np.int8) + 128
-array([129], dtype=int16)
+>>> np.zeros(1, dtype=np.int8) + 128
+array([128], dtype=int16)
 ```
 NumPy 2.0 is changing these rules to follow others that are closer to those
 PyTorch. The relevant technical document is [NEP 50](https://numpy.org/neps/nep-0050-scalar-promotion.html).
