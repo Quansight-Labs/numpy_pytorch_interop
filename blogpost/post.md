@@ -141,8 +141,8 @@ def cuda_fn(X, means):
 This function now takes tensors in CUDA memory and returns tensors in CUDA
 memory, but the function itself is written in NumPy! `torch.compile` uses the
 `numpy()` and the `from_numpy()` calls as hints, and optimizes them away, and
-internally it simply works with PyTorch tensors without moving moving the
-memory at all. When we keep the tensors in CUDA and perform the computations in
+internally it simply works with PyTorch tensors without moving the memory at
+all. When we keep the tensors in CUDA and perform the computations in
 `float32`, we see a **200x speed-up** over the initial NumPy implementation on
 `float32` arrays.
 
@@ -237,7 +237,7 @@ Quansight engineers have designed and proposed a way to support PyTorch tensors
 within scikit-learn and SciPy. This was received enthusiastically by other
 maintainers from these libraries, as it was shown that using PyTorch as a
 backend would often yield considerable speed-ups.
-Both projects have now merge initial support for PyTorch tensors across a number of
+Both projects have now merged initial support for PyTorch tensors across a number of
 APIs and submodules.
 
 This sets the stepping stone to move towards a future where PyTorch tensors
