@@ -31,7 +31,7 @@ npts = 10_000_000
 X = np.repeat([[5, 5], [10, 10]], [npts, npts], axis=0)
 X = X + np.random.randn(*X.shape)  # 2 distinct "blobs"
 means = np.array([[5, 5], [10, 10]])
-pred = get_labels(X, means)
+np_pred = get_labels(X, means)
 ```
 
 Benchmarking this function gives us a baseline of **1.26s** on an AMD 3970X CPU.
@@ -40,9 +40,11 @@ Compiling this function is now as easy as wrapping it with `torch.compile` and
 executing it with the example inputs
 
 ```python
+import torch
+
 compiled_fn = torch.compile(get_labels)
-new_pred = compiled_fn(X, means)
-assert np.allclose(prediction, new_pred)
+torch_pred = compiled_fn(X, means)
+assert np.allclose(np_pred, torch_pred)
 ```
 
 The compiled function yields a 9x speed-up when running it on 1 core. Even
@@ -77,7 +79,7 @@ default device to be CUDA
 ```python
 with torch.device("cuda"):
     cuda_pred = compiled_fn(X, means)
-assert np.allclose(prediction, cuda_pred)
+assert np.allclose(np_pred, cuda_pred)
 ```
 
 By inspecting the generated code via `TORCH_LOGS=output_code`, we see that,
