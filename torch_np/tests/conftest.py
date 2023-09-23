@@ -75,3 +75,14 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "slow" in item.keywords:
                 item.add_marker(skip_slow)
+
+
+import torch
+
+def pytest_runtest_call(item):
+    compiled = torch.compile(item.function)
+    # smoke test the compiled test
+    compiled(item, **item.funcargs)     # the 1st argument is a placeholder
+
+    # run the original, non-compiled test
+    item.runtest()

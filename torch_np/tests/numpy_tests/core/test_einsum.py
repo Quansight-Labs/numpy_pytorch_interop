@@ -3,8 +3,8 @@ import itertools
 import pytest
 from pytest import raises as assert_raises
 
-import torch_np as np
-from torch_np.testing import (
+import numpy as np
+from numpy.testing import (
     assert_, assert_equal, assert_array_equal, assert_almost_equal,
     suppress_warnings, assert_raises_regex, assert_allclose
     )

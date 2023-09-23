@@ -21,12 +21,12 @@ import builtins
 from decimal import Decimal
 import mmap
 
-import torch_np as np
+import numpy as np
 
 import numpy.core._multiarray_tests as _multiarray_tests
 #from numpy.core._rational_tests import rational
 
-from torch_np.testing import (
+from numpy.testing import (
     assert_, assert_warns, assert_equal, assert_almost_equal,
     assert_array_equal, assert_raises_regex, assert_array_almost_equal,
     assert_allclose, # IS_PYPY, IS_PYSTON, HAS_REFCOUNT,

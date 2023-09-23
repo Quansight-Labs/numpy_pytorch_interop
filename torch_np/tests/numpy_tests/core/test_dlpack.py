@@ -3,8 +3,8 @@ import pytest
 
 import torch
 
-import torch_np as np
-from torch_np.testing import assert_array_equal
+import numpy as np
+from numpy.testing import assert_array_equal
 
 IS_PYPY = False
 
